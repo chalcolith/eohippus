@@ -1,52 +1,57 @@
 
+use "collections"
+
 use "kiuatan"
 use "../eoh-ast"
 
-primitive PonyGrammar[CH: (U8 | U16)]
-  fun _eof(): ParseRule[CH, AstNode[CH] val] box^ =>
-    ParseRule[CH, AstNode[CH]](
-      "EOF",
-      RuleNot[CH, AstNode[CH]](
-        RuleAny[CH, AstNode[CH]]()
-      )
-    )
-  
-  fun _ws(): ParseRule[CH, AstNode[CH] val] box^ =>
-    ParseRule[CH, AstNode[CH]](
-      "WS",
-      RuleClass[CH, AstNode[CH]].from_iter(
-        [as CH: ' '; '\t'; '\r'; '\n'].values()
-      )
-    )
-  
-  fun _nws(): ParseRule[CH, AstNode[CH] val] box^ =>
-    ParseRule[CH, AstNode[CH]](
-      "NWS",
-      RuleClass[CH, AstNode[CH]].from_iter(
-        [as CH: ' '; '\t'; '\r'; '\n'].values()
-      )
-    )
+primitive PonyGrammar[CH: EohInput val]
 
-  fun _file_item(): ParseRule[CH, AstNode[CH] val] box^ =>
-    ParseRule(
-      "FileItem",
-      RuleChoice[CH, AstNode[CH]](
-        [ _nws(),
-          _ws()
-        ]
-      )
-    )
+  fun _eof(): ParseRule[CH, AstNode[CH] val] val =>
+    recover
+      ParseRule[CH, AstNode[CH] val](
+        "EOF",
+        RuleNot[CH, AstNode[CH] val](
+          RuleAny[CH, AstNode[CH] val]()
+        ))
+    end
 
-  fun _file_item_seq(): ParseRule[CH, AstNode[CH] val] box^ =>
-    ParseRule(
-      "FileItemSeq",
-      RuleSequence[CH, AstNode[CH]](
-        [ RuleRepeat[CH, AstNode[CH]](_file_item()),
-          _eof()
-        ]
-      )
-    )
+  fun _ws(): ParseRule[CH, AstNode[CH] val] val =>
+    recover
+      ParseRule[CH, AstNode[CH] val](
+        "WS",
+        RuleClass[CH, AstNode[CH] val].from_iter(
+          [as CH: ' '; '\t'; '\r'; '\n'].values()
+        ))
+    end
 
-  new create(): ParseRule[CH, AstNode[CH] val] box^ =>
-    _file_item_seq()
-  
+  fun _nws(): ParseRule[CH, AstNode[CH] val] val =>
+    recover
+      ParseRule[CH, AstNode[CH] val](
+        "NWS",
+        RuleClass[CH, AstNode[CH] val].from_iter(
+          [as CH: ' '; '\t'; '\r'; '\n'].values()
+        ))
+    end
+
+  fun _file_item(): ParseRule[CH, AstNode[CH] val] val =>
+    recover
+      ParseRule[CH, AstNode[CH] val](
+        "FileItem",
+        RuleChoice[CH, AstNode[CH] val](
+          [ _nws()
+            _ws()
+          ]))
+    end
+
+  fun _file_item_seq(): ParseRule[CH, AstNode[CH] val] val =>
+    recover
+      ParseRule[CH, AstNode[CH] val](
+        "FileItemSeq",
+        RuleSequence[CH, AstNode[CH] val](
+          [ RuleRepeat[CH, AstNode[CH] val](_file_item())
+            _eof()
+          ]))
+    end
+
+  fun build(): ParseRule[CH, AstNode[CH] val] val =>
+    recover _file_item_seq() end
