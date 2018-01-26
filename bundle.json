@@ -1,8 +1,8 @@
 {
   "deps": [
     {
-      "type": "github",
-      "repo": "kulibali/kiuatan"
+      "type": "local",
+      "local-path": "../kiuatan"
     }
   ]
 }
