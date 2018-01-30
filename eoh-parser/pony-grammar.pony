@@ -1,10 +1,11 @@
 
 use "collections"
+use "itertools"
 
 use "kiuatan"
 use "../eoh-ast"
 
-primitive PonyGrammar[CH: EohInput val]
+primitive PonyGrammar[CH: (Unsigned & Integer[CH])]
 
   fun _eof(): ParseRule[CH, AstNode[CH] val] val =>
     recover
@@ -15,22 +16,21 @@ primitive PonyGrammar[CH: EohInput val]
         ))
     end
 
+  fun _char_iter(str: String): Iterator[CH] =>
+    Iter[U8](str.values()).map[CH]({(ch) => CH.from[U8](ch)})
+
   fun _ws(): ParseRule[CH, AstNode[CH] val] val =>
     recover
       ParseRule[CH, AstNode[CH] val](
         "WS",
-        RuleClass[CH, AstNode[CH] val].from_iter(
-          [as CH: ' '; '\t'; '\r'; '\n'].values()
-        ))
+        RuleClass[CH, AstNode[CH] val].from_iter(_char_iter(" \t\n\r")))
     end
 
   fun _nws(): ParseRule[CH, AstNode[CH] val] val =>
     recover
       ParseRule[CH, AstNode[CH] val](
         "NWS",
-        RuleClass[CH, AstNode[CH] val].from_iter(
-          [as CH: ' '; '\t'; '\r'; '\n'].values()
-        ))
+        RuleClass[CH, AstNode[CH] val].from_iter(_char_iter(" \t\n\r")))
     end
 
   fun _file_item(): ParseRule[CH, AstNode[CH] val] val =>
@@ -39,8 +39,12 @@ primitive PonyGrammar[CH: EohInput val]
         "FileItem",
         RuleChoice[CH, AstNode[CH] val](
           [ _nws()
-            _ws()
-          ]))
+            _ws() ],
+          {(ctx): (AstNode[CH] val | None) =>
+            recover
+              FileItem[CH](ctx.cur_result.start, ctx.cur_result.next)
+            end
+          }))
     end
 
   fun _file_item_seq(): ParseRule[CH, AstNode[CH] val] val =>
@@ -53,5 +57,5 @@ primitive PonyGrammar[CH: EohInput val]
           ]))
     end
 
-  fun build(): ParseRule[CH, AstNode[CH] val] val =>
+  fun apply(): ParseRule[CH, AstNode[CH] val] val =>
     recover _file_item_seq() end

@@ -5,8 +5,8 @@ use "promises"
 use "kiuatan"
 use "../eoh-ast"
 
-actor PonyParser[CH: EohInput val]
-  let _grammar: ParseRule[CH, AstNode[CH] val] val = PonyGrammar[CH].build()
+actor PonyParser[CH: (Unsigned & Integer[CH])]
+  let _grammar: ParseRule[CH, AstNode[CH] val] val = PonyGrammar[CH]()
   var _memo: ParseState[CH, AstNode[CH] val]
 
   new create(source: List[ReadSeq[CH] box] iso) =>

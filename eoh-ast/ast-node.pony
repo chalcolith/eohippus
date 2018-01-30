@@ -3,13 +3,11 @@ use "collections"
 
 use "kiuatan"
 
-type EohInput is (U8 | U16)
-
-type AstNode[CH: EohInput val] is
+type AstNode[CH: (Unsigned & Integer[CH])] is
   ( FileItem[CH]
   )
 
-class box Token[CH: EohInput val]
+class box Token[CH: (Unsigned & Integer[CH])]
   embed start: ParseLoc[CH] val
   embed next: ParseLoc[CH] val
 
@@ -17,7 +15,7 @@ class box Token[CH: EohInput val]
     start = recover ParseLoc[CH].from_loc(start') end
     next = recover ParseLoc[CH].from_loc(next') end
 
-class FileItem[CH: EohInput val]
+class FileItem[CH: (Unsigned & Integer[CH])]
   embed token: Token[CH]
 
   new create(start': ParseLoc[CH] val, next': ParseLoc[CH] val) =>

@@ -22,6 +22,7 @@ class iso _TestFileItemSeq01Simple is UnitTest
     promise.next[None]({(result: CharParserResultOrError) =>
       match result
       | let r: CharParserResult val =>
+
         h.complete(true)
       | let m: ParseErrorMessage val =>
         h.fail(m)

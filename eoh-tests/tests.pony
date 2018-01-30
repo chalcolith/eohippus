@@ -6,4 +6,4 @@ actor Main is TestList
     None
 
   fun tag tests(test: PonyTest) =>
-    None
+    test(_TestFileItemSeq01Simple)
