@@ -3,7 +3,7 @@ use "ponytest"
 
 actor Main is TestList
   new create(env: Env) =>
-    None
+    PonyTest(env, this)
 
   fun tag tests(test: PonyTest) =>
     test(_TestFileItemSeq01Simple)
