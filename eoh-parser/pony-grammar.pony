@@ -30,7 +30,12 @@ primitive PonyGrammar[CH: (Unsigned & Integer[CH])]
     recover
       ParseRule[CH, AstNode[CH] val](
         "NWS",
-        RuleClass[CH, AstNode[CH] val].from_iter(_char_iter(" \t\n\r")))
+        RuleSequence[CH, AstNode[CH] val](
+          [ RuleNot[CH, AstNode[CH] val](
+              RuleClass[CH, AstNode[CH] val].from_iter(_char_iter(" \t\n\r")))
+            RuleAny[CH, AstNode[CH] val]
+          ])
+        )
     end
 
   fun _file_item(): ParseRule[CH, AstNode[CH] val] val =>
