@@ -16,3 +16,5 @@ actor Main is TestList
 
   fun tag tests(test: PonyTest) =>
     test(_TestLiteral01Bool)
+    test(_TestLiteral02Bool)
+    test(_TestLiteral03Bool)
