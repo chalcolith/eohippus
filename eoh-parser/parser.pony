@@ -6,13 +6,19 @@ use "kiuatan"
 use "../eoh-ast"
 
 actor PonyParser[CH: (Unsigned & Integer[CH])]
-  let _grammar: ParseRule[CH, AstNode[CH] val] val = PonyGrammar[CH]()
+  let _grammar: ParseRule[CH, AstNode[CH] val] val
   var _memo: ParseState[CH, AstNode[CH] val]
 
-  new create(source: List[ReadSeq[CH] box] iso) =>
+  new create(grammar: ParseRule[CH, AstNode[CH] val] val,
+    source: List[ReadSeq[CH] box] iso)
+  =>
+    _grammar = grammar
     _memo = ParseState[CH, AstNode[CH] val](consume source)
 
-  new from_single_seq(seq: ReadSeq[CH] val) =>
+  new from_single_seq(grammar: ParseRule[CH, AstNode[CH] val] val,
+    seq: ReadSeq[CH] val)
+  =>
+    _grammar = grammar
     let source = List[ReadSeq[CH] box].from([as ReadSeq[CH] box: seq])
     _memo = ParseState[CH, AstNode[CH] val](source)
 
