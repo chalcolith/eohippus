@@ -1,5 +1,5 @@
 @echo off
-set TARGET=eoh-tests
+set TARGET=eohippus
 
 if "%1"=="help" goto usage
 if "%1"=="--help" goto usage
@@ -20,6 +20,11 @@ if "%1"=="test" (
   set GOTOTEST=true
   shift
 )
+set GOTODOCS=false
+if "%1"=="docs" (
+  set GOTODOCS=true
+  shift
+)
 
 set CONFIG=release
 set DEBUG=
@@ -27,8 +32,8 @@ if "%1"=="config" (
   if "%2"=="debug" (
     set CONFIG=debug
     set DEBUG=--debug
-    shift
   )
+  shift
   shift
 )
 
@@ -36,6 +41,7 @@ set BUILDDIR=build\%CONFIG%
 
 if "%GOTOCLEAN%"=="true" goto clean
 if "%GOTOTEST%"=="true" goto test
+if "%GOTODOCS%"=="true" goto docs
 if "%1"=="fetch" goto fetch
 
 :build
@@ -53,8 +59,8 @@ for /f "delims=" %%i in ('type %TARGET%\version.pony.in ^& break ^> %TARGET%\ver
   endlocal
 )
 :noversion
-echo stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%
-stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%
+echo stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%\test
+stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%\test
 if errorlevel 1 goto error
 goto done
 
@@ -65,13 +71,18 @@ if errorlevel 1 goto error
 goto done
 
 :test
-if not exist %BUILDDIR%\%TARGET%.exe (
-  echo stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%
-  stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%
+if not exist %BUILDDIR%\test.exe (
+  echo stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%\test
+  stable env ponyc %DEBUG% -o %BUILDDIR% %TARGET%\test
 )
 if errorlevel 1 goto error
-echo %BUILDDIR%\%TARGET%.exe --sequential
-%BUILDDIR%\%TARGET%.exe --sequential
+echo %BUILDDIR%\test.exe --sequential
+%BUILDDIR%\test.exe --sequential
+if errorlevel 1 goto error
+goto done
+
+:docs
+stable env ponyc --pass=docs --docs-public -o %BUILDDIR% %TARGET%
 if errorlevel 1 goto error
 goto done
 

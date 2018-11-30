@@ -1,9 +1,9 @@
-target := eoh-tests
+target := eohippus
 config ?= release
 
 SRC_DIR ?= $(target)
 BUILD_DIR ?= build/$(config)
-binary := $(BUILD_DIR)/eoh-tests
+binary := $(BUILD_DIR)/tests
 
 ifdef config
   ifeq (,$(filter $(config),debug release))
@@ -35,7 +35,7 @@ all: test
 .PHONY: all docs test clean
 
 $(binary): $(GEN_FILES) $(SOURCE_FILES) | $(BUILD_DIR)
-	stable env ${PONYC} $(SRC_DIR) -o $(BUILD_DIR)
+	stable env ${PONYC} $(SRC_DIR)/test -o $(BUILD_DIR)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
