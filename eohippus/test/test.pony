@@ -9,3 +9,5 @@ actor Main is TestList
   fun tag tests(test: PonyTest) =>
     test(_TestParserTriviaEOF)
     test(_TestParserTriviaEOL)
+    test(_TestParserTriviaWS)
+    test(_TestParserLiteralBool)

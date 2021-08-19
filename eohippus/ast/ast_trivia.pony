@@ -1,6 +1,7 @@
 use "kiuatan"
 
 class val AstTriviaWS[CH: ((U8 | U16) & UnsignedInteger[CH])] is AstNode[CH]
+
   let _src_info: SrcInfo[CH]
 
   new val create(src_info': SrcInfo[CH]) =>
