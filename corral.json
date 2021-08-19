@@ -1,0 +1,19 @@
+{
+  "info": {
+    "name": "eohippus",
+    "description": "Pony Language Tools",
+    "homepage": "https://github.com/kulibali/eohippus",
+    "documentation_url": "https://kulibali.github.io/eohippus/eohippus--index/",
+    "license": "MIT",
+    "version": "0.0.0"
+  },
+  "packages": [
+    "eohippus"
+  ],
+  "deps": [
+    {
+      "locator": "github.com/kulibali/kiuatan.git",
+      "version": "1.0.0"
+    }
+  ]
+}

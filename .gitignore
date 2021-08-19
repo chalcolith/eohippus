@@ -1,7 +1,9 @@
-.deps/
-*.exe
-*.ilk
-*.pdb
+_corral/
+_repos/
 build/
 .vscode/
 version.pony
+lock.json
+*.exe
+*.ilk
+*.pdb
