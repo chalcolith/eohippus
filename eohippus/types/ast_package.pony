@@ -1,7 +1,7 @@
 use "collections/persistent"
 
-trait AstPackage[CH]
+trait AstPackage
   fun name(): String
   fun locator(): String
 
-  fun all_types(): List[AstType[CH]]
+  fun all_types(): List[AstType]

@@ -1,5 +1,3 @@
-
-use "itertools"
 use "ponytest"
 
 actor Main is TestList

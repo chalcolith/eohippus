@@ -3,12 +3,10 @@ use "itertools"
 use "ponytest"
 use "promises"
 
-use "kiuatan"
+use ast = "../ast"
+use parser = "../parser"
 
-use "../ast"
-use "../parser"
-
-primitive _Assert[CH: ((U8 | U16) & UnsignedInteger[CH])]
+primitive _Assert
   fun test_all(h: TestHelper, promises: ReadSeq[Promise[Bool]]) =>
     Promises[Bool].join(promises.values())
       .next[None]({(results) =>
@@ -17,42 +15,43 @@ primitive _Assert[CH: ((U8 | U16) & UnsignedInteger[CH])]
     h.long_test(10_000_000_000)
 
   fun test_match(h: TestHelper,
-    rule: NamedRule[CH, ParserData[CH], AstNode[CH]],
-    source: ReadSeq[Segment[CH]] val,
+    rule: parser.NamedRule,
+    source: ReadSeq[parser.Segment] val,
     start_index: USize,
-    data: ParserData[CH],
+    data: parser.Data,
     expected_match: Bool,
     expected_length: USize = 0,
-    expected_value: (AstNode[CH] | None) = None,
+    expected_value: (ast.Node | None) = None,
     expected_error: (String | None) = None) : Promise[Bool]
   =>
-    let segments = Lists[Segment[CH]].from(source.values())
-    let start = Loc[CH](segments) + start_index
+    let segments = Lists[parser.Segment].from(source.values())
+    let start = parser.Loc(segments) + start_index
     let expected_next = start + expected_length
 
     let promise = Promise[Bool]
-    let parser = Parser[CH, ParserData[CH], AstNode[CH]](segments)
-    parser.parse(rule, data,
+    let pony_parser = parser.Parser(segments)
+    pony_parser.parse(rule, data,
       {(result, value) =>
         match result
-        | let success: Success[CH, ParserData[CH], AstNode[CH]] =>
+        | let success: parser.Success =>
           if expected_match then
-            if h.assert_eq[Loc[CH]](start, success.start, "actual start "
+            if h.assert_eq[parser.Loc](start, success.start, "actual start "
               + success.start.string() + " != expected " + start.string())
-              and h.assert_eq[Loc[CH]](expected_next, success.next, "actual next "
-              + success.next.string() + " != expected " + expected_next.string())
+              and h.assert_eq[parser.Loc](expected_next, success.next,
+                "actual next " + success.next.string() + " != expected "
+                + expected_next.string())
             then
               match expected_value
               | None =>
                 promise(true)
-              | let expected_value': AstNode[CH] =>
+              | let expected_value': ast.Node =>
                 match value
                 | None =>
                   h.fail("expected value " + expected_value.string()
                     + "; got None")
                   promise(false)
-                | let actual_value: AstNode[CH] =>
-                  promise(h.assert_eq[AstNode[CH]](expected_value', actual_value))
+                | let actual_value: ast.Node =>
+                  promise(h.assert_eq[ast.Node](expected_value', actual_value))
                 end
               end
             else
@@ -62,7 +61,7 @@ primitive _Assert[CH: ((U8 | U16) & UnsignedInteger[CH])]
             h.fail("match succeeded when it should have failed")
             promise(false)
           end
-        | let failure: Failure[CH, ParserData[CH], AstNode[CH]] =>
+        | let failure: parser.Failure =>
           if expected_match then
             h.fail("match failed; should have succeeded")
             promise(false)

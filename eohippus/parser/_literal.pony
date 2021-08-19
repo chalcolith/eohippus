@@ -1,33 +1,32 @@
-use "kiuatan"
-use "../ast"
+use ast = "../ast"
 
-class _Literal[CH: ((U8 | U16) & UnsignedInteger[CH])]
-  let _context: ParserContext[CH]
+class _Literal
+  let _context: Context
 
-  var _literal_bool: (NamedRule[CH, ParserData[CH], AstNode[CH]] | None) = None
+  var _literal_bool: (NamedRule | None) = None
 
-  new create(context: ParserContext[CH]) =>
+  new create(context: Context) =>
     _context = context
 
-  fun ref bool(): NamedRule[CH, ParserData[CH], AstNode[CH]] =>
+  fun ref bool(): NamedRule =>
     match _literal_bool
-    | let r: NamedRule[CH, ParserData[CH], AstNode[CH]] => r
+    | let r: NamedRule => r
     else
       let lb' =
         recover val
-          NamedRule[CH, ParserData[CH], AstNode[CH]]("Literal_Bool",
-            Disj[CH, ParserData[CH], AstNode[CH]]([
-              Literal[CH, ParserData[CH], AstNode[CH]](
-                _Utils.ch_seq[CH]("true"),
+          NamedRule("Literal_Bool",
+            Disj([
+              Literal(
+                "true",
                 {(r, c, b) =>
-                  let info = SrcInfo[CH](r.data.locator(), r.start, r.next)
-                  (AstLiteralBool[CH](_context, info, true), b)
+                  let info = ast.SrcInfo(r.data.locator(), r.start, r.next)
+                  (ast.LiteralBool(_context, info, true), b)
                 })
-              Literal[CH, ParserData[CH], AstNode[CH]](
-                _Utils.ch_seq[CH]("false"),
+              Literal(
+                "false",
                 {(r, c, b) =>
-                  let info = SrcInfo[CH](r.data.locator(), r.start, r.next)
-                  (AstLiteralBool[CH](_context, info, false), b)
+                  let info = ast.SrcInfo(r.data.locator(), r.start, r.next)
+                  (ast.LiteralBool(_context, info, false), b)
                 })
             ])
           )

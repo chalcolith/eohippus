@@ -1,68 +1,66 @@
-use "kiuatan"
-use "../ast"
+use ast = "../ast"
 
-class _Trivia[CH: ((U8 | U16) & UnsignedInteger[CH])]
-  let _context: ParserContext[CH]
+class _Trivia
+  let _context: Context
 
-  var _ws: (NamedRule[CH, ParserData[CH], AstNode[CH]] | None) = None
-  var _eol: (NamedRule[CH, ParserData[CH], AstNode[CH]] | None) = None
-  var _eof: (NamedRule[CH, ParserData[CH], AstNode[CH]] | None) = None
+  var _ws: (NamedRule | None) = None
+  var _eol: (NamedRule | None) = None
+  var _eof: (NamedRule | None) = None
 
-  new create(context: ParserContext[CH]) =>
+  new create(context: Context) =>
     _context = context
 
-  fun ref ws(): NamedRule[CH, ParserData[CH], AstNode[CH]] =>
+  fun ref ws(): NamedRule =>
     match _ws
-    | let r: NamedRule[CH, ParserData[CH], AstNode[CH]] => r
+    | let r: NamedRule => r
     else
       let ws' =
         recover val
-          NamedRule[CH, ParserData[CH], AstNode[CH]]("WS",
-            Star[CH, ParserData[CH], AstNode[CH]](
-              Single[CH, ParserData[CH], AstNode[CH]](_Utils.ch_seq[CH](" \t")),
+          NamedRule("WS",
+            Star(
+              Single(" \t"),
               1,
               {(r, c, b) =>
-                let info = SrcInfo[CH](r.data.locator(), r.start, r.next)
-                (AstTriviaWS[CH](info), b)
+                let info = ast.SrcInfo(r.data.locator(), r.start, r.next)
+                (ast.TriviaWS(info), b)
               }))
         end
       _ws = ws'
       ws'
     end
 
-  fun ref eol(): NamedRule[CH, ParserData[CH], AstNode[CH]] =>
+  fun ref eol(): NamedRule =>
     match _eol
-    | let r: NamedRule[CH, ParserData[CH], AstNode[CH]] => r
+    | let r: NamedRule => r
     else
       let eol' =
         recover val
-          NamedRule[CH, ParserData[CH], AstNode[CH]]("EOL",
-            Disj[CH, ParserData[CH], AstNode[CH]]([
-              Literal[CH, ParserData[CH], AstNode[CH]](
-                _Utils.ch_seq[CH]("\r\n"))
-              Literal[CH, ParserData[CH], AstNode[CH]](_Utils.ch_seq[CH]("\n"))
-              Literal[CH, ParserData[CH], AstNode[CH]](_Utils.ch_seq[CH]("\r"))
+          NamedRule("EOL",
+            Disj([
+              Literal("\r\n")
+              Literal("\n")
+              Literal("\r")
             ]),
             {(r, c, b) =>
-              let info = SrcInfo[CH](r.data.locator(), r.start, r.next)
-              (AstTriviaEOL[CH](info), b) })
+              let info = ast.SrcInfo(r.data.locator(), r.start, r.next)
+              (ast.TriviaEOL(info), b)
+            })
         end
       _eol = eol'
       eol'
     end
 
-  fun ref eof(): NamedRule[CH, ParserData[CH], AstNode[CH]] =>
+  fun ref eof(): NamedRule =>
     match _eof
-    | let r: NamedRule[CH, ParserData[CH], AstNode[CH]] => r
+    | let r: NamedRule => r
     else
       let eof' =
         recover val
-          NamedRule[CH, ParserData[CH], AstNode[CH]]("EOF",
-            Neg[CH, ParserData[CH], AstNode[CH]](
-              Single[CH, ParserData[CH], AstNode[CH]]),
+          NamedRule("EOF",
+            Neg(Single),
             {(r, c, b) =>
-              let info = SrcInfo[CH](r.data.locator(), r.start, r.next)
-              (AstTriviaEOL[CH](info), b)
+              let info = ast.SrcInfo(r.data.locator(), r.start, r.next)
+              (ast.TriviaEOL(info), b)
             })
         end
       _eof = eof'

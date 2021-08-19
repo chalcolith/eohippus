@@ -1,13 +1,10 @@
-use "kiuatan"
+class val TriviaWS is Node
+  let _src_info: SrcInfo
 
-class val AstTriviaWS[CH: ((U8 | U16) & UnsignedInteger[CH])] is AstNode[CH]
-
-  let _src_info: SrcInfo[CH]
-
-  new val create(src_info': SrcInfo[CH]) =>
+  new val create(src_info': SrcInfo) =>
     _src_info = src_info'
 
-  fun src_info(): SrcInfo[CH] => _src_info
+  fun src_info(): SrcInfo => _src_info
 
   fun string(): String iso^ =>
     recover
@@ -26,13 +23,13 @@ class val AstTriviaWS[CH: ((U8 | U16) & UnsignedInteger[CH])] is AstNode[CH]
     end
 
 
-class val AstTriviaEOL[CH] is AstNode[CH]
-  let _src_info: SrcInfo[CH]
+class val TriviaEOL is Node
+  let _src_info: SrcInfo
 
-  new val create(src_info': SrcInfo[CH]) =>
+  new val create(src_info': SrcInfo) =>
     _src_info = src_info'
 
-  fun src_info(): SrcInfo[CH] => _src_info
+  fun src_info(): SrcInfo => _src_info
 
   fun string(): String iso^ =>
     recover
@@ -40,13 +37,13 @@ class val AstTriviaEOL[CH] is AstNode[CH]
     end
 
 
-class val AstTriviaEOF[CH] is AstNode[CH]
-  let _src_info: SrcInfo[CH]
+class val TriviaEOF is Node
+  let _src_info: SrcInfo
 
-  new val create(src_info': SrcInfo[CH]) =>
+  new val create(src_info': SrcInfo) =>
     _src_info = src_info'
 
-  fun src_info(): SrcInfo[CH] => _src_info
+  fun src_info(): SrcInfo => _src_info
 
   fun string(): String iso^ =>
     recover

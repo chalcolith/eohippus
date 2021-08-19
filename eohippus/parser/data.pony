@@ -1,4 +1,4 @@
-class val ParserData[CH: ((U8 | U16) & UnsignedInteger[CH])]
+class val Data
   let _locator: String
 
   new val create(locator': String) =>
