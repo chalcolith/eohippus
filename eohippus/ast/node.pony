@@ -8,10 +8,14 @@ trait val Node is (Equatable[Node] & Stringable)
   fun next(): parser.Loc => src_info().next()
 
   fun eq(other: box->Node): Bool =>
-    (this.start() == other.start()) and (this.next() == other.next())
+    if (this.start() != other.start()) or (this.next() != other.next()) then
+      return false
+    end
+    let a = String.concat(this.start().values(this.next()))
+    let b = String.concat(other.start().values(other.next()))
+    a == b
 
-  fun ne(other: box->Node): Bool =>
-    (this.start() != other.start()) or (this.next() != other.next())
+  fun ne(other: box->Node): Bool => not eq(other)
 
   fun string(): String iso^
 

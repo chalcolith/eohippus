@@ -9,3 +9,4 @@ actor Main is TestList
     test(_TestParserTriviaEOL)
     test(_TestParserTriviaWS)
     test(_TestParserLiteralBool)
+    test(_TestParserTriviaComment)

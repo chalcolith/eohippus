@@ -83,3 +83,29 @@ class _TestParserTriviaWS is UnitTest
 
       _Assert.test_match(h, rule, src2, 0, setup.data, false)
     ])
+
+class _TestParserTriviaComment is UnitTest
+  fun name(): String => "parser/trivia/Comment"
+  fun exclusion_group(): String => "parser/trivia"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.comment()
+
+    let src1 = setup.src("a // b c\n d")
+    let loc1 = parser.Loc(src1, 2)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 6)
+    let exp1 = recover ast.TriviaLineComment(inf1) end
+
+    let src2 = setup.src("a /* b * \n c / d */ e")
+    let loc2 = parser.Loc(src2, 2)
+    let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 17)
+    let exp2 = recover ast.TriviaNestedComment(inf2) end
+
+    _Assert.test_all(h, [
+      _Assert.test_match(h, rule, src1, 2, setup.data, true, 6, exp1)
+      _Assert.test_match(h, rule, src1, 0, setup.data, false)
+
+      _Assert.test_match(h, rule, src2, 2, setup.data, true, 17, exp2)
+      _Assert.test_match(h, rule, src2, 0, setup.data, false)
+    ])

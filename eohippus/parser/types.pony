@@ -11,6 +11,7 @@ type Literal is k.Literal[U8, Data, Node]
 type Conj is k.Conj[U8, Data, Node]
 type Disj is k.Disj[U8, Data, Node]
 type Star is k.Star[U8, Data, Node]
+type Look is k.Look[U8, Data, Node]
 type Neg is k.Neg[U8, Data, Node]
 
 type Result is k.Result[U8, Data, Node]

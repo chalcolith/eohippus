@@ -1,3 +1,40 @@
+
+class val TriviaLineComment is Node
+  let _src_info: SrcInfo
+
+  new val create(src_info': SrcInfo) =>
+    _src_info = src_info'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun string(): String iso^ =>
+    recover
+      let result = String
+      result.append("<LINE_COMMENT '")
+      result.concat(start().values(next()))
+      result.append("'>")
+      result
+    end
+
+
+class val TriviaNestedComment is Node
+  let _src_info: SrcInfo
+
+  new val create(src_info': SrcInfo) =>
+    _src_info = src_info'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun string(): String iso^ =>
+    recover
+      let result = String
+      result.append("<NESTED_COMMENT '")
+      result.concat(start().values(next()))
+      result.append("'>")
+      result
+    end
+
+
 class val TriviaWS is Node
   let _src_info: SrcInfo
 
@@ -19,7 +56,8 @@ class val TriviaWS is Node
           result.append("?")
         end
       end
-      result.>append("'>")
+      result.append("'>")
+      result
     end
 
 

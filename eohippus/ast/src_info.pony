@@ -1,10 +1,10 @@
 use parser = "../parser"
 
-primitive Copied
+primitive Inherited
 primitive Reified
-primitive Sugared
+primitive Desugared
 
-type SrcDerivation is (Copied | Reified | Sugared)
+type SrcDerivation is (Inherited | Reified | Desugared)
 
 class val SrcInfo
   let _locator: String
