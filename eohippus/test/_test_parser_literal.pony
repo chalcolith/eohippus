@@ -103,8 +103,26 @@ class iso _TestParserLiteralFloat is UnitTest
     let src1 = setup.src("123.456e-42")
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 11)
-    let exp1 = ast.LiteralFloat.from(inf1, 123.456e-42)
+    let exp1 = ast.LiteralFloat.from(inf1, 1.23456e-40)
+
+    let src2 = setup.src("23.45e67")
+    let loc2 = parser.Loc(src2)
+    let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 8)
+    let exp2 = ast.LiteralFloat.from(inf2, 2.345e68)
+
+    let src3 = setup.src("345.678")
+    let loc3 = parser.Loc(src3)
+    let inf3 = ast.SrcInfo(setup.data.locator(), loc3, loc3 + 7)
+    let exp3 = ast.LiteralFloat.from(inf3, 345.678)
+
+    let src4 = setup.src("456")
+    let loc4 = parser.Loc(src4)
+    let inf4 = ast.SrcInfo(setup.data.locator(), loc4, loc4 + 3)
+    let exp4 = ast.LiteralFloat.from(inf4, 456.0)
 
     _Assert.test_all(h, [
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 11, exp1)
+      _Assert.test_match(h, rule, src2, 0, setup.data, true, 8, exp2)
+      _Assert.test_match(h, rule, src3, 0, setup.data, true, 7, exp3)
+      _Assert.test_match(h, rule, src4, 0, setup.data, true, 3, exp4)
     ])

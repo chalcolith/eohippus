@@ -143,11 +143,12 @@ class _Literal
               Star(
                 Conj([
                   Single("eE")
-                  Star(
-                    Bind(exp_sign,
-                      Single("-+",
-                        {(r, _, b) => (ast.Span(_Build.info(r)), b) })),
-                    0, None, 1)
+                  Bind(exp_sign,
+                    Star(
+                      Single("-+"),
+                      0,
+                      {(r, _, b) => (ast.Span(_Build.info(r)), b) },
+                      1))
                   Bind(exponent, integer())
                 ]),
                 0, None, 1)
@@ -157,13 +158,33 @@ class _Literal
                 let children' =
                   recover val
                     let children: Array[ast.Node] = Array[ast.Node](4)
-                    children.push(b(int_part)?._2 as ast.LiteralInteger)
-                    children.push(b(frac_part)?._2 as ast.LiteralInteger)
+                    let ip = b(int_part)?._2 as ast.LiteralInteger
+                    var next_info = ast.SrcInfo(r.data.locator(),
+                      ip.src_info().next(), ip.src_info().next())
+
+                    // we need to have 4 children, even if empty spans
+                    children.push(ip)
+                    match try b(frac_part)? end
+                    | (_, let fp: ast.LiteralInteger) =>
+                      next_info = ast.SrcInfo(r.data.locator(),
+                        fp.src_info().next(), fp.src_info().next())
+                      children.push(fp)
+                    else
+                      children.push(ast.Span(next_info))
+                    end
                     match try b(exp_sign)? end
-                    | (_, let es: ast.Node) => children.push(es)
+                    | (_, let es: ast.Node) =>
+                      next_info = ast.SrcInfo(r.data.locator(),
+                        es.src_info().next(), es.src_info().next())
+                      children.push(es)
+                    else
+                      children.push(ast.Span(next_info))
                     end
                     match try b(exponent)? end
-                    | (_, let ex: ast.LiteralInteger) => children.push(ex)
+                    | (_, let ex: ast.LiteralInteger) =>
+                      children.push(ex)
+                    else
+                      children.push(ast.Span(next_info))
                     end
                     children
                   end
