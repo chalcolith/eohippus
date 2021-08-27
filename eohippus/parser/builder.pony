@@ -13,6 +13,8 @@ class Builder
     _literal = _Literal(_context)
 
   fun ref literal_bool(): NamedRule => _literal.bool()
+  fun ref literal_integer(): NamedRule => _literal.integer()
+  fun ref literal_float(): NamedRule => _literal.float()
 
   fun ref comment(): NamedRule => _trivia.comment()
   fun ref ws(): NamedRule => _trivia.ws()

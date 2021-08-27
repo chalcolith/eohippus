@@ -4,6 +4,13 @@ use "ponytest"
 use ast = "../ast"
 use parser = "../parser"
 
+primitive TestParserTrivia
+  fun apply(test: PonyTest) =>
+    test(_TestParserTriviaEOF)
+    test(_TestParserTriviaEOL)
+    test(_TestParserTriviaWS)
+    test(_TestParserTriviaComment)
+
 class iso _TestParserTriviaEOF is UnitTest
   fun name(): String => "parser/trivia/EOF"
   fun exclusion_group(): String => "parser/trivia"

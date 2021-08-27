@@ -4,8 +4,8 @@ class _Trivia
   let _context: Context
 
   var _comment: (NamedRule | None) = None
-  var _line_comment: (NamedRule | None) = None
-  var _nested_comment: (NamedRule | None) = None
+  var _comment_line: (NamedRule | None) = None
+  var _comment_nested: (NamedRule | None) = None
   var _ws: (NamedRule | None) = None
   var _eol: (NamedRule | None) = None
   var _eof: (NamedRule | None) = None
@@ -21,22 +21,22 @@ class _Trivia
         recover val
           NamedRule("Comment",
             Disj([
-              line_comment()
-              nested_comment()
+              comment_line()
+              comment_nested()
             ]))
         end
       _comment = comment'
       comment'
     end
 
-  fun ref line_comment(): NamedRule =>
-    match _line_comment
+  fun ref comment_line(): NamedRule =>
+    match _comment_line
     | let r: NamedRule => r
     else
       // '//' (!EOL .)* EOL
-      let line_comment' =
+      let comment_line' =
         recover val
-          NamedRule("LineComment",
+          NamedRule("Comment_Line",
             Conj([
               Literal("//")
               Star(
@@ -46,20 +46,20 @@ class _Trivia
                 ]))
               Look(eol())
             ]),
-            {(r, c, b) => (ast.TriviaLineComment(_Build.info(r)), b) })
+            {(r, _, b) => (ast.TriviaLineComment(_Build.info(r)), b) })
         end
-      _line_comment = line_comment'
-      line_comment'
+      _comment_line = comment_line'
+      comment_line'
     end
 
-  fun ref nested_comment(): NamedRule =>
-    match _nested_comment
+  fun ref comment_nested(): NamedRule =>
+    match _comment_nested
     | let r: NamedRule => r
     else
       // '/*' (!'*/' .)* '*/'
-      let nested_comment' =
+      let comment_nested' =
         recover val
-          NamedRule("NestedComment",
+          NamedRule("Comment_Nested",
             Conj([
               Literal("/*")
               Star(
@@ -69,10 +69,10 @@ class _Trivia
                 ]))
               Literal("*/")
             ]),
-            {(r, c, b) => (ast.TriviaNestedComment(_Build.info(r)), b) })
+            {(r, _, b) => (ast.TriviaNestedComment(_Build.info(r)), b) })
         end
-      _nested_comment = nested_comment'
-      nested_comment'
+      _comment_nested = comment_nested'
+      comment_nested'
     end
 
   fun ref ws(): NamedRule =>
@@ -83,7 +83,7 @@ class _Trivia
         recover val
           NamedRule("WS",
             Star(Single(" \t"), 1),
-            {(r, c, b) => (ast.TriviaWS(_Build.info(r)), b) })
+            {(r, _, b) => (ast.TriviaWS(_Build.info(r)), b) })
         end
       _ws = ws'
       ws'
@@ -101,7 +101,7 @@ class _Trivia
               Literal("\n")
               Literal("\r")
             ]),
-            {(r, c, b) => (ast.TriviaEOL(_Build.info(r)), b) })
+            {(r, _, b) => (ast.TriviaEOL(_Build.info(r)), b) })
         end
       _eol = eol'
       eol'
@@ -115,7 +115,7 @@ class _Trivia
         recover val
           NamedRule("EOF",
             Neg(Single),
-            {(r, c, b) => (ast.TriviaEOL(_Build.info(r)), b) })
+            {(r, _, b) => (ast.TriviaEOL(_Build.info(r)), b) })
         end
       _eof = eof'
       eof'

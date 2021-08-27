@@ -6,7 +6,7 @@ primitive Desugared
 
 type SrcDerivation is (Inherited | Reified | Desugared)
 
-class val SrcInfo
+class val SrcInfo is Equatable[SrcInfo]
   let _locator: String
   let _start: parser.Loc
   let _next: parser.Loc
@@ -34,3 +34,9 @@ class val SrcInfo
 
   fun derived_from() : ((SrcDerivation, Node) | None) =>
     _derived_from
+
+  fun eq(other: box->SrcInfo): Bool =>
+    (_start == other._start) and (_next == other._next)
+
+  fun ne(other: box->SrcInfo): Bool =>
+    not this.eq(other)
