@@ -10,6 +10,8 @@ class _Literal
   var _literal_integer_hex: (NamedRule | None) = None
   var _literal_integer_bin: (NamedRule | None) = None
   var _literal_float: (NamedRule | None) = None
+  var _literal_char: (NamedRule | None) = None
+  var _literal_char_escape: (NamedRule | None) = None
 
   new create(context: Context) =>
     _context = context
@@ -196,4 +198,64 @@ class _Literal
         end
       _literal_float = lf'
       lf'
+    end
+
+  fun ref char(): NamedRule =>
+    match _literal_char
+    | let r: NamedRule => r
+    else
+      let lc' =
+        recover val
+          NamedRule("Literal_Char",
+            Conj([
+              Single("'")
+              Disj([
+                Star(
+                  Conj([
+                    Neg(Single("'"))
+                    Disj([
+                      char_escape()
+                      Single(recover Array[U8] end,
+                        {(r, _, b) => (ast.Span(_Build.info(r)), b) })
+                    ])
+                  ]), 1)
+                Error(ErrorMsg.literal_char_empty())
+              ])
+              Disj([
+                Single("'")
+                Error(ErrorMsg.literal_char_unterminated())
+              ])
+            ]),
+            {(r, children, b) =>
+              (ast.LiteralChar(_Build.info(r), children), b) })
+        end
+      _literal_char = lc'
+      lc'
+    end
+
+  fun ref char_escape(): NamedRule =>
+    match _literal_char_escape
+    | let r: NamedRule => r
+    else
+      let lce' =
+        recover val
+          NamedRule("Literal_Char_Escape",
+            Conj([
+              Single("\\")
+              Disj([
+                Disj([
+                  Conj([
+                    Single("xX")
+                    Single("0123456789abcdefABCDEF")
+                    Single("0123456789abcdefABCDEF")
+                  ])
+                  Single("abefnrtv\\0'")
+                ])
+                Error(ErrorMsg.literal_char_escape_invalid())
+              ])
+            ]),
+            {(r, _, b) => (ast.LiteralCharEscape(_Build.info(r)), b) })
+        end
+      _literal_char_escape = lce'
+      lce'
     end

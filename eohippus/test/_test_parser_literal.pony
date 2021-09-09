@@ -3,6 +3,7 @@ use "ponytest"
 
 use ast = "../ast"
 use parser = "../parser"
+use ".."
 
 primitive TestParserLiteral
   fun apply(test: PonyTest) =>
@@ -11,6 +12,7 @@ primitive TestParserLiteral
     test(_TestParserLiteralIntegerHex)
     test(_TestParserLiteralIntegerBin)
     test(_TestParserLiteralFloat)
+    test(_TestParserLiteralChar)
 
 class iso _TestParserLiteralBool is UnitTest
   fun name(): String => "parser/literal/Bool"
@@ -125,4 +127,47 @@ class iso _TestParserLiteralFloat is UnitTest
       _Assert.test_match(h, rule, src2, 0, setup.data, true, 8, exp2)
       _Assert.test_match(h, rule, src3, 0, setup.data, true, 7, exp3)
       _Assert.test_match(h, rule, src4, 0, setup.data, true, 3, exp4)
+    ])
+
+class iso _TestParserLiteralChar is UnitTest
+  fun name(): String => "parser/literal/Char"
+  fun exclusion_group(): String => "parser/literal"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.literal_char()
+
+    let src1 = setup.src("'A'")
+    let loc1 = parser.Loc(src1)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 3)
+    let exp1 = ast.LiteralChar.from(inf1, 'A')
+
+    let src2 = setup.src("'\\n'")
+    let loc2 = parser.Loc(src2)
+    let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 4)
+    let exp2 = ast.LiteralChar.from(inf2, '\n')
+
+    let src3 = setup.src("'\\x41'")
+    let loc3 = parser.Loc(src3)
+    let inf3 = ast.SrcInfo(setup.data.locator(), loc3, loc3 + 6)
+    let exp3 = ast.LiteralChar.from(inf3, 65)
+
+    let src4 = setup.src("'ABCD'")
+    let loc4 = parser.Loc(src4)
+    let inf4 = ast.SrcInfo(setup.data.locator(), loc4, loc4 + 6)
+    let exp4 = ast.LiteralChar.from(inf4, 0x41424344)
+
+    let src5 = setup.src("''")
+    let loc5 = parser.Loc(src5)
+    let inf5 = ast.SrcInfo(setup.data.locator(), loc5, loc5 + 2)
+
+    _Assert.test_all(h, [
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, 3, exp1)
+      _Assert.test_match(h, rule, src1, 1, setup.data, false)
+      _Assert.test_match(h, rule, src2, 0, setup.data, true, 4, exp2)
+      _Assert.test_match(h, rule, src2, 1, setup.data, false)
+      _Assert.test_match(h, rule, src3, 0, setup.data, true, 6, exp3)
+      _Assert.test_match(h, rule, src4, 0, setup.data, true, 6, exp4)
+      _Assert.test_match(h, rule, src5, 0, setup.data, false, 0, None,
+        ErrorMsg.literal_char_empty())
     ])

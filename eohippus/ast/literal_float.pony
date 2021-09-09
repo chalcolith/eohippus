@@ -70,7 +70,6 @@ class val LiteralFloat is
     else
       false
     end
-  fun ne(other: box->Node): Bool => not this.eq(other)
   fun string(): String iso^ =>
     let type_name =
       match _ast_type
@@ -80,7 +79,7 @@ class val LiteralFloat is
         "?LiteralFloat?"
       end
     "<LIT: " + type_name + " = " + _value.string()
-      + (if _value_error then "?ERORR?" else "" end) + ">"
+      + (if _value_error then " ?ERORR?" else "" end) + ">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralFloat =>
