@@ -8,7 +8,7 @@ class val LiteralBool is (Node & NodeTyped[LiteralBool] & NodeValued[Bool])
 
   new val create(context: parser.Context, src_info': SrcInfo, value': Bool) =>
     _src_info = src_info'
-    _ast_type = context.builtin().bool()
+    _ast_type = context.builtin().bool_type()
     _value = value'
 
   fun src_info(): SrcInfo => _src_info

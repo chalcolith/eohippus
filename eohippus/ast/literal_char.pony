@@ -1,5 +1,3 @@
-use "debug"
-
 use parser = "../parser"
 use types = "../types"
 
@@ -170,6 +168,48 @@ class val LiteralCharEscape is (Node & NodeValued[U128])
         else
           return (0, true)
         end
+      else
+        return (0, true)
+      end
+    end
+    (v, false)
+
+class val LiteralCharUnicode is (Node & NodeValued[U128])
+  let _src_info: SrcInfo
+  let _value: U128
+  let _value_error: Bool
+
+  new val create(src_info': SrcInfo) =>
+    _src_info = src_info'
+    (_value, _value_error) = _get_char_value(_src_info)
+
+  new val from(src_info': SrcInfo, value': U128, value_error': Bool = false) =>
+    _src_info = src_info'
+    _value = value'
+    _value_error = value_error'
+
+  fun src_info(): SrcInfo => _src_info
+  fun eq(other: box->Node): Bool =>
+    match other
+    | let lc: LiteralCharUnicode =>
+      (this._src_info == lc._src_info) and (this._value == lc._value)
+        and (this._value_error == lc._value_error)
+    else
+      false
+    end
+  fun string(): String iso^ =>
+    "<ESC_UNI: " + _value.string()
+      + (if _value_error then " ?ERROR?" else "" end) + ">"
+
+  fun tag _get_char_value(si: SrcInfo): (U128, Bool) =>
+    var v: U128 = 0
+    for ch in (si.start() + 2).values(si.next()) do
+      if (ch >= '0') and (ch <= '9') then
+        v = (v * 16) + U128.from[U8](ch - '0')
+      elseif (ch >= 'a') and (ch <= 'f') then
+        v = (v * 16) + U128.from[U8](ch - 'a') + 10
+      elseif (ch >= 'A') and (ch <= 'F') then
+        v = (v * 16) + U128.from[U8](ch - 'A') + 10
       else
         return (0, true)
       end

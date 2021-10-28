@@ -13,3 +13,6 @@ primitive ErrorMsg
 
   fun tag literal_char_escape_invalid(): String val =>
     "invalid character escape sequence"
+
+  fun tag literal_char_unicode_invalid(): String val =>
+    "invalid unicode escape sequence; must have 4 or 6 hexadecimal characters"

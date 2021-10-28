@@ -4,20 +4,24 @@ use ".."
 class _Literal
   let _context: Context
 
-  var _literal_bool: (NamedRule | None) = None
-  var _literal_integer: (NamedRule | None) = None
-  var _literal_integer_dec: (NamedRule | None) = None
-  var _literal_integer_hex: (NamedRule | None) = None
-  var _literal_integer_bin: (NamedRule | None) = None
-  var _literal_float: (NamedRule | None) = None
-  var _literal_char: (NamedRule | None) = None
-  var _literal_char_escape: (NamedRule | None) = None
+  var _bool: (NamedRule | None) = None
+  var _integer: (NamedRule | None) = None
+  var _integer_dec: (NamedRule | None) = None
+  var _integer_hex: (NamedRule | None) = None
+  var _integer_bin: (NamedRule | None) = None
+  var _float: (NamedRule | None) = None
+  var _char: (NamedRule | None) = None
+  var _char_escape: (NamedRule | None) = None
+  var _char_unicode: (NamedRule | None) = None
+  var _string: (NamedRule | None) = None
+  var _string_regular: (NamedRule | None) = None
+  var _string_triple: (NamedRule | None) = None
 
   new create(context: Context) =>
     _context = context
 
   fun ref bool(): NamedRule =>
-    match _literal_bool
+    match _bool
     | let r: NamedRule => r
     else
       let lb' =
@@ -36,12 +40,12 @@ class _Literal
                 })
             ]))
         end
-      _literal_bool = lb'
+      _bool = lb'
       lb'
     end
 
   fun ref integer(): NamedRule =>
-    match _literal_integer
+    match _integer
     | let r: NamedRule => r
     else
       let li' =
@@ -53,12 +57,12 @@ class _Literal
               integer_dec()
             ]))
         end
-      _literal_integer = li'
+      _integer = li'
       li'
     end
 
   fun ref integer_dec(): NamedRule =>
-    match _literal_integer_dec
+    match _integer_dec
     | let r: NamedRule => r
     else
       let li' =
@@ -72,12 +76,12 @@ class _Literal
               (ast.LiteralInteger(_Build.info(r), ast.DecimalInteger), b)
             })
         end
-      _literal_integer_dec = li'
+      _integer_dec = li'
       li'
     end
 
   fun ref integer_hex(): NamedRule =>
-    match _literal_integer_hex
+    match _integer_hex
     | let r: NamedRule => r
     else
       let li' =
@@ -95,12 +99,12 @@ class _Literal
               (ast.LiteralInteger(_Build.info(r), ast.HexadecimalInteger), b)
             })
         end
-      _literal_integer_hex = li'
+      _integer_hex = li'
       li'
     end
 
   fun ref integer_bin(): NamedRule =>
-    match _literal_integer_bin
+    match _integer_bin
     | let r: NamedRule => r
     else
       let li' =
@@ -118,12 +122,12 @@ class _Literal
               (ast.LiteralInteger(_Build.info(r), ast.BinaryInteger), b)
             })
         end
-      _literal_integer_bin = li'
+      _integer_bin = li'
       li'
     end
 
   fun ref float(): NamedRule =>
-    match _literal_float
+    match _float
     | let r: NamedRule => r
     else
       let int_part = Variable
@@ -196,12 +200,12 @@ class _Literal
               end
             })
         end
-      _literal_float = lf'
+      _float = lf'
       lf'
     end
 
   fun ref char(): NamedRule =>
-    match _literal_char
+    match _char
     | let r: NamedRule => r
     else
       let lc' =
@@ -229,17 +233,17 @@ class _Literal
             {(r, children, b) =>
               (ast.LiteralChar(_Build.info(r), children), b) })
         end
-      _literal_char = lc'
+      _char = lc'
       lc'
     end
 
   fun ref char_escape(): NamedRule =>
-    match _literal_char_escape
+    match _char_escape
     | let r: NamedRule => r
     else
       let lce' =
         recover val
-          NamedRule("Literal_Char_Escape",
+          NamedRule("Literal_Char_Escape_Hex",
             Conj([
               Single("\\")
               Disj([
@@ -256,6 +260,28 @@ class _Literal
             ]),
             {(r, _, b) => (ast.LiteralCharEscape(_Build.info(r)), b) })
         end
-      _literal_char_escape = lce'
+      _char_escape = lce'
       lce'
+    end
+
+  fun ref char_unicode(): NamedRule =>
+    match _char_unicode
+    | let r: NamedRule => r
+    else
+      let lcu' =
+        recover val
+          NamedRule("Literal_Char_Escape_Unicode",
+            Conj([
+              Single("\\")
+              Single("uU")
+              Disj([
+                Star(Single("0123456789abcdefABCDEF"), 4, None, 4)
+                Star(Single("0123456789abcdefABCDEF"), 6, None, 6)
+                Error(ErrorMsg.literal_char_unicode_invalid())
+              ])
+            ]),
+            {(r, _, b) => (ast.LiteralCharUnicode(_Build.info(r)), b) })
+        end
+      _char_unicode = lcu'
+      lcu'
     end
