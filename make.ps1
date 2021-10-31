@@ -153,7 +153,7 @@ switch ($Command.ToLower())
     }
     else
     {
-      Write-Host "$target is a library; nothing to build."
+      BuildTest
     }
     break
   }

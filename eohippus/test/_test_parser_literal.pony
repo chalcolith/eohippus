@@ -171,3 +171,21 @@ class iso _TestParserLiteralChar is UnitTest
       _Assert.test_match(h, rule, src5, 0, setup.data, false, 0, None,
         ErrorMsg.literal_char_empty())
     ])
+
+class iso _TestParserLiteralStringRegular is UnitTest
+  fun name(): String => "parser/literal/String/regular"
+  fun exclusion_group(): String => "parser/literal"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.literal_string()
+
+    let str1 = "one, two, \" three \0x2f"
+    let src1 = setup.src("\"one, two, \\\" three \\0x2f\"")
+    let loc1 = parser.Log(src1)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + str1.size())
+    let exp1 = ast.LiteralString.from(setup.context, false, inf1, str1)
+
+    _Assert.test_all(h, [
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, str1.size(), exp1)
+    ])

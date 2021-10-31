@@ -3,6 +3,7 @@ use ".."
 
 class _Literal
   let _context: Context
+  let _glyph: _Glyph
 
   var _bool: (NamedRule | None) = None
   var _integer: (NamedRule | None) = None
@@ -17,8 +18,9 @@ class _Literal
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context) =>
+  new create(context: Context, glyph: _Glyph) =>
     _context = context
+    _glyph = glyph
 
   fun ref bool(): NamedRule =>
     match _bool
@@ -284,4 +286,57 @@ class _Literal
         end
       _char_unicode = lcu'
       lcu'
+    end
+
+  fun ref string(): NamedRule =>
+    match _string
+    | let r: NamedRule => r
+    else
+      let s' =
+        recover val
+          NamedRule("Literal_String",
+            Disj([
+              string_triple()
+              string_regular()
+            ]))
+        end
+      _string = s'
+      s'
+    end
+
+  fun ref string_regular(): NamedRule =>
+    match _string_regular
+    | let r: NamedRule => r
+    else
+      let sr' = _string_delim("Literal_String_Regular", _glyph.double_quote())
+      _string_regular = sr'
+      sr'
+    end
+
+  fun ref string_triple(): NamedRule =>
+    match _string_triple
+    | let r: NamedRule => r
+    else
+      let st' = _string_delim("Literal_String_Triple",
+        _glyph.triple_double_quote())
+      _string_triple = st'
+      st'
+    end
+
+  fun ref _string_delim(name: String, delim: NamedRule): NamedRule =>
+    recover val
+      NamedRule(name,
+        Conj([
+          delim
+          Star(
+            Conj([
+              Not(delim)
+              Disj([
+                char_unicode()
+                char_escape()
+                Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b)})
+              ])
+            ]))
+          delim
+        ]))
     end
