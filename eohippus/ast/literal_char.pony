@@ -2,11 +2,11 @@ use parser = "../parser"
 use types = "../types"
 
 class val LiteralChar is
-  (Node & NodeTyped[LiteralChar] & NodeValued[U128] & NodeParent)
+  (Node & NodeTyped[LiteralChar] & NodeValued[U32] & NodeParent)
 
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
-  let _value: U128
+  let _value: U32
   let _value_error: Bool
   let _children: ReadSeq[Node] val
 
@@ -16,7 +16,7 @@ class val LiteralChar is
     (_value, _value_error) = _get_char_value(children')
     _children = children'
 
-  new val from(src_info': SrcInfo, value': U128, value_error': Bool = false) =>
+  new val from(src_info': SrcInfo, value': U32, value_error': Bool = false) =>
     _src_info = src_info'
     _ast_type = None
     _value = value'
@@ -54,13 +54,13 @@ class val LiteralChar is
   fun val with_ast_type(ast_type': types.AstType): LiteralChar =>
     LiteralChar._with_ast_type(this, ast_type')
 
-  fun value(): U128 => _value
+  fun value(): U32 => _value
   fun value_error(): Bool => _value_error
 
   fun children(): ReadSeq[Node] val => _children
 
-  fun tag _get_char_value(children': ReadSeq[Node] val): (U128, Bool) =>
-    var v: U128 = 0
+  fun tag _get_char_value(children': ReadSeq[Node] val): (U32, Bool) =>
+    var v: U32 = 0
     for child' in children'.values() do
       match child'
       | let lce: LiteralCharEscape =>
@@ -72,31 +72,31 @@ class val LiteralChar is
       | let span: Span =>
         for ch in span.src_info().start().values(span.src_info().next()) do
           if (ch and 0b11111000) == 0b11110000 then
-            v = (v << 3) or U128.from[U8](ch and 0b00000111)
+            v = (v << 3) or U32.from[U8](ch and 0b00000111)
           elseif (ch and 0b11100000) == 0b11100000 then
-            v = (v << 4) or U128.from[U8](ch and 0b00001111)
+            v = (v << 4) or U32.from[U8](ch and 0b00001111)
           elseif (ch and 0b11100000) == 0b11000000 then
-            v = (v << 5) or U128.from[U8](ch and 0b00011111)
+            v = (v << 5) or U32.from[U8](ch and 0b00011111)
           elseif (ch and 0b11000000) == 0b10000000 then
-            v = (v << 6) or U128.from[U8](ch and 0b00111111)
+            v = (v << 6) or U32.from[U8](ch and 0b00111111)
           else
-            v = (v << 8) or U128.from[U8](ch)
+            v = (v << 8) or U32.from[U8](ch)
           end
         end
       end
     end
     (v, false)
 
-class val LiteralCharEscape is (Node & NodeValued[U128])
+class val LiteralCharEscape is (Node & NodeValued[U32])
   let _src_info: SrcInfo
-  let _value: U128
+  let _value: U32
   let _value_error: Bool
 
   new val create(src_info': SrcInfo) =>
     _src_info = src_info'
     (_value, _value_error) = _get_char_value(_src_info)
 
-  new val from(src_info': SrcInfo, value': U128, value_error': Bool = false) =>
+  new val from(src_info': SrcInfo, value': U32, value_error': Bool = false) =>
     _src_info = src_info'
     _value = value'
     _value_error = value_error'
@@ -114,14 +114,14 @@ class val LiteralCharEscape is (Node & NodeValued[U128])
     "<ESC: " + _value.string()
       + (if _value_error then " ?ERROR?" else "" end) + ">"
 
-  fun value(): U128 => _value
+  fun value(): U32 => _value
   fun value_error(): Bool => _value_error
 
-  fun tag _get_char_value(si: SrcInfo): (U128, Bool) =>
+  fun tag _get_char_value(si: SrcInfo): (U32, Bool) =>
     var begin = true
     var is_slash = false
     var is_hex = false
-    var v: U128 = 0
+    var v: U32 = 0
     for ch in si.start().values(si.next()) do
       if begin then
         begin = false
@@ -131,11 +131,11 @@ class val LiteralCharEscape is (Node & NodeValued[U128])
         end
       elseif is_hex then
         if (ch >= '0') and (ch <= '9') then
-          v = (v * 16) + U128.from[U8](ch - '0')
+          v = (v * 16) + U32.from[U8](ch - '0')
         elseif (ch >= 'a') and (ch <= 'f') then
-          v = (v * 16) + U128.from[U8](ch - 'a') + 10
+          v = (v * 16) + U32.from[U8](ch - 'a') + 10
         elseif (ch >= 'A') and (ch <= 'F') then
-          v = (v * 16) + U128.from[U8](ch - 'A') + 10
+          v = (v * 16) + U32.from[U8](ch - 'A') + 10
         else
           return (0, true)
         end
@@ -165,6 +165,8 @@ class val LiteralCharEscape is (Node & NodeValued[U128])
           return ('\0', false)
         elseif ch == '\'' then
           return ('\'', false)
+        elseif ch == '"' then
+          return ('"', false)
         else
           return (0, true)
         end
@@ -174,16 +176,16 @@ class val LiteralCharEscape is (Node & NodeValued[U128])
     end
     (v, false)
 
-class val LiteralCharUnicode is (Node & NodeValued[U128])
+class val LiteralCharUnicode is (Node & NodeValued[U32])
   let _src_info: SrcInfo
-  let _value: U128
+  let _value: U32
   let _value_error: Bool
 
   new val create(src_info': SrcInfo) =>
     _src_info = src_info'
     (_value, _value_error) = _get_char_value(_src_info)
 
-  new val from(src_info': SrcInfo, value': U128, value_error': Bool = false) =>
+  new val from(src_info': SrcInfo, value': U32, value_error': Bool = false) =>
     _src_info = src_info'
     _value = value'
     _value_error = value_error'
@@ -201,15 +203,18 @@ class val LiteralCharUnicode is (Node & NodeValued[U128])
     "<ESC_UNI: " + _value.string()
       + (if _value_error then " ?ERROR?" else "" end) + ">"
 
-  fun tag _get_char_value(si: SrcInfo): (U128, Bool) =>
-    var v: U128 = 0
+  fun value(): U32 => _value
+  fun value_error(): Bool => _value_error
+
+  fun tag _get_char_value(si: SrcInfo): (U32, Bool) =>
+    var v: U32 = 0
     for ch in (si.start() + 2).values(si.next()) do
       if (ch >= '0') and (ch <= '9') then
-        v = (v * 16) + U128.from[U8](ch - '0')
+        v = (v * 16) + U32.from[U8](ch - '0')
       elseif (ch >= 'a') and (ch <= 'f') then
-        v = (v * 16) + U128.from[U8](ch - 'a') + 10
+        v = (v * 16) + U32.from[U8](ch - 'a') + 10
       elseif (ch >= 'A') and (ch <= 'F') then
-        v = (v * 16) + U128.from[U8](ch - 'A') + 10
+        v = (v * 16) + U32.from[U8](ch - 'A') + 10
       else
         return (0, true)
       end

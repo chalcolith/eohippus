@@ -221,8 +221,7 @@ class _Literal
                     Neg(Single("'"))
                     Disj([
                       char_escape()
-                      Single(recover Array[U8] end,
-                        {(r, _, b) => (ast.Span(_Build.info(r)), b) })
+                      Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
                     ])
                   ]), 1)
                 Error(ErrorMsg.literal_char_empty())
@@ -245,7 +244,7 @@ class _Literal
     else
       let lce' =
         recover val
-          NamedRule("Literal_Char_Escape_Hex",
+          NamedRule("Literal_Char_Escape",
             Conj([
               Single("\\")
               Disj([
@@ -255,7 +254,7 @@ class _Literal
                     Single("0123456789abcdefABCDEF")
                     Single("0123456789abcdefABCDEF")
                   ])
-                  Single("abefnrtv\\0'")
+                  Single("abefnrtv\\0'\"")
                 ])
                 Error(ErrorMsg.literal_char_escape_invalid())
               ])
@@ -298,7 +297,8 @@ class _Literal
             Disj([
               string_triple()
               string_regular()
-            ]))
+            ]),
+            {(r, c, b) => (ast.LiteralString(_context, _Build.info(r), c), b) })
         end
       _string = s'
       s'
@@ -330,11 +330,11 @@ class _Literal
           delim
           Star(
             Conj([
-              Not(delim)
+              Neg(delim)
               Disj([
                 char_unicode()
                 char_escape()
-                Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b)})
+                Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
               ])
             ]))
           delim

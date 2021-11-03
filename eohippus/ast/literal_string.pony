@@ -1,12 +1,13 @@
 use "itertools"
 
+use ast = "../ast"
 use parser = "../parser"
 use types = "../types"
 
 use ".."
 
 class val LiteralString is
-  (Node & NodeTypes[LiteralString] & NodeValued[String] & NodeParent)
+  (Node & NodeTyped[LiteralString] & NodeValued[String] & NodeParent)
 
   let _triple_quote: Bool
   let _src_info: SrcInfo
@@ -38,11 +39,11 @@ class val LiteralString is
   fun src_info(): SrcInfo => _src_info
   fun eq(other: box->Node): Bool =>
     match other
-    | let ls: LiteralStringRegular =>
-      (this._src_info == lc._src_info)
-        and (this._triple_quote == lc._triple_quote)
-        and (this._value == lc._value)
-        and (this._value_error == lc._value_error)
+    | let ls: LiteralString =>
+      (this._src_info == ls._src_info)
+        and (this._triple_quote == ls._triple_quote)
+        and (this._value == ls._value)
+        and (this._value_error == ls._value_error)
     else
       false
     end
@@ -50,7 +51,7 @@ class val LiteralString is
     "<LIT: builtin/String = \"" + StringUtil.escape(_value) + "\">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): LiteralStringRegular => this
+  fun val with_ast_type(ast_type': types.AstType): LiteralString => this
 
   fun value(): String => _value
   fun value_error(): Bool => _value_error
@@ -64,14 +65,14 @@ class val LiteralString is
     let indented =
       recover val
         let indented' = String
-        for child in children.values() do
+        for child in children'.values() do
           match child
           | let tdq: ast.GlyphTripleDoubleQuote =>
             triple = true
           | let dq: ast.GlyphDoubleQuote =>
             None
           | let span: ast.Span =>
-            for ch in span.src_info().start().values(span.src_info().next())
+            for ch in span.src_info().start().values(span.src_info().next()) do
               indented'.push(ch)
             end
           | let lce: LiteralCharEscape =>
@@ -85,70 +86,84 @@ class val LiteralString is
 
     if triple and (indented.size() > 0) then
       // get pairs of (start, next) for each line in the string
-      let lines = _get_lines(indented.array)
+      let lines = _get_lines(indented.array())
       if lines.size() > 1 then
         try
           (var start, var next) = lines(0)?
-          let first_line = Iter[U8](indented.trim(start, next).values())
+          let first_line = indented.trim(start, next - 1)
+          let fli = Iter[U8](first_line.values())
           // if the first line is all whitespace, then ignore it,
           // and trim prefixes from from subseqent lines
-          if first_line.all({(ch) => (ch == ' ') or (ch == '\t') }) then
+          if fli.all({(ch) => (ch == ' ') or (ch == '\t') }) then
             (start, next) = lines(1)?
-            let second_line = Iter[U8](indented.trim(start, next).values())
-            let indent = String.concat(second_line.take_while(
-              {(ch) => (ch == ' ') or (ch == '\t') })
+            let indent =
+              recover val
+                let second_line = indented.trim(start, next - 1)
+                let sli = Iter[U8](second_line.values())
+                String.>concat(sli.take_while(
+                  {(ch) => (ch == ' ') or (ch == '\t') }))
+              end
             let isz = indent.size()
 
             let trimmed =
               recover val
                 let trimmed' = String
-                for (s, n) in Iter[(USize, USize)](lines.values()).skip(1) do
-                  if indented.compare_sub(indent, isz, s) is Equal then
-                    trimmed'.append(indented.trim(s + isz, n))
+                var i: USize = 1
+                while i < lines.size() do
+                  if i > 1 then trimmed'.append("\n") end
+                  (let s, let n) = lines(i)?
+                  if indented.compare_sub(indent, isz, ISize.from[USize](s))
+                    is Equal
+                  then
+                    trimmed'.append(indented.trim(s + isz, n - 1))
                   else
-                    trimmed'.append(indented.trim(s, n))
+                    trimmed'.append(indented.trim(s, n - 1))
                   end
+                  i = i + 1
                 end
+                trimmed'
               end
-            (triple, trimmed, false)
+            return (triple, trimmed, false)
           end
         end
       end
     end
     (triple, indented, false)
 
-fun tag _get_lines(str: Array[U8] val): Array[(USize, USize)] ref =>
-  var start_pos: USize = 0
-  var next_pos: USize = 0
+fun tag _get_lines(str: Array[U8] val): Array[(USize, USize)] val =>
+  recover
+    var start_pos: USize = 0
+    var next_pos: USize = 0
 
-  let result = Array[(USize, USize)]
-  let size = str.size()
-  var cur: USize = 0
-  try
-    while cur < size do
-      let ch = str(cur)?
-      if ch == '\n' then
-        if ((cur+1) < size) and (str(cur+1)? == '\r') then
-          next_pos = cur + 2
+    let result = Array[(USize, USize)]
+    let size = str.size()
+    var cur: USize = 0
+    try
+      while cur < size do
+        let ch = str(cur)?
+        if ch == '\n' then
+          if ((cur+1) < size) and (str(cur+1)? == '\r') then
+            next_pos = cur + 2
+          else
+            next_pos = cur + 1
+          end
+        elseif ch == '\r' then
+          if ((cur+1) < size) and (str(cur+1)? == '\n') then
+            next_pos = cur + 2
+          else
+            next_pos = cur + 1
+          end
         else
-          next_pos = cur + 1
+          cur = cur + 1
+          continue
         end
-      elseif ch == '\r' then
-        if ((cur+1) < size) and (str(cur+1)? == '\n') then
-          next_pos = cur + 2
-        else
-          next_pos = cur + 1
-        end
-      else
-        cur = cur + 1
-        continue
+        result.push((start_pos, next_pos))
+        start_pos = next_pos
+        cur = next_pos
       end
-      result.push((start_pos, next_pos))
-      start_pos = next_pos
-      cur = next_pos
+      if start_pos < cur then
+        result.push((start_pos, cur))
+      end
     end
-    if start_pos < cur then
-      result.push((start_pos, cur))
-    end
+    result
   end
-  result

@@ -17,7 +17,7 @@ class _Glyph
       recover val
         NamedRule("Glyph_Double_Quote",
           Single("\"",
-            {(r, _, b) => (ast.GlyphDoubleQuote(_Build.info(r), b))}))
+            {(r, _, b) => (ast.GlyphDoubleQuote(_Build.info(r)), b)}))
       end
     end
 
@@ -28,6 +28,6 @@ class _Glyph
       recover val
         NamedRule("Glyph_Triple_Double_Quote",
           Literal("\"\"\"",
-            {(r, _, b) => (ast.GlyphTripleDoubleQuote(_Build.info(r), b))}))
+            {(r, _, b) => (ast.GlyphTripleDoubleQuote(_Build.info(r)), b)}))
       end
     end

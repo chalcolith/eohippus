@@ -13,6 +13,8 @@ primitive TestParserLiteral
     test(_TestParserLiteralIntegerBin)
     test(_TestParserLiteralFloat)
     test(_TestParserLiteralChar)
+    test(_TestParserLiteralStringRegular)
+    test(_TestParserLiteralStringTriple)
 
 class iso _TestParserLiteralBool is UnitTest
   fun name(): String => "parser/literal/Bool"
@@ -182,10 +184,30 @@ class iso _TestParserLiteralStringRegular is UnitTest
 
     let str1 = "one, two, \" three \0x2f"
     let src1 = setup.src("\"one, two, \\\" three \\0x2f\"")
-    let loc1 = parser.Log(src1)
-    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + str1.size())
+    let len1 = USize(26)
+    let loc1 = parser.Loc(src1)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len1)
     let exp1 = ast.LiteralString.from(setup.context, false, inf1, str1)
 
     _Assert.test_all(h, [
-      _Assert.test_match(h, rule, src1, 0, setup.data, true, str1.size(), exp1)
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, len1, exp1)
+    ])
+
+class iso _TestParserLiteralStringTriple is UnitTest
+  fun name(): String => "parser/literal/String/triple"
+  fun exclusion_group(): String => "parser/literal"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.literal_string()
+
+    let str1 = "one\ntwo\nthree"
+    let src1 = setup.src("\"\"\"  \n   one\n   two\n   three\n\"\"\"")
+    let len1 = USize(32)
+    let loc1 = parser.Loc(src1)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len1)
+    let exp1 = ast.LiteralString.from(setup.context, true, inf1, str1)
+
+    _Assert.test_all(h, [
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, len1, exp1)
     ])

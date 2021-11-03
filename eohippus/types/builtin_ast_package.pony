@@ -49,7 +49,7 @@ class val BuiltinAstPackage is AstPackage
       _string
     ])
 
-  fun name(): String => _name
+  fun name(): String => _package_name
   fun locator(): String => _locator
   fun all_types(): List[AstType] => _all_types
 

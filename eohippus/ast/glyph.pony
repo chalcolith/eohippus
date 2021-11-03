@@ -11,7 +11,10 @@ class val GlyphDoubleQuote is (Node & NodeValued[String])
 
   fun src_info(): SrcInfo => _src_info
   fun string(): String iso^ =>
-    "<GLYPH: DOUBLE_QUOTE>"
+    "<GLYPH: DOUBLE_QUOTE>".clone()
+
+  fun value(): String => _value
+  fun value_error(): Bool => _value_error
 
 class val GlyphTripleDoubleQuote is (Node & NodeValued[String])
   let _src_info: SrcInfo
@@ -25,4 +28,7 @@ class val GlyphTripleDoubleQuote is (Node & NodeValued[String])
 
   fun src_info(): SrcInfo => _src_info
   fun string(): String iso^ =>
-    "<GLYPH: TRIPLE_DOUBLE_QUOTE>"
+    "<GLYPH: TRIPLE_DOUBLE_QUOTE>".clone()
+
+  fun value(): String => _value
+  fun value_error(): Bool => _value_error
