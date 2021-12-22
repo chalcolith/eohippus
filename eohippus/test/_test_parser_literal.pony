@@ -5,7 +5,7 @@ use ast = "../ast"
 use parser = "../parser"
 use ".."
 
-primitive TestParserLiteral
+primitive _TestParserLiteral
   fun apply(test: PonyTest) =>
     test(_TestParserLiteralBool)
     test(_TestParserLiteralIntegerDec)

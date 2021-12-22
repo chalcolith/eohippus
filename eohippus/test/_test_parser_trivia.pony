@@ -4,7 +4,7 @@ use "ponytest"
 use ast = "../ast"
 use parser = "../parser"
 
-primitive TestParserTrivia
+primitive _TestParserTrivia
   fun apply(test: PonyTest) =>
     test(_TestParserTriviaEOF)
     test(_TestParserTriviaEOL)

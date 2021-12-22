@@ -5,5 +5,6 @@ actor Main is TestList
     PonyTest(env, this)
 
   fun tag tests(test: PonyTest) =>
-    TestParserTrivia(test)
-    TestParserLiteral(test)
+    _TestParserTrivia(test)
+    _TestParserLiteral(test)
+    _TestParserExpression(test)

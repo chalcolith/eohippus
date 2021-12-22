@@ -2,17 +2,19 @@ use ast = "../ast"
 
 class Builder
   let _context: Context
-  let _trivia: _Trivia
-  let _glyph: _Glyph
-  let _literal: _Literal
-
-  var _literal_bool: (NamedRule | None) = None
+  let _trivia: _TriviaBuilder
+  let _glyph: _GlyphBuilder
+  let _literal: _LiteralBuilder
+  let _expression: _ExpressionBuilder
 
   new create(context: Context) =>
     _context = context
-    _trivia = _Trivia(_context)
-    _glyph = _Glyph(_context)
-    _literal = _Literal(_context, _glyph)
+    _trivia = _TriviaBuilder(_context)
+    _glyph = _GlyphBuilder(_context)
+    _literal = _LiteralBuilder(_context, _glyph)
+    _expression = _ExpressionBuilder(_context)
+
+  fun ref expression_identifier(): NamedRule => _expression.identifier()
 
   fun ref literal_bool(): NamedRule => _literal.bool()
   fun ref literal_integer(): NamedRule => _literal.integer()

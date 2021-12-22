@@ -1,6 +1,6 @@
 use ast = "../ast"
 
-class _Trivia
+class _TriviaBuilder
   let _context: Context
 
   var _comment: (NamedRule | None) = None

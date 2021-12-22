@@ -1,9 +1,9 @@
 use ast = "../ast"
 use ".."
 
-class _Literal
+class _LiteralBuilder
   let _context: Context
-  let _glyph: _Glyph
+  let _glyph: _GlyphBuilder
 
   var _bool: (NamedRule | None) = None
   var _integer: (NamedRule | None) = None
@@ -18,7 +18,7 @@ class _Literal
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context, glyph: _Glyph) =>
+  new create(context: Context, glyph: _GlyphBuilder) =>
     _context = context
     _glyph = glyph
 
