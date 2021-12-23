@@ -19,15 +19,15 @@ trait val Node is (Equatable[Node] & Stringable)
 
   fun string(): String iso^
 
-trait val NodeTyped[N: NodeTyped[N]]
+trait val NodeTyped[N: NodeTyped[N]] is Node
   fun ast_type(): (types.AstType | None)
   fun val with_ast_type(ast_type': types.AstType): N
 
-trait val NodeValued[V: Equatable[V] #read]
+trait val NodeValued[V: Equatable[V] #read] is Node
   fun value(): V
   fun value_error(): Bool
 
-trait val NodeParent
+trait val NodeParent is Node
   fun children(): ReadSeq[Node] val
 
 class val Span is Node

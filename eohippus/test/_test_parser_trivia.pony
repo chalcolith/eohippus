@@ -10,6 +10,7 @@ primitive _TestParserTrivia
     test(_TestParserTriviaEOL)
     test(_TestParserTriviaWS)
     test(_TestParserTriviaComment)
+    test(_TestParserTriviaTrivia)
 
 class iso _TestParserTriviaEOF is UnitTest
   fun name(): String => "parser/trivia/EOF"
@@ -115,4 +116,30 @@ class _TestParserTriviaComment is UnitTest
 
       _Assert.test_match(h, rule, src2, 2, setup.data, true, 17, exp2)
       _Assert.test_match(h, rule, src2, 0, setup.data, false)
+    ])
+
+class iso _TestParserTriviaTrivia is UnitTest
+  fun name(): String => "parser/trivia/Trivia"
+  fun exclusion_group(): String => "parser/trivia"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.trivia()
+
+    let src1 = setup.src(" /* c1 */\t// c2\n ")
+    let loc1 = parser.Loc(src1)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 17)
+    let exp1 = ast.Trivia(inf1, [])
+
+    _Assert.test_all(h, [
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, 17, exp1, None,
+        {(node: ast.Node) =>
+          match node
+          | let parent: ast.NodeParent =>
+            h.assert_eq[USize](6, parent.children().size())
+          else
+            false
+          end
+        })
+      _Assert.test_match(h, rule, src1, 17, setup.data, true, 0)
     ])

@@ -5,6 +5,7 @@ class _LiteralBuilder
   let _context: Context
   let _glyph: _GlyphBuilder
 
+  var _literal: (NamedRule | None) = None
   var _bool: (NamedRule | None) = None
   var _integer: (NamedRule | None) = None
   var _integer_dec: (NamedRule | None) = None
@@ -21,6 +22,25 @@ class _LiteralBuilder
   new create(context: Context, glyph: _GlyphBuilder) =>
     _context = context
     _glyph = glyph
+
+  fun ref literal(): NamedRule =>
+    match _literal
+    | let r: NamedRule => r
+    else
+      let literal' =
+        recover val
+          NamedRule("Literal",
+            Disj([
+              string()
+              char()
+              float()
+              integer()
+              bool()
+            ]))
+        end
+      _literal = literal'
+      literal'
+    end
 
   fun ref bool(): NamedRule =>
     match _bool

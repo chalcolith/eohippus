@@ -3,6 +3,7 @@ use ast = "../ast"
 class _TriviaBuilder
   let _context: Context
 
+  var _trivia: (NamedRule | None) = None
   var _comment: (NamedRule | None) = None
   var _comment_line: (NamedRule | None) = None
   var _comment_nested: (NamedRule | None) = None
@@ -12,6 +13,25 @@ class _TriviaBuilder
 
   new create(context: Context) =>
     _context = context
+
+  fun ref trivia(): NamedRule =>
+    match _trivia
+    | let r: NamedRule => r
+    else
+      let trivia' =
+        recover val
+          NamedRule("Trivia",
+            Star(
+              Disj([
+                comment()
+                ws()
+                eol()
+              ])),
+            {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
+        end
+      _trivia = trivia'
+      trivia'
+    end
 
   fun ref comment(): NamedRule =>
     match _comment

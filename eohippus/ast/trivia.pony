@@ -1,3 +1,28 @@
+class val Trivia is (Node & NodeParent)
+  let _src_info: SrcInfo
+  let _children: ReadSeq[Node] val
+
+  new val create(src_info': SrcInfo, children': ReadSeq[Node] val) =>
+    _src_info = src_info'
+    _children = children'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun string(): String iso^ =>
+    recover
+      let s = String
+      s.append("<TRIVIA [ ")
+      for child in _children.values() do
+        let child' = recover val child.string() end
+        s.append(child')
+        s.append(" ")
+      end
+      s.append("]>")
+      s
+    end
+
+  fun children(): ReadSeq[Node] val => _children
+
 
 class val TriviaLineComment is Node
   let _src_info: SrcInfo
