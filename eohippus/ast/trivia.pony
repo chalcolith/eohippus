@@ -1,8 +1,8 @@
 class val Trivia is (Node & NodeParent)
   let _src_info: SrcInfo
-  let _children: ReadSeq[Node] val
+  let _children: NodeSeq[Node]
 
-  new val create(src_info': SrcInfo, children': ReadSeq[Node] val) =>
+  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
     _src_info = src_info'
     _children = children'
 
@@ -21,8 +21,7 @@ class val Trivia is (Node & NodeParent)
       s
     end
 
-  fun children(): ReadSeq[Node] val => _children
-
+  fun children(): NodeSeq[Node] => _children
 
 class val TriviaLineComment is Node
   let _src_info: SrcInfo
@@ -41,7 +40,6 @@ class val TriviaLineComment is Node
       result
     end
 
-
 class val TriviaNestedComment is Node
   let _src_info: SrcInfo
 
@@ -58,7 +56,6 @@ class val TriviaNestedComment is Node
       result.append("'>")
       result
     end
-
 
 class val TriviaWS is Node
   let _src_info: SrcInfo
@@ -85,7 +82,6 @@ class val TriviaWS is Node
       result
     end
 
-
 class val TriviaEOL is Node
   let _src_info: SrcInfo
 
@@ -98,7 +94,6 @@ class val TriviaEOL is Node
     recover
       String.>append("<EOL>")
     end
-
 
 class val TriviaEOF is Node
   let _src_info: SrcInfo

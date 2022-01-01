@@ -3,16 +3,21 @@ use ast = "../ast"
 class Builder
   let _context: Context
   let _trivia: _TriviaBuilder
-  let _glyph: _GlyphBuilder
+  let _lexer: _LexerBuilder
   let _literal: _LiteralBuilder
   let _expression: _ExpressionBuilder
+  let _module: _ModuleBuilder
 
   new create(context: Context) =>
     _context = context
     _trivia = _TriviaBuilder(_context)
-    _glyph = _GlyphBuilder(_context)
-    _literal = _LiteralBuilder(_context, _glyph)
+    _lexer = _LexerBuilder(_context)
+    _literal = _LiteralBuilder(_context, _lexer)
     _expression = _ExpressionBuilder(_context)
+
+    _module = _ModuleBuilder(_trivia, _lexer, _literal)
+
+  fun ref module(): NamedRule => _module.module()
 
   fun ref expression_identifier(): NamedRule => _expression.identifier()
 

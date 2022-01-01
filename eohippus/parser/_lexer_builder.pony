@@ -1,7 +1,7 @@
 use ast = "../ast"
 use ".."
 
-class _GlyphBuilder
+class _LexerBuilder
   let _context: Context
 
   var _double_quote: (NamedRule | None) = None

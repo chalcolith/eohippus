@@ -10,13 +10,13 @@ class val LiteralFloat is
   let _value: F64
   let _value_error: Bool
 
-  let _children: ReadSeq[Node] val
+  let _children: NodeSeq[Node]
   let _int_part: (LiteralInteger | None)
   let _frac_part: (LiteralInteger | None)
   let _exp_sign: (Node | None)
   let _exponent: (LiteralInteger | None)
 
-  new val create(src_info': SrcInfo, children': ReadSeq[Node] val) =>
+  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
     _src_info = src_info'
     _ast_type = None
 
@@ -88,7 +88,7 @@ class val LiteralFloat is
   fun value(): F64 => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): ReadSeq[Node] val => _children
+  fun children(): NodeSeq[Node] => _children
   fun int_part(): (LiteralInteger | None) => _int_part
   fun frac_part(): (LiteralInteger | None) => _frac_part
   fun exp_sign(): (Node | None) => _exp_sign

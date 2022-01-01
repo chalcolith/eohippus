@@ -1,7 +1,9 @@
-class val Data
-  let _locator: String
+type Locator is String
 
-  new val create(locator': String) =>
+class val Data
+  let _locator: Locator
+
+  new val create(locator': Locator) =>
     _locator = locator'
 
-  fun locator(): String => _locator
+  fun locator(): Locator => _locator

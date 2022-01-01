@@ -14,10 +14,10 @@ class val LiteralString is
   let _ast_type: types.AstType
   let _value: String
   let _value_error: Bool
-  let _children: ReadSeq[Node] val
+  let _children: NodeSeq[Node]
 
   new val create(context: parser.Context, src_info': SrcInfo,
-    children': ReadSeq[Node] val)
+    children': NodeSeq[Node])
   =>
     _src_info = src_info'
     _ast_type = context.builtin().string_type()
@@ -56,9 +56,9 @@ class val LiteralString is
   fun value(): String => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): ReadSeq[Node] val => _children
+  fun children(): NodeSeq[Node] => _children
 
-  fun tag _get_string_value(children': ReadSeq[Node] val)
+  fun tag _get_string_value(children': NodeSeq[Node])
     : (Bool, String, Bool)
   =>
     var triple = false

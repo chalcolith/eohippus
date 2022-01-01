@@ -3,7 +3,7 @@ use ".."
 
 class _LiteralBuilder
   let _context: Context
-  let _glyph: _GlyphBuilder
+  let _lexer: _LexerBuilder
 
   var _literal: (NamedRule | None) = None
   var _bool: (NamedRule | None) = None
@@ -19,9 +19,9 @@ class _LiteralBuilder
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context, glyph: _GlyphBuilder) =>
+  new create(context: Context, lexer: _LexerBuilder) =>
     _context = context
-    _glyph = glyph
+    _lexer = lexer
 
   fun ref literal(): NamedRule =>
     match _literal
@@ -328,7 +328,7 @@ class _LiteralBuilder
     match _string_regular
     | let r: NamedRule => r
     else
-      let sr' = _string_delim("Literal_String_Regular", _glyph.double_quote())
+      let sr' = _string_delim("Literal_String_Regular", _lexer.double_quote())
       _string_regular = sr'
       sr'
     end
@@ -338,7 +338,7 @@ class _LiteralBuilder
     | let r: NamedRule => r
     else
       let st' = _string_delim("Literal_String_Triple",
-        _glyph.triple_double_quote())
+        _lexer.triple_double_quote())
       _string_triple = st'
       st'
     end

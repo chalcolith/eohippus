@@ -25,11 +25,11 @@ class _ExpressionBuilder
           NamedRule("Identifier",
             Disj([
               Conj([
-                Single(_Letters())
+                Single("_")
                 Star(Single(_Letters() + _Digits() + "_'"))
               ])
               Conj([
-                Single("_")
+                Single(_Letters())
                 Star(Single(_Letters() + _Digits() + "_'"))
               ])
             ]),

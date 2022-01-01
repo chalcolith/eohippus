@@ -8,9 +8,9 @@ class val LiteralChar is
   let _ast_type: (types.AstType | None)
   let _value: U32
   let _value_error: Bool
-  let _children: ReadSeq[Node] val
+  let _children: NodeSeq[Node]
 
-  new val create(src_info': SrcInfo, children': ReadSeq[Node] val) =>
+  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
     _src_info = src_info'
     _ast_type = None
     (_value, _value_error) = _get_char_value(children')
@@ -57,9 +57,9 @@ class val LiteralChar is
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): ReadSeq[Node] val => _children
+  fun children(): NodeSeq[Node] => _children
 
-  fun tag _get_char_value(children': ReadSeq[Node] val): (U32, Bool) =>
+  fun tag _get_char_value(children': NodeSeq[Node]): (U32, Bool) =>
     var v: U32 = 0
     for child' in children'.values() do
       match child'
