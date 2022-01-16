@@ -46,6 +46,7 @@ class _ModuleBuilder
               //     Bind(typedefs, Star(typedef()))
               //   ])
               // ])
+              trivia_trivia
             ]),
             {(r, c, b) =>
               let trivia': ast.Trivia =

@@ -16,7 +16,7 @@ class iso _TestParserModuleTriviaDocstring is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.module()
 
-    let code = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\""
+    let code = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
     let len = code.size()
 
     let src1 = setup.src(code)
