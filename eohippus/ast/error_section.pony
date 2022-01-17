@@ -13,6 +13,7 @@ class val ErrorSection is (Node & NodeParent)
     _message = message'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => true
   fun string(): String iso^ =>
     "<ERROR: " + StringUtil.escape(_message) + ">"
   fun children(): NodeSeq[Node] => _children

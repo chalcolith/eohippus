@@ -7,6 +7,7 @@ class val Trivia is (Node & NodeParent)
     _children = children'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover
@@ -30,6 +31,7 @@ class val TriviaLineComment is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover
@@ -47,6 +49,7 @@ class val TriviaNestedComment is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover
@@ -64,6 +67,7 @@ class val TriviaWS is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover
@@ -89,6 +93,7 @@ class val TriviaEOL is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover
@@ -102,6 +107,7 @@ class val TriviaEOF is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
 
   fun string(): String iso^ =>
     recover

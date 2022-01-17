@@ -40,6 +40,9 @@ class val LiteralInteger is
   fun kind(): LiteralIntegerKind => _kind
 
   fun src_info(): SrcInfo => _src_info
+
+  fun has_error(): Bool => _value_error
+
   fun eq(other: box->Node): Bool =>
     match other
     | let li: box->LiteralInteger =>

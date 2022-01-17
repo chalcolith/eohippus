@@ -62,6 +62,9 @@ class val LiteralFloat is
     _value_error = float.value_error()
 
   fun src_info(): SrcInfo => _src_info
+
+  fun has_error(): Bool => _value_error
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lf: LiteralFloat =>
@@ -70,6 +73,7 @@ class val LiteralFloat is
     else
       false
     end
+
   fun string(): String iso^ =>
     let type_name =
       match _ast_type

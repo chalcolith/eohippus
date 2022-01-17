@@ -31,6 +31,9 @@ class val LiteralChar is
     _children = char.children()
 
   fun src_info(): SrcInfo => _src_info
+
+  fun has_error(): Bool => _value_error
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lc: LiteralChar =>
@@ -39,6 +42,7 @@ class val LiteralChar is
     else
       false
     end
+
   fun string(): String iso^ =>
     let type_name =
       match _ast_type

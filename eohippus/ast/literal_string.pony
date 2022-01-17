@@ -34,9 +34,12 @@ class val LiteralString is
     _value_error = value_error'
     _children = recover Array[Node] end
 
-  fun triple_quote(): Bool => _triple_quote
+  fun is_triple_quote(): Bool => _triple_quote
 
   fun src_info(): SrcInfo => _src_info
+
+  fun has_error(): Bool => _value_error
+
   fun eq(other: box->Node): Bool =>
     match other
     | let ls: LiteralString =>
@@ -47,6 +50,7 @@ class val LiteralString is
     else
       false
     end
+
   fun string(): String iso^ =>
     "<LIT: builtin/String = \"" + StringUtil.escape(_value) + "\">"
 

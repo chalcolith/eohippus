@@ -5,6 +5,7 @@ class val Span is Node
     _src_info = src_info'
 
   fun src_info(): SrcInfo => _src_info
+  fun has_error(): Bool => false
   fun string(): String iso^ =>
     recover
       let s = String

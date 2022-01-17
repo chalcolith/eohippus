@@ -24,6 +24,7 @@ class val _BuiltinNode is ast.Node
       parser.Loc(segment, name.size()))
 
   fun src_info(): ast.SrcInfo => _src_info
+  fun has_error(): Bool => false
   fun ast_type(): (AstType | None) => None
 
   fun string(): String iso^ =>
