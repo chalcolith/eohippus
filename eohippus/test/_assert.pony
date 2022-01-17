@@ -69,19 +69,19 @@ class _Callback
     _promise = promise
 
   fun apply(result: (parser.Success | parser.Failure),
-    value: (ast.Node | None))
+    values: ast.NodeSeq[ast.Node])
   =>
     _promise(
       match result
       | let success: parser.Success =>
-        _handle_success(success, value)
+        _handle_success(success, values)
       | let failure: parser.Failure =>
         _handle_failure(failure)
       end
     )
 
   fun _handle_success(success: parser.Success,
-    value: (ast.Node | None)): Bool
+    values: ast.NodeSeq[ast.Node]): Bool
   =>
     if not _expected_match then
       _h.fail("match succeeded when it should have failed")
@@ -103,28 +103,28 @@ class _Callback
 
     match _expected_value
     | let expected_value': ast.Node =>
-      match value
-      | None =>
-        _h.fail("expected value " + expected_value'.string() + "; got None")
-        return false
-      | let actual_value: ast.Node =>
+      try
+        let actual_value = values(0)?
         if not _h.assert_eq[ast.Node](expected_value', actual_value) then
           return false
         end
+      else
+        _h.fail("expected value " + expected_value'.string() + "; got nothing")
+        return false
       end
     end
 
     match _assertion
     | let assertion': _Assertion =>
-      match value
-      | None =>
-        _h.fail("got no value for assertion")
-        return false
-      | let actual_value: ast.Node =>
+      try
+        let actual_value = values(0)?
         if not assertion'(actual_value) then
           _h.fail("assertion failed")
           return false
         end
+      else
+        _h.fail("got no value for assertion")
+        return false
       end
     end
     true

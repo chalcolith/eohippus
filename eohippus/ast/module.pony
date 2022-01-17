@@ -24,7 +24,18 @@ class val Module is (Node & NodeParent & NodeTrivia & NodeDocstring)
 
   fun src_info(): SrcInfo => _src_info
   fun string(): String iso^ =>
-    "<MODULE " + _locator + ">"
+    recover iso
+      let str: String ref = String
+      str.append("<MODULE " + _locator + ">\n")
+      match _docstring
+      | let ds: Docstring =>
+        str.append("  " + ds.string())
+      | let es: ErrorSection =>
+        str.append("  " + es.string())
+      end
+      str.append("</MODULE>")
+      str
+    end
 
   fun children(): NodeSeq[Node] => _children
   fun trivia(): Trivia => _trivia

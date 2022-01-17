@@ -25,7 +25,7 @@ class _ModuleBuilder
       let tr = Variable
       let ds = Variable
       let us = Variable
-      let typedefs = Variable
+      let td = Variable
 
       let trivia_trivia = _trivia.trivia()
 
@@ -50,21 +50,21 @@ class _ModuleBuilder
             ]),
             {(r, c, b) =>
               let trivia': ast.Trivia =
-                match try b(tr)? end
-                | (_, let t: ast.Trivia) => t
+                try
+                  b(tr)?._2(0)? as ast.Trivia
                 else
                   return (ast.ErrorSection(_Build.info(r), c,
                     ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
                 end
 
               let docstring': (ast.Docstring | ast.ErrorSection | None) =
-                match try b(ds)? end
-                | (let s: Success, let d: ast.Docstring) =>
-                  if s.children.size() > 1 then
+                try
+                  (_, let values: ast.NodeSeq[ast.Node]) = b(ds)?
+                  if values.size() == 1 then
+                    values(0)? as ast.Docstring
+                  elseif values.size() > 1 then
                     ast.ErrorSection(_Build.info(r), [],
                       ErrorMsg.module_docstring_multiple())
-                  else
-                    d
                   end
                 end
 
@@ -96,16 +96,16 @@ class _ModuleBuilder
             ]),
             {(r, c, b) =>
               let t': ast.Trivia =
-                match try b(t)? end
-                | (_, let t'': ast.Trivia) => t''
+                try
+                  b(t)?._2(0)? as ast.Trivia
                 else
                   return (ast.ErrorSection(_Build.info(r), c,
                     ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
                 end
 
               let s': ast.LiteralString =
-                match try b(s)? end
-                | (_, let s'': ast.LiteralString) => s''
+                try
+                  b(s)?._2(0)? as ast.LiteralString
                 else
                   return (ast.ErrorSection(_Build.info(r), c,
                     ErrorMsg.internal_ast_node_not_bound("LiteralString")), b)

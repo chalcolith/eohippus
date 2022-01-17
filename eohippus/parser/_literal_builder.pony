@@ -186,34 +186,38 @@ class _LiteralBuilder
                 let children' =
                   recover val
                     let children: Array[ast.Node] = Array[ast.Node](4)
-                    let ip = b(int_part)?._2 as ast.LiteralInteger
+
+                    let ip = b(int_part)?._2(0)? as ast.LiteralInteger
                     var next_info = ast.SrcInfo(r.data.locator(),
                       ip.src_info().next(), ip.src_info().next())
 
                     // we need to have 4 children, even if empty spans
                     children.push(ip)
-                    match try b(frac_part)? end
-                    | (_, let fp: ast.LiteralInteger) =>
+                    try
+                      let fp = b(frac_part)?._2(0)? as ast.LiteralInteger
                       next_info = ast.SrcInfo(r.data.locator(),
                         fp.src_info().next(), fp.src_info().next())
                       children.push(fp)
                     else
                       children.push(ast.Span(next_info))
                     end
-                    match try b(exp_sign)? end
-                    | (_, let es: ast.Node) =>
+
+                    try
+                      let es = b(exp_sign)?._2(0)?
                       next_info = ast.SrcInfo(r.data.locator(),
                         es.src_info().next(), es.src_info().next())
                       children.push(es)
                     else
                       children.push(ast.Span(next_info))
                     end
-                    match try b(exponent)? end
-                    | (_, let ex: ast.LiteralInteger) =>
+
+                    try
+                      let ex = b(exponent)?._2(0)? as ast.LiteralInteger
                       children.push(ex)
                     else
                       children.push(ast.Span(next_info))
                     end
+
                     children
                   end
                 (ast.LiteralFloat(_Build.info(r), children'), b)
