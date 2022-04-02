@@ -53,7 +53,7 @@ class val LiteralInteger is
       false
     end
   fun ne(other: box->Node): Bool => not this.eq(other)
-  fun string(): String iso^ =>
+  fun get_string(indent: String): String =>
     let type_name =
       match _ast_type
       | let type': types.AstType =>
@@ -61,8 +61,8 @@ class val LiteralInteger is
       else
         "?LiteralInteger?"
       end
-    "<LIT: " + type_name + " = " + _value.string()
-      + (if _value_error then "OVERFLOW!" else "" end) + ">"
+    indent + "<LIT: " + type_name + " = " +
+      (if _value_error then "?ERROR?" else _value.string() end) + ">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralInteger =>

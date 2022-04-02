@@ -1,5 +1,5 @@
 Param(
-  [Parameter(Position=0, HelpMessage="The action to take (build, test, install, package, clean).")]
+  [Parameter(Position=0, HelpMessage="The action to take (fetch, build, test, install, package, clean).")]
   [string]
   $Command = 'build',
 
@@ -92,13 +92,8 @@ function BuildTarget
   {
     if ($binaryTimestamp -lt $file.LastWriteTimeUtc)
     {
-      Write-Host "corral.exe fetch"
-      $output = (corral.exe fetch)
-      $output | ForEach-Object { Write-Host $_ }
-      if ($LastExitCode -ne 0) { throw "Error" }
-
-      Write-Host "corral.exe run -- ponyc.exe $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$srcDir`""
-      $output = (corral.exe run -- ponyc.exe $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$srcDir")
+      Write-Host "corral run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$srcDir`""
+      $output = (corral run -- ponyc $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$srcDir")
       $output | ForEach-Object { Write-Host $_ }
       if ($LastExitCode -ne 0) { throw "Error" }
       break buildFiles
@@ -125,14 +120,9 @@ function BuildTest
   {
     if ($testTimestamp -lt $file.LastWriteTimeUtc)
     {
-      Write-Host "corral.exe fetch"
-      $output = (corral.exe fetch)
-      $output | ForEach-Object { Write-Host $_ }
-      if ($LastExitCode -ne 0) { throw "Error" }
-
       $testDir = Join-Path -Path $srcDir -ChildPath $testPath
-      Write-Host "corral.exe run -- ponyc.exe --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$testDir`""
-      $output = (corral.exe run -- ponyc.exe $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$testDir")
+      Write-Host "corral run -- ponyc --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$testDir`""
+      $output = (corral run -- ponyc $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$testDir")
       $output | ForEach-Object { Write-Host $_ }
       if ($LastExitCode -ne 0) { throw "Error" }
       break testFiles
@@ -145,6 +135,15 @@ function BuildTest
 
 switch ($Command.ToLower())
 {
+  "fetch"
+  {
+    Write-Host "corral fetch"
+    $output = (corral fetch)
+    $output | ForEach-Object { Write-Host $_ }
+    if ($LastExitCode -ne 0) { throw "Error" }
+    break
+  }
+
   "build"
   {
     if (-not $isLibrary)
@@ -232,6 +231,6 @@ switch ($Command.ToLower())
 
   default
   {
-    throw "Unknown command '$Command'; must be one of (libs, build, test, install, package, clean, distclean)."
+    throw "Unknown command '$Command'; must be one of (fetch, build, test, install, package, clean, distclean)."
   }
 }

@@ -1,7 +1,7 @@
 use parser = "../parser"
 use types = "../types"
 
-type NodeSeq[N: Node] is ReadSeq[N] val
+type NodeSeq[N: Node = Node] is ReadSeq[N] val
 
 trait val Node is (Equatable[Node] & Stringable)
   fun src_info(): SrcInfo
@@ -20,7 +20,8 @@ trait val Node is (Equatable[Node] & Stringable)
 
   fun ne(other: box->Node): Bool => not eq(other)
 
-  fun string(): String iso^
+  fun get_string(indent: String): String
+  fun string(): String iso^ => get_string("").clone()
 
 trait val NodeTyped[N: NodeTyped[N]] is Node
   fun ast_type(): (types.AstType | None)
@@ -38,11 +39,11 @@ trait val NodeParent is Node
     end
     false
 
-  fun children(): NodeSeq[Node]
-
+  fun children(): NodeSeq
 
 trait val NodeTrivia is Node
-  fun trivia(): Trivia
+  fun pre_trivia(): Trivia
+  fun post_trivia(): Trivia
 
 trait val NodeDocstring is Node
-  fun docstring(): (Docstring | None)
+  fun docstring(): NodeSeq[Docstring]

@@ -1,28 +1,30 @@
+use ".."
+
 class val Trivia is (Node & NodeParent)
   let _src_info: SrcInfo
-  let _children: NodeSeq[Node]
+  let _children: NodeSeq
 
-  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
+  new val create(src_info': SrcInfo, children': NodeSeq) =>
     _src_info = src_info'
     _children = children'
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
+  fun get_string(indent: String): String =>
+    recover val
       let s = String
+      s.append(indent)
       s.append("<TRIVIA [ ")
       for child in _children.values() do
-        let child' = recover val child.string() end
-        s.append(child')
+        s.append(child.get_string(""))
         s.append(" ")
       end
       s.append("]>")
       s
     end
 
-  fun children(): NodeSeq[Node] => _children
+  fun children(): NodeSeq => _children
 
 class val TriviaLineComment is Node
   let _src_info: SrcInfo
@@ -33,11 +35,13 @@ class val TriviaLineComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
+  fun get_string(indent: String): String =>
+    recover val
       let result = String
+      result.append(indent)
       result.append("<LINE_COMMENT '")
-      result.concat(start().values(next()))
+      result.append(StringUtil.escape(
+        recover val String.>concat(start().values(next())) end))
       result.append("'>")
       result
     end
@@ -51,11 +55,13 @@ class val TriviaNestedComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
+  fun get_string(indent: String): String =>
+    recover val
       let result = String
+      result.append(indent)
       result.append("<NESTED_COMMENT '")
-      result.concat(start().values(next()))
+      result.append(StringUtil.escape(
+        recover val String.>concat(start().values(next())) end))
       result.append("'>")
       result
     end
@@ -69,19 +75,13 @@ class val TriviaWS is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
+  fun get_string(indent: String): String =>
+    recover val
       let result = String
+      result.append(indent)
       result.append("<WS '")
-      for ch in start().values(next()) do
-        if ch.u8() == ' ' then
-          result.append(" ")
-        elseif ch.u8() == '\t' then
-          result.append("\\t")
-        else
-          result.append("?")
-        end
-      end
+      result.append(StringUtil.escape(
+        recover val String.>concat(start().values(next())) end))
       result.append("'>")
       result
     end
@@ -95,10 +95,8 @@ class val TriviaEOL is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
-      String.>append("<EOL>")
-    end
+  fun get_string(indent: String): String =>
+    indent + "<EOL>"
 
 class val TriviaEOF is Node
   let _src_info: SrcInfo
@@ -109,7 +107,5 @@ class val TriviaEOF is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun string(): String iso^ =>
-    recover
-      String.>append("<EOF>")
-    end
+  fun get_string(indent: String): String =>
+    indent + "<EOF>"

@@ -3,7 +3,7 @@ use ".."
 
 class _LiteralBuilder
   let _context: Context
-  let _lexer: _LexerBuilder
+  let _token: _TokenBuilder
 
   var _literal: (NamedRule | None) = None
   var _bool: (NamedRule | None) = None
@@ -19,9 +19,9 @@ class _LiteralBuilder
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context, lexer: _LexerBuilder) =>
+  new create(context: Context, token: _TokenBuilder) =>
     _context = context
-    _lexer = lexer
+    _token = token
 
   fun ref literal(): NamedRule =>
     match _literal
@@ -166,8 +166,7 @@ class _LiteralBuilder
                 Conj([
                   Single(".")
                   Bind(frac_part, integer())
-                ]),
-                0, None, 1)
+                ]) where min = 0, max = 1)
               Star(
                 Conj([
                   Single("eE")
@@ -178,8 +177,7 @@ class _LiteralBuilder
                       {(r, _, b) => (ast.Span(_Build.info(r)), b) },
                       1))
                   Bind(exponent, integer())
-                ]),
-                0, None, 1)
+                ]) where min = 0, max = 1)
             ]),
             {(r, _, b) =>
               try
@@ -332,7 +330,7 @@ class _LiteralBuilder
     match _string_regular
     | let r: NamedRule => r
     else
-      let sr' = _string_delim("Literal_String_Regular", _lexer.double_quote())
+      let sr' = _string_delim("Literal_String_Regular", _token.double_quote())
       _string_regular = sr'
       sr'
     end
@@ -342,7 +340,7 @@ class _LiteralBuilder
     | let r: NamedRule => r
     else
       let st' = _string_delim("Literal_String_Triple",
-        _lexer.triple_double_quote())
+        _token.triple_double_quote())
       _string_triple = st'
       st'
     end

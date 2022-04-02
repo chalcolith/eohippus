@@ -27,5 +27,5 @@ class val _BuiltinNode is ast.Node
   fun has_error(): Bool => false
   fun ast_type(): (AstType | None) => None
 
-  fun string(): String iso^ =>
-    "<" + _src_info.locator() + ">"
+  fun get_string(indent: String): String =>
+    indent + "<BUILTIN " + _src_info.locator() + ">"

@@ -20,5 +20,14 @@ primitive ErrorMsg
   fun tag internal_ast_node_not_bound(name: String): String =>
     "internal error: no AST node bound: " + name
 
-  fun tag module_docstring_multiple(): String =>
+  fun tag src_file_docstring_multiple(): String =>
     "you cannot have multiple docstrings"
+
+  fun tag src_file_expected_docstring_using_or_typedef(): String =>
+    "expected either a docstring, a \"use\" statement, or a type definition"
+
+  fun tag src_file_expected_using_or_typedef(): String =>
+    "expected either a \"use\" statement or a type definition"
+
+  fun tag src_file_expected_typedef(): String =>
+    "expected a type definition"

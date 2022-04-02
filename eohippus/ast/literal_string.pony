@@ -14,10 +14,10 @@ class val LiteralString is
   let _ast_type: types.AstType
   let _value: String
   let _value_error: Bool
-  let _children: NodeSeq[Node]
+  let _children: NodeSeq
 
   new val create(context: parser.Context, src_info': SrcInfo,
-    children': NodeSeq[Node])
+    children': NodeSeq)
   =>
     _src_info = src_info'
     _ast_type = context.builtin().string_type()
@@ -51,8 +51,8 @@ class val LiteralString is
       false
     end
 
-  fun string(): String iso^ =>
-    "<LIT: builtin/String = \"" + StringUtil.escape(_value) + "\">"
+  fun get_string(indent: String): String =>
+    indent + "<LIT: builtin/String = \"" + StringUtil.escape(_value) + "\">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralString => this
@@ -60,9 +60,9 @@ class val LiteralString is
   fun value(): String => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): NodeSeq[Node] => _children
+  fun children(): NodeSeq => _children
 
-  fun tag _get_string_value(children': NodeSeq[Node])
+  fun tag _get_string_value(children': NodeSeq)
     : (Bool, String, Bool)
   =>
     var triple = false
@@ -71,10 +71,10 @@ class val LiteralString is
         let indented' = String
         for child in children'.values() do
           match child
-          | let tdq: ast.GlyphTripleDoubleQuote =>
-            triple = true
-          | let dq: ast.GlyphDoubleQuote =>
-            None
+          | let tdq: ast.Token =>
+            if tdq.kind() is ast.TokenTripleDoubleQuote then
+              triple = true
+            end
           | let span: ast.Span =>
             for ch in span.src_info().start().values(span.src_info().next()) do
               indented'.push(ch)

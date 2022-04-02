@@ -1,4 +1,4 @@
-use "ponytest"
+use "pony_test"
 
 actor Main is TestList
   new create(env: Env) =>
@@ -8,4 +8,4 @@ actor Main is TestList
     _TestParserTrivia(test)
     _TestParserLiteral(test)
     _TestParserExpression(test)
-    _TestParserModule(test)
+    _TestParserSrcFile(test)

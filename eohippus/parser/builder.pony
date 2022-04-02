@@ -2,22 +2,22 @@ use ast = "../ast"
 
 class Builder
   let _context: Context
+  let _token: _TokenBuilder
   let _trivia: _TriviaBuilder
-  let _lexer: _LexerBuilder
   let _literal: _LiteralBuilder
   let _expression: _ExpressionBuilder
-  let _module: _ModuleBuilder
+  let _src_file: _SrcFileBuilder
 
   new create(context: Context) =>
     _context = context
-    _trivia = _TriviaBuilder(_context)
-    _lexer = _LexerBuilder(_context)
-    _literal = _LiteralBuilder(_context, _lexer)
+    _token = _TokenBuilder(_context)
+    _trivia = _TriviaBuilder(_context, _token)
+    _literal = _LiteralBuilder(_context, _token)
     _expression = _ExpressionBuilder(_context)
 
-    _module = _ModuleBuilder(_trivia, _lexer, _literal)
+    _src_file = _SrcFileBuilder(_trivia, _token, _literal, _expression)
 
-  fun ref module(): NamedRule => _module.module()
+  fun ref src_file(): NamedRule => _src_file.src_file()
 
   fun ref expression_identifier(): NamedRule => _expression.identifier()
 

@@ -11,5 +11,5 @@ class val Identifier is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
   fun name(): String => _name
-  fun string(): String iso^ =>
+  fun get_string(indent: String): String =>
     "<ID: \"" + StringUtil.escape(name()) + "\">"

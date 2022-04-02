@@ -10,13 +10,13 @@ class val LiteralFloat is
   let _value: F64
   let _value_error: Bool
 
-  let _children: NodeSeq[Node]
+  let _children: NodeSeq
   let _int_part: (LiteralInteger | None)
   let _frac_part: (LiteralInteger | None)
   let _exp_sign: (Node | None)
   let _exponent: (LiteralInteger | None)
 
-  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
+  new val create(src_info': SrcInfo, children': NodeSeq) =>
     _src_info = src_info'
     _ast_type = None
 
@@ -74,7 +74,7 @@ class val LiteralFloat is
       false
     end
 
-  fun string(): String iso^ =>
+  fun get_string(indent: String): String =>
     let type_name =
       match _ast_type
       | let type': types.AstType =>
@@ -82,8 +82,8 @@ class val LiteralFloat is
       else
         "?LiteralFloat?"
       end
-    "<LIT: " + type_name + " = " + _value.string()
-      + (if _value_error then " ?ERORR?" else "" end) + ">"
+    indent + "<LIT: " + type_name + " = "
+      + (if _value_error then " ?ERORR?" else _value.string() end) + ">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralFloat =>
@@ -92,7 +92,7 @@ class val LiteralFloat is
   fun value(): F64 => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): NodeSeq[Node] => _children
+  fun children(): NodeSeq => _children
   fun int_part(): (LiteralInteger | None) => _int_part
   fun frac_part(): (LiteralInteger | None) => _frac_part
   fun exp_sign(): (Node | None) => _exp_sign

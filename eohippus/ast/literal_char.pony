@@ -8,9 +8,9 @@ class val LiteralChar is
   let _ast_type: (types.AstType | None)
   let _value: U32
   let _value_error: Bool
-  let _children: NodeSeq[Node]
+  let _children: NodeSeq
 
-  new val create(src_info': SrcInfo, children': NodeSeq[Node]) =>
+  new val create(src_info': SrcInfo, children': NodeSeq) =>
     _src_info = src_info'
     _ast_type = None
     (_value, _value_error) = _get_char_value(children')
@@ -43,7 +43,7 @@ class val LiteralChar is
       false
     end
 
-  fun string(): String iso^ =>
+  fun get_string(indent: String): String =>
     let type_name =
       match _ast_type
       | let type': types.AstType =>
@@ -51,8 +51,8 @@ class val LiteralChar is
       else
         "?LiteralChar?"
       end
-    "<LIT: " + type_name + " = " + _value.string()
-      + (if _value_error then " ?ERROR?" else "" end) + ">"
+    indent + "<LIT: " + type_name + " = "
+      + (if _value_error then "?ERROR?" else _value.string() end) + ">"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralChar =>
@@ -61,9 +61,9 @@ class val LiteralChar is
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): NodeSeq[Node] => _children
+  fun children(): NodeSeq => _children
 
-  fun tag _get_char_value(children': NodeSeq[Node]): (U32, Bool) =>
+  fun tag _get_char_value(children': NodeSeq): (U32, Bool) =>
     var v: U32 = 0
     for child' in children'.values() do
       match child'
@@ -114,9 +114,9 @@ class val LiteralCharEscape is (Node & NodeValued[U32])
     else
       false
     end
-  fun string(): String iso^ =>
-    "<ESC: " + _value.string()
-      + (if _value_error then " ?ERROR?" else "" end) + ">"
+  fun get_string(indent: String): String =>
+    indent + "<ESC: "
+      + (if _value_error then "?ERROR?" else _value.string() end) + ">"
 
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error
@@ -203,9 +203,9 @@ class val LiteralCharUnicode is (Node & NodeValued[U32])
     else
       false
     end
-  fun string(): String iso^ =>
-    "<ESC_UNI: " + _value.string()
-      + (if _value_error then " ?ERROR?" else "" end) + ">"
+  fun get_string(indent: String): String =>
+    indent + "<ESC_UNI: "
+      + (if _value_error then " ?ERROR?" else _value.string() end) + ">"
 
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error

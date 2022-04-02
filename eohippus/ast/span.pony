@@ -6,10 +6,10 @@ class val Span is Node
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
-  fun string(): String iso^ =>
-    recover
+  fun get_string(indent: String): String =>
+    recover val
       let s = String
-      s.append("<SPAN '")
+      s.append(indent + "<SPAN '")
       for ch in _src_info.start().values(_src_info.next()) do
         if ch == ' ' then
           s.push(' ')

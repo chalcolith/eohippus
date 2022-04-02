@@ -2,11 +2,10 @@ use ".."
 
 class val ErrorSection is (Node & NodeParent)
   let _src_info: SrcInfo
-  let _children: NodeSeq[Node]
+  let _children: NodeSeq
   let _message: String
 
-  new val create(src_info': SrcInfo, children': NodeSeq[Node],
-    message': String)
+  new val create(src_info': SrcInfo, children': NodeSeq, message': String)
   =>
     _src_info = src_info'
     _children = children'
@@ -14,7 +13,7 @@ class val ErrorSection is (Node & NodeParent)
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => true
-  fun string(): String iso^ =>
-    "<ERROR: " + StringUtil.escape(_message) + ">"
-  fun children(): NodeSeq[Node] => _children
+  fun get_string(indent: String): String =>
+    indent + "<ERROR: " + StringUtil.escape(_message) + ">"
+  fun children(): NodeSeq => _children
   fun message(): String => _message

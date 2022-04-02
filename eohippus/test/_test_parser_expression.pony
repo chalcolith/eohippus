@@ -1,4 +1,4 @@
-use "ponytest"
+use "pony_test"
 
 use ast = "../ast"
 use parser = "../parser"
