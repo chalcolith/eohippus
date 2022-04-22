@@ -330,7 +330,8 @@ class _LiteralBuilder
     match _string_regular
     | let r: NamedRule => r
     else
-      let sr' = _string_delim("Literal_String_Regular", _token.double_quote())
+      let sr' = _string_delim("Literal_String_Regular",
+        _token.glyph_double_quote())
       _string_regular = sr'
       sr'
     end
@@ -340,7 +341,7 @@ class _LiteralBuilder
     | let r: NamedRule => r
     else
       let st' = _string_delim("Literal_String_Triple",
-        _token.triple_double_quote())
+        _token.glyph_triple_double_quote())
       _string_triple = st'
       st'
     end

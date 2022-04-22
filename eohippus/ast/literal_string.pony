@@ -72,7 +72,7 @@ class val LiteralString is
         for child in children'.values() do
           match child
           | let tdq: ast.Token =>
-            if tdq.kind() is ast.TokenTripleDoubleQuote then
+            if tdq.str() =="\"\"\"" then
               triple = true
             end
           | let span: ast.Span =>

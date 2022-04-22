@@ -7,52 +7,51 @@ class _TokenBuilder
   var _double_quote: (NamedRule | None) = None
   var _triple_double_quote: (NamedRule | None) = None
   var _semicolon: (NamedRule | None) = None
+  var _equals: (NamedRule | None) = None
+
+  var _use: (NamedRule | None) = None
+  var _if: (NamedRule | None) = None
+  var _not: (NamedRule | None) = None
 
   new create(context: Context) =>
     _context = context
 
-  fun ref double_quote(): NamedRule =>
-    match _double_quote
+  fun ref _token_rule(get: {(): (NamedRule | None)}, set: {ref (NamedRule)},
+    name: String, str: String) : NamedRule
+  =>
+    match get()
     | let r: NamedRule => r
     else
-      let double_quote' =
+      let rule =
         recover val
-          NamedRule("Token_Double_Quote",
-            Single("\"",
-              {(r, _, b) => (ast.Token(_Build.info(r), ast.TokenDoubleQuote), b)}))
+          NamedRule(name,
+            Literal(str, {(r, _, b) => (ast.Token(_Build.info(r), str), b)}))
         end
-      _double_quote = double_quote'
-      double_quote'
+      set(rule)
+      rule
     end
 
-  fun ref triple_double_quote(): NamedRule =>
-    match _triple_double_quote
-    | let r: NamedRule => r
-    else
-      let triple_double_quote' =
-        recover val
-          NamedRule("Token_Triple_Double_Quote",
-            Literal("\"\"\"",
-              {(r, _, b) =>
-                (ast.Token(_Build.info(r), ast.TokenTripleDoubleQuote), b)
-              }))
-        end
-      _triple_double_quote = triple_double_quote'
-      triple_double_quote'
-    end
+  fun ref glyph_double_quote(): NamedRule =>
+    _token_rule({() => _double_quote}, {ref (r) => _double_quote = r},
+      "Token_Double_Quote", "\"")
 
-  fun ref semicolon(): NamedRule =>
-    match _semicolon
-    | let r: NamedRule => r
-    else
-      let semicolon' =
-        recover val
-          NamedRule("Token_Semicolon",
-            Literal(";",
-              {(r, _, b) =>
-                (ast.Token(_Build.info(r), ast.TokenSemicolon), b)
-              }))
-        end
-      _semicolon = semicolon'
-      semicolon'
-    end
+  fun ref glyph_triple_double_quote(): NamedRule =>
+    _token_rule({() => _triple_double_quote},
+      {ref (r) => _triple_double_quote = r},
+      "Token_Triple_Double_Quote", "\"\"\"")
+
+  fun ref glyph_semicolon(): NamedRule =>
+    _token_rule({() => _semicolon}, {ref (r) => _semicolon = r},
+      "Token_Semicolon", ";")
+
+  fun ref glyph_equals(): NamedRule =>
+    _token_rule({() => _equals}, {ref (r) => _equals = r}, "Token_Equals", "=")
+
+  fun ref kwd_use(): NamedRule =>
+    _token_rule({() => _use}, {ref (r) => _use = r}, "Token_Use", "use")
+
+  fun ref kwd_if(): NamedRule =>
+    _token_rule({() => _if}, {ref (r) => _if = r}, "Token_If", "if")
+
+  fun ref kwd_not(): NamedRule =>
+    _token_rule({() => _not}, {ref (r) => _not = r}, "Token_Not", "not")

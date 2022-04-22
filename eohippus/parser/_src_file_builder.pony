@@ -31,16 +31,17 @@ class _SrcFileBuilder
     let eof = _trivia.eof()
 
     recover val
-      Conj(
-        [
-          Neg(Disj([Disj(allowed); eof]))
-          Star(Conj([Neg(Disj([dol; eof])); Single()]), 1)
-          Look(Disj([dol; trivia; eof]))
-        ],
-        {(r, c, b) =>
-          (ast.ErrorSection(_Build.info(r), c, message), b)
-        }
-      )
+      NamedRule("Error_Section",
+        Conj(
+          [
+            Neg(Disj([Disj(allowed); eof]))
+            Star(Conj([Neg(Disj([dol; eof])); Single()]), 1)
+            Look(Disj([dol; trivia; eof]))
+          ],
+          {(r, c, b) =>
+            (ast.ErrorSection(_Build.info(r), c, message), b)
+          }
+        ))
     end
 
   fun ref src_file(): NamedRule =>
@@ -67,7 +68,7 @@ class _SrcFileBuilder
               Bind(ds, Star(
                 Disj([
                   docstring()
-                  errsec([docstring(); using(); typedef(); trivia],
+                  errsec([docstring(); using(); typedef()],
                     ErrorMsg.src_file_expected_docstring_using_or_typedef())
                 ])
               ))
@@ -76,7 +77,7 @@ class _SrcFileBuilder
               Bind(us, Star(
                 Disj([
                   using()
-                  errsec([using(); typedef(); trivia],
+                  errsec([using(); typedef()],
                     ErrorMsg.src_file_expected_using_or_typedef())
                 ])
               ))
@@ -85,7 +86,7 @@ class _SrcFileBuilder
               Bind(td, Star(
                 Disj([
                   typedef()
-                  errsec([typedef(); trivia],
+                  errsec([typedef()],
                     ErrorMsg.src_file_expected_typedef())
                 ])
               ))
@@ -116,6 +117,22 @@ class _SrcFileBuilder
                   end
                 end
 
+              let us': ast.NodeSeq =
+                try
+                  b(us)?._2
+                else
+                  return (ast.ErrorSection(_Build.info(r), c,
+                    ErrorMsg.internal_ast_node_not_bound("Usings")), b)
+                end
+
+              let td': ast.NodeSeq =
+                try
+                  b(td)?._2
+                else
+                  return (ast.ErrorSection(_Build.info(r), c,
+                    ErrorMsg.internal_ast_node_not_bound("TypeDefs")), b)
+                end
+
               let t2': ast.Trivia =
                 try
                   b(t2)?._2(0)? as ast.Trivia
@@ -125,8 +142,7 @@ class _SrcFileBuilder
                 end
 
               let m = ast.SrcFile(r.data.locator(), _Build.info(r), c, t1', t2',
-                docstring', recover val Array[ast.Node] end,
-                recover val Array[ast.Node] end)
+                docstring', us', td')
               (m, b)
             })
         end
@@ -211,6 +227,10 @@ class _SrcFileBuilder
       let trivia1 = _trivia.trivia(1)
       let identifier = _expression.identifier()
       let string = _literal.string()
+      let glyph_equals = _token.glyph_equals()
+      let kwd_use = _token.kwd_use()
+      let kwd_if = _token.kwd_if()
+      let kwd_not = _token.kwd_not()
 
       let t1 = Variable
       let id = Variable
@@ -224,22 +244,24 @@ class _SrcFileBuilder
           NamedRule("UsingPony",
             Conj([
               Bind(t1, trivia0)
+              kwd_use
+              trivia1
               Star(
                 Conj([
                   Bind(id, identifier)
                   trivia1
-                  Literal("=")
+                  glyph_equals
                   trivia1
                 ]) where min = 0, max = 1)
               Bind(pt, string)
               Star(
                 Conj([
                   trivia1
-                  Literal("if")
+                  kwd_if
                   Star(
                     Conj([
                       trivia1
-                      Bind(fl, Literal("not"))
+                      Bind(fl, kwd_not)
                     ]) where min = 0, max = 1)
                   trivia1
                   Bind(df, identifier)

@@ -45,7 +45,7 @@ class _TriviaBuilder
     | let r: NamedRule => r
     else
       let trivia' = trivia()
-      let semicolon' = _token.semicolon()
+      let semicolon' = _token.glyph_semicolon()
       let eol' = eol()
       let post_trivia' =
         recover val
