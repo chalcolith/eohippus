@@ -54,3 +54,5 @@ class val UsingPony is (Node & NodeParent & NodeTrivia)
 
   fun identifier(): (Identifier | None) => _identifier
   fun path(): LiteralString => _path
+  fun def_flag(): Bool => _def_flag
+  fun def_id(): (Identifier | None) => _def_id

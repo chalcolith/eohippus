@@ -53,7 +53,7 @@ class iso _TestParserSrcFileUsing is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file()
 
-    let code = "use \"foo\"\nuse baz = \"bar\""
+    let code = "use \"foo\" if windows\nuse baz = \"bar\" if not osx"
     let len = code.size()
 
     let src1 = setup.src(code)
@@ -64,13 +64,21 @@ class iso _TestParserSrcFileUsing is UnitTest
       _Assert.test_match(h, rule, src1, 0, setup.data, true, len, None, None,
         {(node: ast.Node) =>
           try
-            let using1 = (node as ast.SrcFile).usings()(0)? as ast.UsingPony
-            let using2 = (node as ast.SrcFile).usings()(1)? as ast.UsingPony
-            let name = (using2.identifier() as ast.Identifier).name()
+            let src_file_node = node as ast.SrcFile
 
-            (using1.path().value() == "foo") and
-            (using2.path().value() == "bar") and
-            (name == "baz")
+            let using1 = src_file_node.usings()(0)? as ast.UsingPony
+            let def1 = (using1.def_id() as ast.Identifier).name()
+
+            let using2 = src_file_node.usings()(1)? as ast.UsingPony
+            let name2 = (using2.identifier() as ast.Identifier).name()
+            let def2 = (using2.def_id() as ast.Identifier).name()
+
+            h.assert_eq[String]("foo", using1.path().value()) and
+            h.assert_eq[String]("windows", def1) and
+            h.assert_eq[Bool](true, using1.def_flag())
+            h.assert_eq[String]("bar", using2.path().value()) and
+            h.assert_eq[String]("baz", name2) and
+            h.assert_eq[Bool](false, using2.def_flag())
           else
             false
           end

@@ -13,6 +13,8 @@ class _TokenBuilder
   var _if: (NamedRule | None) = None
   var _not: (NamedRule | None) = None
 
+  var _primitive: (NamedRule | None) = None
+
   new create(context: Context) =>
     _context = context
 
@@ -55,3 +57,7 @@ class _TokenBuilder
 
   fun ref kwd_not(): NamedRule =>
     _token_rule({() => _not}, {ref (r) => _not = r}, "Token_Not", "not")
+
+  fun ref kwd_primitive(): NamedRule =>
+    _token_rule({() => _primitive}, {ref (r) => _primitive = r},
+      "Token_Primitive", "primitive")

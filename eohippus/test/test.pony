@@ -8,4 +8,5 @@ actor Main is TestList
     _TestParserTrivia(test)
     _TestParserLiteral(test)
     _TestParserExpression(test)
+    _TestParserTypedef(test)
     _TestParserSrcFile(test)

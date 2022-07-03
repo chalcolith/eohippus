@@ -6,6 +6,8 @@ class Builder
   let _trivia: _TriviaBuilder
   let _literal: _LiteralBuilder
   let _expression: _ExpressionBuilder
+  let _member: _MemberBuilder
+  let _typedef: _TypedefBuilder
   let _src_file: _SrcFileBuilder
 
   new create(context: Context) =>
@@ -14,11 +16,14 @@ class Builder
     _trivia = _TriviaBuilder(_context, _token)
     _literal = _LiteralBuilder(_context, _token)
     _expression = _ExpressionBuilder(_context)
-
-    _src_file = _SrcFileBuilder(_trivia, _token, _literal, _expression)
+    _member = _MemberBuilder(_trivia, _literal)
+    _typedef = _TypedefBuilder(_trivia, _token, _expression, _member)
+    _src_file = _SrcFileBuilder(_trivia, _token, _literal, _expression, _member,
+      _typedef)
 
   fun ref src_file(): NamedRule => _src_file.src_file()
 
+  fun ref typedef_primitive(): NamedRule => _typedef.typedef_primitive()
   fun ref expression_identifier(): NamedRule => _expression.identifier()
 
   fun ref literal(): NamedRule => _literal.literal()

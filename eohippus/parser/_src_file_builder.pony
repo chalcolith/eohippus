@@ -7,42 +7,28 @@ class _SrcFileBuilder
   let _token: _TokenBuilder
   let _literal: _LiteralBuilder
   let _expression: _ExpressionBuilder
+  var _member: _MemberBuilder
+  var _typedef: _TypedefBuilder
 
   var _src_file: (NamedRule | None) = None
-  var _docstring: (NamedRule | None) = None
 
   var _using: (NamedRule | None) = None
   var _using_pony: (NamedRule | None) = None
   var _using_ffi: (NamedRule | None) = None
 
-  var _typedef: (NamedRule | None) = None
-
   new create(trivia: _TriviaBuilder, token: _TokenBuilder,
-    literal: _LiteralBuilder, expression: _ExpressionBuilder)
+    literal: _LiteralBuilder, expression: _ExpressionBuilder,
+    member: _MemberBuilder, typedef: _TypedefBuilder)
   =>
     _trivia = trivia
     _token = token
     _literal = literal
     _expression = expression
+    _member = member
+    _typedef = typedef
 
   fun ref errsec(allowed: ReadSeq[NamedRule] val, message: String): RuleNode =>
-    let trivia = _trivia.trivia()
-    let dol = _trivia.dol()
-    let eof = _trivia.eof()
-
-    recover val
-      NamedRule("Error_Section",
-        Conj(
-          [
-            Neg(Disj([Disj(allowed); eof]))
-            Star(Conj([Neg(Disj([dol; eof])); Single()]), 1)
-            Look(Disj([dol; trivia; eof]))
-          ],
-          {(r, c, b) =>
-            (ast.ErrorSection(_Build.info(r), c, message), b)
-          }
-        ))
-    end
+    _member.errsec(allowed, message)
 
   fun ref src_file(): NamedRule =>
     match _src_file
@@ -55,6 +41,8 @@ class _SrcFileBuilder
       let t2 = Variable
 
       let trivia = _trivia.trivia()
+      let docstring = _member.docstring()
+      let typedef = _typedef.typedef()
       let eol = _trivia.eol()
       let eof = _trivia.eof()
 
@@ -68,8 +56,8 @@ class _SrcFileBuilder
               // zero or more docstrings
               Bind(ds, Star(
                 Disj([
-                  docstring()
-                  errsec([docstring(); using(); typedef()],
+                  docstring
+                  errsec([docstring; using(); typedef],
                     ErrorMsg.src_file_expected_docstring_using_or_typedef())
                 ])
               ))
@@ -78,7 +66,7 @@ class _SrcFileBuilder
               Bind(us, Star(
                 Disj([
                   using()
-                  errsec([using(); typedef()],
+                  errsec([using(); typedef],
                     ErrorMsg.src_file_expected_using_or_typedef())
                 ])
               ))
@@ -86,8 +74,9 @@ class _SrcFileBuilder
               // zero or more type definitions
               Bind(td, Star(
                 Disj([
-                  typedef()
-                  errsec([typedef()], ErrorMsg.src_file_expected_typedef())
+                  typedef
+                  errsec([typedef],
+                    ErrorMsg.src_file_expected_typedef())
                 ])
               ))
 
@@ -114,19 +103,7 @@ class _SrcFileBuilder
           ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
       end
 
-    let docstring': ast.NodeSeq[ast.Docstring] =
-      recover val
-        try
-          Array[ast.Docstring].>concat(
-            Iter[ast.Node](b(ds)?._2.values())
-              .filter_map[ast.Docstring](
-                {(node: ast.Node): (ast.Docstring | None) =>
-                  try node as ast.Docstring end
-                }))
-        else
-          Array[ast.Docstring]
-        end
-      end
+    let docstring': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
 
     let us': ast.NodeSeq[ast.Node] =
       try
@@ -141,7 +118,7 @@ class _SrcFileBuilder
         b(td)?._2
       else
         return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("TypeDefs")), b)
+          ErrorMsg.internal_ast_node_not_bound("Typedefs")), b)
       end
 
     let t2': ast.Trivia =
@@ -155,63 +132,6 @@ class _SrcFileBuilder
     let m = ast.SrcFile(r.data.locator(), _Build.info(r), c, t1', t2',
       docstring', us', td')
     (m, b)
-
-  fun ref docstring(): NamedRule =>
-    match _docstring
-    | let r: NamedRule => r
-    else
-      let trivia = _trivia.trivia()
-      let post_trivia = _trivia.post_trivia()
-      let literal_string = _literal.string()
-
-      let t1 = Variable
-      let s = Variable
-      let t2 = Variable
-      let docstring' =
-        recover val
-          NamedRule("DocString",
-            Conj([
-              Bind(t1, trivia)
-              Bind(s, literal_string)
-              Bind(t2, post_trivia)
-            ]),
-            this~_docstring_action(t1, s, t2))
-        end
-      _docstring = docstring'
-      docstring'
-    end
-
-  fun tag _docstring_action(t1: Variable, s: Variable, t2: Variable,
-    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
-    : ((ast.Node | None), Bindings)
-  =>
-    let t1': ast.Trivia =
-      try
-        b(t1)?._2(0)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/Trivia")),
-            b)
-      end
-
-    let s': ast.LiteralString =
-      try
-        b(s)?._2(0)? as ast.LiteralString
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/LiteralString")),
-              b)
-      end
-
-    let t2': ast.Trivia =
-      try
-        b(t2)?._2(0)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/PostTrivia")), b)
-      end
-
-    (ast.Docstring(_Build.info(r), c, t1', t2', s'), b)
 
   fun ref using(): NamedRule =>
     match _using
@@ -326,16 +246,3 @@ class _SrcFileBuilder
       end
 
     (ast.UsingPony(_Build.info(r), c, t1', t2', ident, path, flag, def), b)
-
-  fun ref typedef(): NamedRule =>
-    match _typedef
-    | let r: NamedRule => r
-    else
-      let typedef' =
-        recover val
-          NamedRule("Typedef",
-            Literal("foobarbaz"))
-        end
-      _typedef = typedef'
-      typedef'
-    end

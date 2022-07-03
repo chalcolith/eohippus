@@ -1,10 +1,13 @@
+use "collections"
+
 use ast = "../ast"
 
 class _TriviaBuilder
   let _context: Context
   let _token: _TokenBuilder
 
-  var _trivia: (NamedRule | None) = None
+  var _trivia: MapIs[USize, NamedRule] = MapIs[USize, NamedRule]
+
   var _post_trivia: (NamedRule | None) = None
   var _comment: (NamedRule | None) = None
   var _comment_line: (NamedRule | None) = None
@@ -19,25 +22,22 @@ class _TriviaBuilder
     _token = token
 
   fun ref trivia(min: USize = 0): NamedRule =>
-    match _trivia
-    | let r: NamedRule if min == 0 => r
-    else
-      let trivia' =
-        recover val
-          NamedRule("Trivia",
-            Star(
-              Disj([
-                comment()
-                ws()
-                eol()
-              ]), min),
-            {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
-        end
-      if min == 0 then
-        _trivia = trivia'
+    _trivia.get_or_else(min, _build_trivia(min))
+
+  fun ref _build_trivia(min: USize): NamedRule =>
+    let trivia' =
+      recover val
+        NamedRule("Trivia",
+          Star(
+            Disj([
+              comment()
+              ws()
+              eol()
+            ]), min),
+          {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
       end
-      trivia'
-    end
+    _trivia(min) = trivia'
+    trivia'
 
   fun ref post_trivia(): NamedRule =>
     """Convenience for getting post-trivia including semi or EOL."""
