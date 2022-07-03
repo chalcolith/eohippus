@@ -53,7 +53,7 @@ class iso _TestParserSrcFileUsing is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file()
 
-    let code = "use \"foo\""
+    let code = "use \"foo\"\nuse baz = \"bar\""
     let len = code.size()
 
     let src1 = setup.src(code)
@@ -64,8 +64,13 @@ class iso _TestParserSrcFileUsing is UnitTest
       _Assert.test_match(h, rule, src1, 0, setup.data, true, len, None, None,
         {(node: ast.Node) =>
           try
-            let using = (node as ast.SrcFile).usings()(0)? as ast.UsingPony
-            using.path().value() == "foo"
+            let using1 = (node as ast.SrcFile).usings()(0)? as ast.UsingPony
+            let using2 = (node as ast.SrcFile).usings()(1)? as ast.UsingPony
+            let name = (using2.identifier() as ast.Identifier).name()
+
+            (using1.path().value() == "foo") and
+            (using2.path().value() == "bar") and
+            (name == "baz")
           else
             false
           end

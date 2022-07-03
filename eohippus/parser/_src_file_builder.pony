@@ -62,6 +62,7 @@ class _SrcFileBuilder
         recover val
           NamedRule("SrcFile",
             Conj([
+              // pre-trivia
               Bind(t1, trivia)
 
               // zero or more docstrings
@@ -86,69 +87,74 @@ class _SrcFileBuilder
               Bind(td, Star(
                 Disj([
                   typedef()
-                  errsec([typedef()],
-                    ErrorMsg.src_file_expected_typedef())
+                  errsec([typedef()], ErrorMsg.src_file_expected_typedef())
                 ])
               ))
 
+              // post-trivia
               Bind(t2, trivia)
               eof
             ]),
-            {(r, c, b) =>
-              let t1': ast.Trivia =
-                try
-                  b(t1)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
-                end
-
-              let docstring': ast.NodeSeq[ast.Docstring] =
-                recover val
-                  try
-                    Array[ast.Docstring].>concat(
-                      Iter[ast.Node](b(ds)?._2.values())
-                        .filter_map[ast.Docstring](
-                          {(node: ast.Node): (ast.Docstring | None) =>
-                            try node as ast.Docstring end
-                          }))
-                  else
-                    Array[ast.Docstring]
-                  end
-                end
-
-              let us': ast.NodeSeq =
-                try
-                  b(us)?._2
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("Usings")), b)
-                end
-
-              let td': ast.NodeSeq =
-                try
-                  b(td)?._2
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("TypeDefs")), b)
-                end
-
-              let t2': ast.Trivia =
-                try
-                  b(t2)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("PostTrivia")), b)
-                end
-
-              let m = ast.SrcFile(r.data.locator(), _Build.info(r), c, t1', t2',
-                docstring', us', td')
-              (m, b)
-            })
+            this~_src_file_action(t1, ds, us, td, t2))
         end
       _src_file = src_file'
       src_file'
     end
+
+  fun tag _src_file_action(t1: Variable, ds: Variable, us: Variable,
+    td: Variable, t2: Variable,
+    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let t1': ast.Trivia =
+      try
+        b(t1)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
+      end
+
+    let docstring': ast.NodeSeq[ast.Docstring] =
+      recover val
+        try
+          Array[ast.Docstring].>concat(
+            Iter[ast.Node](b(ds)?._2.values())
+              .filter_map[ast.Docstring](
+                {(node: ast.Node): (ast.Docstring | None) =>
+                  try node as ast.Docstring end
+                }))
+        else
+          Array[ast.Docstring]
+        end
+      end
+
+    let us': ast.NodeSeq[ast.Node] =
+      try
+        b(us)?._2
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("Usings")), b)
+      end
+
+    let td': ast.NodeSeq[ast.Node] =
+      try
+        b(td)?._2
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("TypeDefs")), b)
+      end
+
+    let t2': ast.Trivia =
+      try
+        b(t2)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("PostTrivia")), b)
+      end
+
+    let m = ast.SrcFile(r.data.locator(), _Build.info(r), c, t1', t2',
+      docstring', us', td')
+    (m, b)
 
   fun ref docstring(): NamedRule =>
     match _docstring
@@ -169,40 +175,43 @@ class _SrcFileBuilder
               Bind(s, literal_string)
               Bind(t2, post_trivia)
             ]),
-            {(r, c, b) =>
-              let t1': ast.Trivia =
-                try
-                  b(t1)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("Docstring/Trivia")),
-                      b)
-                end
-
-              let s': ast.LiteralString =
-                try
-                  b(s)?._2(0)? as ast.LiteralString
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg
-                      .internal_ast_node_not_bound("Docstring/LiteralString")),
-                        b)
-                end
-
-              let t2': ast.Trivia =
-                try
-                  b(t2)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c, ErrorMsg
-                    .internal_ast_node_not_bound("Docstring/PostTrivia")), b)
-                end
-
-              (ast.Docstring(_Build.info(r), c, t1', t2', s'), b)
-            })
+            this~_docstring_action(t1, s, t2))
         end
       _docstring = docstring'
       docstring'
     end
+
+  fun tag _docstring_action(t1: Variable, s: Variable, t2: Variable,
+    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let t1': ast.Trivia =
+      try
+        b(t1)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("Docstring/Trivia")),
+            b)
+      end
+
+    let s': ast.LiteralString =
+      try
+        b(s)?._2(0)? as ast.LiteralString
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("Docstring/LiteralString")),
+              b)
+      end
+
+    let t2': ast.Trivia =
+      try
+        b(t2)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("Docstring/PostTrivia")), b)
+      end
+
+    (ast.Docstring(_Build.info(r), c, t1', t2', s'), b)
 
   fun ref using(): NamedRule =>
     match _using
@@ -268,51 +277,55 @@ class _SrcFileBuilder
                 ]) where min = 0, max = 1)
               Bind(t2, trivia0)
             ]),
-            {(r, c, b) =>
-              let t1': ast.Trivia =
-                try
-                  b(t1)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c,
-                    ErrorMsg.internal_ast_node_not_bound("UsingPony/Trivia")),
-                      b)
-                end
-
-              let ident = try b(id)?._2(0)? as ast.Identifier end
-
-              let path =
-                try
-                  b(pt)?._2(0)? as ast.LiteralString
-                else
-                  return (ast.ErrorSection(_Build.info(r), c, ErrorMsg
-                    .internal_ast_node_not_bound("UsingPony/LiteralString")), b)
-                end
-
-              let flag =
-                match try b(fl)?._1 end
-                | let _: Success =>
-                  false
-                else
-                  true
-                end
-
-              let def = try b(df)?._2(0)? as ast.Identifier end
-
-              let t2': ast.Trivia =
-                try
-                  b(t2)?._2(0)? as ast.Trivia
-                else
-                  return (ast.ErrorSection(_Build.info(r), c, ErrorMsg
-                    .internal_ast_node_not_bound("UsingPony/PostTrivia")), b)
-                end
-
-              (ast.UsingPony(_Build.info(r), c, t1', t2', ident, path, flag,
-                def), b)
-            })
+            this~_using_pony_action(t1, id, pt, fl, df, t2))
         end
       _using_pony = using_pony'
       using_pony'
     end
+
+  fun tag _using_pony_action(t1: Variable, id: Variable, pt: Variable,
+    fl: Variable, df: Variable, t2: Variable,
+    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let t1': ast.Trivia =
+      try
+        b(t1)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("UsingPony/Trivia")),
+            b)
+      end
+
+    let ident = try b(id)?._2(0)? as ast.Identifier end
+
+    let path =
+      try
+        b(pt)?._2(0)? as ast.LiteralString
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("UsingPony/LiteralString")), b)
+      end
+
+    let flag =
+      match try b(fl)?._1 end
+      | let _: Success =>
+        false
+      else
+        true
+      end
+
+    let def = try b(df)?._2(0)? as ast.Identifier end
+
+    let t2': ast.Trivia =
+      try
+        b(t2)?._2(0)? as ast.Trivia
+      else
+        return (ast.ErrorSection(_Build.info(r), c,
+          ErrorMsg.internal_ast_node_not_bound("UsingPony/PostTrivia")), b)
+      end
+
+    (ast.UsingPony(_Build.info(r), c, t1', t2', ident, path, flag, def), b)
 
   fun ref typedef(): NamedRule =>
     match _typedef
