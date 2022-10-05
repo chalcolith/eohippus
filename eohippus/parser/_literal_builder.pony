@@ -179,53 +179,63 @@ class _LiteralBuilder
                   Bind(exponent, integer())
                 ]) where min = 0, max = 1)
             ]),
-            {(r, _, b) =>
-              try
-                let children' =
-                  recover val
-                    let children: Array[ast.Node] = Array[ast.Node](4)
-
-                    let ip = b(int_part)?._2(0)? as ast.LiteralInteger
-                    var next_info = ast.SrcInfo(r.data.locator(),
-                      ip.src_info().next(), ip.src_info().next())
-
-                    // we need to have 4 children, even if empty spans
-                    children.push(ip)
-                    try
-                      let fp = b(frac_part)?._2(0)? as ast.LiteralInteger
-                      next_info = ast.SrcInfo(r.data.locator(),
-                        fp.src_info().next(), fp.src_info().next())
-                      children.push(fp)
-                    else
-                      children.push(ast.Span(next_info))
-                    end
-
-                    try
-                      let es = b(exp_sign)?._2(0)?
-                      next_info = ast.SrcInfo(r.data.locator(),
-                        es.src_info().next(), es.src_info().next())
-                      children.push(es)
-                    else
-                      children.push(ast.Span(next_info))
-                    end
-
-                    try
-                      let ex = b(exponent)?._2(0)? as ast.LiteralInteger
-                      children.push(ex)
-                    else
-                      children.push(ast.Span(next_info))
-                    end
-
-                    children
-                  end
-                (ast.LiteralFloat(_Build.info(r), children'), b)
-              else
-                (ast.LiteralFloat.from(_Build.info(r), 0.0, true), b)
-              end
-            })
+            this~_float_action(int_part, frac_part, exp_sign, exponent))
         end
       _float = lf'
       lf'
+    end
+
+  fun tag _float_action(
+    int_part: Variable,
+    frac_part: Variable,
+    exp_sign: Variable,
+    exponent: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    try
+      let children' =
+        recover val
+          let children: Array[ast.Node] = Array[ast.Node](4)
+
+          let ip = _Build.value(b, int_part)? as ast.LiteralInteger
+          var next_info = ast.SrcInfo(r.data.locator(),
+            ip.src_info().next(), ip.src_info().next())
+
+          // we need to have 4 children, even if empty spans
+          children.push(ip)
+          try
+            let fp = _Build.value(b, frac_part)? as ast.LiteralInteger
+            next_info = ast.SrcInfo(r.data.locator(),
+              fp.src_info().next(), fp.src_info().next())
+            children.push(fp)
+          else
+            children.push(ast.Span(next_info))
+          end
+
+          try
+            let es = _Build.value(b, exp_sign)?
+            next_info = ast.SrcInfo(r.data.locator(),
+              es.src_info().next(), es.src_info().next())
+            children.push(es)
+          else
+            children.push(ast.Span(next_info))
+          end
+
+          try
+            let ex = _Build.value(b, exponent)? as ast.LiteralInteger
+            children.push(ex)
+          else
+            children.push(ast.Span(next_info))
+          end
+
+          children
+        end
+      (ast.LiteralFloat(_Build.info(r), children'), b)
+    else
+      (ast.LiteralFloat.from(_Build.info(r), 0.0, true), b)
     end
 
   fun ref char(): NamedRule =>

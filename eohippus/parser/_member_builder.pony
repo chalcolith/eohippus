@@ -61,7 +61,7 @@ class _MemberBuilder
   =>
     let t1': ast.Trivia =
       try
-        b(t1)?._2(0)? as ast.Trivia
+        _Build.value(b, t1)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Docstring/Trivia")),
@@ -70,7 +70,7 @@ class _MemberBuilder
 
     let s': ast.LiteralString =
       try
-        b(s)?._2(0)? as ast.LiteralString
+        _Build.value(b, s)? as ast.LiteralString
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Docstring/LiteralString")),
@@ -79,7 +79,7 @@ class _MemberBuilder
 
     let t2': ast.Trivia =
       try
-        b(t2)?._2(0)? as ast.Trivia
+        _Build.value(b, t2)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Docstring/PostTrivia")), b)

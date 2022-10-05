@@ -97,7 +97,7 @@ class _SrcFileBuilder
   =>
     let t1': ast.Trivia =
       try
-        b(t1)?._2(0)? as ast.Trivia
+        _Build.value(b, t1)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
@@ -107,7 +107,7 @@ class _SrcFileBuilder
 
     let us': ast.NodeSeq[ast.Node] =
       try
-        b(us)?._2
+        _Build.values(b, us)?
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Usings")), b)
@@ -115,7 +115,7 @@ class _SrcFileBuilder
 
     let td': ast.NodeSeq[ast.Node] =
       try
-        b(td)?._2
+        _Build.values(b, td)?
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Typedefs")), b)
@@ -123,7 +123,7 @@ class _SrcFileBuilder
 
     let t2': ast.Trivia =
       try
-        b(t2)?._2(0)? as ast.Trivia
+        _Build.value(b, t2)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("PostTrivia")), b)
@@ -210,18 +210,18 @@ class _SrcFileBuilder
   =>
     let t1': ast.Trivia =
       try
-        b(t1)?._2(0)? as ast.Trivia
+        _Build.value(b, t1)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("UsingPony/Trivia")),
             b)
       end
 
-    let ident = try b(id)?._2(0)? as ast.Identifier end
+    let ident = try _Build.value(b, id)? as ast.Identifier end
 
     let path =
       try
-        b(pt)?._2(0)? as ast.LiteralString
+        _Build.value(b, pt)? as ast.LiteralString
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("UsingPony/LiteralString")), b)
@@ -235,11 +235,11 @@ class _SrcFileBuilder
         true
       end
 
-    let def = try b(df)?._2(0)? as ast.Identifier end
+    let def = try _Build.value(b, df)? as ast.Identifier end
 
     let t2': ast.Trivia =
       try
-        b(t2)?._2(0)? as ast.Trivia
+        _Build.value(b, t2)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("UsingPony/PostTrivia")), b)

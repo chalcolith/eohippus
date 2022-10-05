@@ -77,7 +77,7 @@ class _TypedefBuilder
   =>
     let t1': ast.Trivia =
       try
-        b(t1)?._2(0)? as ast.Trivia
+        _Build.value(b, t1)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
@@ -85,7 +85,7 @@ class _TypedefBuilder
 
     let id': ast.Identifier =
       try
-        b(id)?._2(0)? as ast.Identifier
+        _Build.value(b, id)? as ast.Identifier
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Identifier")), b)
@@ -95,7 +95,7 @@ class _TypedefBuilder
 
     let t2': ast.Trivia =
       try
-        b(t2)?._2(0)? as ast.Trivia
+        _Build.value(b, t2)? as ast.Trivia
       else
         return (ast.ErrorSection(_Build.info(r), c,
           ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
