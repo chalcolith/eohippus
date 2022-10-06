@@ -22,7 +22,7 @@ class iso _TestParserLiteralBool is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_bool()
+    let rule = setup.builder.literal.bool()
 
     let src1 = setup.src("true")
     let loc1 = parser.Loc(src1)
@@ -51,7 +51,7 @@ class iso _TestParserLiteralIntegerDec is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_integer()
+    let rule = setup.builder.literal.integer()
 
     let src1 = setup.src("1_234")
     let loc1 = parser.Loc(src1)
@@ -68,7 +68,7 @@ class iso _TestParserLiteralIntegerHex is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_integer()
+    let rule = setup.builder.literal.integer()
 
     let src1 = setup.src("0x12_3abc")
     let loc1 = parser.Loc(src1)
@@ -85,7 +85,7 @@ class iso _TestParserLiteralIntegerBin is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_integer()
+    let rule = setup.builder.literal.integer()
 
     let src1 = setup.src("0b100101110101")
     let loc1 = parser.Loc(src1)
@@ -102,7 +102,7 @@ class iso _TestParserLiteralFloat is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_float()
+    let rule = setup.builder.literal.float()
 
     let src1 = setup.src("123.456e-42")
     let loc1 = parser.Loc(src1)
@@ -137,7 +137,7 @@ class iso _TestParserLiteralChar is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_char()
+    let rule = setup.builder.literal.char()
 
     let src1 = setup.src("'A'")
     let loc1 = parser.Loc(src1)
@@ -180,7 +180,7 @@ class iso _TestParserLiteralStringRegular is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_string()
+    let rule = setup.builder.literal.string()
 
     let str1 = "one, two, \" three \0x2f"
     let src1 = setup.src("\"one, two, \\\" three \\0x2f\"")
@@ -199,7 +199,7 @@ class iso _TestParserLiteralStringTriple is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal_string()
+    let rule = setup.builder.literal.string()
 
     let str1 = "one\ntwo\nthree"
     let src1 = setup.src("\"\"\"  \n   one\n   two\n   three\n\"\"\"")

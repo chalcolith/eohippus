@@ -1,9 +1,9 @@
 use ast = "../ast"
 use ".."
 
-class _LiteralBuilder
+class LiteralBuilder
   let _context: Context
-  let _token: _TokenBuilder
+  let _token: TokenBuilder
 
   var _literal: (NamedRule | None) = None
   var _bool: (NamedRule | None) = None
@@ -19,7 +19,7 @@ class _LiteralBuilder
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context, token: _TokenBuilder) =>
+  new create(context: Context, token: TokenBuilder) =>
     _context = context
     _token = token
 

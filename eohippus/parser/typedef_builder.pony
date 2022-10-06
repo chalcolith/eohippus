@@ -1,17 +1,17 @@
 use ast = "../ast"
 use ".."
 
-class _TypedefBuilder
-  let _trivia: _TriviaBuilder
-  let _token: _TokenBuilder
-  let _expression: _ExpressionBuilder
-  let _member: _MemberBuilder
+class TypedefBuilder
+  let _trivia: TriviaBuilder
+  let _token: TokenBuilder
+  let _expression: ExpressionBuilder
+  let _member: MemberBuilder
 
   var _typedef: (NamedRule | None) = None
   var _td_primitive: (NamedRule | None) = None
 
-  new create(trivia: _TriviaBuilder, token: _TokenBuilder,
-    expression: _ExpressionBuilder, member: _MemberBuilder)
+  new create(trivia: TriviaBuilder, token: TokenBuilder,
+    expression: ExpressionBuilder, member: MemberBuilder)
   =>
     _trivia = trivia
     _token = token
@@ -26,7 +26,7 @@ class _TypedefBuilder
         recover val
           NamedRule("Typedef",
             Disj([
-              typedef_primitive()
+              td_primitive()
               // typedef_interface()
               // typedef_trait()
               // typedef_class()
@@ -39,7 +39,7 @@ class _TypedefBuilder
       typedef'
     end
 
-  fun ref typedef_primitive() : NamedRule =>
+  fun ref td_primitive() : NamedRule =>
     match _td_primitive
     | let r: NamedRule => r
     else

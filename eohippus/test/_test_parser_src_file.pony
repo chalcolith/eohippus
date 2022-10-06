@@ -17,7 +17,7 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file()
+    let rule = setup.builder.src_file.src_file()
 
     let code = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
     let len = code.size()
@@ -51,7 +51,7 @@ class iso _TestParserSrcFileUsing is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file()
+    let rule = setup.builder.src_file.src_file()
 
     let code = "use \"foo\" if windows\nuse baz = \"bar\" if not osx"
     let len = code.size()
@@ -91,7 +91,7 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file()
+    let rule = setup.builder.src_file.src_file()
 
     let code =
       """

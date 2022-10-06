@@ -2,13 +2,13 @@ use "itertools"
 use ast = "../ast"
 use ".."
 
-class _SrcFileBuilder
-  let _trivia: _TriviaBuilder
-  let _token: _TokenBuilder
-  let _literal: _LiteralBuilder
-  let _expression: _ExpressionBuilder
-  var _member: _MemberBuilder
-  var _typedef: _TypedefBuilder
+class SrcFileBuilder
+  let _trivia: TriviaBuilder
+  let _token: TokenBuilder
+  let _literal: LiteralBuilder
+  let _expression: ExpressionBuilder
+  var _member: MemberBuilder
+  var _typedef: TypedefBuilder
 
   var _src_file: (NamedRule | None) = None
 
@@ -16,9 +16,9 @@ class _SrcFileBuilder
   var _using_pony: (NamedRule | None) = None
   var _using_ffi: (NamedRule | None) = None
 
-  new create(trivia: _TriviaBuilder, token: _TokenBuilder,
-    literal: _LiteralBuilder, expression: _ExpressionBuilder,
-    member: _MemberBuilder, typedef: _TypedefBuilder)
+  new create(trivia: TriviaBuilder, token: TokenBuilder,
+    literal: LiteralBuilder, expression: ExpressionBuilder,
+    member: MemberBuilder, typedef: TypedefBuilder)
   =>
     _trivia = trivia
     _token = token

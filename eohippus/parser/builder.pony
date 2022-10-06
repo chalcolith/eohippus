@@ -2,39 +2,23 @@ use ast = "../ast"
 
 class Builder
   let _context: Context
-  let _token: _TokenBuilder
-  let _trivia: _TriviaBuilder
-  let _literal: _LiteralBuilder
-  let _expression: _ExpressionBuilder
-  let _member: _MemberBuilder
-  let _typedef: _TypedefBuilder
-  let _src_file: _SrcFileBuilder
+
+  let token: TokenBuilder
+  let trivia: TriviaBuilder
+  let literal: LiteralBuilder
+  let expression: ExpressionBuilder
+  let member: MemberBuilder
+  let typedef: TypedefBuilder
+  let src_file: SrcFileBuilder
 
   new create(context: Context) =>
     _context = context
-    _token = _TokenBuilder(_context)
-    _trivia = _TriviaBuilder(_context, _token)
-    _literal = _LiteralBuilder(_context, _token)
-    _expression = _ExpressionBuilder(_context)
-    _member = _MemberBuilder(_trivia, _literal)
-    _typedef = _TypedefBuilder(_trivia, _token, _expression, _member)
-    _src_file = _SrcFileBuilder(_trivia, _token, _literal, _expression, _member,
-      _typedef)
 
-  fun ref src_file(): NamedRule => _src_file.src_file()
-
-  fun ref typedef_primitive(): NamedRule => _typedef.typedef_primitive()
-  fun ref expression_identifier(): NamedRule => _expression.identifier()
-
-  fun ref literal(): NamedRule => _literal.literal()
-  fun ref literal_bool(): NamedRule => _literal.bool()
-  fun ref literal_integer(): NamedRule => _literal.integer()
-  fun ref literal_float(): NamedRule => _literal.float()
-  fun ref literal_char(): NamedRule => _literal.char()
-  fun ref literal_string(): NamedRule => _literal.string()
-
-  fun ref trivia(): NamedRule => _trivia.trivia()
-  fun ref comment(): NamedRule => _trivia.comment()
-  fun ref ws(): NamedRule => _trivia.ws()
-  fun ref eol(): NamedRule => _trivia.eol()
-  fun ref eof(): NamedRule => _trivia.eof()
+    token = TokenBuilder(_context)
+    trivia = TriviaBuilder(_context, token)
+    literal = LiteralBuilder(_context, token)
+    expression = ExpressionBuilder(_context, trivia)
+    member = MemberBuilder(trivia, literal)
+    typedef = TypedefBuilder(trivia, token, expression, member)
+    src_file = SrcFileBuilder(trivia, token, literal, expression, member,
+      typedef)

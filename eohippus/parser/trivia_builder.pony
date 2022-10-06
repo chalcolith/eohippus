@@ -2,9 +2,9 @@ use "collections"
 
 use ast = "../ast"
 
-class _TriviaBuilder
+class TriviaBuilder
   let _context: Context
-  let _token: _TokenBuilder
+  let _token: TokenBuilder
 
   var _trivia: MapIs[USize, NamedRule] = MapIs[USize, NamedRule]
 
@@ -17,7 +17,7 @@ class _TriviaBuilder
   var _dol: (NamedRule | None) = None
   var _eof: (NamedRule | None) = None
 
-  new create(context: Context, token: _TokenBuilder) =>
+  new create(context: Context, token: TokenBuilder) =>
     _context = context
     _token = token
 

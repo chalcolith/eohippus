@@ -26,7 +26,7 @@ primitive _Binary
   fun with_underscore(): String =>
     "01_"
 
-class _TokenBuilder
+class TokenBuilder
   let _context: Context
 
   var _double_quote: (NamedRule | None) = None

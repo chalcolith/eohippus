@@ -18,7 +18,7 @@ class iso _TestParserTriviaEOF is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.eof()
+    let rule = setup.builder.trivia.eof()
 
     let src1 = setup.src("")
     let loc1 = parser.Loc(src1)
@@ -38,7 +38,7 @@ class iso _TestParserTriviaEOL is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.eol()
+    let rule = setup.builder.trivia.eol()
 
     let src1 = setup.src(" \n ")
     let loc1 = parser.Loc(src1, 1)
@@ -76,7 +76,7 @@ class _TestParserTriviaWS is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.ws()
+    let rule = setup.builder.trivia.ws()
 
     let src1 = setup.src(" \t")
     let loc1 = parser.Loc(src1)
@@ -98,7 +98,7 @@ class _TestParserTriviaComment is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.comment()
+    let rule = setup.builder.trivia.comment()
 
     let src1 = setup.src("a // b c\n d")
     let loc1 = parser.Loc(src1, 2)
@@ -124,7 +124,7 @@ class iso _TestParserTriviaTrivia is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia()
+    let rule = setup.builder.trivia.trivia()
 
     let src1 = setup.src(" /* c1 */\t// c2\n ")
     let loc1 = parser.Loc(src1)

@@ -1,13 +1,13 @@
 use ast = "../ast"
 use ".."
 
-class _MemberBuilder
-  let _trivia: _TriviaBuilder
-  let _literal: _LiteralBuilder
+class MemberBuilder
+  let _trivia: TriviaBuilder
+  let _literal: LiteralBuilder
 
   var _docstring: (NamedRule | None) = None
 
-  new create(trivia: _TriviaBuilder, literal: _LiteralBuilder) =>
+  new create(trivia: TriviaBuilder, literal: LiteralBuilder) =>
     _trivia = trivia
     _literal = literal
 
