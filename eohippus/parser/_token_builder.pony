@@ -1,6 +1,31 @@
 use ast = "../ast"
 use ".."
 
+primitive _Letters
+  fun apply(): String =>
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+primitive _Digits
+  fun apply(): String =>
+    "0123456789"
+
+  fun with_underscore(): String =>
+    "0123456789_"
+
+primitive _Hex
+  fun apply(): String =>
+    "0123456789abcdefABCDEF"
+
+  fun with_underscore(): String =>
+    "0123456789abcdefABCDEF_"
+
+primitive _Binary
+  fun apply(): String =>
+    "01"
+
+  fun with_underscore(): String =>
+    "01_"
+
 class _TokenBuilder
   let _context: Context
 

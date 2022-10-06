@@ -91,8 +91,8 @@ class _LiteralBuilder
         recover val
           NamedRule("Literal_Integer_Dec",
             Conj([
-              Single("0123456789")
-              Star(Single("0123456789_"))
+              Single(_Digits())
+              Star(Single(_Digits.with_underscore()))
             ]),
             {(r, _, b) =>
               (ast.LiteralInteger(_Build.info(r), ast.DecimalInteger), b)
@@ -113,7 +113,7 @@ class _LiteralBuilder
               Single("0")
               Single("xX")
               Disj([
-                Star(Single("0123456789abcdefABCDEF_"), 1)
+                Star(Single(_Hex.with_underscore()), 1)
                 Error(ErrorMsg.literal_integer_hex_empty())
               ])
             ]),
@@ -136,7 +136,7 @@ class _LiteralBuilder
               Single("0")
               Single("bB")
               Disj([
-                Star(Single("01_"), 1)
+                Star(Single(_Binary.with_underscore()), 1)
                 Error(ErrorMsg.literal_integer_bin_empty())
               ])
             ]),
@@ -283,8 +283,8 @@ class _LiteralBuilder
                 Disj([
                   Conj([
                     Single("xX")
-                    Single("0123456789abcdefABCDEF")
-                    Single("0123456789abcdefABCDEF")
+                    Single(_Hex())
+                    Single(_Hex())
                   ])
                   Single("abefnrtv\\0'\"")
                 ])
@@ -306,10 +306,15 @@ class _LiteralBuilder
           NamedRule("Literal_Char_Escape_Unicode",
             Conj([
               Single("\\")
-              Single("uU")
               Disj([
-                Star(Single("0123456789abcdefABCDEF"), 4, None, 4)
-                Star(Single("0123456789abcdefABCDEF"), 6, None, 6)
+                Conj([
+                  Single("u")
+                  Star(Single(_Hex()), 4, None, 4)
+                ])
+                Conj([
+                  Single("U")
+                  Star(Single(_Hex()), 6, None, 6)
+                ])
                 Error(ErrorMsg.literal_char_unicode_invalid())
               ])
             ]),

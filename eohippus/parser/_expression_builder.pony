@@ -1,13 +1,5 @@
 use ast = "../ast"
 
-primitive _Letters
-  fun apply(): String =>
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-primitive _Digits
-  fun apply(): String =>
-    "0123456789"
-
 class _ExpressionBuilder
   let _context: Context
 
@@ -33,7 +25,8 @@ class _ExpressionBuilder
                 Star(Single(_Letters() + _Digits() + "_'"))
               ])
             ]),
-            {(r, _, b) => (ast.Identifier(_Build.info(r)), b) })
+            {(r, _, b) => (ast.Identifier(_Build.info(r)), b) }
+          )
         end
       _identifier = identifier'
       identifier'
