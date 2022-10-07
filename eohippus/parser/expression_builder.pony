@@ -1,3 +1,5 @@
+use "itertools"
+
 use ast = "../ast"
 
 class ExpressionBuilder
@@ -53,7 +55,8 @@ class ExpressionBuilder
               Star(Conj([ Single(","); ws; id ]))
               ws
               Single("\\")
-            ])
+            ]),
+            {(r, c, b) => (ast.Annotation(_Build.info(r), c), b)}
           )
         end
       _annotation = annotation'

@@ -7,6 +7,7 @@ use ".."
 primitive _TestParserExpression
   fun apply(test: PonyTest) =>
     test(_TestParserExpressionIdentifier)
+    test(_TestParserExpressionAnnotation)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -43,9 +44,13 @@ class iso _TestParserExpressionAnnotation is UnitTest
         {(node) =>
           try
             let ann = node as ast.Annotation
-            h.assert_eq[String]("one", ann.identifiers()(0)?.name()) and
-              h.assert_eq[String]("two", ann.identifiers()(1)?.name()) and
-              h.assert_eq[String]("three", ann.identifiers()(2)?.name())
+            let id0 = ann.identifiers()(0)?.name()
+            let id1 = ann.identifiers()(1)?.name()
+            let id2 = ann.identifiers()(2)?.name()
+
+            h.assert_eq[String]("one", id0) and
+              h.assert_eq[String]("two", id1) and
+              h.assert_eq[String]("three", id2)
           else
             false
           end
