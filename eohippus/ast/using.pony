@@ -41,11 +41,11 @@ class val UsingPony is (Node & NodeParent & NodeTrivia)
 
     match _identifier
     | let id: Identifier =>
-      indent + "<USE " + StringUtil.escape(id.name()) + " = \""
-        + StringUtil.escape(_path.value()) + "\"" + def_str + ">"
+      indent + "<USE id=\"" + StringUtil.escape(id.name()) + "\" path=\""
+        + StringUtil.escape(_path.value()) + "\" if=\"" + def_str + "\"/>"
     else
-      indent + "<USE \"" + StringUtil.escape(_path.value()) + "\"" + def_str
-        + ">"
+      indent + "<USE path=\"" + StringUtil.escape(_path.value()) + "\" if=\"" +
+        def_str + "\"/>"
     end
 
   fun children(): NodeSeq => _children

@@ -21,7 +21,8 @@ class val LiteralBool is (Node & NodeTyped[LiteralBool] & NodeValued[Bool])
     end
   fun ne(other: box->Node): Bool => not this.eq(other)
   fun get_string(indent: String): String =>
-    indent + "<LIT: " + ast_type().string() + " = " + _value.string() + ">"
+    indent + "<LIT type=\"" + ast_type().string() + "\" value=\"" +
+      _value.string() + "\"/>"
 
   fun ast_type(): types.AstType => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralBool => this

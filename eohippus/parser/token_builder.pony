@@ -5,6 +5,9 @@ primitive _Letters
   fun apply(): String =>
     "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+  fun with_underscore(): String =>
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_"
+
 primitive _Digits
   fun apply(): String =>
     "0123456789"
@@ -33,12 +36,8 @@ class TokenBuilder
   var _triple_double_quote: (NamedRule | None) = None
   var _semicolon: (NamedRule | None) = None
   var _equals: (NamedRule | None) = None
-
-  var _use: (NamedRule | None) = None
-  var _if: (NamedRule | None) = None
-  var _not: (NamedRule | None) = None
-
-  var _primitive: (NamedRule | None) = None
+  var _backslash: (NamedRule | None) = None
+  var _comma: (NamedRule | None) = None
 
   new create(context: Context) =>
     _context = context
@@ -52,37 +51,33 @@ class TokenBuilder
       let rule =
         recover val
           NamedRule(name,
-            Literal(str, {(r, _, b) => (ast.Token(_Build.info(r), str), b)}))
+            Literal(str, {(r, _, b) => (ast.Token(_Build.info(r)), b)}))
         end
       set(rule)
       rule
     end
 
-  fun ref glyph_double_quote(): NamedRule =>
+  fun ref double_quote(): NamedRule =>
     _token_rule({() => _double_quote}, {ref (r) => _double_quote = r},
-      "Token_Double_Quote", "\"")
+      "Token_Double_Quote", ast.Tokens.double_quote())
 
-  fun ref glyph_triple_double_quote(): NamedRule =>
+  fun ref triple_double_quote(): NamedRule =>
     _token_rule({() => _triple_double_quote},
       {ref (r) => _triple_double_quote = r},
-      "Token_Triple_Double_Quote", "\"\"\"")
+      "Token_Triple_Double_Quote", ast.Tokens.triple_double_quote())
 
-  fun ref glyph_semicolon(): NamedRule =>
+  fun ref semicolon(): NamedRule =>
     _token_rule({() => _semicolon}, {ref (r) => _semicolon = r},
-      "Token_Semicolon", ";")
+      "Token_Semicolon", ast.Tokens.semicolon())
 
-  fun ref glyph_equals(): NamedRule =>
-    _token_rule({() => _equals}, {ref (r) => _equals = r}, "Token_Equals", "=")
+  fun ref equals(): NamedRule =>
+    _token_rule({() => _equals}, {ref (r) => _equals = r}, "Token_Equals",
+      ast.Tokens.equals())
 
-  fun ref kwd_use(): NamedRule =>
-    _token_rule({() => _use}, {ref (r) => _use = r}, "Token_Use", "use")
+  fun ref backslash(): NamedRule =>
+    _token_rule({() => _backslash}, {ref (r) => _backslash = r},
+      "Token_Backslash", ast.Tokens.backslash())
 
-  fun ref kwd_if(): NamedRule =>
-    _token_rule({() => _if}, {ref (r) => _if = r}, "Token_If", "if")
-
-  fun ref kwd_not(): NamedRule =>
-    _token_rule({() => _not}, {ref (r) => _not = r}, "Token_Not", "not")
-
-  fun ref kwd_primitive(): NamedRule =>
-    _token_rule({() => _primitive}, {ref (r) => _primitive = r},
-      "Token_Primitive", "primitive")
+  fun ref comma(): NamedRule =>
+    _token_rule({() => _comma}, {ref (r) => _comma = r}, "Token_Comma",
+      ast.Tokens.comma())

@@ -9,7 +9,7 @@ class val Span is Node
   fun get_string(indent: String): String =>
     recover val
       let s = String
-      s.append(indent + "<SPAN '")
+      s.append(indent + "<SPAN string=\"")
       for ch in _src_info.start().values(_src_info.next()) do
         if ch == ' ' then
           s.push(' ')
@@ -23,6 +23,6 @@ class val Span is Node
           s.push(ch)
         end
       end
-      s.append("'>")
+      s.append("\"/>")
       s
     end

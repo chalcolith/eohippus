@@ -14,6 +14,6 @@ class val ErrorSection is (Node & NodeParent)
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => true
   fun get_string(indent: String): String =>
-    indent + "<ERROR: " + StringUtil.escape(_message) + ">"
+    indent + "<ERROR message=\"" + StringUtil.escape(_message) + "\"/>"
   fun children(): NodeSeq => _children
   fun message(): String => _message

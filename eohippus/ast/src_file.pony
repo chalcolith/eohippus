@@ -27,7 +27,7 @@ class val SrcFile is (Node & NodeParent & NodeTrivia & NodeDocstring)
   fun get_string(indent: String): String =>
     recover val
       let str: String ref = String
-      str.append(indent + "<MODULE " + _locator + ">\n")
+      str.append(indent + "<SRC_FILE locator=\"" + _locator + "\">\n")
       for ds in _docstring.values() do
         str.append(ds.get_string(indent + "  "))
         str.append("\n")
@@ -40,7 +40,7 @@ class val SrcFile is (Node & NodeParent & NodeTrivia & NodeDocstring)
         str.append(td.get_string(indent + "  "))
         str.append("\n")
       end
-      str.append(indent + "</MODULE>")
+      str.append(indent + "</SRC_FILE>")
       str
     end
 

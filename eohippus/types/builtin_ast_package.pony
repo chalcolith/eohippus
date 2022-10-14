@@ -16,10 +16,14 @@ class val BuiltinAstPackage is AstPackage
   let _string_name: String = "String"
   let _string: AstType
 
+  let _source_loc_name: String = "SourceLoc"
+  let _source_loc: AstType
+
   new val create() =>
     _segments = Lists[parser.Segment]([
       _bool_name
       _string_name
+      _source_loc_name
     ])
 
     _bool =
@@ -44,9 +48,22 @@ class val BuiltinAstPackage is AstPackage
         fun string(): String iso^ => _full_name.clone()
       end
 
+    _source_loc =
+      object val is AstType
+        let _full_name: String = _package_name + "/" + _source_loc_name
+        let _source_loc_node: ast.Node =
+          _BuiltinNode(_source_loc_name, _segments,2)
+
+        fun val name(): String => _source_loc_name
+        fun val full_name(): String => _full_name
+        fun val node(): ast.Node => _source_loc_node
+        fun string(): String iso^ => _full_name.clone()
+      end
+
     _all_types = Lists[AstType]([
       _bool
       _string
+      _source_loc
     ])
 
   fun name(): String => _package_name
@@ -55,3 +72,4 @@ class val BuiltinAstPackage is AstPackage
 
   fun bool_type(): AstType => _bool
   fun string_type(): AstType => _string
+  fun source_loc_type(): AstType => _source_loc

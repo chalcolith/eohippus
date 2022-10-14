@@ -51,12 +51,12 @@ class LiteralBuilder
           NamedRule("Literal_Bool",
             Disj([
               Literal(
-                "true",
+                ast.Keywords.kwd_true(),
                 {(r, _, b) =>
                   (ast.LiteralBool(_context, _Build.info(r), true), b)
                 })
               Literal(
-                "false",
+                ast.Keywords.kwd_false(),
                 {(r, _, b) =>
                   (ast.LiteralBool(_context, _Build.info(r), false), b)
                 })
@@ -246,11 +246,11 @@ class LiteralBuilder
         recover val
           NamedRule("Literal_Char",
             Conj([
-              Single("'")
+              Single(ast.Tokens.single_quote())
               Disj([
                 Star(
                   Conj([
-                    Neg(Single("'"))
+                    Neg(Single(ast.Tokens.single_quote()))
                     Disj([
                       char_escape()
                       Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
@@ -259,7 +259,7 @@ class LiteralBuilder
                 Error(ErrorMsg.literal_char_empty())
               ])
               Disj([
-                Single("'")
+                Single(ast.Tokens.single_quote())
                 Error(ErrorMsg.literal_char_unterminated())
               ])
             ]),
@@ -278,7 +278,7 @@ class LiteralBuilder
         recover val
           NamedRule("Literal_Char_Escape",
             Conj([
-              Single("\\")
+              Single(ast.Tokens.backslash())
               Disj([
                 Disj([
                   Conj([
@@ -305,7 +305,7 @@ class LiteralBuilder
         recover val
           NamedRule("Literal_Char_Escape_Unicode",
             Conj([
-              Single("\\")
+              Single(ast.Tokens.backslash())
               Disj([
                 Conj([
                   Single("u")
@@ -346,7 +346,7 @@ class LiteralBuilder
     | let r: NamedRule => r
     else
       let sr' = _string_delim("Literal_String_Regular",
-        _token.glyph_double_quote())
+        _token.double_quote())
       _string_regular = sr'
       sr'
     end
@@ -356,7 +356,7 @@ class LiteralBuilder
     | let r: NamedRule => r
     else
       let st' = _string_delim("Literal_String_Triple",
-        _token.glyph_triple_double_quote())
+        _token.triple_double_quote())
       _string_triple = st'
       st'
     end
@@ -375,6 +375,9 @@ class LiteralBuilder
                 Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
               ])
             ]))
-          delim
+          Disj([
+            delim
+            Error(ErrorMsg.literal_string_unterminated())
+          ])
         ]))
     end

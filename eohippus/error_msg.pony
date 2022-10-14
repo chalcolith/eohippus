@@ -11,6 +11,9 @@ primitive ErrorMsg
   fun tag literal_char_unterminated(): String =>
     "expected a \"'\" character to end the character literal"
 
+  fun tag literal_string_unterminated(): String =>
+    "expected \" or \"\"\" to end the string literal"
+
   fun tag literal_char_escape_invalid(): String =>
     "invalid character escape sequence"
 

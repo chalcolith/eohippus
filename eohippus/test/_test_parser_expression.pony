@@ -35,12 +35,12 @@ class iso _TestParserExpressionAnnotation is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.annotation()
 
-    let src1 = setup.src("\\ one, two, three \\")
+    let src1 = setup.src("\\ one,two, three \\")
     let loc1 = parser.Loc(src1)
-    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 19)
+    let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 18)
 
     _Assert.test_all(h, [
-      _Assert.test_match(h, rule, src1, 0, setup.data, true, 19, None, None,
+      _Assert.test_match(h, rule, src1, 0, setup.data, true, 18, None, None,
         {(node) =>
           try
             let ann = node as ast.Annotation

@@ -19,8 +19,8 @@ class val Docstring is (Node & NodeValued[String] & NodeParent & NodeTrivia)
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => value_error()
   fun get_string(indent: String): String =>
-    indent + "<DOCSTRING>" + StringUtil.escape(_string.string())
-    + "</DOCSTRING>"
+    indent + "<DOCSTRING string=\"" + StringUtil.escape(_string.string())
+    + "\"/>"
   fun value(): String => _string.value()
   fun value_error(): Bool => _string.value_error()
   fun children(): NodeSeq => _children

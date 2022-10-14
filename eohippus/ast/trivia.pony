@@ -15,12 +15,13 @@ class val Trivia is (Node & NodeParent)
     recover val
       let s = String
       s.append(indent)
-      s.append("<TRIVIA [ ")
+      s.append("<TRIVIA>\n")
+      let inner: String = indent + "  "
       for child in _children.values() do
-        s.append(child.get_string(""))
-        s.append(" ")
+        s.append(child.get_string(inner))
+        s.append("\n")
       end
-      s.append("]>")
+      s.append("</TRIVIA>")
       s
     end
 
@@ -39,10 +40,10 @@ class val TriviaLineComment is Node
     recover val
       let result = String
       result.append(indent)
-      result.append("<LINE_COMMENT '")
+      result.append("<LINE_COMMENT string=\"")
       result.append(StringUtil.escape(
         recover val String.>concat(start().values(next())) end))
-      result.append("'>")
+      result.append("\"/>")
       result
     end
 
@@ -59,10 +60,10 @@ class val TriviaNestedComment is Node
     recover val
       let result = String
       result.append(indent)
-      result.append("<NESTED_COMMENT '")
+      result.append("<NESTED_COMMENT string=\"")
       result.append(StringUtil.escape(
         recover val String.>concat(start().values(next())) end))
-      result.append("'>")
+      result.append("\"/>")
       result
     end
 
@@ -79,10 +80,10 @@ class val TriviaWS is Node
     recover val
       let result = String
       result.append(indent)
-      result.append("<WS '")
+      result.append("<WS string=\"")
       result.append(StringUtil.escape(
         recover val String.>concat(start().values(next())) end))
-      result.append("'>")
+      result.append("\"/>")
       result
     end
 
@@ -96,7 +97,7 @@ class val TriviaEOL is Node
   fun has_error(): Bool => false
 
   fun get_string(indent: String): String =>
-    indent + "<EOL>"
+    indent + "<EOL/>"
 
 class val TriviaEOF is Node
   let _src_info: SrcInfo
@@ -108,4 +109,4 @@ class val TriviaEOF is Node
   fun has_error(): Bool => false
 
   fun get_string(indent: String): String =>
-    indent + "<EOF>"
+    indent + "<EOF/>"

@@ -19,7 +19,7 @@ class val TypedefPrimitive is (Node & NodeTrivia & NodeDocstring)
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
   fun get_string(indent: String): String =>
-    indent + "<PRIMITIVE " + _identifier.name() + ">"
+    indent + "<PRIMITIVE name=\"" + _identifier.name() + "\"/>"
   fun pre_trivia(): Trivia => _pre_trivia
   fun post_trivia(): Trivia => _post_trivia
   fun docstring(): NodeSeq[Docstring] => _docstring

@@ -5,6 +5,7 @@ use ".."
 class SrcFileBuilder
   let _trivia: TriviaBuilder
   let _token: TokenBuilder
+  let _keyword: KeywordBuilder
   let _literal: LiteralBuilder
   let _expression: ExpressionBuilder
   var _member: MemberBuilder
@@ -17,11 +18,13 @@ class SrcFileBuilder
   var _using_ffi: (NamedRule | None) = None
 
   new create(trivia: TriviaBuilder, token: TokenBuilder,
-    literal: LiteralBuilder, expression: ExpressionBuilder,
-    member: MemberBuilder, typedef: TypedefBuilder)
+    keyword: KeywordBuilder, literal: LiteralBuilder,
+    expression: ExpressionBuilder, member: MemberBuilder,
+    typedef: TypedefBuilder)
   =>
     _trivia = trivia
     _token = token
+    _keyword = keyword
     _literal = literal
     _expression = expression
     _member = member
@@ -156,10 +159,10 @@ class SrcFileBuilder
       let trivia1 = _trivia.trivia(1)
       let identifier = _expression.identifier()
       let string = _literal.string()
-      let glyph_equals = _token.glyph_equals()
-      let kwd_use = _token.kwd_use()
-      let kwd_if = _token.kwd_if()
-      let kwd_not = _token.kwd_not()
+      let equals = _token.equals()
+      let kwd_use = _keyword.kwd_use()
+      let kwd_if = _keyword.kwd_if()
+      let kwd_not = _keyword.kwd_not()
 
       let t1 = Variable
       let id = Variable
@@ -179,7 +182,7 @@ class SrcFileBuilder
                 Conj([
                   Bind(id, identifier)
                   trivia1
-                  glyph_equals
+                  equals
                   trivia1
                 ]) where min = 0, max = 1)
               Bind(pt, string)

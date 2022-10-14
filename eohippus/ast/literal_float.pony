@@ -82,8 +82,8 @@ class val LiteralFloat is
       else
         "?LiteralFloat?"
       end
-    indent + "<LIT: " + type_name + " = "
-      + (if _value_error then " ?ERORR?" else _value.string() end) + ">"
+    indent + "<LIT type=\"" + type_name + "\" value=\""
+      + (if _value_error then " ?ERORR?" else _value.string() end) + "\"/>"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralFloat =>

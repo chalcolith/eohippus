@@ -10,6 +10,7 @@ class val Identifier is Node
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
-  fun name(): String => _name
   fun get_string(indent: String): String =>
-    "<ID: \"" + StringUtil.escape(name()) + "\">"
+    indent + "<ID name=\"" + StringUtil.escape(_name) + "\"/>"
+
+  fun name(): String => _name

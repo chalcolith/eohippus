@@ -45,16 +45,16 @@ class TriviaBuilder
     | let r: NamedRule => r
     else
       let trivia' = trivia()
-      let semicolon' = _token.glyph_semicolon()
+      let semi' = _token.semicolon()
       let eol' = eol()
       let post_trivia' =
         recover val
           NamedRule("PostTrivia",
             Star(
               Conj([
-                Neg(Disj([semicolon'; eol']))
+                Neg(Disj([semi'; eol']))
                 trivia'
-                Disj([semicolon'; eol'])
+                Disj([semi'; eol'])
               ]) where min = 0, max = 1),
             {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
         end

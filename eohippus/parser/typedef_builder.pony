@@ -4,6 +4,7 @@ use ".."
 class TypedefBuilder
   let _trivia: TriviaBuilder
   let _token: TokenBuilder
+  let _keyword: KeywordBuilder
   let _expression: ExpressionBuilder
   let _member: MemberBuilder
 
@@ -11,10 +12,12 @@ class TypedefBuilder
   var _td_primitive: (NamedRule | None) = None
 
   new create(trivia: TriviaBuilder, token: TokenBuilder,
-    expression: ExpressionBuilder, member: MemberBuilder)
+    keyword: KeywordBuilder, expression: ExpressionBuilder,
+    member: MemberBuilder)
   =>
     _trivia = trivia
     _token = token
+    _keyword = keyword
     _expression = expression
     _member = member
 
@@ -50,7 +53,7 @@ class TypedefBuilder
 
       let trivia0 = _trivia.trivia(0)
       let trivia1 = _trivia.trivia(1)
-      let kwd_primitive = _token.kwd_primitive()
+      let kwd_primitive = _keyword.kwd_primitive()
       let identifier = _expression.identifier()
       let docstring = _member.docstring()
 

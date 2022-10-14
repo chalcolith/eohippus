@@ -51,8 +51,8 @@ class val LiteralChar is
       else
         "?LiteralChar?"
       end
-    indent + "<LIT: " + type_name + " = "
-      + (if _value_error then "?ERROR?" else _value.string() end) + ">"
+    indent + "<LIT type=\"" + type_name + "\" value=\""
+      + (if _value_error then "?ERROR?" else _value.string() end) + "\"/>"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralChar =>
@@ -115,8 +115,8 @@ class val LiteralCharEscape is (Node & NodeValued[U32])
       false
     end
   fun get_string(indent: String): String =>
-    indent + "<ESC: "
-      + (if _value_error then "?ERROR?" else _value.string() end) + ">"
+    indent + "<ESC value=\""
+      + (if _value_error then "?ERROR?" else _value.string() end) + "\"/>"
 
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error
@@ -204,8 +204,8 @@ class val LiteralCharUnicode is (Node & NodeValued[U32])
       false
     end
   fun get_string(indent: String): String =>
-    indent + "<ESC_UNI: "
-      + (if _value_error then " ?ERROR?" else _value.string() end) + ">"
+    indent + "<ESC_UNI value=\""
+      + (if _value_error then " ?ERROR?" else _value.string() end) + "\"/>"
 
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error

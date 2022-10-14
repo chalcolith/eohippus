@@ -52,7 +52,8 @@ class val LiteralString is
     end
 
   fun get_string(indent: String): String =>
-    indent + "<LIT: builtin/String = \"" + StringUtil.escape(_value) + "\">"
+    indent + "<LIT type=\"builtin/String\" value=\"" +
+      StringUtil.escape(_value) + "\"/>"
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralString => this

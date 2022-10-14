@@ -26,10 +26,10 @@ class val Annotation is (Node & NodeParent)
   fun get_string(indent: String): String =>
     recover val
       let str = String
-      str.append(indent + "<ANNOTATION:")
+      str.append(indent + "<ANNOTATION ids=\"")
       for id in _identifiers.values() do
         str.append(" " + id.name())
       end
-      str.append(">")
+      str.append("\"/>")
       str
     end
