@@ -7,6 +7,7 @@ class Builder
   let keyword: KeywordBuilder
   let trivia: TriviaBuilder
   let literal: LiteralBuilder
+  let type_builder: TypeBuilder
   let expression: ExpressionBuilder
   let member: MemberBuilder
   let typedef: TypedefBuilder
@@ -15,11 +16,13 @@ class Builder
   new create(context: Context) =>
     _context = context
 
-    token = TokenBuilder(_context)
-    keyword = KeywordBuilder(_context)
-    trivia = TriviaBuilder(_context, token)
-    literal = LiteralBuilder(_context, token)
-    expression = ExpressionBuilder(_context, trivia, token, keyword)
+    trivia = TriviaBuilder(_context)
+    token = TokenBuilder(_context, trivia)
+    keyword = KeywordBuilder(_context, trivia)
+    literal = LiteralBuilder(_context, trivia, token, keyword)
+    type_builder = TypeBuilder(_context)
+    expression = ExpressionBuilder(_context, trivia, token, keyword,
+      type_builder)
     member = MemberBuilder(trivia, literal)
     typedef = TypedefBuilder(trivia, token, keyword, expression, member)
     src_file = SrcFileBuilder(trivia, token, keyword, literal, expression,

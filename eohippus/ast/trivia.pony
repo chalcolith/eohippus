@@ -1,6 +1,6 @@
 use ".."
 
-class val Trivia is (Node & NodeParent)
+class val Trivia is (Node & NodeWithChildren)
   let _src_info: SrcInfo
   let _children: NodeSeq
 

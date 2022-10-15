@@ -31,6 +31,7 @@ primitive _Binary
 
 class TokenBuilder
   let _context: Context
+  let _trivia: TriviaBuilder
 
   var _double_quote: (NamedRule | None) = None
   var _triple_double_quote: (NamedRule | None) = None
@@ -38,9 +39,12 @@ class TokenBuilder
   var _equals: (NamedRule | None) = None
   var _backslash: (NamedRule | None) = None
   var _comma: (NamedRule | None) = None
+  var _minus: (NamedRule | None) = None
+  var _minus_tilde: (NamedRule | None) = None
 
-  new create(context: Context) =>
+  new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
+    _trivia = trivia
 
   fun ref _token_rule(get: {(): (NamedRule | None)}, set: {ref (NamedRule)},
     name: String, str: String) : NamedRule
@@ -48,10 +52,16 @@ class TokenBuilder
     match get()
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
+
       let rule =
         recover val
           NamedRule(name,
-            Literal(str, {(r, _, b) => (ast.Token(_Build.info(r)), b)}))
+            _Build.with_post[ast.Trivia](
+              recover Literal(str) end,
+              trivia,
+              {(r, _, b, p) => (ast.Token(_Build.info(r), p), b)}
+            ))
         end
       set(rule)
       rule
@@ -81,3 +91,11 @@ class TokenBuilder
   fun ref comma(): NamedRule =>
     _token_rule({() => _comma}, {ref (r) => _comma = r}, "Token_Comma",
       ast.Tokens.comma())
+
+  fun ref minus(): NamedRule =>
+    _token_rule({() => _minus}, {ref (r) => _minus = r}, "Token_Minus",
+      ast.Tokens.minus())
+
+  fun ref minus_tilde(): NamedRule =>
+    _token_rule({() => _minus_tilde}, {ref (r) => _minus_tilde = r},
+    "Token_MinusTilde", ast.Tokens.minus_tilde())

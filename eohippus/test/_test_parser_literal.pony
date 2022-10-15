@@ -27,12 +27,16 @@ class iso _TestParserLiteralBool is UnitTest
     let src1 = setup.src("true")
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 4)
-    let exp1 = ast.LiteralBool(setup.context, inf1, true)
+    let tri1 =
+      ast.Trivia(ast.SrcInfo(inf1.locator(), inf1.next(), inf1.next()), [])
+    let exp1 = ast.LiteralBool(setup.context, inf1, tri1, true)
 
     let src2 = setup.src("false")
     let loc2 = parser.Loc(src2)
     let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 5)
-    let exp2 = ast.LiteralBool(setup.context, inf2, false)
+    let tri2 =
+      ast.Trivia(ast.SrcInfo(inf2.locator(), inf2.next(), inf2.next()), [])
+    let exp2 = ast.LiteralBool(setup.context, inf2, tri2, false)
 
     let src3 = setup.src("foo")
     let src4 = setup.src("")
@@ -56,7 +60,7 @@ class iso _TestParserLiteralIntegerDec is UnitTest
     let src1 = setup.src("1_234")
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 5)
-    let exp1 = ast.LiteralInteger.from(inf1, ast.DecimalInteger, 1234)
+    let exp1 = ast.LiteralInteger.from(inf1, 1234, ast.DecimalInteger)
 
     _Assert.test_all(h, [
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 5, exp1)
@@ -73,7 +77,7 @@ class iso _TestParserLiteralIntegerHex is UnitTest
     let src1 = setup.src("0x12_3abc")
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 9)
-    let exp1 = ast.LiteralInteger.from(inf1, ast.HexadecimalInteger, 1194684)
+    let exp1 = ast.LiteralInteger.from(inf1, 1194684, ast.HexadecimalInteger)
 
     _Assert.test_all(h, [
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 9, exp1)
@@ -90,7 +94,7 @@ class iso _TestParserLiteralIntegerBin is UnitTest
     let src1 = setup.src("0b100101110101")
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 14)
-    let exp1 = ast.LiteralInteger.from(inf1, ast.BinaryInteger, 2421)
+    let exp1 = ast.LiteralInteger.from(inf1, 2421, ast.BinaryInteger)
 
     _Assert.test_all(h, [
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 14, exp1)

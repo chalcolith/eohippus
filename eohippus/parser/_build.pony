@@ -1,6 +1,7 @@
 use "itertools"
 
 use ast = "../ast"
+use ".."
 
 primitive _Build
   fun info(success: Success): ast.SrcInfo =>
@@ -20,8 +21,41 @@ primitive _Build
       end
     end
 
+  fun result(b: Bindings, v: Variable): Success? =>
+    b(v)?._1
+
   fun value(b: Bindings, v: Variable): ast.Node? =>
     b(v)?._2(0)?
 
   fun values(b: Bindings, v: Variable): ast.NodeSeq[ast.Node]? =>
     b(v)?._2
+
+  fun with_post[T: ast.Node val](
+    body: RuleNode,
+    post: RuleNode,
+    action: {(Success, ast.NodeSeq[ast.Node], Bindings, T)
+      : ((ast.Node | None), Bindings)} val)
+    : RuleNode ref
+  =>
+    let v = Variable
+    Conj(
+      [
+        body
+        Bind(v, post)
+      ],
+      {(r, c, b) =>
+        let t =
+          try
+            _Build.value(b, v)? as T
+          else
+            return _Build.bind_error(r, c, b, "post")
+          end
+        action(r, c, b, t)
+      }
+    )
+
+  fun bind_error(r: Success, c: ast.NodeSeq[ast.Node], b: Bindings,
+    message: String): (ast.Node, Bindings)
+  =>
+    (ast.ErrorSection(_Build.info(r), c,
+      ErrorMsg.internal_ast_node_not_bound(message)), b)

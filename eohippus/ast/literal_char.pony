@@ -2,38 +2,49 @@ use parser = "../parser"
 use types = "../types"
 
 class val LiteralChar is
-  (Node & NodeTyped[LiteralChar] & NodeValued[U32] & NodeParent)
+  (Node & NodeWithType[LiteralChar] & NodeWithChildren & NodeWithTrivia
+    & NodeWithValue[U32])
 
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
+  let _children: NodeSeq
+  let _body: Span
+  let _post_trivia: Trivia
   let _value: U32
   let _value_error: Bool
-  let _children: NodeSeq
 
-  new val create(src_info': SrcInfo, children': NodeSeq) =>
+  new val create(src_info': SrcInfo, children': NodeSeq,
+    post_trivia': Trivia)
+  =>
     _src_info = src_info'
     _ast_type = None
-    (_value, _value_error) = _get_char_value(children')
     _children = children'
+    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
+      post_trivia'.src_info().start()))
+    _post_trivia = post_trivia'
+    (_value, _value_error) = _get_char_value(children')
 
   new val from(src_info': SrcInfo, value': U32, value_error': Bool = false) =>
     _src_info = src_info'
     _ast_type = None
+    _children = recover Array[Node] end
+    _body = Span(src_info')
+    _post_trivia = Trivia(SrcInfo(src_info'.locator(), src_info'.next(),
+      src_info'.next()), [])
     _value = value'
     _value_error = value_error'
-    _children = recover Array[Node] end
 
-  new val _with_ast_type(char: LiteralChar, ast_type': types.AstType) =>
-    _src_info = char.src_info()
+  new val _with_ast_type(orig: LiteralChar, ast_type': types.AstType) =>
+    _src_info = orig._src_info
     _ast_type = ast_type'
-    _value = char.value()
-    _value_error = char.value_error()
-    _children = char.children()
+    _children = orig._children
+    _body = orig._body
+    _post_trivia = orig._post_trivia
+    _value = orig._value
+    _value_error = orig._value_error
 
   fun src_info(): SrcInfo => _src_info
-
   fun has_error(): Bool => _value_error
-
   fun eq(other: box->Node): Bool =>
     match other
     | let lc: LiteralChar =>
@@ -42,7 +53,6 @@ class val LiteralChar is
     else
       false
     end
-
   fun get_string(indent: String): String =>
     let type_name =
       match _ast_type
@@ -58,10 +68,11 @@ class val LiteralChar is
   fun val with_ast_type(ast_type': types.AstType): LiteralChar =>
     LiteralChar._with_ast_type(this, ast_type')
 
+  fun children(): NodeSeq => _children
+  fun body(): Span => _body
+  fun post_trivia(): Trivia => _post_trivia
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error
-
-  fun children(): NodeSeq => _children
 
   fun tag _get_char_value(children': NodeSeq): (U32, Bool) =>
     var v: U32 = 0
@@ -91,7 +102,7 @@ class val LiteralChar is
     end
     (v, false)
 
-class val LiteralCharEscape is (Node & NodeValued[U32])
+class val LiteralCharEscape is (Node & NodeWithValue[U32])
   let _src_info: SrcInfo
   let _value: U32
   let _value_error: Bool
@@ -180,7 +191,7 @@ class val LiteralCharEscape is (Node & NodeValued[U32])
     end
     (v, false)
 
-class val LiteralCharUnicode is (Node & NodeValued[U32])
+class val LiteralCharUnicode is (Node & NodeWithValue[U32])
   let _src_info: SrcInfo
   let _value: U32
   let _value_error: Bool

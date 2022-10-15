@@ -7,22 +7,28 @@ use types = "../types"
 use ".."
 
 class val LiteralString is
-  (Node & NodeTyped[LiteralString] & NodeValued[String] & NodeParent)
+  (Node & NodeWithType[LiteralString] & NodeWithValue[String]
+    & NodeWithChildren & NodeWithTrivia)
 
   let _triple_quote: Bool
   let _src_info: SrcInfo
   let _ast_type: types.AstType
+  let _children: NodeSeq
+  let _body: Span
+  let _post_trivia: Trivia
   let _value: String
   let _value_error: Bool
-  let _children: NodeSeq
 
   new val create(context: parser.Context, src_info': SrcInfo,
-    children': NodeSeq)
+    children': NodeSeq, post_trivia': Trivia)
   =>
     _src_info = src_info'
     _ast_type = context.builtin().string_type()
-    (_triple_quote, _value, _value_error) = _get_string_value(children')
     _children = children'
+    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
+      post_trivia'.src_info().start()))
+    _post_trivia = post_trivia'
+    (_triple_quote, _value, _value_error) = _get_string_value(children')
 
   new val from(context: parser.Context, triple_quote': Bool,
     src_info': SrcInfo, value': String, value_error': Bool = false)
@@ -30,9 +36,13 @@ class val LiteralString is
     _triple_quote = triple_quote'
     _src_info = src_info'
     _ast_type = context.builtin().string_type()
+    _children = recover Array[Node] end
+    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
+      src_info'.next()))
+    _post_trivia = Trivia(SrcInfo(src_info'.locator(), src_info'.next(),
+      src_info'.next()), [])
     _value = value'
     _value_error = value_error'
-    _children = recover Array[Node] end
 
   fun is_triple_quote(): Bool => _triple_quote
 
@@ -57,11 +67,11 @@ class val LiteralString is
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralString => this
-
+  fun children(): NodeSeq => _children
+  fun body(): Span => _body
+  fun post_trivia(): Trivia => _post_trivia
   fun value(): String => _value
   fun value_error(): Bool => _value_error
-
-  fun children(): NodeSeq => _children
 
   fun tag _get_string_value(children': NodeSeq)
     : (Bool, String, Bool)
@@ -70,16 +80,21 @@ class val LiteralString is
     let indented =
       recover val
         let indented' = String
+        var first_token = true
         for child in children'.values() do
           match child
-          | let tdq: ast.Token =>
-            if tdq.str() =="\"\"\"" then
+          | let tok: ast.Token =>
+            if tok.name() =="\"\"\"" then
               triple = true
             end
-          | let span: ast.Span =>
-            for ch in span.src_info().start().values(span.src_info().next()) do
-              indented'.push(ch)
+            if first_token then
+              let ptsi = tok.post_trivia().src_info()
+              indented'.concat(ptsi.start().values(ptsi.next()))
+              first_token = false
             end
+          | let span: ast.Span =>
+            let spsi = span.src_info()
+            indented'.concat(spsi.start().values(spsi.next()))
           | let lce: LiteralCharEscape =>
             indented'.push_utf32(lce.value())
           | let lcu: LiteralCharUnicode =>

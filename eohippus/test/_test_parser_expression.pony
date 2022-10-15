@@ -17,10 +17,13 @@ class iso _TestParserExpressionIdentifier is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.identifier()
 
-    let src1 = setup.src("a1_'")
+    let id = "a1_'"
+    let src1 = setup.src(id)
     let loc1 = parser.Loc(src1)
     let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 4)
-    let exp1 = ast.Identifier(inf1)
+    let tri1 =
+      ast.Trivia(ast.SrcInfo(inf1.locator(), inf1.next(), inf1.next()), [])
+    let exp1 = ast.Identifier(inf1, tri1, id)
 
     _Assert.test_all(h, [
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 4, exp1)

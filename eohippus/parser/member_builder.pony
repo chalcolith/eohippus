@@ -34,55 +34,29 @@ class MemberBuilder
     match _docstring
     | let r: NamedRule => r
     else
-      let trivia = _trivia.trivia()
-      let post_trivia = _trivia.post_trivia()
       let literal_string = _literal.string()
 
-      let t1 = Variable
       let s = Variable
-      let t2 = Variable
       let docstring' =
         recover val
           NamedRule("DocString",
             Conj([
-              Bind(t1, trivia)
               Bind(s, literal_string)
-              Bind(t2, post_trivia)
             ]),
-            this~_docstring_action(t1, s, t2))
+            this~_docstring_action(s))
         end
       _docstring = docstring'
       docstring'
     end
 
-  fun tag _docstring_action(t1: Variable, s: Variable, t2: Variable,
-    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _docstring_action(s: Variable, r: Success, c: ast.NodeSeq[ast.Node],
+    b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let t1': ast.Trivia =
-      try
-        _Build.value(b, t1)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/Trivia")),
-            b)
-      end
-
     let s': ast.LiteralString =
       try
         _Build.value(b, s)? as ast.LiteralString
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/LiteralString")),
-              b)
+        return _Build.bind_error(r, c, b, "Docstring/LiteralString")
       end
-
-    let t2': ast.Trivia =
-      try
-        _Build.value(b, t2)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Docstring/PostTrivia")), b)
-      end
-
-    (ast.Docstring(_Build.info(r), c, t1', t2', s'), b)
+    (ast.Docstring(_Build.info(r), c, s'), b)

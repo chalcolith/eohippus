@@ -2,25 +2,30 @@ use parser = "../parser"
 use types = "../types"
 
 class val LiteralFloat is
-  (Node & NodeTyped[LiteralFloat] & NodeValued[F64] & NodeParent)
-
+  (Node & NodeWithType[LiteralFloat] & NodeWithValue[F64] & NodeWithChildren
+    & NodeWithTrivia)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
-
   let _value: F64
   let _value_error: Bool
-
   let _children: NodeSeq
+  let _body: Span
+  let _post_trivia: Trivia
+
   let _int_part: (LiteralInteger | None)
   let _frac_part: (LiteralInteger | None)
   let _exp_sign: (Node | None)
   let _exponent: (LiteralInteger | None)
 
-  new val create(src_info': SrcInfo, children': NodeSeq) =>
+  new val create(src_info': SrcInfo, children': NodeSeq, post_trivia': Trivia)
+  =>
     _src_info = src_info'
     _ast_type = None
-
     _children = children'
+    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
+      post_trivia'.src_info().start()))
+    _post_trivia = post_trivia'
+
     match try _children(0)? as LiteralInteger end
     | let ip: LiteralInteger =>
       _int_part = ip
@@ -41,25 +46,32 @@ class val LiteralFloat is
   new val from(src_info': SrcInfo, value': F64, value_error': Bool = false) =>
     _src_info = src_info'
     _ast_type = None
-
     _children = recover Array[Node] end
+    _body =
+      Span(SrcInfo(src_info'.locator(), src_info'.start(), src_info'.next()))
+    _post_trivia = Trivia(SrcInfo(src_info'.locator(), src_info'.next(),
+      src_info'.next()), [])
+    _value = value'
+    _value_error = value_error'
+
     _int_part = None
     _frac_part = None
     _exp_sign = None
     _exponent = None
-    _value = value'
-    _value_error = value_error'
 
-  new val _with_ast_type(float: LiteralFloat, ast_type': types.AstType) =>
-    _src_info = float.src_info()
+  new val _with_ast_type(orig: LiteralFloat, ast_type': types.AstType) =>
+    _src_info = orig._src_info
     _ast_type = ast_type'
-    _children = float.children()
-    _int_part = float.int_part()
-    _frac_part = float.frac_part()
-    _exp_sign = float.exp_sign()
-    _exponent = float.exponent()
-    _value = float.value()
-    _value_error = float.value_error()
+    _children = orig._children
+    _body = orig._body
+    _post_trivia = orig._post_trivia
+    _value = orig._value
+    _value_error = orig._value_error
+
+    _int_part = orig._int_part
+    _frac_part = orig._frac_part
+    _exp_sign = orig._exp_sign
+    _exponent = orig._exponent
 
   fun src_info(): SrcInfo => _src_info
 
@@ -89,10 +101,12 @@ class val LiteralFloat is
   fun val with_ast_type(ast_type': types.AstType): LiteralFloat =>
     LiteralFloat._with_ast_type(this, ast_type')
 
+  fun children(): NodeSeq => _children
+  fun body(): Span => _body
+  fun post_trivia(): Trivia => _post_trivia
   fun value(): F64 => _value
   fun value_error(): Bool => _value_error
 
-  fun children(): NodeSeq => _children
   fun int_part(): (LiteralInteger | None) => _int_part
   fun frac_part(): (LiteralInteger | None) => _frac_part
   fun exp_sign(): (Node | None) => _exp_sign

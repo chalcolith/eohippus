@@ -131,7 +131,7 @@ class _Callback
 
   fun _handle_failure(failure: parser.Failure): Bool =>
     if _expected_match then
-      _h.fail("match failed; should have succeeded")
+      _h.fail("match failed; should have succeeded: " + failure.get_message())
       return false
     end
 

@@ -1,3 +1,5 @@
+use ".."
+
 class val Span is Node
   let _src_info: SrcInfo
 
@@ -7,22 +9,7 @@ class val Span is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
   fun get_string(indent: String): String =>
-    recover val
-      let s = String
-      s.append(indent + "<SPAN string=\"")
-      for ch in _src_info.start().values(_src_info.next()) do
-        if ch == ' ' then
-          s.push(' ')
-        elseif ch == '\n' then
-          s.append("\\n")
-        elseif ch == '\r' then
-          s.append("\\r")
-        elseif ch == '\t' then
-          s.append("\\t")
-        else
-          s.push(ch)
-        end
-      end
-      s.append("\"/>")
-      s
-    end
+    let str = _src_info.literal_source()
+    indent + "<SPAN string=\"" + StringUtil.escape(str) + "\"/>"
+
+  fun literal_source(): String => _src_info.literal_source()

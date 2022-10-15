@@ -23,16 +23,16 @@ trait val Node is (Equatable[Node] & Stringable)
   fun get_string(indent: String): String
   fun string(): String iso^ => get_string("").clone()
 
-trait val NodeTyped[N: NodeTyped[N]] is Node
+trait val NodeWithType[N: NodeWithType[N]] is Node
   fun ast_type(): (types.AstType | None)
   fun val with_ast_type(ast_type': types.AstType): N
 
-trait val NodeValued[V: Equatable[V] #read] is Node
+trait val NodeWithValue[V: Equatable[V] #read] is Node
   fun has_error(): Bool => value_error()
   fun value(): V
   fun value_error(): Bool
 
-trait val NodeParent is Node
+trait val NodeWithChildren is Node
   fun has_error(): Bool =>
     for child in children().values() do
       if child.has_error() then return true end
@@ -41,9 +41,13 @@ trait val NodeParent is Node
 
   fun children(): NodeSeq
 
-trait val NodeTrivia is Node
-  fun pre_trivia(): Trivia
+trait val NodeWithTrivia is Node
+  fun body(): Span
+  fun pre_trivia(): (Trivia | None) => None
   fun post_trivia(): Trivia
 
-trait val NodeDocstring is Node
+trait val NodeWithDocstring is Node
   fun docstring(): NodeSeq[Docstring]
+
+trait val NodeWithName is Node
+  fun name(): String

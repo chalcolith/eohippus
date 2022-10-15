@@ -4,7 +4,6 @@ use ast = "../ast"
 
 class TriviaBuilder
   let _context: Context
-  let _token: TokenBuilder
 
   var _trivia: MapIs[USize, NamedRule] = MapIs[USize, NamedRule]
 
@@ -17,9 +16,8 @@ class TriviaBuilder
   var _dol: (NamedRule | None) = None
   var _eof: (NamedRule | None) = None
 
-  new create(context: Context, token: TokenBuilder) =>
+  new create(context: Context) =>
     _context = context
-    _token = token
 
   fun ref trivia(min: USize = 0): NamedRule =>
     _trivia.get_or_else(min, _build_trivia(min))
@@ -38,29 +36,6 @@ class TriviaBuilder
       end
     _trivia(min) = trivia'
     trivia'
-
-  fun ref post_trivia(): NamedRule =>
-    """Convenience for getting post-trivia including semi or EOL."""
-    match _post_trivia
-    | let r: NamedRule => r
-    else
-      let trivia' = trivia()
-      let semi' = _token.semicolon()
-      let eol' = eol()
-      let post_trivia' =
-        recover val
-          NamedRule("PostTrivia",
-            Star(
-              Conj([
-                Neg(Disj([semi'; eol']))
-                trivia'
-                Disj([semi'; eol'])
-              ]) where min = 0, max = 1),
-            {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
-        end
-      _post_trivia = post_trivia'
-      post_trivia'
-    end
 
   fun ref comment(): NamedRule =>
     match _comment

@@ -42,7 +42,4 @@ class val SrcInfo is Equatable[SrcInfo]
     not this.eq(other)
 
   fun literal_source(): String =>
-    recover
-      let s = String
-      s.>concat(_start.values(_next))
-    end
+    recover String.>concat(_start.values(_next)) end

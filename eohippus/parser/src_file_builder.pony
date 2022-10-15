@@ -41,7 +41,6 @@ class SrcFileBuilder
       let ds = Variable
       let us = Variable
       let td = Variable
-      let t2 = Variable
 
       let trivia = _trivia.trivia()
       let docstring = _member.docstring()
@@ -83,27 +82,24 @@ class SrcFileBuilder
                 ])
               ))
 
-              // post-trivia
-              Bind(t2, trivia)
+              //
               eof
             ]),
-            this~_src_file_action(t1, ds, us, td, t2))
+            this~_src_file_action(t1, ds, us, td))
         end
       _src_file = src_file'
       src_file'
     end
 
   fun tag _src_file_action(t1: Variable, ds: Variable, us: Variable,
-    td: Variable, t2: Variable,
-    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+    td: Variable, r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
     let t1': ast.Trivia =
       try
         _Build.value(b, t1)? as ast.Trivia
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
+        return _Build.bind_error(r, c, b, "Trivia")
       end
 
     let docstring': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
@@ -112,28 +108,17 @@ class SrcFileBuilder
       try
         _Build.values(b, us)?
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Usings")), b)
+        return _Build.bind_error(r, c, b, "Usings")
       end
 
     let td': ast.NodeSeq[ast.Node] =
       try
         _Build.values(b, td)?
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Typedefs")), b)
+        return _Build.bind_error(r, c, b, "Typedefs")
       end
 
-    let t2': ast.Trivia =
-      try
-        _Build.value(b, t2)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("PostTrivia")), b)
-      end
-
-    let m = ast.SrcFile(r.data.locator(), _Build.info(r), c, t1', t2',
-      docstring', us', td')
+    let m = ast.SrcFile(_Build.info(r), c, t1', docstring', us', td')
     (m, b)
 
   fun ref using(): NamedRule =>
@@ -155,8 +140,6 @@ class SrcFileBuilder
     match _using_pony
     | let r: NamedRule => r
     else
-      let trivia0 = _trivia.trivia(0)
-      let trivia1 = _trivia.trivia(1)
       let identifier = _expression.identifier()
       let string = _literal.string()
       let equals = _token.equals()
@@ -164,70 +147,49 @@ class SrcFileBuilder
       let kwd_if = _keyword.kwd_if()
       let kwd_not = _keyword.kwd_not()
 
-      let t1 = Variable
       let id = Variable
       let pt = Variable
       let fl = Variable
       let df = Variable
-      let t2 = Variable
 
       let using_pony' =
         recover val
           NamedRule("UsingPony",
             Conj([
-              Bind(t1, trivia0)
               kwd_use
-              trivia1
               Star(
                 Conj([
                   Bind(id, identifier)
-                  trivia1
                   equals
-                  trivia1
                 ]) where min = 0, max = 1)
               Bind(pt, string)
               Star(
                 Conj([
-                  trivia1
                   kwd_if
                   Star(
                     Conj([
-                      trivia1
                       Bind(fl, kwd_not)
                     ]) where min = 0, max = 1)
-                  trivia1
                   Bind(df, identifier)
                 ]) where min = 0, max = 1)
-              Bind(t2, trivia0)
             ]),
-            this~_using_pony_action(t1, id, pt, fl, df, t2))
+            this~_using_pony_action(id, pt, fl, df))
         end
       _using_pony = using_pony'
       using_pony'
     end
 
-  fun tag _using_pony_action(t1: Variable, id: Variable, pt: Variable,
-    fl: Variable, df: Variable, t2: Variable,
-    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _using_pony_action(id: Variable, pt: Variable, fl: Variable,
+    df: Variable, r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let t1': ast.Trivia =
-      try
-        _Build.value(b, t1)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("UsingPony/Trivia")),
-            b)
-      end
-
     let ident = try _Build.value(b, id)? as ast.Identifier end
 
     let path =
       try
         _Build.value(b, pt)? as ast.LiteralString
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("UsingPony/LiteralString")), b)
+        return _Build.bind_error(r, c, b, "UsingPony/LiteralString")
       end
 
     let flag =
@@ -240,12 +202,4 @@ class SrcFileBuilder
 
     let def = try _Build.value(b, df)? as ast.Identifier end
 
-    let t2': ast.Trivia =
-      try
-        _Build.value(b, t2)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("UsingPony/PostTrivia")), b)
-      end
-
-    (ast.UsingPony(_Build.info(r), c, t1', t2', ident, path, flag, def), b)
+    (ast.UsingPony(_Build.info(r), c, ident, path, flag, def), b)

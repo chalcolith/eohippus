@@ -3,7 +3,9 @@ use ".."
 
 class LiteralBuilder
   let _context: Context
+  let _trivia: TriviaBuilder
   let _token: TokenBuilder
+  let _keyword: KeywordBuilder
 
   var _literal: (NamedRule | None) = None
   var _bool: (NamedRule | None) = None
@@ -19,9 +21,13 @@ class LiteralBuilder
   var _string_regular: (NamedRule | None) = None
   var _string_triple: (NamedRule | None) = None
 
-  new create(context: Context, token: TokenBuilder) =>
+  new create(context: Context, trivia: TriviaBuilder, token: TokenBuilder,
+    keyword: KeywordBuilder)
+  =>
     _context = context
+    _trivia = trivia
     _token = token
+    _keyword = keyword
 
   fun ref literal(): NamedRule =>
     match _literal
@@ -46,21 +52,30 @@ class LiteralBuilder
     match _bool
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
+
       let lb' =
         recover val
+          let post = Variable
+
           NamedRule("Literal_Bool",
-            Disj([
-              Literal(
-                ast.Keywords.kwd_true(),
-                {(r, _, b) =>
-                  (ast.LiteralBool(_context, _Build.info(r), true), b)
-                })
-              Literal(
-                ast.Keywords.kwd_false(),
-                {(r, _, b) =>
-                  (ast.LiteralBool(_context, _Build.info(r), false), b)
-                })
-            ]))
+            _Build.with_post[ast.Trivia](
+              recover
+                Disj([
+                  Literal(ast.Keywords.kwd_true())
+                  Literal(ast.Keywords.kwd_false())
+                ])
+              end,
+              trivia,
+              {(r, _, b, p) =>
+                let src_info = _Build.info(r)
+                let string = src_info.literal_source()
+                let true_str = ast.Keywords.kwd_true()
+                let value =
+                  string.compare_sub(true_str, true_str.size()) == Equal
+                (ast.LiteralBool(_context, src_info, p, value), b)
+              }
+            ))
         end
       _bool = lb'
       lb'
@@ -70,14 +85,37 @@ class LiteralBuilder
     match _integer
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
+
       let li' =
         recover val
+          let hex = Variable
+          let bin = Variable
+          let dec = Variable
+
           NamedRule("Literal_Integer",
-            Disj([
-              integer_hex()
-              integer_bin()
-              integer_dec()
-            ]))
+            _Build.with_post[ast.Trivia](
+              recover
+                Disj([
+                  Bind(hex, integer_hex())
+                  Bind(bin, integer_bin())
+                  Bind(dec, integer_dec())
+                ])
+              end,
+              trivia,
+              {(r, _, b, p) =>
+                let kind =
+                  if b.contains(hex) then
+                    ast.HexadecimalInteger
+                  elseif b.contains(bin) then
+                    ast.BinaryInteger
+                  else
+                    ast.DecimalInteger
+                  end
+
+                (ast.LiteralInteger(_Build.info(r), p, kind), b)
+              }
+            ))
         end
       _integer = li'
       li'
@@ -93,10 +131,7 @@ class LiteralBuilder
             Conj([
               Single(_Digits())
               Star(Single(_Digits.with_underscore()))
-            ]),
-            {(r, _, b) =>
-              (ast.LiteralInteger(_Build.info(r), ast.DecimalInteger), b)
-            })
+            ]))
         end
       _integer_dec = li'
       li'
@@ -116,10 +151,7 @@ class LiteralBuilder
                 Star(Single(_Hex.with_underscore()), 1)
                 Error(ErrorMsg.literal_integer_hex_empty())
               ])
-            ]),
-            {(r, _, b) =>
-              (ast.LiteralInteger(_Build.info(r), ast.HexadecimalInteger), b)
-            })
+            ]))
         end
       _integer_hex = li'
       li'
@@ -139,10 +171,7 @@ class LiteralBuilder
                 Star(Single(_Binary.with_underscore()), 1)
                 Error(ErrorMsg.literal_integer_bin_empty())
               ])
-            ]),
-            {(r, _, b) =>
-              (ast.LiteralInteger(_Build.info(r), ast.BinaryInteger), b)
-            })
+            ]))
         end
       _integer_bin = li'
       li'
@@ -152,34 +181,41 @@ class LiteralBuilder
     match _float
     | let r: NamedRule => r
     else
-      let int_part = Variable
-      let frac_part = Variable
-      let exp_sign = Variable
-      let exponent = Variable
+      let trivia = _trivia.trivia()
 
       let lf' =
         recover val
+          let int_part = Variable
+          let frac_part = Variable
+          let exp_sign = Variable
+          let exponent = Variable
+
           NamedRule("Literal_Float",
-            Conj([
-              Bind(int_part, integer())
-              Star(
+            _Build.with_post[ast.Trivia](
+              recover
                 Conj([
-                  Single(".")
-                  Bind(frac_part, integer())
-                ]) where min = 0, max = 1)
-              Star(
-                Conj([
-                  Single("eE")
-                  Bind(exp_sign,
-                    Star(
-                      Single("-+"),
-                      0,
-                      {(r, _, b) => (ast.Span(_Build.info(r)), b) },
-                      1))
-                  Bind(exponent, integer())
-                ]) where min = 0, max = 1)
-            ]),
-            this~_float_action(int_part, frac_part, exp_sign, exponent))
+                  Bind(int_part, integer())
+                  Star(
+                    Conj([
+                      Single(ast.Tokens.decimal_point())
+                      Bind(frac_part, integer())
+                    ]) where min = 0, max = 1)
+                  Star(
+                    Conj([
+                      Single("eE")
+                      Bind(exp_sign,
+                        Star(
+                          Single("-+"),
+                          0,
+                          {(r, _, b) => (ast.Span(_Build.info(r)), b) },
+                          1))
+                      Bind(exponent, integer())
+                    ]) where min = 0, max = 1)
+                ])
+              end,
+              trivia,
+              this~_float_action(int_part, frac_part, exp_sign, exponent)
+            ))
         end
       _float = lf'
       lf'
@@ -192,7 +228,8 @@ class LiteralBuilder
     exponent: Variable,
     r: Success,
     c: ast.NodeSeq[ast.Node],
-    b: Bindings)
+    b: Bindings,
+    p: ast.Trivia)
     : ((ast.Node | None), Bindings)
   =>
     try
@@ -233,7 +270,7 @@ class LiteralBuilder
 
           children
         end
-      (ast.LiteralFloat(_Build.info(r), children'), b)
+      (ast.LiteralFloat(_Build.info(r), children', p), b)
     else
       (ast.LiteralFloat.from(_Build.info(r), 0.0, true), b)
     end
@@ -242,29 +279,36 @@ class LiteralBuilder
     match _char
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
+
       let lc' =
         recover val
           NamedRule("Literal_Char",
-            Conj([
-              Single(ast.Tokens.single_quote())
-              Disj([
-                Star(
-                  Conj([
-                    Neg(Single(ast.Tokens.single_quote()))
-                    Disj([
-                      char_escape()
-                      Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
-                    ])
-                  ]), 1)
-                Error(ErrorMsg.literal_char_empty())
-              ])
-              Disj([
-                Single(ast.Tokens.single_quote())
-                Error(ErrorMsg.literal_char_unterminated())
-              ])
-            ]),
-            {(r, children, b) =>
-              (ast.LiteralChar(_Build.info(r), children), b) })
+            _Build.with_post[ast.Trivia](
+              recover
+                Conj([
+                  Single(ast.Tokens.single_quote())
+                  Disj([
+                    Star(
+                      Conj([
+                        Neg(Single(ast.Tokens.single_quote()))
+                        Disj([
+                          char_escape()
+                          Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
+                        ])
+                      ]), 1)
+                    Error(ErrorMsg.literal_char_empty())
+                  ])
+                  Disj([
+                    Single(ast.Tokens.single_quote())
+                    Error(ErrorMsg.literal_char_unterminated())
+                  ])
+                ])
+              end,
+              trivia,
+              {(r, children, b, p) =>
+                (ast.LiteralChar(_Build.info(r), children, p), b) }
+            ))
         end
       _char = lc'
       lc'
@@ -328,14 +372,23 @@ class LiteralBuilder
     match _string
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
+
       let s' =
         recover val
           NamedRule("Literal_String",
-            Disj([
-              string_triple()
-              string_regular()
-            ]),
-            {(r, c, b) => (ast.LiteralString(_context, _Build.info(r), c), b) })
+            _Build.with_post[ast.Trivia](
+              recover
+                Disj([
+                  string_triple()
+                  string_regular()
+                ])
+              end,
+              trivia,
+              {(r, c, b, p) =>
+                (ast.LiteralString(_context, _Build.info(r), c, p), b)
+              }
+            ))
         end
       _string = s'
       s'

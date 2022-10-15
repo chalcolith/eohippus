@@ -46,13 +46,9 @@ class TypedefBuilder
     match _td_primitive
     | let r: NamedRule => r
     else
-      let t1 = Variable
       let id = Variable
       let ds = Variable
-      let t2 = Variable
 
-      let trivia0 = _trivia.trivia(0)
-      let trivia1 = _trivia.trivia(1)
       let kwd_primitive = _keyword.kwd_primitive()
       let identifier = _expression.identifier()
       let docstring = _member.docstring()
@@ -61,47 +57,27 @@ class TypedefBuilder
         recover val
           NamedRule("Typedef_Primitive",
             Conj([
-              Bind(t1, trivia0)
               kwd_primitive
-              trivia1
               Bind(id, identifier)
               Bind(ds, docstring)
-              Bind(t2, trivia0)
             ]),
-            this~_typedef_primitive_action(t1, id, ds, t2))
+            this~_typedef_primitive_action(id, ds))
         end
       _td_primitive = primitive'
       primitive'
     end
 
-  fun tag _typedef_primitive_action(t1: Variable, id: Variable, ds: Variable,
-    t2: Variable, r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _typedef_primitive_action(id: Variable, ds: Variable,
+    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let t1': ast.Trivia =
-      try
-        _Build.value(b, t1)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
-      end
-
     let id': ast.Identifier =
       try
         _Build.value(b, id)? as ast.Identifier
       else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Identifier")), b)
+        return _Build.bind_error(r, c, b, "Identifier")
       end
 
     let ds': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
 
-    let t2': ast.Trivia =
-      try
-        _Build.value(b, t2)? as ast.Trivia
-      else
-        return (ast.ErrorSection(_Build.info(r), c,
-          ErrorMsg.internal_ast_node_not_bound("Trivia")), b)
-      end
-
-    (ast.TypedefPrimitive(_Build.info(r), t1', t2', ds', id'), b)
+    (ast.TypedefPrimitive(_Build.info(r), ds', id'), b)

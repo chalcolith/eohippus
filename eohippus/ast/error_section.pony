@@ -1,6 +1,6 @@
 use ".."
 
-class val ErrorSection is (Node & NodeParent)
+class val ErrorSection is (Node & NodeWithChildren)
   let _src_info: SrcInfo
   let _children: NodeSeq
   let _message: String

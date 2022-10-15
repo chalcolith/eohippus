@@ -16,7 +16,7 @@ class iso _TestParserTypedefPrimitiveSimple is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.td_primitive()
 
-    let code = "  primitive FooBar\n\"\"\"docs\"\"\"  "
+    let code = "primitive FooBar\n\"\"\"docs\"\"\"  "
     let len = code.size()
 
     let src1 = setup.src(code)

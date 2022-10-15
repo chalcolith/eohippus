@@ -135,7 +135,7 @@ class iso _TestParserTriviaTrivia is UnitTest
       _Assert.test_match(h, rule, src1, 0, setup.data, true, 17, exp1, None,
         {(node: ast.Node) =>
           match node
-          | let parent: ast.NodeParent =>
+          | let parent: ast.NodeWithChildren =>
             h.assert_eq[USize](6, parent.children().size())
           else
             false
