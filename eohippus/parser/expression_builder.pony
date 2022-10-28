@@ -7,21 +7,26 @@ class ExpressionBuilder
   let _trivia: TriviaBuilder
   let _token: TokenBuilder
   let _keyword: KeywordBuilder
+  let _operator: OperatorBuilder
   let _type: TypeBuilder
 
   var _identifier: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
-  var _prefix_op: (NamedRule | None) = None
-  var _seq: (NamedRule | None) = None
-  var _atom: (NamedRule | None) = None
+  var _exp_seq: (NamedRule | None) = None
 
-  new create(context: Context, trivia: TriviaBuilder, token: TokenBuilder,
-    keyword: KeywordBuilder, type_builder: TypeBuilder)
+  new create(
+    context: Context,
+    trivia: TriviaBuilder,
+    token: TokenBuilder,
+    keyword: KeywordBuilder,
+    operator: OperatorBuilder,
+    type_builder: TypeBuilder)
   =>
     _context = context
     _trivia = trivia
     _token = token
     _keyword = keyword
+    _operator = operator
     _type = type_builder
 
   fun ref identifier(): NamedRule =>
@@ -92,26 +97,41 @@ class ExpressionBuilder
       annotation'
     end
 
-  fun ref atom(): NamedRule =>
-    match _atom
+  fun ref seq(): NamedRule =>
+    match _exp_seq
     | let r: NamedRule => r
     else
-      (_, let atom') = _build_expressions()
-      atom'
+      _build_seq()
     end
 
-  fun ref _build_expressions(): (NamedRule, NamedRule) =>
+  fun ref _build_seq(): NamedRule =>
     let trivia = _trivia.trivia()
     let id = identifier()
+    let prefix_op = _operator.prefix_op()
+    let binary_op = _operator.binary_op()
+    let postfix_op = _operator.postfix_op()
     let kwd_loc = _keyword.kwd_loc()
     let kwd_this = _keyword.kwd_this()
+    let semicolon = _token.semicolon()
+    let equals = _token.equals()
+    let kwd_as = _keyword.kwd_as()
+    let kwd_return = _keyword.kwd_return()
+    let kwd_break = _keyword.kwd_break()
+    let kwd_error = _keyword.kwd_error()
+    let kwd_continue = _keyword.kwd_continue()
+    let kwd_compile_intrinsic = _keyword.kwd_compile_intrinsic()
+    let kwd_compile_error = _keyword.kwd_compile_error()
+    let type_rule = _type.type_rule()
 
     // we need to build these in one go since they are mutually recursive
-    (let seq', let atom') =
+    let exp_seq' =
       recover val
-        let exp_seq = NamedRule("Expression_Sequence", None)
-        let exp_term = NamedRule("Expression_Term", None)
-
+        let exp_seq = NamedRule("Expression_Sequence", None)               // x
+        let exp_item = NamedRule("Expression_Item", None)                  // x
+        let exp_assignment = NamedRule("Expression_Assignment", None)      // x
+        let exp_infix = NamedRule("Expression_Infix", None)                // x
+        let exp_jump = NamedRule("Expression_Jump", None)                  // x
+        let exp_term = NamedRule("Expression_Term", None)                  // x
         let exp_if = NamedRule("Expression_If", None)
         let exp_ifdef = NamedRule("Expression_IfDef", None)
         let exp_iftype = NamedRule("Expression_IfType", None)
@@ -123,9 +143,78 @@ class ExpressionBuilder
         let exp_try = NamedRule("Expression_Try", None)
         let exp_recover = NamedRule("Expression_Recover", None)
         let exp_consume = NamedRule("Expression_Consume", None)
-        let exp_pattern = NamedRule("Expression_Pattern", None)
         let exp_hash = NamedRule("Expression_Hash", None)
+        let exp_decl = NamedRule("Expression_Declaration", None)
+        let exp_prefix = NamedRule("Expression_Prefix", None)              // x
+        let exp_postfix = NamedRule("Expression_Postfix", None)            // x
+        let exp_tuple = NamedRule("Expression_Tuple", None)
+        let exp_parens = NamedRule("Expression_Parenthesized", None)
+        let exp_array = NamedRule("Expression_Array", None)
+        let exp_ffi = NamedRule("Expression_Ffi", None)
+        let exp_bare_lambda = NamedRule("Expression_BareLambda", None)
+        let exp_lambda = NamedRule("Expression_Lambda", None)
+        let exp_object = NamedRule("Expression_Object", None)
+        let exp_atom = NamedRule("Expression_Atom", None)                  // x
+        let type_params = NamedRule("Expression_TypeParams", None)
+        let call_params = NamedRule("Expression_CallParams", None)
 
+        let lhs = Variable
+        let op = Variable
+        let rhs = Variable
+        let params = Variable
+
+        // seq <= item (';'? item)*
+        exp_seq.set_body(
+          Conj([
+            exp_item
+            Star(
+              Conj([
+                Star(semicolon, 0, None, 1)
+                exp_item
+              ]))
+          ],
+          {(r, c, b) =>
+            (ast.Sequence(_Build.info(r), c), b)
+          }))
+
+        // item <= assignment / jump
+        exp_item.set_body(
+          Disj([
+            exp_assignment
+            exp_jump
+          ]))
+
+        // assignment <= (infix '=' assignment) / infix
+        exp_assignment.set_body(
+          Disj([
+            Conj([
+              Bind(lhs, exp_infix)
+              Bind(op, equals)
+              Bind(rhs, exp_assignment)
+            ], this~_binop_action(lhs, op, rhs))
+            exp_infix
+          ]))
+
+        // infix <= (term binary_op infix) / (term 'as' type) / term
+        exp_infix.set_body(
+          Disj([
+            Disj([
+              Conj([
+                Bind(lhs, exp_term)
+                Bind(op, binary_op)
+                Bind(rhs, exp_infix)
+              ])
+              Conj([
+                Bind(lhs, exp_term)
+                Bind(op, kwd_as)
+                Bind(rhs, type_rule)
+              ])
+            ], this~_binop_action(lhs, op, rhs))
+            exp_term
+          ]))
+
+        // term <= if / ifdef / iftype / match / while / repeate / for / with /
+        //         try / recover / consume / decl / prefix / hash
         exp_term.set_body(
           Disj([
             exp_if
@@ -139,37 +228,61 @@ class ExpressionBuilder
             exp_try
             exp_recover
             exp_consume
-            exp_pattern
-            exp_hash
-          ])
-        )
-
-        let exp_decl = NamedRule("Expression_Declaration", None)
-        let exp_prefix = NamedRule("Expression_Prefix", None)
-
-        exp_pattern.set_body(
-          Disj([
             exp_decl
             exp_prefix
-          ])
-        )
+            exp_hash
+          ]))
 
-        let exp_postfix = NamedRule("Expression_Postfix", None)
-
+        // prefix <= (prefix_op prefix) / postfix
         exp_prefix.set_body(
           Disj([
-            _prefix_body(trivia, prefix_op(), exp_prefix)
+            Conj([
+              Bind(op, prefix_op)
+              Bind(rhs, exp_prefix)
+            ], this~_prefix_action(op, rhs))
             exp_postfix
           ]))
 
-        let exp_tuple = NamedRule("Expression_Tuple", None)
-        let exp_parens = NamedRule("Expression_Parenthesized", None)
-        let exp_array = NamedRule("Expression_Array", None)
-        let exp_ffi = NamedRule("Expression_Ffi", None)
-        let exp_bare_lambda = NamedRule("Expression_BareLambda", None)
-        let exp_lambda = NamedRule("Expression_Lambda", None)
-        let exp_object = NamedRule("Expression_Object", None)
-        let exp_atom = NamedRule("Expression_Atom", None)
+        // postfix <= (postfix postfix_op identifier) /
+        //            (postfix type_params) /
+        //            (postfix call_params) /
+        //            atom
+        exp_postfix.set_body(
+          Disj([
+            Conj([
+              Bind(lhs, exp_postfix)
+              Bind(op, postfix_op)
+              Bind(rhs, id)
+            ], this~_binop_action(lhs, op, rhs))
+            Conj([
+              Bind(lhs, exp_postfix)
+              Bind(params, type_params)
+            ], this~_postfix_type_action(lhs, params))
+            Conj([
+              Bind(lhs, exp_postfix)
+              Bind(params, call_params)
+            ], this~_postfix_call_action(lhs, params))
+            exp_atom
+          ]))
+
+        exp_jump.set_body(
+          Disj([
+            kwd_return
+            kwd_break
+            kwd_continue
+            kwd_error
+            kwd_compile_intrinsic
+            kwd_compile_error
+          ],
+          {(r, c, b) =>
+            for child in c.values() do
+              match child
+              | let kwd: ast.Keyword =>
+                return (ast.Jump(_Build.info(r), c, kwd), b)
+              end
+            end
+            _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
+          }))
 
         exp_atom.set_body(
           Disj([
@@ -183,68 +296,100 @@ class ExpressionBuilder
             kwd_loc
             kwd_this
             id
-          ])
-        )
+          ]))
 
-        (exp_seq, exp_atom)
+        exp_seq
       end
-    _seq = seq'
-    _atom = atom'
+    _exp_seq = exp_seq'
+    exp_seq'
 
-    (seq', atom')
-
-  fun ref prefix_op(): NamedRule =>
-    match _prefix_op
-    | let r: NamedRule => r
-    else
-      let kwd_not = _keyword.kwd_not()
-      let kwd_addressof = _keyword.kwd_addressof()
-      let kwd_digestof = _keyword.kwd_digestof()
-      let minus = _token.minus()
-      let minus_tilde = _token.minus_tilde()
-
-      let prefix_op' =
-        recover val
-          NamedRule("Expression_Prefix_Op",
-            Disj([
-              kwd_not
-              kwd_addressof
-              kwd_digestof
-              minus
-              minus_tilde
-            ]))
-        end
-      _prefix_op = prefix_op'
-      prefix_op'
-    end
-
-  fun tag _prefix_body(trivia: NamedRule, op: NamedRule,
-    exp_prefix: NamedRule box) : RuleNode ref
+  fun tag _binop_action(
+    lhs: Variable,
+    op: Variable,
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
   =>
-    let po = Variable
-    let rhs = Variable
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Assignment/LHS")
+      end
+    let op' =
+      try
+        _Build.value(b, op)? as (ast.Keyword | ast.Token)
+      else
+        return _Build.bind_error(r, c, b, "Expression/Assignment/Op")
+      end
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Assignment/RHS")
+      end
+    (ast.Operation(_Build.info(r), c, lhs', op', rhs'), b)
 
-    Conj(
-      [
-        Bind(po, op)
-        trivia
-        Bind(rhs, exp_prefix)
-      ],
-      {(r, c, b) =>
-        let op' =
-          try
-            _Build.value(b, po)? as (ast.Keyword | ast.Token)
-          else
-            return _Build.bind_error(r, c, b, "Expression/Prefix/Operation")
-          end
+  fun tag _prefix_action(
+    op: Variable,
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let op' =
+      try
+        _Build.value(b, op)? as (ast.Keyword | ast.Token)
+      else
+        return _Build.bind_error(r, c, b, "Expression/Prefix/Op")
+      end
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Prefix/RHS")
+      end
+    (ast.Operation(_Build.info(r), c, None, op', rhs'), b)
 
-        let rhs' =
-          try
-            _Build.value(b, rhs)?
-          else
-            return _Build.bind_error(r, c, b, "Expression/Prefix/RHS")
-          end
+  fun tag _postfix_type_action(
+    lhs: Variable,
+    params: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Op")
+      end
+    let params' =
+      try
+        _Build.values(b, params)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Params")
+      end
+    (ast.TypeParams(_Build.info(r), c, lhs', params'), b)
 
-        (ast.Operation(_Build.info(r), c, None, op', rhs'), b)
-      }
-    )
+  fun tag _postfix_call_action(
+    lhs: Variable,
+    params: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Op")
+      end
+    let params' =
+      try
+        _Build.values(b, params)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Params")
+      end
+    (ast.Call(_Build.info(r), c, lhs', params'), b)

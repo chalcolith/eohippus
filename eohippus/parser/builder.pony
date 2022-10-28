@@ -5,6 +5,7 @@ class Builder
 
   let token: TokenBuilder
   let keyword: KeywordBuilder
+  let operator: OperatorBuilder
   let trivia: TriviaBuilder
   let literal: LiteralBuilder
   let type_builder: TypeBuilder
@@ -19,10 +20,11 @@ class Builder
     trivia = TriviaBuilder(_context)
     token = TokenBuilder(_context, trivia)
     keyword = KeywordBuilder(_context, trivia)
+    operator = OperatorBuilder(token, keyword)
     literal = LiteralBuilder(_context, trivia, token, keyword)
     type_builder = TypeBuilder(_context)
     expression = ExpressionBuilder(_context, trivia, token, keyword,
-      type_builder)
+      operator, type_builder)
     member = MemberBuilder(trivia, literal)
     typedef = TypedefBuilder(trivia, token, keyword, expression, member)
     src_file = SrcFileBuilder(trivia, token, keyword, literal, expression,

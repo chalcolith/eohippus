@@ -41,6 +41,9 @@ class TokenBuilder
   var _comma: (NamedRule | None) = None
   var _minus: (NamedRule | None) = None
   var _minus_tilde: (NamedRule | None) = None
+  var _dot: (NamedRule | None) = None
+  var _tilde: (NamedRule | None) = None
+  var _chain: (NamedRule | None) = None
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -53,6 +56,7 @@ class TokenBuilder
     | let r: NamedRule => r
     else
       let trivia = _trivia.trivia()
+      let non_token = _Letters.with_underscore() + _Digits()
 
       let rule =
         recover val
@@ -99,3 +103,15 @@ class TokenBuilder
   fun ref minus_tilde(): NamedRule =>
     _token_rule({() => _minus_tilde}, {ref (r) => _minus_tilde = r},
     "Token_MinusTilde", ast.Tokens.minus_tilde())
+
+  fun ref dot(): NamedRule =>
+    _token_rule({() => _dot}, {ref (r) => _dot = r}, "Token_Dot",
+      ast.Tokens.dot())
+
+  fun ref tilde(): NamedRule =>
+    _token_rule({() => _tilde}, {ref (r) => _tilde = r}, "Token_Tilde",
+      ast.Tokens.tilde())
+
+  fun ref chain(): NamedRule =>
+    _token_rule({() => _chain}, {ref (r) => _chain = r}, "Token_Chain",
+      ast.Tokens.chain())
