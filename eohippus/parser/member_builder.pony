@@ -21,7 +21,7 @@ class MemberBuilder
         Conj(
           [
             Neg(Disj([Disj(allowed); eof]))
-            Star(Conj([Neg(Disj([dol; eof])); Single()]), 1)
+            Plus(Conj([Neg(Disj([dol; eof])); Single()]))
             Look(Disj([dol; trivia; eof]))
           ],
           {(r, c, b) =>

@@ -157,21 +157,21 @@ class SrcFileBuilder
           NamedRule("UsingPony",
             Conj([
               kwd_use
-              Star(
+              Ques(
                 Conj([
                   Bind(id, identifier)
                   equals
-                ]) where min = 0, max = 1)
+                ]))
               Bind(pt, string)
-              Star(
+              Ques(
                 Conj([
                   kwd_if
-                  Star(
+                  Ques(
                     Conj([
                       Bind(fl, kwd_not)
-                    ]) where min = 0, max = 1)
+                    ]))
                   Bind(df, identifier)
-                ]) where min = 0, max = 1)
+                ]))
             ]),
             this~_using_pony_action(id, pt, fl, df))
         end

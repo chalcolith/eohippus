@@ -106,7 +106,7 @@ class TriviaBuilder
       let ws' =
         recover val
           NamedRule("WS",
-            Star(Single(" \t"), 1),
+            Plus(Single(" \t")),
             {(r, _, b) => (ast.TriviaWS(_Build.info(r)), b) })
         end
       _ws = ws'

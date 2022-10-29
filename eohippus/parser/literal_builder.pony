@@ -148,7 +148,7 @@ class LiteralBuilder
               Single("0")
               Single("xX")
               Disj([
-                Star(Single(_Hex.with_underscore()), 1)
+                Plus(Single(_Hex.with_underscore()))
                 Error(ErrorMsg.literal_integer_hex_empty())
               ])
             ]))
@@ -168,7 +168,7 @@ class LiteralBuilder
               Single("0")
               Single("bB")
               Disj([
-                Star(Single(_Binary.with_underscore()), 1)
+                Plus(Single(_Binary.with_underscore()))
                 Error(ErrorMsg.literal_integer_bin_empty())
               ])
             ]))
@@ -195,22 +195,20 @@ class LiteralBuilder
               recover
                 Conj([
                   Bind(int_part, integer())
-                  Star(
+                  Ques(
                     Conj([
                       Single(ast.Tokens.decimal_point())
                       Bind(frac_part, integer())
-                    ]) where min = 0, max = 1)
-                  Star(
+                    ]))
+                  Ques(
                     Conj([
                       Single("eE")
                       Bind(exp_sign,
-                        Star(
+                        Ques(
                           Single("-+"),
-                          0,
-                          {(r, _, b) => (ast.Span(_Build.info(r)), b) },
-                          1))
+                          {(r, _, b) => (ast.Span(_Build.info(r)), b) }))
                       Bind(exponent, integer())
-                    ]) where min = 0, max = 1)
+                    ]))
                 ])
               end,
               trivia,

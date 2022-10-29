@@ -169,7 +169,7 @@ class ExpressionBuilder
             exp_item
             Star(
               Conj([
-                Star(semicolon, 0, None, 1)
+                Ques(semicolon)
                 exp_item
               ]))
           ],
@@ -233,6 +233,8 @@ class ExpressionBuilder
             exp_hash
           ]))
 
+        // if
+
         // prefix <= (prefix_op prefix) / postfix
         exp_prefix.set_body(
           Disj([
@@ -274,15 +276,7 @@ class ExpressionBuilder
             kwd_compile_intrinsic
             kwd_compile_error
           ],
-          {(r, c, b) =>
-            for child in c.values() do
-              match child
-              | let kwd: ast.Keyword =>
-                return (ast.Jump(_Build.info(r), c, kwd), b)
-              end
-            end
-            _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
-          }))
+          this~_jump_action()))
 
         exp_atom.set_body(
           Disj([
@@ -393,3 +387,16 @@ class ExpressionBuilder
         return _Build.bind_error(r, c, b, "Expression/Postfix/Params")
       end
     (ast.Call(_Build.info(r), c, lhs', params'), b)
+
+  fun tag _jump_action(
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    for child in c.values() do
+      match child
+      | let kwd: ast.Keyword =>
+        return (ast.Jump(_Build.info(r), c, kwd), b)
+      end
+    end
+    _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
