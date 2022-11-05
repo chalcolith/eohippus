@@ -1,43 +1,50 @@
 use "itertools"
-
+use types = "../types"
 use ".."
 
-class val Annotation is (Node & NodeWithChildren & NodeWithTrivia)
+class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)
   let _src_info: SrcInfo
+  let _ast_type: (types.AstType | None)
   let _children: NodeSeq
-  let _body: Span
-  let _post_trivia: Trivia
 
   let _identifiers: NodeSeq[Identifier]
+  let _body: Node
 
-  new val create(src_info': SrcInfo, children': NodeSeq, post_trivia': Trivia)
+  new val create(src_info': SrcInfo, children': NodeSeq,
+    identifiers': NodeSeq[Identifier], body': Node)
   =>
     _src_info = src_info'
+    _ast_type = None
     _children = children'
-    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
-      post_trivia'.src_info().start()))
-    _post_trivia = post_trivia'
-    _identifiers =
-      recover val
-        Array[Identifier].>concat(
-          Iter[Node](_children.values())
-            .filter_map[Identifier]({(node) => try node as Identifier end }))
-      end
+    _identifiers = identifiers'
+    _body = body'
+
+  new val _with_ast_type(orig: Annotation, ast_type': types.AstType) =>
+    _src_info = orig._src_info
+    _ast_type = ast_type'
+    _children = orig._children
+    _identifiers = orig._identifiers
+    _body = orig._body
 
   fun src_info(): SrcInfo => _src_info
-  fun has_error(): Bool => false
   fun get_string(indent: String): String =>
     recover val
       let str = String
+      let inner: String = indent + "  "
       str.append(indent + "<ANNOTATION ids=\"")
       for id in _identifiers.values() do
         str.append(" " + id.name())
       end
-      str.append("\"/>")
+      str.append("\">\n")
+      str.append(_body.get_string(inner))
+      str.append("\n")
+      str.append(indent + "</ANNOTATION>")
       str
     end
+  fun ast_type(): (types.AstType | None) => _ast_type
+  fun val with_ast_type(ast_type': types.AstType): Annotation =>
+    Annotation._with_ast_type(this, ast_type')
   fun children(): NodeSeq => _children
-  fun body(): Span => _body
-  fun post_trivia(): Trivia => _post_trivia
 
   fun identifiers(): NodeSeq[Identifier] => _identifiers
+  fun body(): Node => _body

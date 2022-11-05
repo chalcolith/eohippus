@@ -8,11 +8,13 @@ class ExpressionBuilder
   let _token: TokenBuilder
   let _keyword: KeywordBuilder
   let _operator: OperatorBuilder
+  let _literal: LiteralBuilder
   let _type: TypeBuilder
 
   var _identifier: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
   var _exp_seq: (NamedRule | None) = None
+  var _exp_item: (NamedRule | None) = None
 
   new create(
     context: Context,
@@ -20,6 +22,7 @@ class ExpressionBuilder
     token: TokenBuilder,
     keyword: KeywordBuilder,
     operator: OperatorBuilder,
+    literal: LiteralBuilder,
     type_builder: TypeBuilder)
   =>
     _context = context
@@ -27,6 +30,7 @@ class ExpressionBuilder
     _token = token
     _keyword = keyword
     _operator = operator
+    _literal = literal
     _type = type_builder
 
   fun ref identifier(): NamedRule =>
@@ -72,26 +76,17 @@ class ExpressionBuilder
     else
       let bs = _token.backslash()
       let comma = _token.comma()
-      let trivia = _trivia.trivia()
       let id = identifier()
 
       let annotation' =
         recover val
           NamedRule("Annotation",
-            _Build.with_post[ast.Trivia](
-              recover
-                Conj([
-                  bs
-                  trivia
-                  id
-                  Star(Conj([ trivia; comma; trivia; id ]))
-                  trivia
-                  bs
-                ])
-              end,
-              trivia,
-              {(r, c, b, p) => (ast.Annotation(_Build.info(r), c, p), b)}
-            ))
+            Conj([
+              bs
+              id
+              Star(Conj([ comma; id ]))
+              bs
+            ]))
         end
       _annotation = annotation'
       annotation'
@@ -101,30 +96,43 @@ class ExpressionBuilder
     match _exp_seq
     | let r: NamedRule => r
     else
-      _build_seq()
+      _build_seq()._1
     end
 
-  fun ref _build_seq(): NamedRule =>
-    let trivia = _trivia.trivia()
-    let id = identifier()
-    let prefix_op = _operator.prefix_op()
+  fun ref item(): NamedRule =>
+    match _exp_item
+    | let r: NamedRule => r
+    else
+      _build_seq()._2
+    end
+
+  fun ref _build_seq(): (NamedRule, NamedRule) =>
     let binary_op = _operator.binary_op()
-    let postfix_op = _operator.postfix_op()
-    let kwd_loc = _keyword.kwd_loc()
-    let kwd_this = _keyword.kwd_this()
-    let semicolon = _token.semicolon()
     let equals = _token.equals()
+    let id = identifier()
     let kwd_as = _keyword.kwd_as()
-    let kwd_return = _keyword.kwd_return()
     let kwd_break = _keyword.kwd_break()
-    let kwd_error = _keyword.kwd_error()
-    let kwd_continue = _keyword.kwd_continue()
-    let kwd_compile_intrinsic = _keyword.kwd_compile_intrinsic()
     let kwd_compile_error = _keyword.kwd_compile_error()
+    let kwd_compile_intrinsic = _keyword.kwd_compile_intrinsic()
+    let kwd_continue = _keyword.kwd_continue()
+    let kwd_else = _keyword.kwd_else()
+    let kwd_elsif = _keyword.kwd_elsif()
+    let kwd_end = _keyword.kwd_end()
+    let kwd_error = _keyword.kwd_error()
+    let kwd_if = _keyword.kwd_if()
+    let kwd_loc = _keyword.kwd_loc()
+    let kwd_return = _keyword.kwd_return()
+    let kwd_then = _keyword.kwd_then()
+    let kwd_this = _keyword.kwd_this()
+    let literal = _literal.literal()
+    let postfix_op = _operator.postfix_op()
+    let prefix_op = _operator.prefix_op()
+    let semicolon = _token.semicolon()
+    let trivia = _trivia.trivia()
     let type_rule = _type.type_rule()
 
     // we need to build these in one go since they are mutually recursive
-    let exp_seq' =
+    (let exp_seq', let exp_item') =
       recover val
         let exp_seq = NamedRule("Expression_Sequence", None)               // x
         let exp_item = NamedRule("Expression_Item", None)                  // x
@@ -133,6 +141,8 @@ class ExpressionBuilder
         let exp_jump = NamedRule("Expression_Jump", None)                  // x
         let exp_term = NamedRule("Expression_Term", None)                  // x
         let exp_if = NamedRule("Expression_If", None)
+        let exp_cond = NamedRule("Expression_IfCondition", None)
+        let exp_elsif = NamedRule("Expression_Elsif", None)
         let exp_ifdef = NamedRule("Expression_IfDef", None)
         let exp_iftype = NamedRule("Expression_IfType", None)
         let exp_match = NamedRule("Expression_Match", None)
@@ -158,30 +168,42 @@ class ExpressionBuilder
         let type_params = NamedRule("Expression_TypeParams", None)
         let call_params = NamedRule("Expression_CallParams", None)
 
+        let ann = Variable
+        let body = Variable
         let lhs = Variable
         let op = Variable
         let rhs = Variable
         let params = Variable
+        let firstif = Variable
+        let elsifs = Variable
+        let condition = Variable
+        let if_true = Variable
+        let then_block = Variable
+        let else_block = Variable
 
-        // seq <= item (';'? item)*
+        // seq <= annotation? item (';'? item)*
         exp_seq.set_body(
           Conj([
-            exp_item
-            Star(
+            Bind(ann, Ques(annotation()))
+            Bind(body,
               Conj([
-                Ques(semicolon)
                 exp_item
+                Star(
+                  Conj([
+                    Ques(semicolon)
+                    exp_item
+                  ]))
               ]))
           ],
-          {(r, c, b) =>
-            (ast.Sequence(_Build.info(r), c), b)
-          }))
+          this~_annotation_action[ast.Sequence](ann, body, this~_seq_body()))
+        )
 
         // item <= assignment / jump
         exp_item.set_body(
           Disj([
             exp_assignment
             exp_jump
+            exp_infix
           ]))
 
         // assignment <= (infix '=' assignment) / infix
@@ -233,7 +255,34 @@ class ExpressionBuilder
             exp_hash
           ]))
 
-        // if
+        // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
+        exp_if.set_body(
+          Conj([
+            kwd_if
+            Bind(firstif, exp_cond)
+            Bind(elsifs,
+              Star(
+                Conj([
+                  kwd_elsif
+                  exp_cond
+                ])))
+            Ques(
+              Conj([
+                kwd_else
+                Bind(else_block, exp_seq)
+              ]))
+            kwd_end
+          ],
+          this~_if_action(firstif, elsifs, else_block)))
+
+        // cond <= seq 'then' seq
+        exp_cond.set_body(
+          Conj([
+            Bind(if_true, exp_seq)
+            kwd_then
+            Bind(then_block, exp_seq)
+          ],
+          this~_ifcond_action(if_true, then_block)))
 
         // prefix <= (prefix_op prefix) / postfix
         exp_prefix.set_body(
@@ -289,13 +338,49 @@ class ExpressionBuilder
             exp_object
             kwd_loc
             kwd_this
+            literal
             id
           ]))
 
-        exp_seq
+        (exp_seq, exp_item)
       end
     _exp_seq = exp_seq'
-    exp_seq'
+    _exp_item = exp_item'
+    (exp_seq', exp_item')
+
+  fun tag _annotation_action[T: ast.Node val](
+    ann: Variable,
+    body: Variable,
+    body_action: {(Success, ast.NodeSeq[ast.Node]): T} val,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    (let r', let body') =
+      try
+        b(body)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Sequence/Seq")
+      end
+
+    let body_value = body_action(r', body')
+
+    try
+      let ann' = _Build.values(b, ann)?
+      let ids =
+        recover val
+          Array[ast.Identifier].>concat(Iter[ast.Node](ann'.values())
+            .filter_map[ast.Identifier](
+              {(n) => try n as ast.Identifier end }))
+        end
+      if ids.size() > 0 then
+        return (ast.Annotation(_Build.info(r), c, ids, body_value), b)
+      end
+    end
+    (body_value, b)
+
+  fun tag _seq_body(r: Success, c: ast.NodeSeq[ast.Node]) : ast.Sequence =>
+    ast.Sequence(_Build.info(r), c)
 
   fun tag _binop_action(
     lhs: Variable,
@@ -324,6 +409,68 @@ class ExpressionBuilder
         return _Build.bind_error(r, c, b, "Expression/Assignment/RHS")
       end
     (ast.Operation(_Build.info(r), c, lhs', op', rhs'), b)
+
+  fun tag _if_action(
+    firstif: Variable,
+    elsifs: Variable,
+    else_block: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let firstif' =
+      try
+        _Build.value(b, firstif)? as ast.IfCondition
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      end
+    let elsifs' =
+      try
+        recover val
+          Array[ast.IfCondition].>concat(
+            Iter[ast.Node](_Build.values(b, elsifs)?.values())
+              .filter_map[ast.IfCondition](
+                {(n) => try n as ast.IfCondition end }))
+        end
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      end
+    let else_block' =
+      try
+        _Build.value_or_none(b, else_block)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/ElseSeq")
+      end
+    let conditions =
+      recover val
+        let conditions' = Array[ast.IfCondition](1 + elsifs'.size())
+        conditions'.push(firstif')
+        conditions'.append(elsifs')
+        conditions'
+      end
+
+    (ast.If(_Build.info(r), c, conditions, else_block'), b)
+
+  fun tag _ifcond_action(
+    if_true: Variable,
+    then_block: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let if_true' =
+      try
+        _Build.value(b, if_true)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfCond/Condition")
+      end
+    let then_block' =
+      try
+        _Build.value(b, then_block)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfCond/TrueSeq")
+      end
+    (ast.IfCondition(_Build.info(r), c, if_true', then_block'), b)
 
   fun tag _prefix_action(
     op: Variable,

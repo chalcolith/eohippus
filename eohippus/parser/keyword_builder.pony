@@ -11,12 +11,16 @@ class KeywordBuilder
   var _compile_intrinsic: (NamedRule | None) = None
   var _continue: (NamedRule | None) = None
   var _digestof: (NamedRule | None) = None
+  var _else: (NamedRule | None) = None
+  var _elsif: (NamedRule | None) = None
+  var _end: (NamedRule | None) = None
   var _error: (NamedRule | None) = None
   var _if: (NamedRule | None) = None
   var _loc: (NamedRule | None) = None
   var _not: (NamedRule | None) = None
   var _primitive: (NamedRule | None) = None
   var _return: (NamedRule | None) = None
+  var _then: (NamedRule | None) = None
   var _this: (NamedRule | None) = None
   var _use: (NamedRule | None) = None
 
@@ -110,3 +114,19 @@ class KeywordBuilder
   fun ref kwd_compile_error(): NamedRule =>
     _kwd_rule({() => _compile_error}, {ref (r) => _compile_error = r},
       "Keyword_CompileError", ast.Keywords.kwd_compile_error())
+
+  fun ref kwd_elsif(): NamedRule =>
+    _kwd_rule({() => _elsif}, {ref (r) => _elsif = r},
+      "Keyword_Elsif", ast.Keywords.kwd_elsif())
+
+  fun ref kwd_else(): NamedRule =>
+    _kwd_rule({() => _else}, {ref (r) => _else = r},
+      "Keyword_Else", ast.Keywords.kwd_else())
+
+  fun ref kwd_end(): NamedRule =>
+    _kwd_rule({() => _end}, {ref (r) => _end = r},
+      "Keyword_End", ast.Keywords.kwd_end())
+
+  fun ref kwd_then(): NamedRule =>
+    _kwd_rule({() => _then}, {ref (r) => _then = r},
+      "Keyword_Then", ast.Keywords.kwd_then())

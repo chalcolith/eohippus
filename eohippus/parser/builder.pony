@@ -3,10 +3,10 @@ use ast = "../ast"
 class Builder
   let _context: Context
 
+  let trivia: TriviaBuilder
   let token: TokenBuilder
   let keyword: KeywordBuilder
   let operator: OperatorBuilder
-  let trivia: TriviaBuilder
   let literal: LiteralBuilder
   let type_builder: TypeBuilder
   let expression: ExpressionBuilder
@@ -24,7 +24,7 @@ class Builder
     literal = LiteralBuilder(_context, trivia, token, keyword)
     type_builder = TypeBuilder(_context)
     expression = ExpressionBuilder(_context, trivia, token, keyword,
-      operator, type_builder)
+      operator, literal, type_builder)
     member = MemberBuilder(trivia, literal)
     typedef = TypedefBuilder(trivia, token, keyword, expression, member)
     src_file = SrcFileBuilder(trivia, token, keyword, literal, expression,

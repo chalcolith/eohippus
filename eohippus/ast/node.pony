@@ -38,7 +38,6 @@ trait val NodeWithChildren is Node
       if child.has_error() then return true end
     end
     false
-
   fun children(): NodeSeq
 
 trait val NodeWithTrivia is Node

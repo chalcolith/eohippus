@@ -12,7 +12,7 @@
   ],
   "deps": [
     {
-      "locator": "github.com/kulibali/kiuatan.git",
+      "locator": "../kiuatan",
       "version": "1.1.4"
     }
   ]
