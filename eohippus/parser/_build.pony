@@ -42,16 +42,16 @@ primitive _Build
       : ((ast.Node | None), Bindings)} val)
     : RuleNode ref
   =>
-    let v = Variable
+    let p = Variable("p")
     Conj(
       [
         body
-        Bind(v, post)
+        Bind(p, post)
       ],
       {(r, c, b) =>
         let t =
           try
-            _Build.value(b, v)? as T
+            _Build.value(b, p)? as T
           else
             return _Build.bind_error(r, c, b, "post")
           end

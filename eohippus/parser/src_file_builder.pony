@@ -37,10 +37,10 @@ class SrcFileBuilder
     match _src_file
     | let r: NamedRule => r
     else
-      let t1 = Variable
-      let ds = Variable
-      let us = Variable
-      let td = Variable
+      let t1 = Variable("t1")
+      let ds = Variable("ds")
+      let us = Variable("us")
+      let td = Variable("td")
 
       let trivia = _trivia.trivia()
       let docstring = _member.docstring()
@@ -147,10 +147,10 @@ class SrcFileBuilder
       let kwd_if = _keyword.kwd_if()
       let kwd_not = _keyword.kwd_not()
 
-      let id = Variable
-      let pt = Variable
-      let fl = Variable
-      let df = Variable
+      let id = Variable("id")
+      let pt = Variable("pt")
+      let fl = Variable("fl")
+      let df = Variable("df")
 
       let using_pony' =
         recover val

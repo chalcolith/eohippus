@@ -36,7 +36,7 @@ class MemberBuilder
     else
       let literal_string = _literal.string()
 
-      let s = Variable
+      let s = Variable("s")
       let docstring' =
         recover val
           NamedRule("DocString",

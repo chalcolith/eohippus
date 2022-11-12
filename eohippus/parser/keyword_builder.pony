@@ -4,6 +4,8 @@ class KeywordBuilder
   let _context: Context
   let _trivia: TriviaBuilder
 
+  var _kwd: (NamedRule | None) = None
+
   var _addressof: (NamedRule | None) = None
   var _as: (NamedRule | None) = None
   var _break: (NamedRule | None) = None
@@ -12,7 +14,7 @@ class KeywordBuilder
   var _continue: (NamedRule | None) = None
   var _digestof: (NamedRule | None) = None
   var _else: (NamedRule | None) = None
-  var _elsif: (NamedRule | None) = None
+  var _elseif: (NamedRule | None) = None
   var _end: (NamedRule | None) = None
   var _error: (NamedRule | None) = None
   var _if: (NamedRule | None) = None
@@ -28,6 +30,40 @@ class KeywordBuilder
     _context = context
     _trivia = trivia
 
+  fun ref kwd(): NamedRule =>
+    match _kwd
+    | let r: NamedRule => r
+    else
+      let kwd' =
+        recover val
+          NamedRule(
+            "Keyword",
+            Disj([
+              Literal(ast.Keywords.kwd_addressof())
+              Literal(ast.Keywords.kwd_as())
+              Literal(ast.Keywords.kwd_break())
+              Literal(ast.Keywords.kwd_compile_error())
+              Literal(ast.Keywords.kwd_compile_intrinsic())
+              Literal(ast.Keywords.kwd_continue())
+              Literal(ast.Keywords.kwd_digestof())
+              Literal(ast.Keywords.kwd_else())
+              Literal(ast.Keywords.kwd_elseif())
+              Literal(ast.Keywords.kwd_end())
+              Literal(ast.Keywords.kwd_error())
+              Literal(ast.Keywords.kwd_if())
+              Literal(ast.Keywords.kwd_loc())
+              Literal(ast.Keywords.kwd_not())
+              Literal(ast.Keywords.kwd_primitive())
+              Literal(ast.Keywords.kwd_return())
+              Literal(ast.Keywords.kwd_then())
+              Literal(ast.Keywords.kwd_this())
+              Literal(ast.Keywords.kwd_use())
+            ]))
+        end
+      _kwd = kwd'
+      kwd'
+    end
+
   fun ref _kwd_rule(get: {(): (NamedRule | None)}, set: {ref (NamedRule)},
     name: String, str: String): NamedRule
   =>
@@ -37,7 +73,7 @@ class KeywordBuilder
       let trivia = _trivia.trivia()
       let rule =
         recover val
-          let post = Variable
+          let post = Variable("post")
 
           NamedRule(name,
             _Build.with_post[ast.Trivia](
@@ -115,9 +151,9 @@ class KeywordBuilder
     _kwd_rule({() => _compile_error}, {ref (r) => _compile_error = r},
       "Keyword_CompileError", ast.Keywords.kwd_compile_error())
 
-  fun ref kwd_elsif(): NamedRule =>
-    _kwd_rule({() => _elsif}, {ref (r) => _elsif = r},
-      "Keyword_Elsif", ast.Keywords.kwd_elsif())
+  fun ref kwd_elseif(): NamedRule =>
+    _kwd_rule({() => _elseif}, {ref (r) => _elseif = r},
+      "Keyword_Elseif", ast.Keywords.kwd_elseif())
 
   fun ref kwd_else(): NamedRule =>
     _kwd_rule({() => _else}, {ref (r) => _else = r},

@@ -38,16 +38,7 @@ class iso _TestParserExpressionIf is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item()
 
-    let src =
-      """
-        if true then
-          foo
-        elsif false then
-          bar
-        else
-          baz
-        end
-      """
+    let src = "if true then foo elseif false then bar else baz end"
 
     let src1 = setup.src(src)
     let loc1 = parser.Loc(src1)

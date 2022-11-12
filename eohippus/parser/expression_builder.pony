@@ -110,13 +110,14 @@ class ExpressionBuilder
     let binary_op = _operator.binary_op()
     let equals = _token.equals()
     let id = identifier()
+    let kwd = _keyword.kwd()
     let kwd_as = _keyword.kwd_as()
     let kwd_break = _keyword.kwd_break()
     let kwd_compile_error = _keyword.kwd_compile_error()
     let kwd_compile_intrinsic = _keyword.kwd_compile_intrinsic()
     let kwd_continue = _keyword.kwd_continue()
     let kwd_else = _keyword.kwd_else()
-    let kwd_elsif = _keyword.kwd_elsif()
+    let kwd_elseif = _keyword.kwd_elseif()
     let kwd_end = _keyword.kwd_end()
     let kwd_error = _keyword.kwd_error()
     let kwd_if = _keyword.kwd_if()
@@ -168,18 +169,18 @@ class ExpressionBuilder
         let type_params = NamedRule("Expression_TypeParams", None)
         let call_params = NamedRule("Expression_CallParams", None)
 
-        let ann = Variable
-        let body = Variable
-        let lhs = Variable
-        let op = Variable
-        let rhs = Variable
-        let params = Variable
-        let firstif = Variable
-        let elsifs = Variable
-        let condition = Variable
-        let if_true = Variable
-        let then_block = Variable
-        let else_block = Variable
+        let ann = Variable("ann")
+        let body = Variable("body")
+        let lhs = Variable("lhs")
+        let op = Variable("op")
+        let rhs = Variable("rhs")
+        let params = Variable("params")
+        let firstif = Variable("firstif")
+        let elseifs = Variable("elseifs")
+        let condition = Variable("condition")
+        let if_true = Variable("if_true")
+        let then_block = Variable("then_block")
+        let else_block = Variable("else_block")
 
         // seq <= annotation? item (';'? item)*
         exp_seq.set_body(
@@ -260,10 +261,10 @@ class ExpressionBuilder
           Conj([
             kwd_if
             Bind(firstif, exp_cond)
-            Bind(elsifs,
+            Bind(elseifs,
               Star(
                 Conj([
-                  kwd_elsif
+                  kwd_elseif
                   exp_cond
                 ])))
             Ques(
@@ -273,7 +274,7 @@ class ExpressionBuilder
               ]))
             kwd_end
           ],
-          this~_if_action(firstif, elsifs, else_block)))
+          this~_if_action(firstif, elseifs, else_block)))
 
         // cond <= seq 'then' seq
         exp_cond.set_body(
@@ -339,7 +340,10 @@ class ExpressionBuilder
             kwd_loc
             kwd_this
             literal
-            id
+            Conj([
+              Neg(kwd)
+              id
+            ])
           ]))
 
         (exp_seq, exp_item)
@@ -412,7 +416,7 @@ class ExpressionBuilder
 
   fun tag _if_action(
     firstif: Variable,
-    elsifs: Variable,
+    elseifs: Variable,
     else_block: Variable,
     r: Success,
     c: ast.NodeSeq[ast.Node],
@@ -424,11 +428,11 @@ class ExpressionBuilder
       else
         return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
       end
-    let elsifs' =
+    let elseifs' =
       try
         recover val
           Array[ast.IfCondition].>concat(
-            Iter[ast.Node](_Build.values(b, elsifs)?.values())
+            Iter[ast.Node](_Build.values(b, elseifs)?.values())
               .filter_map[ast.IfCondition](
                 {(n) => try n as ast.IfCondition end }))
         end
@@ -443,9 +447,9 @@ class ExpressionBuilder
       end
     let conditions =
       recover val
-        let conditions' = Array[ast.IfCondition](1 + elsifs'.size())
+        let conditions' = Array[ast.IfCondition](1 + elseifs'.size())
         conditions'.push(firstif')
-        conditions'.append(elsifs')
+        conditions'.append(elseifs')
         conditions'
       end
 

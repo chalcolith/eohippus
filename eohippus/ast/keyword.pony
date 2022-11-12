@@ -9,7 +9,7 @@ primitive Keywords
   fun kwd_continue(): String => "continue"
   fun kwd_digestof(): String => "digestof"
   fun kwd_else(): String => "else"
-  fun kwd_elsif(): String => "elsif"
+  fun kwd_elseif(): String => "elseif"
   fun kwd_end(): String => "end"
   fun kwd_error(): String => "error"
   fun kwd_false(): String => "false"

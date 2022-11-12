@@ -46,8 +46,8 @@ class TypedefBuilder
     match _td_primitive
     | let r: NamedRule => r
     else
-      let id = Variable
-      let ds = Variable
+      let id = Variable("id")
+      let ds = Variable("ds")
 
       let kwd_primitive = _keyword.kwd_primitive()
       let identifier = _expression.identifier()

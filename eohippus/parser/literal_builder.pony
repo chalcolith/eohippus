@@ -56,7 +56,7 @@ class LiteralBuilder
 
       let lb' =
         recover val
-          let post = Variable
+          let post = Variable("post")
 
           NamedRule("Literal_Bool",
             _Build.with_post[ast.Trivia](
@@ -89,9 +89,9 @@ class LiteralBuilder
 
       let li' =
         recover val
-          let hex = Variable
-          let bin = Variable
-          let dec = Variable
+          let hex = Variable("hex")
+          let bin = Variable("bin")
+          let dec = Variable("dec")
 
           NamedRule("Literal_Integer",
             _Build.with_post[ast.Trivia](
@@ -185,10 +185,10 @@ class LiteralBuilder
 
       let lf' =
         recover val
-          let int_part = Variable
-          let frac_part = Variable
-          let exp_sign = Variable
-          let exponent = Variable
+          let int_part = Variable("int_part")
+          let frac_part = Variable("frac_part")
+          let exp_sign = Variable("exp_sign")
+          let exponent = Variable("exponent")
 
           NamedRule("Literal_Float",
             _Build.with_post[ast.Trivia](
