@@ -10,3 +10,4 @@ actor Main is TestList
     _TestParserExpression(test)
     _TestParserTypedef(test)
     _TestParserSrcFile(test)
+    _TestJson(test)

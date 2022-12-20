@@ -276,10 +276,6 @@ class ExpressionBuilder
           ],
           this~_if_action(firstif, elseifs, else_block)))
 
-        exp_ifdef.set_body(
-
-        )
-
         // cond <= seq 'then' seq
         exp_cond.set_body(
           Conj([
