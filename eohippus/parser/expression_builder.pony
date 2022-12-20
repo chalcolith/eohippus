@@ -141,9 +141,9 @@ class ExpressionBuilder
         let exp_infix = NamedRule("Expression_Infix", None)                // x
         let exp_jump = NamedRule("Expression_Jump", None)                  // x
         let exp_term = NamedRule("Expression_Term", None)                  // x
-        let exp_if = NamedRule("Expression_If", None)
-        let exp_cond = NamedRule("Expression_IfCondition", None)
-        let exp_elsif = NamedRule("Expression_Elsif", None)
+        let exp_if = NamedRule("Expression_If", None)                      // x
+        let exp_cond = NamedRule("Expression_IfCondition", None)           // x
+        let exp_elsif = NamedRule("Expression_Elsif", None)                // x
         let exp_ifdef = NamedRule("Expression_IfDef", None)
         let exp_iftype = NamedRule("Expression_IfType", None)
         let exp_match = NamedRule("Expression_Match", None)
@@ -275,6 +275,10 @@ class ExpressionBuilder
             kwd_end
           ],
           this~_if_action(firstif, elseifs, else_block)))
+
+        exp_ifdef.set_body(
+
+        )
 
         // cond <= seq 'then' seq
         exp_cond.set_body(
