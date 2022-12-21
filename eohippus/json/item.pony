@@ -39,9 +39,9 @@ class Object
         str.append(indent')
         str.append("\"" + key + "\": ")
         match _items(key)?
-        | let obj: this->Object =>
+        | let obj: Object box =>
           str.append(obj._get_string(indent'))
-        | let seq: this->Sequence =>
+        | let seq: Sequence box =>
           str.append(seq._get_string(indent'))
         | let str': String =>
           str.append("\"" + StringUtil.escape(str') + "\"")
@@ -52,6 +52,7 @@ class Object
         end
       end
     end
+    str.append("\n")
     str.append(indent)
     str.append("}")
     consume str
@@ -84,6 +85,7 @@ class Sequence
       else
         str.append(",\n")
       end
+      str.append(indent')
       match item
       | let obj: this->Object =>
         str.append(obj._get_string(indent'))
@@ -97,6 +99,7 @@ class Sequence
         str.append(if bol then "true" else "false" end)
       end
     end
+    str.append("\n")
     str.append(indent)
     str.append("]")
     consume str

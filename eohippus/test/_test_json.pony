@@ -10,7 +10,10 @@ class iso _TestJsonString is UnitTest
   fun exclusion_group(): String => "json"
 
   fun apply(h: TestHelper) =>
-    let x = recover val json.Sequence([ "mu"; true ]) end
+    let x =
+      recover val
+        json.Sequence([ "mu"; true ])
+      end
     let z =
       recover val
         json.Object([
@@ -32,23 +35,31 @@ class iso _TestJsonString is UnitTest
       ("c", c)
     ])
 
-    let expected = """
-      {
-        "a": 123.456,
-        "b": false,
-        "c": {
-          "x": [
-            "mu",
-            true
-          ],
-          "y": "upsilon",
-          "z": {
-            "o": 678.9,
-            "p": "psi"
+    var expected: String val =
+      """
+        {
+          "a": 123.456,
+          "b": false,
+          "c": {
+            "x": [
+              "mu",
+              true
+            ],
+            "y": "upsilon",
+            "z": {
+              "o": 678.9,
+              "p": "psi"
+            }
           }
         }
-      }
-    """
+      """
+    expected = expected.clone().>strip("\r\n")
 
-    let actual = recover val obj.string() end
-    h.assert_eq[String](expected, actual)
+    let actual: String val = obj.string()
+
+    let exp: String val = expected.clone().>replace("\r\n", "\\n")
+    let act: String val = actual.clone().>replace("\n", "\\n")
+    // h.log("expected: '" + exp + "'")
+    // h.log("actual:   '" + act + "'")
+
+    h.assert_eq[String](exp, act)
