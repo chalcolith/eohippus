@@ -1,3 +1,4 @@
+use json = "../json"
 use ".."
 
 class val ErrorSection is (Node & NodeWithChildren)
@@ -13,7 +14,12 @@ class val ErrorSection is (Node & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => true
-  fun get_string(indent: String): String =>
-    indent + "<ERROR message=\"" + StringUtil.escape(_message) + "\"/>"
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "ErrorSection")
+        ("message", _message)
+      ])
+    end
   fun children(): NodeSeq => _children
   fun message(): String => _message

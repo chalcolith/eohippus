@@ -181,6 +181,7 @@ class ExpressionBuilder
         let if_true = Variable("if_true")
         let then_block = Variable("then_block")
         let else_block = Variable("else_block")
+        let keyword = Variable("keyword")
 
         // seq <= annotation? item (';'? item)*
         exp_seq.set_body(
@@ -319,14 +320,19 @@ class ExpressionBuilder
 
         exp_jump.set_body(
           Disj([
-            kwd_return
-            kwd_break
-            kwd_continue
-            kwd_error
-            kwd_compile_intrinsic
-            kwd_compile_error
+            Conj([
+              Disj([
+                Bind(keyword, kwd_return)
+                Bind(keyword, kwd_break)
+              ])
+              Ques(Bind(rhs, Disj([ exp_assignment; exp_infix ])))
+            ])
+            Bind(keyword, kwd_continue)
+            Bind(keyword, kwd_error)
+            Bind(keyword, kwd_compile_intrinsic)
+            Bind(keyword, kwd_compile_error)
           ],
-          this~_jump_action()))
+          this~_jump_action(keyword, rhs)))
 
         exp_atom.set_body(
           Disj([
@@ -540,14 +546,17 @@ class ExpressionBuilder
     (ast.Call(_Build.info(r), c, lhs', params'), b)
 
   fun tag _jump_action(
+    keyword: Variable,
+    rhs: Variable,
     r: Success,
     c: ast.NodeSeq[ast.Node],
     b: Bindings): ((ast.Node | None), Bindings)
   =>
-    for child in c.values() do
-      match child
-      | let kwd: ast.Keyword =>
-        return (ast.Jump(_Build.info(r), c, kwd), b)
+    let keyword' =
+      try
+        _Build.value(b, keyword)? as ast.Keyword
+      else
+        return _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
       end
-    end
-    _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
+    let rhs' = try _Build.value(b, rhs)? end
+    (ast.Jump(_Build.info(r), c, keyword', rhs'), b)

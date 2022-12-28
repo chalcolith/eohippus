@@ -1,4 +1,6 @@
 use "itertools"
+
+use json = "../json"
 use types = "../types"
 use ".."
 
@@ -27,20 +29,24 @@ class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)
     _body = orig._body
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str = String
-      let inner: String = indent + "  "
-      str.append(indent + "<ANNOTATION ids=\"")
-      for id in _identifiers.values() do
-        str.append(" " + id.name())
+
+  fun info(): json.Item iso^ =>
+    let ids =
+      recover val
+        json.Sequence(
+          Array[json.Item](_identifiers.size())
+            .>concat(Iter[Identifier](_identifiers.values())
+              .map[json.Item]({(id) => id.name()}))
+        )
       end
-      str.append("\">\n")
-      str.append(_body.get_string(inner))
-      str.append("\n")
-      str.append(indent + "</ANNOTATION>")
-      str
+    recover
+      json.Object([
+        ("node", "Annotation")
+        ("identifiers", ids)
+        ("body", _body.info())
+      ])
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): Annotation =>
     Annotation._with_ast_type(this, ast_type')

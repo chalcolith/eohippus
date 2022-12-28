@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -44,7 +45,9 @@ class val LiteralChar is
     _value_error = orig._value_error
 
   fun src_info(): SrcInfo => _src_info
+
   fun has_error(): Bool => _value_error
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lc: LiteralChar =>
@@ -53,7 +56,8 @@ class val LiteralChar is
     else
       false
     end
-  fun get_string(indent: String): String =>
+
+  fun info(): json.Item iso^ =>
     let type_name =
       match _ast_type
       | let type': types.AstType =>
@@ -61,17 +65,27 @@ class val LiteralChar is
       else
         "?LiteralChar?"
       end
-    indent + "<LIT type=\"" + type_name + "\" value=\""
-      + (if _value_error then "?ERROR?" else _value.string() end) + "\"/>"
+    recover
+      json.Object([
+        ("node", "LiteralChar")
+        ("type", type_name)
+        ("value", if _value_error then "?ERROR?" else _value.string() end)
+      ])
+    end
 
   fun ast_type(): (types.AstType | None) => _ast_type
+
   fun val with_ast_type(ast_type': types.AstType): LiteralChar =>
     LiteralChar._with_ast_type(this, ast_type')
 
   fun children(): NodeSeq => _children
+
   fun body(): Span => _body
+
   fun post_trivia(): Trivia => _post_trivia
+
   fun value(): U32 => _value
+
   fun value_error(): Bool => _value_error
 
   fun tag _get_char_value(children': NodeSeq): (U32, Bool) =>
@@ -117,6 +131,7 @@ class val LiteralCharEscape is (Node & NodeWithValue[U32])
     _value_error = value_error'
 
   fun src_info(): SrcInfo => _src_info
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lc: LiteralCharEscape =>
@@ -125,11 +140,17 @@ class val LiteralCharEscape is (Node & NodeWithValue[U32])
     else
       false
     end
-  fun get_string(indent: String): String =>
-    indent + "<ESC value=\""
-      + (if _value_error then "?ERROR?" else _value.string() end) + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "LiteralCharEscape")
+        ("value", if _value_error then "?ERROR?" else _value.string() end)
+      ])
+    end
 
   fun value(): U32 => _value
+
   fun value_error(): Bool => _value_error
 
   fun tag _get_char_value(si: SrcInfo): (U32, Bool) =>
@@ -206,6 +227,7 @@ class val LiteralCharUnicode is (Node & NodeWithValue[U32])
     _value_error = value_error'
 
   fun src_info(): SrcInfo => _src_info
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lc: LiteralCharUnicode =>
@@ -214,9 +236,14 @@ class val LiteralCharUnicode is (Node & NodeWithValue[U32])
     else
       false
     end
-  fun get_string(indent: String): String =>
-    indent + "<ESC_UNI value=\""
-      + (if _value_error then " ?ERROR?" else _value.string() end) + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "LiteralCharUnicode")
+        ("value", if _value_error then "?ERROR?" else _value.string() end)
+      ])
+    end
 
   fun value(): U32 => _value
   fun value_error(): Bool => _value_error

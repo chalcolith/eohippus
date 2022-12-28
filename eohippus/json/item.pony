@@ -15,6 +15,14 @@ class Object
       _items(key) = value
     end
 
+  fun contains(key: (String | USize)): Bool =>
+    let key' =
+      match key
+      | let k: String => k
+      | let n: USize => n.string()
+      end
+    _items.contains(key')
+
   fun apply(key: String): Item ? =>
     _items(key)?
 
@@ -69,6 +77,9 @@ class Sequence
     end
 
   fun size(): USize => _items.size()
+
+  fun contains(key: USize): Bool =>
+    key < _items.size()
 
   fun apply(i: USize): this->Item ? => _items.apply(i)?
 

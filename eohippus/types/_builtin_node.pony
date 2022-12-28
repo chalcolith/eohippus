@@ -1,6 +1,7 @@
 use "collections/persistent"
 
 use ast = "../ast"
+use json = "../json"
 use parser = "../parser"
 
 class val _BuiltinNode is ast.Node
@@ -27,5 +28,10 @@ class val _BuiltinNode is ast.Node
   fun has_error(): Bool => false
   fun ast_type(): (AstType | None) => None
 
-  fun get_string(indent: String): String =>
-    indent + "<BUILTIN " + _src_info.locator() + ">"
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "BUILTIN")
+        ("locator", _src_info.locator())
+      ])
+    end

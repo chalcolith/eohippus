@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use ".."
 
@@ -21,26 +22,22 @@ class val UsingPony is (Node & NodeWithChildren)
     _def_id = def_id'
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    let def_str =
-      match _def_id
-      | let di: Identifier =>
-        if not _def_flag then
-          "not " + StringUtil.escape(di.name())
-        else
-          StringUtil.escape(di.name())
-        end
-      else
-        ""
-      end
 
-    match _identifier
-    | let id: Identifier =>
-      indent + "<USE id=\"" + StringUtil.escape(id.name()) + "\" path=\""
-        + StringUtil.escape(_path.value()) + "\" if=\"" + def_str + "\"/>"
-    else
-      indent + "<USE path=\"" + StringUtil.escape(_path.value()) + "\" if=\"" +
-        def_str + "\"/>"
+  fun info(): json.Item iso^ =>
+    recover
+      let items = Array[(String, json.Item)]
+      items.push(("node", "Using"))
+      items.push(("path", _path.info()))
+      match _identifier
+      | let id: Identifier =>
+        items.push(("id", id.info()))
+      end
+      match _def_id
+      | let id: Identifier =>
+        items.push(("ifdef", id.info()))
+        items.push(("ifdef_flag", _def_flag))
+      end
+      json.Object(items)
     end
 
   fun children(): NodeSeq => _children

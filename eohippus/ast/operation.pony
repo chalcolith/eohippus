@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -29,24 +30,26 @@ class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
     _rhs = orig._rhs
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str: String ref = String
-      let inner: String = indent + "  "
-      str.append(indent + "<OPERATION op=\"" + _op.name() + "\">\n")
+
+  fun info(): json.Item iso^ =>
+    recover
+      let items: Array[(String, json.Item)] = [
+        ("node", "Operation")
+        ("op", _op.info())
+        ("rhs", _rhs.info())
+      ]
       match _lhs
       | let lhs': Node =>
-        str.append(lhs'.get_string(inner))
-        str.append("\n")
+        items.push(("lhs", lhs'.info()))
       end
-      str.append(_rhs.get_string(inner))
-      str.append("\n")
-      str.append(indent + "</OPERATION>")
-      str
+      json.Object(items)
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
+
   fun val with_ast_type(ast_type': types.AstType): Operation =>
     Operation._with_ast_type(this, ast_type')
+
   fun children(): NodeSeq => _children
 
   fun lhs(): (Node | None) => _lhs

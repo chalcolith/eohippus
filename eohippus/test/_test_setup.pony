@@ -1,5 +1,6 @@
 use "collections/persistent"
 
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 

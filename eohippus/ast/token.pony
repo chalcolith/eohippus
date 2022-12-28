@@ -1,3 +1,4 @@
+use json = "../json"
 use ".."
 
 primitive Tokens
@@ -36,10 +37,19 @@ class val Token is (Node & NodeWithTrivia & NodeWithName)
     _name = _body.literal_source()
 
   fun src_info(): SrcInfo => _src_info
+
   fun has_error(): Bool => false
-  fun get_string(indent: String): String =>
-    indent + "<TK string=\"" + StringUtil.escape(_name) + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "Token")
+        ("string", _name)
+      ])
+    end
+
   fun body(): Span => _body
+
   fun post_trivia(): Trivia => _post_trivia
 
   fun name(): String => _name

@@ -1,6 +1,7 @@
 use "itertools"
 
 use ast = "../ast"
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -61,9 +62,16 @@ class val LiteralString is
       false
     end
 
-  fun get_string(indent: String): String =>
-    indent + "<LIT type=\"builtin/String\" value=\"" +
-      StringUtil.escape(_value) + "\"/>"
+  fun info(): json.Item iso^ =>
+    recover
+      let type_name = recover val _ast_type.string() end
+      json.Object([
+        ("node", "LiteralString")
+        ("type", type_name)
+        ("triple", _triple_quote)
+        ("value", _value)
+      ])
+    end
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralString => this

@@ -1,3 +1,4 @@
+use json = "../json"
 use ".."
 
 primitive Keywords
@@ -37,10 +38,19 @@ class val Keyword is (Node & NodeWithTrivia & NodeWithName)
     _name = name'
 
   fun src_info(): SrcInfo => _src_info
+
   fun has_error(): Bool => false
-  fun get_string(indent: String): String =>
-    indent + "<KWD name=\"" + StringUtil.escape(_name) + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "Keyword")
+        ("name", _name)
+      ])
+    end
+
   fun body(): Span => _body
+
   fun post_trivia(): Trivia => _post_trivia
 
   fun name(): String => _name

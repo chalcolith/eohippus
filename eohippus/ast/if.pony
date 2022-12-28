@@ -1,3 +1,6 @@
+use "itertools"
+
+use json = "../json"
 use types = "../types"
 
 class val If is (Node & NodeWithType[If] & NodeWithChildren)
@@ -25,23 +28,28 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
     _else_block = orig._else_block
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str = String
-      let inner: String = indent + "  "
-      str.append(indent + "<IF>\n")
-      for condition in _conditions.values() do
-        str.append(condition.get_string(inner))
-        str.append("\n")
-      end
+
+  fun info(): json.Item iso^ =>
+    recover
+      let conds =
+        json.Sequence(
+          Array[json.Item].>concat(
+            Iter[IfCondition](_conditions.values())
+              .map[json.Item]({(cond) => cond.info()}))
+        )
+      let properties =
+        [as (String, json.Item):
+          ("node", "If")
+          ("conditions", conds)
+        ]
       match _else_block
       | let n: Node =>
-        str.append(n.get_string(inner))
-        str.append("\n")
+        properties.push(("else_block", n.info()))
       end
-      str.append(indent + "</IF>")
-      str
+
+      json.Object(properties)
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): If =>
     If._with_ast_type(this, ast_type')
@@ -73,23 +81,16 @@ class val IfCondition is (Node & NodeWithType[IfCondition] & NodeWithChildren)
     _then_block = orig._then_block
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str = String
-      let inner: String = indent + "  "
-      let inner2: String = indent + "    "
-      str.append(indent + "<CONDITION>\n")
-      str.append(inner + "<IFTRUE>\n")
-      str.append(_if_true.get_string(inner2))
-      str.append("\n")
-      str.append(inner + "</IFTRUE>\n")
-      str.append(inner + "<THEN>\n")
-      str.append(_then_block.get_string(inner2))
-      str.append("\n")
-      str.append(inner + "</THEN>\n")
-      str.append(indent + "</CONDITION>")
-      str
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "IfCondition")
+        ("condition", _if_true.info())
+        ("then", _then_block.info())
+      ])
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): IfCondition =>
     IfCondition._with_ast_type(this, ast_type')

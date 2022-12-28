@@ -1,3 +1,6 @@
+use "itertools"
+
+use json = "../json"
 use ".."
 
 class val Trivia is (Node & NodeWithChildren)
@@ -11,18 +14,18 @@ class val Trivia is (Node & NodeWithChildren)
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    recover val
-      let s = String
-      s.append(indent)
-      s.append("<TRIVIA>\n")
-      let inner: String = indent + "  "
-      for child in _children.values() do
-        s.append(child.get_string(inner))
-        s.append("\n")
-      end
-      s.append("</TRIVIA>")
-      s
+  fun info(): json.Item iso^ =>
+    recover
+      let children' =
+        recover val
+          json.Sequence(Array[json.Item].>concat(
+            Iter[Node](_children.values())
+              .map[json.Item]({(child) => child.info()})))
+        end
+      json.Object([
+        ("node", "Trivia")
+        ("children", children')
+      ])
     end
 
   fun children(): NodeSeq => _children
@@ -36,15 +39,12 @@ class val TriviaLineComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    recover val
-      let result = String
-      result.append(indent)
-      result.append("<LINE_COMMENT string=\"")
-      result.append(StringUtil.escape(
-        recover val String.>concat(start().values(next())) end))
-      result.append("\"/>")
-      result
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TriviaLineComment")
+        ("string", recover val String.>concat(start().values(next())) end)
+      ])
     end
 
 class val TriviaNestedComment is Node
@@ -56,15 +56,12 @@ class val TriviaNestedComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    recover val
-      let result = String
-      result.append(indent)
-      result.append("<NESTED_COMMENT string=\"")
-      result.append(StringUtil.escape(
-        recover val String.>concat(start().values(next())) end))
-      result.append("\"/>")
-      result
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TriviaNestedComment")
+        ("string", recover val String.>concat(start().values(next())) end)
+      ])
     end
 
 class val TriviaWS is Node
@@ -76,15 +73,12 @@ class val TriviaWS is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    recover val
-      let result = String
-      result.append(indent)
-      result.append("<WS string=\"")
-      result.append(StringUtil.escape(
-        recover val String.>concat(start().values(next())) end))
-      result.append("\"/>")
-      result
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TriviaWS")
+        ("string", recover val String.>concat(start().values(next())) end)
+      ])
     end
 
 class val TriviaEOL is Node
@@ -96,8 +90,12 @@ class val TriviaEOL is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    indent + "<EOL/>"
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TriviaEOL")
+      ])
+    end
 
 class val TriviaEOF is Node
   let _src_info: SrcInfo
@@ -108,5 +106,9 @@ class val TriviaEOF is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun get_string(indent: String): String =>
-    indent + "<EOF/>"
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TriviaEOF")
+      ])
+    end

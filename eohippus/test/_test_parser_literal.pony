@@ -2,6 +2,7 @@ use "collections/persistent"
 use "pony_test"
 
 use ast = "../ast"
+use json = "../json"
 use parser = "../parser"
 use ".."
 

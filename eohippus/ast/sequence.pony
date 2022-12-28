@@ -1,3 +1,6 @@
+use "itertools"
+
+use json = "../json"
 use types = "../types"
 
 class val Sequence is (Node & NodeWithType[Sequence] & NodeWithChildren)
@@ -16,19 +19,24 @@ class val Sequence is (Node & NodeWithType[Sequence] & NodeWithChildren)
     _children = orig._children
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str: String ref = String
-      let inner: String = indent + "  "
-      str.append(indent + "<SEQUENCE>\n")
-      for child in _children.values() do
-        str.append(child.get_string(inner))
-        str.append("\n")
-      end
-      str.append(indent + "</SEQUENCE>")
-      str
+
+  fun info(): json.Item iso^ =>
+    recover
+      let children' =
+        recover val
+          json.Sequence(Array[json.Item].>concat(
+            Iter[Node](_children.values())
+              .map[json.Item]({(child) => child.info()})))
+        end
+      json.Object([
+        ("node", "Sequence")
+        ("children", children')
+      ])
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
+
   fun val with_ast_type(ast_type': types.AstType): Sequence =>
     Sequence._with_ast_type(this, ast_type')
+
   fun children(): NodeSeq => _children

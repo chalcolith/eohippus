@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -20,8 +21,8 @@ trait val Node is (Equatable[Node] & Stringable)
 
   fun ne(other: box->Node): Bool => not eq(other)
 
-  fun get_string(indent: String): String
-  fun string(): String iso^ => get_string("").clone()
+  fun info(): json.Item iso^ => recover iso json.Object([]) end
+  fun string(): String iso^ => this.info().string()
 
 trait val NodeWithType[N: NodeWithType[N]] is Node
   fun ast_type(): (types.AstType | None)

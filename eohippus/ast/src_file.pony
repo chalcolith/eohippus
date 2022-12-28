@@ -1,3 +1,6 @@
+use "itertools"
+
+use json = "../json"
 use parser = "../parser"
 
 class val SrcFile is
@@ -28,26 +31,42 @@ class val SrcFile is
     _typedefs = typedefs'
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str: String ref = String
-      str.append(indent + "<SRC_FILE locator=\"" + _src_info.locator() +
-        "\">\n")
-      let inner: String = indent + "  "
-      for ds in _docstring.values() do
-        str.append(ds.get_string(inner))
-        str.append("\n")
+
+  fun info(): json.Item iso^ =>
+    recover
+      let items = Array[(String, json.Item)].>push(("node", "SrcFile"))
+
+      let docstrings' =
+        recover val
+          Array[json.Item].>concat(
+            Iter[Docstring](_docstring.values())
+              .map[json.Item]({(ds) => ds.info()}))
+        end
+      if docstrings'.size() > 0 then
+        items.push(("docstrings", json.Sequence(docstrings')))
       end
-      for us in _usings.values() do
-        str.append(us.get_string(inner))
-        str.append("\n")
+
+      let usings' =
+        recover val
+          Array[json.Item].>concat(
+            Iter[Node](_usings.values())
+              .map[json.Item]({(us) => us.info()}))
+        end
+      if usings'.size() > 0 then
+        items.push(("usings", json.Sequence(usings')))
       end
-      for td in _typedefs.values() do
-        str.append(td.get_string(inner))
-        str.append("\n")
+
+      let typedefs' =
+        recover val
+          Array[json.Item].>concat(
+            Iter[Node](_typedefs.values())
+              .map[json.Item]({(td) => td.info()}))
+        end
+      if typedefs'.size() > 0 then
+        items.push(("typedefs", json.Sequence(typedefs')))
       end
-      str.append(indent + "</SRC_FILE>")
-      str
+
+      json.Object(items)
     end
 
   fun children(): NodeSeq => _children

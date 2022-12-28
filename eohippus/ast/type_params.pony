@@ -1,5 +1,6 @@
 use "itertools"
 
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -40,29 +41,31 @@ class val TypeParams is (Node & NodeWithType[TypeParams] & NodeWithChildren)
     _params = orig._params
 
   fun src_info(): SrcInfo => _src_info
-  fun get_string(indent: String): String =>
-    recover val
-      let str: String ref = String
-      let inner: String = indent + "  "
-      let inner2: String = indent + "    "
-      str.append(indent + "<TYPEPARAMS>\n")
-      str.append(inner + "<LHS>\n")
-      str.append(_lhs.get_string(inner2))
-      str.append("\n")
-      str.append(inner + "</LHS>\n")
-      str.append(inner + "<PARAMS>\n")
-      for param in _params.values() do
-        str.append(param.get_string(inner2))
-        str.append("\n")
+
+  fun info(): json.Item iso^ =>
+    recover
+      let items = Array[(String, json.Item)]
+      items.push(("node", "TypeParams"))
+      items.push(("lhs", _lhs.info()))
+      let params' =
+        recover val
+          Array[json.Item].>concat(
+            Iter[Node](_params.values())
+              .map[json.Item]({(p) => p.info()}))
+        end
+      if params'.size() > 0 then
+        items.push(("params", json.Sequence(params')))
       end
-      str.append(inner + "</PARAMS>\n")
-      str.append(indent + "</TYPEPARAMS>")
-      str
+      json.Object(items)
     end
+
   fun ast_type(): (types.AstType | None) => _ast_type
+
   fun val with_ast_type(ast_type': types.AstType): TypeParams =>
     TypeParams._with_ast_type(this, ast_type')
+
   fun children(): NodeSeq => _children
 
   fun lhs(): Node => _lhs
+
   fun params(): NodeSeq => _params

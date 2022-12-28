@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -86,16 +87,21 @@ class val LiteralFloat is
       false
     end
 
-  fun get_string(indent: String): String =>
-    let type_name =
-      match _ast_type
-      | let type': types.AstType =>
-        type'.string()
-      else
-        "?LiteralFloat?"
-      end
-    indent + "<LIT type=\"" + type_name + "\" value=\""
-      + (if _value_error then " ?ERORR?" else _value.string() end) + "\"/>"
+  fun info(): json.Item iso^ =>
+    recover
+      let type_name =
+        match _ast_type
+        | let type': types.AstType =>
+          type'.string()
+        else
+          "?LiteralFloat?"
+        end
+      json.Object([
+        ("node", "LiteralFloat")
+        ("type", type_name)
+        ("value", if _value_error then " ?ERORR?" else _value.string() end)
+      ])
+    end
 
   fun ast_type(): (types.AstType | None) => _ast_type
   fun val with_ast_type(ast_type': types.AstType): LiteralFloat =>

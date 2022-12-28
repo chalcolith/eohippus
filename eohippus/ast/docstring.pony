@@ -1,3 +1,4 @@
+use json = "../json"
 use ".."
 
 class val Docstring is (Node & NodeWithChildren & NodeWithValue[String])
@@ -14,9 +15,13 @@ class val Docstring is (Node & NodeWithChildren & NodeWithValue[String])
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => value_error()
-  fun get_string(indent: String): String =>
-    indent + "<DOCSTRING string=\"" + StringUtil.escape(_value.string())
-    + "\"/>"
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "Docstring")
+        ("string", _value.string())
+      ])
+    end
   fun children(): NodeSeq => _children
   fun value(): String => _value.value()
   fun value_error(): Bool => _value.value_error()

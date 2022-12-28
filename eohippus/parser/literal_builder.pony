@@ -292,7 +292,8 @@ class LiteralBuilder
                         Neg(Single(ast.Tokens.single_quote()))
                         Disj([
                           char_escape()
-                          Single("", {(r, _, b) => (ast.Span(_Build.info(r)), b) })
+                          Single("",
+                            {(r, _, b) => (ast.Span(_Build.info(r)), b) })
                         ])
                       ]), 1)
                     Error(ErrorMsg.literal_char_empty())

@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 
 class val TypedefPrimitive is (Node & NodeWithDocstring)
@@ -13,9 +14,17 @@ class val TypedefPrimitive is (Node & NodeWithDocstring)
     _identifier = identifier'
 
   fun src_info(): SrcInfo => _src_info
+
   fun has_error(): Bool => false
-  fun get_string(indent: String): String =>
-    indent + "<PRIMITIVE name=\"" + _identifier.name() + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "TypedefPrimitive")
+        ("name", _identifier.info())
+      ])
+    end
+
   fun docstring(): NodeSeq[Docstring] => _docstring
 
   fun identifier(): Identifier => _identifier

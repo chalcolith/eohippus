@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
@@ -20,6 +21,7 @@ class val LiteralBool is
     _value = value'
 
   fun src_info(): SrcInfo => _src_info
+
   fun eq(other: box->Node): Bool =>
     match other
     | let lb: box->LiteralBool =>
@@ -27,13 +29,26 @@ class val LiteralBool is
     else
       false
     end
+
   fun ne(other: box->Node): Bool => not this.eq(other)
-  fun get_string(indent: String): String =>
-    indent + "<LIT type=\"" + ast_type().string() + "\" value=\"" +
-      _value.string() + "\"/>"
+
+  fun info(): json.Item iso^ =>
+    recover
+      json.Object([
+        ("node", "LiteralBool")
+        ("type", ast_type().string())
+        ("value", _value.string())
+      ])
+    end
+
   fun ast_type(): types.AstType => _ast_type
+
   fun val with_ast_type(ast_type': types.AstType): LiteralBool => this
+
   fun body(): Span => _body
+
   fun post_trivia(): Trivia => _post_trivia
+
   fun value(): Bool => _value
+
   fun value_error(): Bool => false

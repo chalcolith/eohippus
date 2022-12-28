@@ -1,3 +1,4 @@
+use json = "../json"
 use parser = "../parser"
 
 primitive Inherited
