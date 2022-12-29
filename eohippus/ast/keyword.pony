@@ -15,6 +15,7 @@ primitive Keywords
   fun kwd_error(): String => "error"
   fun kwd_false(): String => "false"
   fun kwd_if(): String => "if"
+  fun kwd_ifdef(): String => "ifdef"
   fun kwd_loc(): String => "__loc"
   fun kwd_not(): String => "not"
   fun kwd_primitive(): String => "primitive"

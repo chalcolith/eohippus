@@ -121,6 +121,7 @@ class ExpressionBuilder
     let kwd_end = _keyword.kwd_end()
     let kwd_error = _keyword.kwd_error()
     let kwd_if = _keyword.kwd_if()
+    let kwd_ifdef = _keyword.kwd_ifdef()
     let kwd_loc = _keyword.kwd_loc()
     let kwd_return = _keyword.kwd_return()
     let kwd_then = _keyword.kwd_then()
@@ -144,7 +145,7 @@ class ExpressionBuilder
         let exp_if = NamedRule("Expression_If", None)                      // x
         let exp_cond = NamedRule("Expression_IfCondition", None)           // x
         let exp_elsif = NamedRule("Expression_Elsif", None)                // x
-        let exp_ifdef = NamedRule("Expression_IfDef", None)
+        let exp_ifdef = NamedRule("Expression_IfDef", None)                // x
         let exp_iftype = NamedRule("Expression_IfType", None)
         let exp_match = NamedRule("Expression_Match", None)
         let exp_while = NamedRule("Expression_While", None)
@@ -276,6 +277,26 @@ class ExpressionBuilder
             kwd_end
           ],
           this~_if_action(firstif, elseifs, else_block)))
+
+        // ifdef <= 'ifdef' cond ('elseif' cond)* ('else' seq)? 'end'
+        exp_ifdef.set_body(
+          Conj([
+            kwd_ifdef
+            Bind(firstif, exp_cond)
+            Bind(elseifs,
+              Star(
+                Conj([
+                  kwd_elseif
+                  exp_cond
+                ])))
+            Ques(
+              Conj([
+                kwd_else
+                Bind(else_block, exp_seq)
+              ]))
+            kwd_end
+          ],
+          this~_ifdef_action(firstif, elseifs, else_block)))
 
         // cond <= seq 'then' seq
         exp_cond.set_body(
@@ -460,6 +481,47 @@ class ExpressionBuilder
       end
 
     (ast.If(_Build.info(r), c, conditions, else_block'), b)
+
+  fun tag _ifdef_action(
+    firstif: Variable,
+    elseifs: Variable,
+    else_block: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let firstif' =
+      try
+        _Build.value(b, firstif)? as ast.IfCondition
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      end
+    let elseifs' =
+      try
+        recover val
+          Array[ast.IfCondition].>concat(
+            Iter[ast.Node](_Build.values(b, elseifs)?.values())
+              .filter_map[ast.IfCondition](
+                {(n) => try n as ast.IfCondition end }))
+        end
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      end
+    let else_block' =
+      try
+        _Build.value_or_none(b, else_block)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/If/ElseSeq")
+      end
+    let conditions =
+      recover val
+        let conditions' = Array[ast.IfCondition](1 + elseifs'.size())
+        conditions'.push(firstif')
+        conditions'.append(elseifs')
+        conditions'
+      end
+
+    (ast.IfDef(_Build.info(r), c, conditions, else_block'), b)
 
   fun tag _ifcond_action(
     if_true: Variable,

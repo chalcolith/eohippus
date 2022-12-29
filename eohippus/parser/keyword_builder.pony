@@ -18,6 +18,7 @@ class KeywordBuilder
   var _end: (NamedRule | None) = None
   var _error: (NamedRule | None) = None
   var _if: (NamedRule | None) = None
+  var _ifdef: (NamedRule | None) = None
   var _loc: (NamedRule | None) = None
   var _not: (NamedRule | None) = None
   var _primitive: (NamedRule | None) = None
@@ -51,6 +52,7 @@ class KeywordBuilder
               Literal(ast.Keywords.kwd_end())
               Literal(ast.Keywords.kwd_error())
               Literal(ast.Keywords.kwd_if())
+              Literal(ast.Keywords.kwd_ifdef())
               Literal(ast.Keywords.kwd_loc())
               Literal(ast.Keywords.kwd_not())
               Literal(ast.Keywords.kwd_primitive())
@@ -98,6 +100,10 @@ class KeywordBuilder
   fun ref kwd_if(): NamedRule =>
     _kwd_rule({() => _if}, {ref (r) => _if = r}, "Keyword_If",
       ast.Keywords.kwd_if())
+
+  fun ref kwd_ifdef(): NamedRule =>
+    _kwd_rule({() => _ifdef}, {ref (r) => _ifdef = r}, "Keyword_Ifdef",
+      ast.Keywords.kwd_ifdef())
 
   fun ref kwd_not(): NamedRule =>
     _kwd_rule({() => _not}, {ref (r) => _not = r}, "Keyword_Not",
