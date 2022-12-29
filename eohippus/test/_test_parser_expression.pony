@@ -137,7 +137,7 @@ class iso _TestParserExpressionIfDef is UnitTest
 
           let if_exp =
             try
-              node as ast.If
+              node as ast.IfDef
             else
               h.fail("Value is not an If node")
               return false
