@@ -22,6 +22,7 @@ primitive Tokens
   fun close_paren(): String => ")"
   fun open_curly(): String => "{"
   fun close_curly(): String => "}"
+  fun subtype(): String => "<:"
 
 class val Token is (Node & NodeWithTrivia & NodeWithName)
   let _src_info: SrcInfo

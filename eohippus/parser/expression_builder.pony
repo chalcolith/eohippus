@@ -122,6 +122,7 @@ class ExpressionBuilder
     let kwd_error = _keyword.kwd_error()
     let kwd_if = _keyword.kwd_if()
     let kwd_ifdef = _keyword.kwd_ifdef()
+    let kwd_iftype = _keyword.kwd_iftype()
     let kwd_loc = _keyword.kwd_loc()
     let kwd_return = _keyword.kwd_return()
     let kwd_then = _keyword.kwd_then()
@@ -132,6 +133,7 @@ class ExpressionBuilder
     let semicolon = _token.semicolon()
     let trivia = _trivia.trivia()
     let type_rule = _type.type_rule()
+    let subtype = _token.subtype()
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
@@ -297,6 +299,46 @@ class ExpressionBuilder
             kwd_end
           ],
           this~_ifdef_action(firstif, elseifs, else_block)))
+
+        // iftype <= 'iftype' type '<:' type 'then' seq ('elseif' type '<:' type)*
+        //           ('else' seq)? 'end'
+        exp_iftype.set_body(
+          Conj([
+            kwd_iftype
+            Bind(firstif,
+              Conj([
+                Bind(if_true,
+                  Conj([
+                    Bind(lhs, type_rule)
+                    Bind(op, subtype)
+                    Bind(rhs, type_rule)
+                  ]))
+                kwd_then
+                Bind(then_block, exp_seq)
+              ],
+              this~_iftype_cond_action(if_true, lhs, op, rhs, then_block)))
+            Bind(elseifs,
+              Star(
+                Conj([
+                  kwd_elseif
+                  Bind(if_true,
+                    Conj([
+                      Bind(lhs, type_rule)
+                      Bind(op, subtype)
+                      Bind(rhs, type_rule)
+                    ]))
+                  kwd_then
+                  Bind(then_block, exp_seq)
+                ],
+                this~_iftype_cond_action(if_true, lhs, op, rhs, then_block))))
+            Ques(
+              Conj([
+                kwd_else
+                Bind(else_block, exp_seq)
+              ]))
+            kwd_end
+          ],
+          this~_iftype_action(firstif, elseifs, else_block)))
 
         // cond <= seq 'then' seq
         exp_cond.set_body(
@@ -494,7 +536,7 @@ class ExpressionBuilder
       try
         _Build.value(b, firstif)? as ast.IfCondition
       else
-        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+        return _Build.bind_error(r, c, b, "Expression/If/Firstif")
       end
     let elseifs' =
       try
@@ -523,6 +565,46 @@ class ExpressionBuilder
 
     (ast.IfDef(_Build.info(r), c, conditions, else_block'), b)
 
+  fun tag _iftype_action(
+    firstif: Variable,
+    elseifs: Variable,
+    else_block: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let firstif' =
+      try
+        _Build.value(b, firstif)? as ast.IfCondition
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfType/Firstif")
+      end
+    let elseifs' =
+      try
+        recover val
+          Array[ast.IfCondition].>concat(
+            Iter[ast.Node](_Build.values(b, elseifs)?.values())
+              .filter_map[ast.IfCondition](
+                {(n) => try n as ast.IfCondition end }))
+        end
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfType/Elseifs")
+      end
+    let else_block' =
+      try
+        _Build.value_or_none(b, else_block)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfType/ElseSeq")
+      end
+    let conditions =
+      recover val
+        Array[ast.IfCondition](1 + elseifs'.size())
+          .>push(firstif')
+          .>append(elseifs')
+      end
+
+    (ast.IfType(_Build.info(r), c, conditions, else_block'), b)
+
   fun tag _ifcond_action(
     if_true: Variable,
     then_block: Variable,
@@ -543,6 +625,52 @@ class ExpressionBuilder
         return _Build.bind_error(r, c, b, "Expression/IfCond/TrueSeq")
       end
     (ast.IfCondition(_Build.info(r), c, if_true', then_block'), b)
+
+  fun tag _iftype_cond_action(
+    if_true: Variable,
+    lhs: Variable,
+    op: Variable,
+    rhs: Variable,
+    then_block: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let cond_children =
+      try
+        _Build.values(b, if_true)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfTypeConf/IfTrue")
+      end
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/LHS")
+      end
+    let op' =
+      try
+        _Build.value(b, op)? as ast.Token
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Op")
+      end
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/RHS")
+      end
+    let then_block' =
+      try
+        _Build.value(b, then_block)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Then")
+      end
+    let cond_info = ast.SrcInfo(
+      r.data.locator(), lhs'.src_info().start(), rhs'.src_info().next())
+    let cond = ast.Operation(cond_info, cond_children, lhs', op', rhs')
+
+    (ast.IfCondition(_Build.info(r), c, cond, then_block'), b)
 
   fun tag _prefix_action(
     op: Variable,

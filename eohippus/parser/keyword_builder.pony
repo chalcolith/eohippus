@@ -19,6 +19,7 @@ class KeywordBuilder
   var _error: (NamedRule | None) = None
   var _if: (NamedRule | None) = None
   var _ifdef: (NamedRule | None) = None
+  var _iftype: (NamedRule | None) = None
   var _loc: (NamedRule | None) = None
   var _not: (NamedRule | None) = None
   var _primitive: (NamedRule | None) = None
@@ -53,6 +54,7 @@ class KeywordBuilder
               Literal(ast.Keywords.kwd_error())
               Literal(ast.Keywords.kwd_if())
               Literal(ast.Keywords.kwd_ifdef())
+              Literal(ast.Keywords.kwd_iftype())
               Literal(ast.Keywords.kwd_loc())
               Literal(ast.Keywords.kwd_not())
               Literal(ast.Keywords.kwd_primitive())
@@ -93,45 +95,9 @@ class KeywordBuilder
       rule
     end
 
-  fun ref kwd_use(): NamedRule =>
-    _kwd_rule({() => _use}, {ref (r) => _use = r}, "Keyword_Use",
-      ast.Keywords.kwd_use())
-
-  fun ref kwd_if(): NamedRule =>
-    _kwd_rule({() => _if}, {ref (r) => _if = r}, "Keyword_If",
-      ast.Keywords.kwd_if())
-
-  fun ref kwd_ifdef(): NamedRule =>
-    _kwd_rule({() => _ifdef}, {ref (r) => _ifdef = r}, "Keyword_Ifdef",
-      ast.Keywords.kwd_ifdef())
-
-  fun ref kwd_not(): NamedRule =>
-    _kwd_rule({() => _not}, {ref (r) => _not = r}, "Keyword_Not",
-      ast.Keywords.kwd_not())
-
-  fun ref kwd_primitive(): NamedRule =>
-    _kwd_rule({() => _primitive}, {ref (r) => _primitive = r},
-      "Keyword_Primitive", ast.Keywords.kwd_primitive())
-
-  fun ref kwd_loc(): NamedRule =>
-    _kwd_rule({() => _loc}, {ref (r) => _loc = r}, "Keyword_Loc",
-      ast.Keywords.kwd_loc())
-
-  fun ref kwd_this(): NamedRule =>
-    _kwd_rule({() => _this}, {ref (r) => _this = r}, "Keyword_This",
-      ast.Keywords.kwd_this())
-
   fun ref kwd_addressof(): NamedRule =>
     _kwd_rule({() => _addressof}, {ref (r) => _addressof = r},
       "Keyword_Addressof", ast.Keywords.kwd_addressof())
-
-  fun ref kwd_digestof(): NamedRule =>
-    _kwd_rule({() => _digestof}, {ref (r) => _digestof = r},
-      "Keyword_Digestof", ast.Keywords.kwd_digestof())
-
-  fun ref kwd_return(): NamedRule =>
-    _kwd_rule({() => _return}, {ref (r) => _return = r},
-      "Keyword_Return", ast.Keywords.kwd_return())
 
   fun ref kwd_as(): NamedRule =>
     _kwd_rule({() => _as}, {ref (r) => _as = r},
@@ -141,34 +107,74 @@ class KeywordBuilder
     _kwd_rule({() => _break}, {ref (r) => _break = r},
       "Keyword_Break", ast.Keywords.kwd_break())
 
-  fun ref kwd_continue(): NamedRule =>
-    _kwd_rule({() => _continue}, {ref (r) => _continue = r},
-      "Keyword_Continue", ast.Keywords.kwd_continue())
-
-  fun ref kwd_error(): NamedRule =>
-    _kwd_rule({() => _error}, {ref (r) => _error = r },
-      "Keyword_Error", ast.Keywords.kwd_error())
+  fun ref kwd_compile_error(): NamedRule =>
+    _kwd_rule({() => _compile_error}, {ref (r) => _compile_error = r},
+      "Keyword_CompileError", ast.Keywords.kwd_compile_error())
 
   fun ref kwd_compile_intrinsic(): NamedRule =>
     _kwd_rule({() => _compile_intrinsic}, {ref (r) => _compile_intrinsic = r},
       "Keyword_CompileIntrinsic", ast.Keywords.kwd_compile_intrinsic())
 
-  fun ref kwd_compile_error(): NamedRule =>
-    _kwd_rule({() => _compile_error}, {ref (r) => _compile_error = r},
-      "Keyword_CompileError", ast.Keywords.kwd_compile_error())
+  fun ref kwd_continue(): NamedRule =>
+    _kwd_rule({() => _continue}, {ref (r) => _continue = r},
+      "Keyword_Continue", ast.Keywords.kwd_continue())
 
-  fun ref kwd_elseif(): NamedRule =>
-    _kwd_rule({() => _elseif}, {ref (r) => _elseif = r},
-      "Keyword_Elseif", ast.Keywords.kwd_elseif())
+  fun ref kwd_digestof(): NamedRule =>
+    _kwd_rule({() => _digestof}, {ref (r) => _digestof = r},
+      "Keyword_Digestof", ast.Keywords.kwd_digestof())
 
   fun ref kwd_else(): NamedRule =>
     _kwd_rule({() => _else}, {ref (r) => _else = r},
       "Keyword_Else", ast.Keywords.kwd_else())
 
+  fun ref kwd_elseif(): NamedRule =>
+    _kwd_rule({() => _elseif}, {ref (r) => _elseif = r},
+      "Keyword_Elseif", ast.Keywords.kwd_elseif())
+
   fun ref kwd_end(): NamedRule =>
     _kwd_rule({() => _end}, {ref (r) => _end = r},
       "Keyword_End", ast.Keywords.kwd_end())
 
+  fun ref kwd_error(): NamedRule =>
+    _kwd_rule({() => _error}, {ref (r) => _error = r },
+      "Keyword_Error", ast.Keywords.kwd_error())
+
+  fun ref kwd_if(): NamedRule =>
+    _kwd_rule({() => _if}, {ref (r) => _if = r}, "Keyword_If",
+      ast.Keywords.kwd_if())
+
+  fun ref kwd_ifdef(): NamedRule =>
+    _kwd_rule({() => _ifdef}, {ref (r) => _ifdef = r}, "Keyword_Ifdef",
+      ast.Keywords.kwd_ifdef())
+
+  fun ref kwd_iftype(): NamedRule =>
+    _kwd_rule({() => _iftype}, {ref (r) => _iftype = r}, "Keyword_Iftype",
+      ast.Keywords.kwd_iftype())
+
+  fun ref kwd_loc(): NamedRule =>
+    _kwd_rule({() => _loc}, {ref (r) => _loc = r}, "Keyword_Loc",
+      ast.Keywords.kwd_loc())
+
+  fun ref kwd_not(): NamedRule =>
+    _kwd_rule({() => _not}, {ref (r) => _not = r}, "Keyword_Not",
+      ast.Keywords.kwd_not())
+
+  fun ref kwd_primitive(): NamedRule =>
+    _kwd_rule({() => _primitive}, {ref (r) => _primitive = r},
+      "Keyword_Primitive", ast.Keywords.kwd_primitive())
+
+  fun ref kwd_return(): NamedRule =>
+    _kwd_rule({() => _return}, {ref (r) => _return = r},
+      "Keyword_Return", ast.Keywords.kwd_return())
+
   fun ref kwd_then(): NamedRule =>
     _kwd_rule({() => _then}, {ref (r) => _then = r},
       "Keyword_Then", ast.Keywords.kwd_then())
+
+  fun ref kwd_this(): NamedRule =>
+    _kwd_rule({() => _this}, {ref (r) => _this = r}, "Keyword_This",
+      ast.Keywords.kwd_this())
+
+  fun ref kwd_use(): NamedRule =>
+    _kwd_rule({() => _use}, {ref (r) => _use = r}, "Keyword_Use",
+      ast.Keywords.kwd_use())

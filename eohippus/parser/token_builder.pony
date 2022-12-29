@@ -44,6 +44,7 @@ class TokenBuilder
   var _dot: (NamedRule | None) = None
   var _tilde: (NamedRule | None) = None
   var _chain: (NamedRule | None) = None
+  var _subtype: (NamedRule | None) = None
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -115,3 +116,7 @@ class TokenBuilder
   fun ref chain(): NamedRule =>
     _token_rule({() => _chain}, {ref (r) => _chain = r}, "Token_Chain",
       ast.Tokens.chain())
+
+  fun ref subtype(): NamedRule =>
+    _token_rule({() => _subtype}, {ref (r) => _subtype = r}, "Token_Subtype",
+      ast.Tokens.subtype())
