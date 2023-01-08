@@ -1,3 +1,5 @@
+use "collections"
+
 use ast = "../ast"
 use ".."
 
@@ -33,90 +35,51 @@ class TokenBuilder
   let _context: Context
   let _trivia: TriviaBuilder
 
-  var _double_quote: (NamedRule | None) = None
-  var _triple_double_quote: (NamedRule | None) = None
-  var _semicolon: (NamedRule | None) = None
-  var _equals: (NamedRule | None) = None
-  var _backslash: (NamedRule | None) = None
-  var _comma: (NamedRule | None) = None
-  var _minus: (NamedRule | None) = None
-  var _minus_tilde: (NamedRule | None) = None
-  var _dot: (NamedRule | None) = None
-  var _tilde: (NamedRule | None) = None
-  var _chain: (NamedRule | None) = None
-  var _subtype: (NamedRule | None) = None
+  let _tokens: Map[String, NamedRule]
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
     _trivia = trivia
 
-  fun ref _token_rule(get: {(): (NamedRule | None)}, set: {ref (NamedRule)},
-    name: String, str: String) : NamedRule
+    _tokens = Map[String, NamedRule]
+
+    let t = _trivia.trivia()
+    _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
+    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(),
+      t, _tokens)
+    _add_rule("Token_Semicolon", ast.Tokens.semicolon(), t, _tokens)
+    _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
+    _add_rule("Token_Backslash", ast.Tokens.backslash(), t, _tokens)
+    _add_rule("Token_Comma", ast.Tokens.comma(), t, _tokens)
+    _add_rule("Token_Minus", ast.Tokens.minus(), t, _tokens)
+    _add_rule("Token_MinusTilde", ast.Tokens.minus_tilde(), t, _tokens)
+    _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
+    _add_rule("Token_Tilde", ast.Tokens.tilde(), t, _tokens)
+    _add_rule("Token_Chain", ast.Tokens.chain(), t, _tokens)
+    _add_rule("Token_Subtype", ast.Tokens.subtype(), t, _tokens)
+
+  fun tag _add_rule(
+    name: String,
+    str: String,
+    t: NamedRule,
+    m: Map[String, NamedRule])
   =>
-    match get()
-    | let r: NamedRule => r
+    let rule =
+      recover val
+        NamedRule(name,
+          _Build.with_post[ast.Trivia](
+            recover Literal(str) end, t,
+            {(r, _, b, p) => (ast.Token(_Build.info(r), p), b) }
+          ))
+      end
+    m.insert(str, rule)
+
+  fun apply(str: String): NamedRule =>
+    try
+      _tokens(str)?
     else
-      let trivia = _trivia.trivia()
-      let non_token = _Letters.with_underscore() + _Digits()
-
-      let rule =
-        recover val
-          NamedRule(name,
-            _Build.with_post[ast.Trivia](
-              recover Literal(str) end,
-              trivia,
-              {(r, _, b, p) => (ast.Token(_Build.info(r), p), b)}
-            ))
-        end
-      set(rule)
-      rule
+      recover val
+        NamedRule("ERROR " + StringUtil.escape(str),
+          Error("Invalid token '" + StringUtil.escape(str) + "'"))
+      end
     end
-
-  fun ref double_quote(): NamedRule =>
-    _token_rule({() => _double_quote}, {ref (r) => _double_quote = r},
-      "Token_Double_Quote", ast.Tokens.double_quote())
-
-  fun ref triple_double_quote(): NamedRule =>
-    _token_rule({() => _triple_double_quote},
-      {ref (r) => _triple_double_quote = r},
-      "Token_Triple_Double_Quote", ast.Tokens.triple_double_quote())
-
-  fun ref semicolon(): NamedRule =>
-    _token_rule({() => _semicolon}, {ref (r) => _semicolon = r},
-      "Token_Semicolon", ast.Tokens.semicolon())
-
-  fun ref equals(): NamedRule =>
-    _token_rule({() => _equals}, {ref (r) => _equals = r}, "Token_Equals",
-      ast.Tokens.equals())
-
-  fun ref backslash(): NamedRule =>
-    _token_rule({() => _backslash}, {ref (r) => _backslash = r},
-      "Token_Backslash", ast.Tokens.backslash())
-
-  fun ref comma(): NamedRule =>
-    _token_rule({() => _comma}, {ref (r) => _comma = r}, "Token_Comma",
-      ast.Tokens.comma())
-
-  fun ref minus(): NamedRule =>
-    _token_rule({() => _minus}, {ref (r) => _minus = r}, "Token_Minus",
-      ast.Tokens.minus())
-
-  fun ref minus_tilde(): NamedRule =>
-    _token_rule({() => _minus_tilde}, {ref (r) => _minus_tilde = r},
-    "Token_MinusTilde", ast.Tokens.minus_tilde())
-
-  fun ref dot(): NamedRule =>
-    _token_rule({() => _dot}, {ref (r) => _dot = r}, "Token_Dot",
-      ast.Tokens.dot())
-
-  fun ref tilde(): NamedRule =>
-    _token_rule({() => _tilde}, {ref (r) => _tilde = r}, "Token_Tilde",
-      ast.Tokens.tilde())
-
-  fun ref chain(): NamedRule =>
-    _token_rule({() => _chain}, {ref (r) => _chain = r}, "Token_Chain",
-      ast.Tokens.chain())
-
-  fun ref subtype(): NamedRule =>
-    _token_rule({() => _subtype}, {ref (r) => _subtype = r}, "Token_Subtype",
-      ast.Tokens.subtype())

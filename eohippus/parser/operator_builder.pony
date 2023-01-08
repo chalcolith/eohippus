@@ -1,3 +1,5 @@
+use ast = "../ast"
+
 class OperatorBuilder
   let _token: TokenBuilder
   let _keyword: KeywordBuilder
@@ -18,8 +20,8 @@ class OperatorBuilder
       let kwd_not = _keyword.kwd_not()
       let kwd_addressof = _keyword.kwd_addressof()
       let kwd_digestof = _keyword.kwd_digestof()
-      let minus = _token.minus()
-      let minus_tilde = _token.minus_tilde()
+      let minus = _token(ast.Tokens.minus())
+      let minus_tilde = _token(ast.Tokens.minus_tilde())
 
       let prefix_op' =
         recover val
@@ -41,9 +43,9 @@ class OperatorBuilder
     match _postfix_op
     | let r: NamedRule => r
     else
-      let dot = _token.dot()
-      let tilde = _token.tilde()
-      let chain = _token.chain()
+      let dot = _token(ast.Tokens.dot())
+      let tilde = _token(ast.Tokens.tilde())
+      let chain = _token(ast.Tokens.chain())
 
       let postfix_op' =
         recover val

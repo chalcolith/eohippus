@@ -36,6 +36,7 @@ class KeywordBuilder
     match _kwd
     | let r: NamedRule => r
     else
+      // TODO: keep this in sync with ast.Keywords
       let kwd' =
         recover val
           NamedRule(

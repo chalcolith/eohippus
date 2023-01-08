@@ -74,8 +74,8 @@ class ExpressionBuilder
     match _annotation
     | let r: NamedRule => r
     else
-      let bs = _token.backslash()
-      let comma = _token.comma()
+      let bs = _token(ast.Tokens.backslash())
+      let comma = _token(ast.Tokens.comma())
       let id = identifier()
 
       let annotation' =
@@ -108,7 +108,7 @@ class ExpressionBuilder
 
   fun ref _build_seq(): (NamedRule, NamedRule) =>
     let binary_op = _operator.binary_op()
-    let equals = _token.equals()
+    let equals = _token(ast.Tokens.equals())
     let id = identifier()
     let kwd = _keyword.kwd()
     let kwd_as = _keyword.kwd_as()
@@ -130,10 +130,10 @@ class ExpressionBuilder
     let literal = _literal.literal()
     let postfix_op = _operator.postfix_op()
     let prefix_op = _operator.prefix_op()
-    let semicolon = _token.semicolon()
+    let semicolon = _token(ast.Tokens.semicolon())
     let trivia = _trivia.trivia()
     let type_rule = _type.type_rule()
-    let subtype = _token.subtype()
+    let subtype = _token(ast.Tokens.subtype())
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =

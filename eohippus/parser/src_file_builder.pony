@@ -142,7 +142,7 @@ class SrcFileBuilder
     else
       let identifier = _expression.identifier()
       let string = _literal.string()
-      let equals = _token.equals()
+      let equals = _token(ast.Tokens.equals())
       let kwd_use = _keyword.kwd_use()
       let kwd_if = _keyword.kwd_if()
       let kwd_not = _keyword.kwd_not()

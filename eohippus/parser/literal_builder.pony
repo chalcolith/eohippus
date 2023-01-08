@@ -398,7 +398,7 @@ class LiteralBuilder
     | let r: NamedRule => r
     else
       let sr' = _string_delim("Literal_String_Regular",
-        _token.double_quote())
+        _token(ast.Tokens.double_quote()))
       _string_regular = sr'
       sr'
     end
@@ -408,7 +408,7 @@ class LiteralBuilder
     | let r: NamedRule => r
     else
       let st' = _string_delim("Literal_String_Triple",
-        _token.triple_double_quote())
+        _token(ast.Tokens.triple_double_quote()))
       _string_triple = st'
       st'
     end
