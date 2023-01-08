@@ -78,8 +78,8 @@ class TokenBuilder
     try
       _tokens(str)?
     else
+      let msg = recover val "INVALID TOKEN '" + StringUtil.escape(str) + "'" end
       recover val
-        NamedRule("ERROR " + StringUtil.escape(str),
-          Error("Invalid token '" + StringUtil.escape(str) + "'"))
+        NamedRule(msg, Error(msg))
       end
     end

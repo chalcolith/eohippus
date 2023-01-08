@@ -49,7 +49,7 @@ class TypedefBuilder
       let id = Variable("id")
       let ds = Variable("ds")
 
-      let kwd_primitive = _keyword.kwd_primitive()
+      let kwd_primitive = _keyword(ast.Keywords.kwd_primitive())
       let identifier = _expression.identifier()
       let docstring = _member.docstring()
 

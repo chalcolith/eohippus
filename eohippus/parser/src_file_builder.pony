@@ -143,9 +143,9 @@ class SrcFileBuilder
       let identifier = _expression.identifier()
       let string = _literal.string()
       let equals = _token(ast.Tokens.equals())
-      let kwd_use = _keyword.kwd_use()
-      let kwd_if = _keyword.kwd_if()
-      let kwd_not = _keyword.kwd_not()
+      let kwd_use = _keyword(ast.Keywords.kwd_use())
+      let kwd_if = _keyword(ast.Keywords.kwd_if())
+      let kwd_not = _keyword(ast.Keywords.kwd_not())
 
       let id = Variable("id")
       let pt = Variable("pt")

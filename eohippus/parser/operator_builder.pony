@@ -16,10 +16,10 @@ class OperatorBuilder
     match _prefix_op
     | let r: NamedRule => r
     else
-      let kwd_return = _keyword.kwd_return()
-      let kwd_not = _keyword.kwd_not()
-      let kwd_addressof = _keyword.kwd_addressof()
-      let kwd_digestof = _keyword.kwd_digestof()
+      let kwd_return = _keyword(ast.Keywords.kwd_return())
+      let kwd_not = _keyword(ast.Keywords.kwd_not())
+      let kwd_addressof = _keyword(ast.Keywords.kwd_addressof())
+      let kwd_digestof = _keyword(ast.Keywords.kwd_digestof())
       let minus = _token(ast.Tokens.minus())
       let minus_tilde = _token(ast.Tokens.minus_tilde())
 
