@@ -27,8 +27,8 @@ primitive _Build
   fun value(b: Bindings, v: Variable): ast.Node? =>
     b(v)?._2(0)?
 
-  fun value_or_none(b: Bindings, v: Variable): (ast.Node | None)? =>
-    if b.contains(v) then
+  fun value_or_none(b: Bindings, v: Variable): (ast.Node | None) =>
+    try
       b(v)?._2(0)?
     end
 

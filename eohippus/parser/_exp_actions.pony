@@ -87,12 +87,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
       end
-    let else_block' =
-      try
-        _Build.value_or_none(b, else_block)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/If/ElseSeq")
-      end
+    let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
       recover val
         let conditions' = Array[ast.IfCondition](1 + elseifs'.size())
@@ -128,12 +123,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
       end
-    let else_block' =
-      try
-        _Build.value_or_none(b, else_block)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/If/ElseSeq")
-      end
+    let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
       recover val
         let conditions' = Array[ast.IfCondition](1 + elseifs'.size())
@@ -169,12 +159,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/IfType/Elseifs")
       end
-    let else_block' =
-      try
-        _Build.value_or_none(b, else_block)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/IfType/ElseSeq")
-      end
+    let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
       recover val
         Array[ast.IfCondition](1 + elseifs'.size())

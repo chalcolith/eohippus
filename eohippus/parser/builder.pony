@@ -22,7 +22,7 @@ class Builder
     keyword = KeywordBuilder(_context, trivia)
     operator = OperatorBuilder(token, keyword)
     literal = LiteralBuilder(_context, trivia, token, keyword)
-    type_builder = TypeBuilder(_context)
+    type_builder = TypeBuilder(_context, token)
     expression = ExpressionBuilder(_context, trivia, token, keyword,
       operator, literal, type_builder)
     member = MemberBuilder(trivia, literal)

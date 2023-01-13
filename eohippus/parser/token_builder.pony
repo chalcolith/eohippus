@@ -44,19 +44,19 @@ class TokenBuilder
     _tokens = Map[String, NamedRule]
 
     let t = _trivia.trivia()
-    _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
-    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(),
-      t, _tokens)
-    _add_rule("Token_Semicolon", ast.Tokens.semicolon(), t, _tokens)
-    _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
+    _add_rule("Token_Arrow", ast.Tokens.arrow(), t, _tokens)
     _add_rule("Token_Backslash", ast.Tokens.backslash(), t, _tokens)
+    _add_rule("Token_Chain", ast.Tokens.chain(), t, _tokens)
     _add_rule("Token_Comma", ast.Tokens.comma(), t, _tokens)
+    _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
+    _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
+    _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
     _add_rule("Token_Minus", ast.Tokens.minus(), t, _tokens)
     _add_rule("Token_MinusTilde", ast.Tokens.minus_tilde(), t, _tokens)
-    _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
-    _add_rule("Token_Tilde", ast.Tokens.tilde(), t, _tokens)
-    _add_rule("Token_Chain", ast.Tokens.chain(), t, _tokens)
+    _add_rule("Token_Semicolon", ast.Tokens.semicolon(), t, _tokens)
     _add_rule("Token_Subtype", ast.Tokens.subtype(), t, _tokens)
+    _add_rule("Token_Tilde", ast.Tokens.tilde(), t, _tokens)
+    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(), t, _tokens)
 
   fun tag _add_rule(
     name: String,
