@@ -23,7 +23,7 @@ class val UsingPony is (Node & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let items = Array[(String, json.Item)]
       items.push(("node", "Using"))

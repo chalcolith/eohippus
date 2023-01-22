@@ -9,6 +9,7 @@ class KeywordBuilder
 
   let _keywords: Map[String, NamedRule] val
   var _kwd: (NamedRule | None) = None
+  var _cap: (NamedRule | None) = None
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -21,10 +22,8 @@ class KeywordBuilder
         _add_rule("Keyword_Addressof", ast.Keywords.kwd_addressof(), t, k)
         _add_rule("Keyword_As", ast.Keywords.kwd_as(), t, k)
         _add_rule("Keyword_Break", ast.Keywords.kwd_break(), t, k)
-        _add_rule("Keyword_CompileError", ast.Keywords.kwd_compile_error(), t,
-          k)
-        _add_rule("Keyword_CompileIntrinsic",
-          ast.Keywords.kwd_compile_intrinsic(), t, k)
+        _add_rule("Keyword_CompileError", ast.Keywords.kwd_compile_error(), t, k)
+        _add_rule("Keyword_CompileIntrinsic", ast.Keywords.kwd_compile_intrinsic(), t, k)
         _add_rule("Keyword_Continue", ast.Keywords.kwd_continue(), t, k)
         _add_rule("Keyword_Digestof", ast.Keywords.kwd_digestof(), t, k)
         _add_rule("Keyword_Else", ast.Keywords.kwd_else(), t, k)
@@ -88,4 +87,31 @@ class KeywordBuilder
         end
       _kwd = kwd'
       kwd'
+    end
+
+  fun ref cap(): NamedRule =>
+    match _cap
+    | let r: NamedRule => r
+    else
+      let kwd_iso = this(ast.Keywords.kwd_iso())
+      let kwd_trn = this(ast.Keywords.kwd_trn())
+      let kwd_ref = this(ast.Keywords.kwd_ref())
+      let kwd_val = this(ast.Keywords.kwd_val())
+      let kwd_box = this(ast.Keywords.kwd_box())
+      let kwd_tag = this(ast.Keywords.kwd_tag())
+
+      let cap' =
+        recover val
+          NamedRule("Keyword_Cap",
+            Disj([
+              kwd_iso
+              kwd_trn
+              kwd_ref
+              kwd_val
+              kwd_box
+              kwd_tag
+            ]))
+        end
+      _cap = cap'
+      cap'
     end

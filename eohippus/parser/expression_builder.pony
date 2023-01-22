@@ -11,6 +11,7 @@ class ExpressionBuilder
   let _literal: LiteralBuilder
   let _type: TypeBuilder
 
+  var _not_kwd: (NamedRule | None) = None
   var _identifier: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
   var _exp_seq: (NamedRule | None) = None
@@ -32,6 +33,16 @@ class ExpressionBuilder
     _operator = operator
     _literal = literal
     _type = type_builder
+
+  fun ref not_kwd(): NamedRule =>
+    match _not_kwd
+    | let r: NamedRule => r
+    else
+      let kwd = _keyword.kwd()
+      recover val
+        NamedRule("NotKwd", Neg(kwd))
+      end
+    end
 
   fun ref identifier(): NamedRule =>
     match _identifier
@@ -128,12 +139,13 @@ class ExpressionBuilder
     let kwd_then = _keyword(ast.Keywords.kwd_then())
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let literal = _literal.literal()
+    let not_kwd' = not_kwd()
     let postfix_op = _operator.postfix_op()
     let prefix_op = _operator.prefix_op()
     let semicolon = _token(ast.Tokens.semicolon())
+    let subtype = _token(ast.Tokens.subtype())
     let trivia = _trivia.trivia()
     let type_rule = _type.type_rule()
-    let subtype = _token(ast.Tokens.subtype())
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
@@ -410,7 +422,7 @@ class ExpressionBuilder
             kwd_this
             literal
             Conj([
-              Neg(kwd)
+              not_kwd'
               id
             ])
           ]))

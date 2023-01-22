@@ -14,7 +14,7 @@ class val Trivia is (Node & NodeWithChildren)
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let children' =
         recover val
@@ -39,7 +39,7 @@ class val TriviaLineComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "TriviaLineComment")
@@ -56,7 +56,7 @@ class val TriviaNestedComment is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "TriviaNestedComment")
@@ -73,7 +73,7 @@ class val TriviaWS is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "TriviaWS")
@@ -90,7 +90,7 @@ class val TriviaEOL is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "TriviaEOL")
@@ -106,7 +106,7 @@ class val TriviaEOF is Node
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "TriviaEOF")

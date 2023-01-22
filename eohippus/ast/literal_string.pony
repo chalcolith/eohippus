@@ -62,7 +62,7 @@ class val LiteralString is
       false
     end
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let type_name = recover val _ast_type.string() end
       json.Object([

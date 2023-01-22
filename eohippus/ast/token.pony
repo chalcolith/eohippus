@@ -2,8 +2,10 @@ use json = "../json"
 use ".."
 
 primitive Tokens
+  fun amp(): String => "&"
   fun arrow(): String => "->"
   fun backslash(): String => "\\"
+  fun bar(): String => "|"
   fun chain(): String => ".>"
   fun close_curly(): String => "}"
   fun close_paren(): String => ")"
@@ -42,7 +44,7 @@ class val Token is (Node & NodeWithTrivia & NodeWithName)
 
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "Token")

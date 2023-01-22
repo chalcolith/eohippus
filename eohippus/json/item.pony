@@ -72,9 +72,7 @@ class Sequence
   embed _items: Array[Item] = _items.create()
 
   new create(items: ReadSeq[Item]) =>
-    for item in items.values() do
-      _items.push(item)
-    end
+    _items.append(items)
 
   fun size(): USize => _items.size()
 
@@ -84,6 +82,8 @@ class Sequence
   fun apply(i: USize): this->Item ? => _items.apply(i)?
 
   fun ref update(i: USize, value: Item) ? => _items.update(i, value)?
+
+  fun ref push(item: Item) => _items.push(item)
 
   fun _get_string(indent: String): String iso^ =>
     let indent' = recover val indent + "  " end

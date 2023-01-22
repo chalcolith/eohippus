@@ -20,7 +20,7 @@ class val Jump is (Node & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let properties =
         [as (String, json.Item):

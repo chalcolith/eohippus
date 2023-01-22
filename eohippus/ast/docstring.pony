@@ -15,7 +15,7 @@ class val Docstring is (Node & NodeWithChildren & NodeWithValue[String])
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => value_error()
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "Docstring")

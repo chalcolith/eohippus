@@ -43,7 +43,7 @@ class val Call is (Node & NodeWithType[Call] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     let args' =
       recover val
         json.Sequence(

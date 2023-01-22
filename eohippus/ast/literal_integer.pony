@@ -61,7 +61,7 @@ class val LiteralInteger is
     end
   fun ne(other: box->Node): Bool => not this.eq(other)
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let type_name =
         match _ast_type

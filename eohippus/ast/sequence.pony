@@ -20,7 +20,7 @@ class val Sequence is (Node & NodeWithType[Sequence] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let children' =
         recover val

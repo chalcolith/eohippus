@@ -30,7 +30,7 @@ class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     let ids =
       recover val
         json.Sequence(

@@ -29,7 +29,7 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let conds =
         json.Sequence(
@@ -82,7 +82,7 @@ class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let conds =
         json.Sequence(
@@ -135,7 +135,7 @@ class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let conds =
         json.Sequence(
@@ -187,7 +187,7 @@ class val IfCondition is (Node & NodeWithType[IfCondition] & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "IfCondition")

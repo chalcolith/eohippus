@@ -14,7 +14,7 @@ class val ErrorSection is (Node & NodeWithChildren)
 
   fun src_info(): SrcInfo => _src_info
   fun has_error(): Bool => true
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "ErrorSection")

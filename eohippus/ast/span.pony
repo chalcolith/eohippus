@@ -11,7 +11,7 @@ class val Span is Node
 
   fun has_error(): Bool => false
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       json.Object([
         ("node", "Span")

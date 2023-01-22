@@ -87,7 +87,7 @@ class val LiteralFloat is
       false
     end
 
-  fun info(): json.Item iso^ =>
+  fun info(): json.Item val =>
     recover
       let type_name =
         match _ast_type

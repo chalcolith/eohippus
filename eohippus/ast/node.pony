@@ -1,3 +1,5 @@
+use "itertools"
+
 use json = "../json"
 use parser = "../parser"
 use types = "../types"
@@ -21,7 +23,7 @@ trait val Node is (Equatable[Node] & Stringable)
 
   fun ne(other: box->Node): Bool => not eq(other)
 
-  fun info(): json.Item iso^ => recover iso json.Object([]) end
+  fun info(): json.Item val => recover json.Object([]) end
   fun string(): String iso^ => this.info().string()
 
 trait val NodeWithType[N: NodeWithType[N]] is Node
@@ -39,6 +41,22 @@ trait val NodeWithChildren is Node
       if child.has_error() then return true end
     end
     false
+
+  fun _info_with_children(name: String): json.Item iso^ =>
+    let children' =
+      recover val
+        json.Sequence(
+          Array[json.Item].>concat(
+            Iter[Node](children().values())
+              .map[json.Item]({(c) => c.info()})))
+      end
+    recover iso
+      json.Object([
+        ("node", name)
+        ("children", children')
+      ])
+    end
+
   fun children(): NodeSeq
 
 trait val NodeWithTrivia is Node
