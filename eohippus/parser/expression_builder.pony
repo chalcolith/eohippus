@@ -12,7 +12,6 @@ class ExpressionBuilder
   let _type: TypeBuilder
 
   var _not_kwd: (NamedRule | None) = None
-  var _identifier: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
   var _exp_seq: (NamedRule | None) = None
   var _exp_item: (NamedRule | None) = None
@@ -44,50 +43,13 @@ class ExpressionBuilder
       end
     end
 
-  fun ref identifier(): NamedRule =>
-    match _identifier
-    | let r: NamedRule => r
-    else
-      let trivia = _trivia.trivia()
-      let id_chars: String = _Letters.with_underscore() + _Digits() + "'"
-
-      let identifier' =
-        recover val
-          NamedRule("Identifier",
-            _Build.with_post[ast.Trivia](
-              recover
-                Disj([
-                  Conj([
-                    Single(ast.Tokens.underscore())
-                    Star(Single(id_chars))
-                  ])
-                  Conj([
-                    Single(_Letters())
-                    Star(Single(id_chars))
-                  ])
-                ])
-              end,
-              trivia,
-              {(r, _, b, p) =>
-                let str =
-                  recover val
-                    String.>concat(r.start.values(p.src_info().start()))
-                  end
-                (ast.Identifier(_Build.info(r), p, str), b)
-              }
-            ))
-        end
-      _identifier = identifier'
-      identifier'
-    end
-
   fun ref annotation(): NamedRule =>
     match _annotation
     | let r: NamedRule => r
     else
       let bs = _token(ast.Tokens.backslash())
       let comma = _token(ast.Tokens.comma())
-      let id = identifier()
+      let id = _token.identifier()
 
       let annotation' =
         recover val
@@ -120,7 +82,7 @@ class ExpressionBuilder
   fun ref _build_seq(): (NamedRule, NamedRule) =>
     let binary_op = _operator.binary_op()
     let equals = _token(ast.Tokens.equals())
-    let id = identifier()
+    let id = _token.identifier()
     let kwd = _keyword.kwd()
     let kwd_as = _keyword(ast.Keywords.kwd_as())
     let kwd_break = _keyword(ast.Keywords.kwd_break())
@@ -145,7 +107,7 @@ class ExpressionBuilder
     let semicolon = _token(ast.Tokens.semicolon())
     let subtype = _token(ast.Tokens.subtype())
     let trivia = _trivia.trivia()
-    let type_rule = _type.type_rule()
+    let type_type = _type.type_type()
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
@@ -246,7 +208,7 @@ class ExpressionBuilder
               Conj([
                 Bind(lhs, exp_term)
                 Bind(op, kwd_as)
-                Bind(rhs, type_rule)
+                Bind(rhs, type_type)
               ])
             ], _ExpActions~_binop(lhs, op, rhs))
             exp_term
@@ -321,9 +283,9 @@ class ExpressionBuilder
               Conj([
                 Bind(if_true,
                   Conj([
-                    Bind(lhs, type_rule)
+                    Bind(lhs, type_type)
                     Bind(op, subtype)
-                    Bind(rhs, type_rule)
+                    Bind(rhs, type_type)
                   ]))
                 kwd_then
                 Bind(then_block, exp_seq)
@@ -335,9 +297,9 @@ class ExpressionBuilder
                   kwd_elseif
                   Bind(if_true,
                     Conj([
-                      Bind(lhs, type_rule)
+                      Bind(lhs, type_type)
                       Bind(op, subtype)
-                      Bind(rhs, type_rule)
+                      Bind(rhs, type_type)
                     ]))
                   kwd_then
                   Bind(then_block, exp_seq)

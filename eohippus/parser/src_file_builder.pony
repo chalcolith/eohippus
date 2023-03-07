@@ -140,7 +140,7 @@ class SrcFileBuilder
     match _using_pony
     | let r: NamedRule => r
     else
-      let identifier = _expression.identifier()
+      let identifier = _token.identifier()
       let string = _literal.string()
       let equals = _token(ast.Tokens.equals())
       let kwd_use = _keyword(ast.Keywords.kwd_use())

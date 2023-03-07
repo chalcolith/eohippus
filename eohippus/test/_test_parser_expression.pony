@@ -17,7 +17,7 @@ class iso _TestParserExpressionIdentifier is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.identifier()
+    let rule = setup.builder.token.identifier()
 
     let id = "a1_'"
     let src1 = setup.src(id)

@@ -50,7 +50,7 @@ class TypedefBuilder
       let ds = Variable("ds")
 
       let kwd_primitive = _keyword(ast.Keywords.kwd_primitive())
-      let identifier = _expression.identifier()
+      let identifier = _token.identifier()
       let docstring = _member.docstring()
 
       let primitive' =

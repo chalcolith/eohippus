@@ -36,6 +36,7 @@ class TokenBuilder
   let _trivia: TriviaBuilder
 
   let _tokens: Map[String, NamedRule]
+  var _identifier: (NamedRule | None) = None
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -82,4 +83,40 @@ class TokenBuilder
       recover val
         NamedRule(msg, Error(msg))
       end
+    end
+
+  fun ref identifier(): NamedRule =>
+    match _identifier
+    | let r: NamedRule => r
+    else
+      let trivia = _trivia.trivia()
+      let id_chars: String = _Letters.with_underscore() + _Digits() + "'"
+
+      let identifier' =
+        recover val
+          NamedRule("Identifier",
+            _Build.with_post[ast.Trivia](
+              recover
+                Disj([
+                  Conj([
+                    Single(ast.Tokens.underscore())
+                    Star(Single(id_chars))
+                  ])
+                  Conj([
+                    Single(_Letters())
+                    Star(Single(id_chars))
+                  ])
+                ])
+              end,
+              trivia,
+              {(r, _, b, p) =>
+                let str =
+                  recover val
+                    String.>concat(r.start.values(p.src_info().start()))
+                  end
+                (ast.Identifier(_Build.info(r), p, str), b)
+              }))
+        end
+      _identifier = identifier'
+      identifier'
     end

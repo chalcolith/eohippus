@@ -10,6 +10,7 @@ class KeywordBuilder
   let _keywords: Map[String, NamedRule] val
   var _kwd: (NamedRule | None) = None
   var _cap: (NamedRule | None) = None
+  var _gencap: (NamedRule | None) = None
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -114,4 +115,29 @@ class KeywordBuilder
         end
       _cap = cap'
       cap'
+    end
+
+  fun ref gencap(): NamedRule =>
+    match _gencap
+    | let r: NamedRule => r
+    else
+      let kwd_read = this(ast.Keywords.kwd_hash_read())
+      let kwd_send = this(ast.Keywords.kwd_hash_send())
+      let kwd_share = this(ast.Keywords.kwd_hash_share())
+      let kwd_alias = this(ast.Keywords.kwd_hash_alias())
+      let kwd_any = this(ast.Keywords.kwd_hash_any())
+
+      let gencap' =
+        recover val
+          NamedRule("Keyword_Gencap",
+            Disj([
+              kwd_read
+              kwd_send
+              kwd_share
+              kwd_alias
+              kwd_any
+            ]))
+        end
+      _gencap = gencap'
+      gencap'
     end
