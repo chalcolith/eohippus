@@ -9,7 +9,6 @@ class ExpressionBuilder
   let _keyword: KeywordBuilder
   let _operator: OperatorBuilder
   let _literal: LiteralBuilder
-  let _type: TypeBuilder
 
   var _not_kwd: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
@@ -22,8 +21,7 @@ class ExpressionBuilder
     token: TokenBuilder,
     keyword: KeywordBuilder,
     operator: OperatorBuilder,
-    literal: LiteralBuilder,
-    type_builder: TypeBuilder)
+    literal: LiteralBuilder)
   =>
     _context = context
     _trivia = trivia
@@ -31,7 +29,6 @@ class ExpressionBuilder
     _keyword = keyword
     _operator = operator
     _literal = literal
-    _type = type_builder
 
   fun ref not_kwd(): NamedRule =>
     match _not_kwd
@@ -80,12 +77,24 @@ class ExpressionBuilder
     end
 
   fun ref _build_seq(): (NamedRule, NamedRule) =>
+    let amp = _token(ast.Tokens.amp())
+    let arrow = _token(ast.Tokens.arrow())
+    let at = _token(ast.Tokens.at())
+    let bang = _token(ast.Tokens.bang())
+    let bar = _token(ast.Tokens.bar())
     let binary_op = _operator.binary_op()
+    let ccurly = _token(ast.Tokens.close_curly())
+    let comma = _token(ast.Tokens.comma())
+    let cparen = _token(ast.Tokens.close_paren())
+    let dot = _token(ast.Tokens.dot())
     let equals = _token(ast.Tokens.equals())
+    let hash = _token(ast.Tokens.hash())
+    let hat = _token(ast.Tokens.hat())
     let id = _token.identifier()
     let kwd = _keyword.kwd()
     let kwd_as = _keyword(ast.Keywords.kwd_as())
     let kwd_break = _keyword(ast.Keywords.kwd_break())
+    let kwd_cap = _keyword.cap()
     let kwd_compile_error = _keyword(ast.Keywords.kwd_compile_error())
     let kwd_compile_intrinsic = _keyword(ast.Keywords.kwd_compile_intrinsic())
     let kwd_continue = _keyword(ast.Keywords.kwd_continue())
@@ -93,6 +102,7 @@ class ExpressionBuilder
     let kwd_elseif = _keyword(ast.Keywords.kwd_elseif())
     let kwd_end = _keyword(ast.Keywords.kwd_end())
     let kwd_error = _keyword(ast.Keywords.kwd_error())
+    let kwd_gencap = _keyword.gencap()
     let kwd_if = _keyword(ast.Keywords.kwd_if())
     let kwd_ifdef = _keyword(ast.Keywords.kwd_ifdef())
     let kwd_iftype = _keyword(ast.Keywords.kwd_iftype())
@@ -102,63 +112,76 @@ class ExpressionBuilder
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let literal = _literal.literal()
     let not_kwd' = not_kwd()
+    let ocurly = _token(ast.Tokens.open_curly())
+    let oparen = _token(ast.Tokens.open_paren())
     let postfix_op = _operator.postfix_op()
     let prefix_op = _operator.prefix_op()
     let semicolon = _token(ast.Tokens.semicolon())
     let subtype = _token(ast.Tokens.subtype())
     let trivia = _trivia.trivia()
-    let type_type = _type.type_type()
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
       recover val
-        let exp_seq = NamedRule("Expression_Sequence", None)               // x
-        let exp_item = NamedRule("Expression_Item", None)                  // x
+        let call_params = NamedRule("Expression_CallParams", None)
+        let exp_array = NamedRule("Expression_Array", None)
         let exp_assignment = NamedRule("Expression_Assignment", None)      // x
-        let exp_infix = NamedRule("Expression_Infix", None)                // x
-        let exp_jump = NamedRule("Expression_Jump", None)                  // x
-        let exp_term = NamedRule("Expression_Term", None)                  // x
-        let exp_if = NamedRule("Expression_If", None)                      // x
+        let exp_atom = NamedRule("Expression_Atom", None)                  // x
+        let exp_bare_lambda = NamedRule("Expression_BareLambda", None)
         let exp_cond = NamedRule("Expression_IfCondition", None)           // x
+        let exp_consume = NamedRule("Expression_Consume", None)
+        let exp_decl = NamedRule("Expression_Declaration", None)
         let exp_elsif = NamedRule("Expression_Elsif", None)                // x
+        let exp_ffi = NamedRule("Expression_Ffi", None)
+        let exp_for = NamedRule("Expression_For", None)
+        let exp_hash = NamedRule("Expression_Hash", None)
+        let exp_if = NamedRule("Expression_If", None)                      // x
         let exp_ifdef = NamedRule("Expression_IfDef", None)                // x
         let exp_iftype = NamedRule("Expression_IfType", None)
-        let exp_match = NamedRule("Expression_Match", None)
-        let exp_while = NamedRule("Expression_While", None)
-        let exp_repeat = NamedRule("Expression_Repeat", None)
-        let exp_for = NamedRule("Expression_For", None)
-        let exp_with = NamedRule("Expression_With", None)
-        let exp_try = NamedRule("Expression_Try", None)
-        let exp_recover = NamedRule("Expression_Recover", None)
-        let exp_consume = NamedRule("Expression_Consume", None)
-        let exp_hash = NamedRule("Expression_Hash", None)
-        let exp_decl = NamedRule("Expression_Declaration", None)
-        let exp_prefix = NamedRule("Expression_Prefix", None)              // x
-        let exp_postfix = NamedRule("Expression_Postfix", None)            // x
-        let exp_tuple = NamedRule("Expression_Tuple", None)
-        let exp_parens = NamedRule("Expression_Parenthesized", None)
-        let exp_array = NamedRule("Expression_Array", None)
-        let exp_ffi = NamedRule("Expression_Ffi", None)
-        let exp_bare_lambda = NamedRule("Expression_BareLambda", None)
+        let exp_infix = NamedRule("Expression_Infix", None)                // x
+        let exp_item = NamedRule("Expression_Item", None)                  // x
+        let exp_jump = NamedRule("Expression_Jump", None)                  // x
         let exp_lambda = NamedRule("Expression_Lambda", None)
+        let exp_match = NamedRule("Expression_Match", None)
         let exp_object = NamedRule("Expression_Object", None)
-        let exp_atom = NamedRule("Expression_Atom", None)                  // x
-        let type_params = NamedRule("Expression_TypeParams", None)
-        let call_params = NamedRule("Expression_CallParams", None)
+        let exp_parens = NamedRule("Expression_Parenthesized", None)
+        let exp_postfix = NamedRule("Expression_Postfix", None)            // x
+        let exp_prefix = NamedRule("Expression_Prefix", None)              // x
+        let exp_recover = NamedRule("Expression_Recover", None)
+        let exp_repeat = NamedRule("Expression_Repeat", None)
+        let exp_seq = NamedRule("Expression_Sequence", None)               // x
+        let exp_term = NamedRule("Expression_Term", None)                  // x
+        let exp_try = NamedRule("Expression_Try", None)
+        let exp_tuple = NamedRule("Expression_Tuple", None)
+        let exp_while = NamedRule("Expression_While", None)
+        let exp_with = NamedRule("Expression_With", None)
+        let type_arg = NamedRule("Type_Arg", None)
+        let type_args = NamedRule("Type_Args", None)
+        let type_atom = NamedRule("Type_Atom", None)
+        let type_infix = NamedRule("Type_Infix", None)
+        let type_lambda = NamedRule("Type_Lambda", None)
+        let type_nominal = NamedRule("Type_Nominal", None)
+        let type_params = NamedRule("Type_Params", None)
+        let type_tuple = NamedRule("Type_Tuple", None)
+        let type_type = NamedRule("Type_Type", None)
 
         let ann = Variable("ann")
+        let args = Variable("args")
+        let bare = Variable("bare")
         let body = Variable("body")
+        let cap = Variable("cap")
+        let condition = Variable("condition")
+        let else_block = Variable("else_block")
+        let elseifs = Variable("elseifs")
+        let eph = Variable("eph")
+        let firstif = Variable("firstif")
+        let if_true = Variable("if_true")
+        let keyword = Variable("keyword")
         let lhs = Variable("lhs")
         let op = Variable("op")
-        let rhs = Variable("rhs")
         let params = Variable("params")
-        let firstif = Variable("firstif")
-        let elseifs = Variable("elseifs")
-        let condition = Variable("condition")
-        let if_true = Variable("if_true")
+        let rhs = Variable("rhs")
         let then_block = Variable("then_block")
-        let else_block = Variable("else_block")
-        let keyword = Variable("keyword")
 
         // seq <= annotation? item (';'? item)*
         exp_seq.set_body(
@@ -388,6 +411,89 @@ class ExpressionBuilder
               id
             ])
           ]))
+
+        type_type.set_body(
+          Conj([
+            Bind(lhs, type_atom)
+            Ques(
+              Conj([
+                arrow
+                Bind(rhs, type_type)
+              ])
+            )
+          ]),
+          _TypeActions~_type_type(lhs, rhs))
+
+        type_atom.set_body(
+          Disj([
+            kwd_this
+            kwd_cap
+            Conj([ oparen; type_tuple; cparen ])
+            Conj([ oparen; type_infix; cparen ])
+            type_nominal
+            type_lambda
+          ]),
+          {(r, c, b) => (ast.TypeAtom(_Build.info(r), c), b) })
+
+        type_tuple.set_body(
+          Conj([
+            type_infix
+            Plus(Conj([
+              comma
+              type_infix
+            ]))
+          ]),
+          {(r, c, b) => (ast.TypeTuple(_Build.info(r), c), b) })
+
+        type_infix.set_body(
+          Conj([
+            Bind(lhs, type_type)
+            Bind(op, Disj([amp; bar]))
+            Bind(rhs, type_infix)
+          ]),
+          _TypeActions~_type_infix(lhs, op, rhs))
+
+        type_nominal.set_body(
+          Conj([
+            Bind(lhs, id)
+            Ques(Conj([
+              dot
+              Bind(rhs, id)
+            ]))
+            Bind(args, Ques(type_args))
+            Bind(cap, Ques(Disj([kwd_cap; kwd_gencap])))
+            Bind(eph, Ques(Disj([hat; bang])))
+          ]),
+          _TypeActions~_type_nominal(lhs, rhs, args, cap, eph))
+
+        type_arg.set_body(
+          Disj([
+            Bind(rhs, type_type)
+            Bind(rhs, literal)
+            Conj([ hash; Bind(rhs, exp_postfix) ])
+          ]),
+          _TypeActions~_type_arg(rhs))
+
+        type_args.set_body(
+          Conj([
+            type_arg
+            Star(
+              Conj([
+                comma
+                type_arg
+              ]))
+          ]),
+          _TypeActions~_type_args())
+
+        // lambda_type.set_body(
+        //   Conj([
+        //     Bind(at, Ques(at))
+        //     open_curly
+        //     Bind(cap, Ques(kwd_kap))
+        //     Bind(name, Ques(id))
+        //     Bind()
+        //   ])
+        // )
 
         (exp_seq, exp_item)
       end

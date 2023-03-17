@@ -193,3 +193,63 @@ class val TypeNominal is (Node & NodeWithChildren)
   fun cap(): (Node | None) => _cap
 
   fun eph(): (Node | None) => _eph
+
+class val TypeArg is (Node & NodeWithChildren)
+  let _src_info: SrcInfo
+  let _children: NodeSeq
+  let _arg: Node
+
+  new val create(src_info': SrcInfo, children': NodeSeq, arg': Node) =>
+    _src_info = src_info'
+    _children = children'
+    _arg = arg'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun info(): json.Item val =>
+    recover
+      json.Object([
+        ("node", "TypeArg")
+        ("arg", _arg.info())
+      ])
+    end
+
+  fun children(): NodeSeq => _children
+
+  fun arg(): Node => _arg
+
+class val TypeArgs is (Node & NodeWithChildren)
+  let _src_info: SrcInfo
+  let _children: NodeSeq
+  let _args: NodeSeq[TypeArg]
+
+  new val create(
+    src_info': SrcInfo,
+    children': NodeSeq,
+    args': NodeSeq[TypeArg])
+  =>
+    _src_info = src_info'
+    _children = children'
+    _args = args'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun info(): json.Item val =>
+    recover
+      let items = Array[(String, json.Item)]
+      items.push(("node", "TypeArgs"))
+      let args' =
+        recover val
+          Array[json.Item].>concat(
+            Iter[Node](_args.values())
+              .map[json.Item]({(p) => p.info()}))
+        end
+      if args'.size() > 0 then
+        items.push(("args", json.Sequence(args')))
+      end
+      json.Object(items)
+    end
+
+  fun children(): NodeSeq => _children
+
+  fun args(): NodeSeq => _args

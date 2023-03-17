@@ -1,3 +1,5 @@
+use "itertools"
+
 use ast = "../ast"
 
 primitive _TypeActions
@@ -67,3 +69,30 @@ primitive _TypeActions
     let cap' = _Build.value_or_none(b, cap)
     let eph' = _Build.value_or_none(b, eph)
     (ast.TypeNominal(_Build.info(r), c, lhs', rhs', args', cap', eph'), b)
+
+  fun tag _type_arg(
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Type/Arg/RHS")
+      end
+    (ast.TypeArg(_Build.info(r), c, rhs'), b)
+
+  fun tag _type_args(
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let args =
+      recover val
+        Array[ast.TypeArg].>concat(
+          Iter[ast.Node](c.values())
+            .filter_map[ast.TypeArg]({(n) => try n as ast.TypeArg end }))
+      end
+    (ast.TypeArgs(_Build.info(r), c, args), b)
