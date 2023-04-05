@@ -25,9 +25,11 @@ class val UsingPony is (Node & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items = Array[(String, json.Item)]
-      items.push(("node", "Using"))
-      items.push(("path", _path.info()))
+      let items =
+        [ as (String, json.Item):
+          ("node", "Using")
+          ("path", _path.info())
+        ]
       match _identifier
       | let id: Identifier =>
         items.push(("id", id.info()))

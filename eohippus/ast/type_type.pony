@@ -23,10 +23,11 @@ class val TypeType is (Node & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items: Array[(String, json.Item)] = [
-        ("node", "TypeArrow")
-        ("lhs", _lhs.info())
-      ]
+      let items =
+        [ as (String, json.Item):
+          ("node", "TypeArrow")
+          ("lhs", _lhs.info())
+        ]
       match _rhs
       | let rhs': Node =>
         items.push(("rhs", rhs'.info()))
@@ -73,12 +74,7 @@ class val TypeTuple is (Node & NodeWithChildren)
   fun src_info(): SrcInfo => _src_info
 
   fun info(): json.Item val =>
-    let types' =
-      recover val
-        json.Sequence(Array[json.Item].>concat(
-          Iter[TypeAtom](_types.values())
-          .map[json.Item]({(t) => t.info() })))
-      end
+    let types' = _info_seq[TypeAtom](_types)
     recover
       json.Object([
         ("node", "TypeTuple")
@@ -160,9 +156,11 @@ class val TypeNominal is (Node & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items = Array[(String, json.Item)]
-      items.push(("node", "TypeNominal"))
-      items.push(("lhs", _lhs.info()))
+      let items =
+        [ as (String, json.Item):
+          ("node", "TypeNominal")
+          ("lhs", _lhs.info())
+        ]
       match _rhs
       | let rhs': Node =>
         items.push(("rhs", rhs'.info()))
@@ -236,16 +234,13 @@ class val TypeArgs is (Node & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items = Array[(String, json.Item)]
-      items.push(("node", "TypeArgs"))
-      let args' =
-        recover val
-          Array[json.Item].>concat(
-            Iter[Node](_args.values())
-              .map[json.Item]({(p) => p.info()}))
-        end
+      let items =
+        [ as (String, json.Item):
+          ("node", "TypeArgs")
+        ]
+      let args' = _info_seq(_args)
       if args'.size() > 0 then
-        items.push(("args", json.Sequence(args')))
+        items.push(("args", args'))
       end
       json.Object(items)
     end

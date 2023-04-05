@@ -7,7 +7,7 @@ class Object
   embed _items: Map[String, Item] = _items.create()
   embed _keys: Array[String] = _keys.create()
 
-  new create(items: ReadSeq[(String, Item)]) =>
+  new create(items: ReadSeq[(String, Item)] = []) =>
     for (key, value) in items.values() do
       if not _keys.contains(key, {(a, b) => a == b}) then
         _keys.push(key)
@@ -32,41 +32,50 @@ class Object
   fun pairs(): Iterator[(String, Item)] =>
     _items.pairs()
 
-  fun _get_string(indent: String): String iso^ =>
-    let indent' = recover val indent + "  " end
-    let str: String iso = String
-    str.append("{\n")
+  fun get_string(pretty: Bool, indent: String): String iso^ =>
+    let indent' =
+      if pretty then
+        recover val indent + "  " end
+      else
+        indent
+      end
+    let result: String iso = String
+    result.append("{")
+    if pretty then result.append("\n") end
     var first = true
     for key in _keys.values() do
       try
         if first then
           first = false
         else
-          str.append(",\n")
+          result.append(",")
+          if pretty then result.append("\n") end
         end
-        str.append(indent')
-        str.append("\"" + key + "\": ")
+        result.append(indent')
+        result.append("\"" + key + "\": ")
         match _items(key)?
         | let obj: Object box =>
-          str.append(obj._get_string(indent'))
+          result.append(obj.get_string(pretty, indent'))
         | let seq: Sequence box =>
-          str.append(seq._get_string(indent'))
-        | let str': String =>
-          str.append("\"" + StringUtil.escape(str') + "\"")
+          result.append(seq.get_string(pretty, indent'))
+        | let str: String =>
+          result.append("\"" + StringUtil.escape(str) + "\"")
         | let num: F64 =>
-          str.append(num.string())
+          result.append(num.string())
         | let bol: Bool =>
-          str.append(if bol then "true" else "false" end)
+          result.append(if bol then "true" else "false" end)
         end
       end
     end
-    str.append("\n")
-    str.append(indent)
-    str.append("}")
-    consume str
+    if pretty then
+      result.append("\n")
+      result.append(indent)
+    end
+    result.append("}")
+    consume result
 
   fun string(): String iso^ =>
-    _get_string("")
+    get_string(true, "")
 
 class Sequence
   embed _items: Array[Item] = _items.create()
@@ -85,35 +94,44 @@ class Sequence
 
   fun ref push(item: Item) => _items.push(item)
 
-  fun _get_string(indent: String): String iso^ =>
-    let indent' = recover val indent + "  " end
-    let str: String iso = String
-    str.append("[\n")
+  fun get_string(pretty: Bool, indent: String): String iso^ =>
+    let indent' =
+      if pretty then
+        recover val indent + "  " end
+      else
+        indent
+      end
+    let result: String iso = String
+    result.append("[")
+    if pretty then result.append("\n") end
     var first = true
     for item in _items.values() do
       if first then
         first = false
       else
-        str.append(",\n")
+        result.append(",")
+        if pretty then result.append("\n") end
       end
-      str.append(indent')
+      if pretty then result.append(indent') end
       match item
       | let obj: this->Object =>
-        str.append(obj._get_string(indent'))
+        result.append(obj.get_string(pretty, indent'))
       | let seq: this->Sequence =>
-        str.append(seq._get_string(indent'))
-      | let str': String =>
-        str.append("\"" + StringUtil.escape(str') + "\"")
+        result.append(seq.get_string(pretty, indent'))
+      | let str: String =>
+        result.append("\"" + StringUtil.escape(str) + "\"")
       | let num: F64 =>
-        str.append(num.string())
+        result.append(num.string())
       | let bol: Bool =>
-        str.append(if bol then "true" else "false" end)
+        result.append(if bol then "true" else "false" end)
       end
     end
-    str.append("\n")
-    str.append(indent)
-    str.append("]")
-    consume str
+    if pretty then
+      result.append("\n")
+      result.append(indent)
+    end
+    result.append("]")
+    consume result
 
   fun string(): String iso^ =>
-    _get_string("")
+    get_string(true, "")

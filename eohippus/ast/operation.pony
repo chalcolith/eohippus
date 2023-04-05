@@ -33,11 +33,12 @@ class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items: Array[(String, json.Item)] = [
-        ("node", "Operation")
-        ("op", _op.info())
-        ("rhs", _rhs.info())
-      ]
+      let items =
+        [ as (String, json.Item):
+          ("node", "Operation")
+          ("op", _op.info())
+          ("rhs", _rhs.info())
+        ]
       match _lhs
       | let lhs': Node =>
         items.push(("lhs", lhs'.info()))

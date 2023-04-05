@@ -22,12 +22,7 @@ class val Sequence is (Node & NodeWithType[Sequence] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let children' =
-        recover val
-          json.Sequence(Array[json.Item].>concat(
-            Iter[Node](_children.values())
-              .map[json.Item]({(child) => child.info()})))
-        end
+      let children' = _info_seq(_children)
       json.Object([
         ("node", "Sequence")
         ("children", children')

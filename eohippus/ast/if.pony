@@ -31,11 +31,7 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let conds =
-        json.Sequence(
-          Array[json.Item].>concat(
-            Iter[IfCondition](_conditions.values())
-              .map[json.Item]({(cond) => cond.info()})))
+      let conds = _info_seq[IfCondition](_conditions)
       let properties =
         [as (String, json.Item):
           ("node", "If")
@@ -84,11 +80,7 @@ class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let conds =
-        json.Sequence(
-          Array[json.Item].>concat(
-            Iter[IfCondition](_conditions.values())
-              .map[json.Item]({(cond) => cond.info()})))
+      let conds = _info_seq[IfCondition](_conditions)
       let properties =
         [as (String, json.Item):
           ("node", "IfDef")
@@ -137,22 +129,17 @@ class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let conds =
-        json.Sequence(
-          Array[json.Item].>concat(
-            Iter[IfCondition](_conditions.values())
-              .map[json.Item]({(cond) => cond.info()})))
-      let properties =
+      let conds = _info_seq[IfCondition](_conditions)
+      let items =
         [as (String, json.Item):
           ("node", "IfType")
           ("conditions", conds)
         ]
       match _else_block
       | let n: Node =>
-        properties.push(("else_block", n.info()))
+        items.push(("else_block", n.info()))
       end
-
-      json.Object(properties)
+      json.Object(items)
     end
 
   fun ast_type(): (types.AstType | None) => _ast_type

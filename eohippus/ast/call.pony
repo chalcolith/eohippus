@@ -44,14 +44,7 @@ class val Call is (Node & NodeWithType[Call] & NodeWithChildren)
   fun src_info(): SrcInfo => _src_info
 
   fun info(): json.Item val =>
-    let args' =
-      recover val
-        json.Sequence(
-          Array[json.Item](_args.size())
-            .>concat(Iter[Node](_args.values())
-              .map[json.Item]({(arg) => arg.info()}))
-        )
-      end
+    let args' = _info_seq(_args)
     recover
       json.Object([
         ("node", "Call")

@@ -31,14 +31,7 @@ class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)
   fun src_info(): SrcInfo => _src_info
 
   fun info(): json.Item val =>
-    let ids =
-      recover val
-        json.Sequence(
-          Array[json.Item](_identifiers.size())
-            .>concat(Iter[Identifier](_identifiers.values())
-              .map[json.Item]({(id) => id.name()}))
-        )
-      end
+    let ids = _info_seq[Identifier](_identifiers)
     recover
       json.Object([
         ("node", "Annotation")

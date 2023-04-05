@@ -44,17 +44,14 @@ class val TypeParams is (Node & NodeWithType[TypeParams] & NodeWithChildren)
 
   fun info(): json.Item val =>
     recover
-      let items = Array[(String, json.Item)]
-      items.push(("node", "TypeParams"))
-      items.push(("lhs", _lhs.info()))
-      let params' =
-        recover val
-          Array[json.Item].>concat(
-            Iter[Node](_params.values())
-              .map[json.Item]({(p) => p.info()}))
-        end
+      let items =
+        [ as (String, json.Item val):
+          ("node", "TypeParams")
+          ("lhs", _lhs.info())
+        ]
+      let params' = _info_seq(_params)
       if params'.size() > 0 then
-        items.push(("params", json.Sequence(params')))
+        items.push(("params", params'))
       end
       json.Object(items)
     end

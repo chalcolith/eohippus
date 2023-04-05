@@ -34,36 +34,24 @@ class val SrcFile is
 
   fun info(): json.Item val =>
     recover
-      let items = Array[(String, json.Item)].>push(("node", "SrcFile"))
+      let items =
+        [ as (String, json.Item):
+          ("node", "SrcFile")
+        ]
 
-      let docstrings' =
-        recover val
-          Array[json.Item].>concat(
-            Iter[Docstring](_docstring.values())
-              .map[json.Item]({(ds) => ds.info()}))
-        end
+      let docstrings' = _info_seq[Docstring](_docstring)
       if docstrings'.size() > 0 then
-        items.push(("docstrings", json.Sequence(docstrings')))
+        items.push(("docstrings", docstrings'))
       end
 
-      let usings' =
-        recover val
-          Array[json.Item].>concat(
-            Iter[Node](_usings.values())
-              .map[json.Item]({(us) => us.info()}))
-        end
+      let usings' = _info_seq(_usings)
       if usings'.size() > 0 then
-        items.push(("usings", json.Sequence(usings')))
+        items.push(("usings", usings'))
       end
 
-      let typedefs' =
-        recover val
-          Array[json.Item].>concat(
-            Iter[Node](_typedefs.values())
-              .map[json.Item]({(td) => td.info()}))
-        end
+      let typedefs' = _info_seq(_typedefs)
       if typedefs'.size() > 0 then
-        items.push(("typedefs", json.Sequence(typedefs')))
+        items.push(("typedefs", typedefs'))
       end
 
       json.Object(items)

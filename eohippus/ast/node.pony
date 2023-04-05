@@ -26,6 +26,13 @@ trait val Node is (Equatable[Node] & Stringable)
   fun info(): json.Item val => recover json.Object([]) end
   fun string(): String iso^ => this.info().string()
 
+  fun _info_seq[SN: Node val = Node](seq: ReadSeq[SN] val): json.Sequence val =>
+    recover val
+      json.Sequence(
+        Array[json.Item val](seq.size()).>concat(
+          Iter[SN](seq.values()).map[json.Item val]({(n: SN) => n.info()})))
+    end
+
 trait val NodeWithType[N: NodeWithType[N]] is Node
   fun ast_type(): (types.AstType | None)
   fun val with_ast_type(ast_type': types.AstType): N
@@ -43,13 +50,7 @@ trait val NodeWithChildren is Node
     false
 
   fun _info_with_children(name: String): json.Item iso^ =>
-    let children' =
-      recover val
-        json.Sequence(
-          Array[json.Item].>concat(
-            Iter[Node](children().values())
-              .map[json.Item]({(c) => c.info()})))
-      end
+    let children' = _info_seq[Node](children())
     recover iso
       json.Object([
         ("node", name)
