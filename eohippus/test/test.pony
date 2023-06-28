@@ -6,6 +6,7 @@ actor Main is TestList
 
   fun tag tests(test: PonyTest) =>
     _TestParserTrivia(test)
+    _TestParserKeyword(test)
     _TestParserLiteral(test)
     _TestParserExpression(test)
     _TestParserTypedef(test)

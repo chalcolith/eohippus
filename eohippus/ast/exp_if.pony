@@ -3,7 +3,7 @@ use "itertools"
 use json = "../json"
 use types = "../types"
 
-class val If is (Node & NodeWithType[If] & NodeWithChildren)
+class val ExpIf is (Node & NodeWithType[ExpIf] & NodeWithChildren)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
   let _children: NodeSeq
@@ -20,7 +20,7 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
     _conditions = conditions'
     _else_block = else_block'
 
-  new val _with_ast_type(orig: If, ast_type': types.AstType) =>
+  new val _with_ast_type(orig: ExpIf, ast_type': types.AstType) =>
     _src_info = orig._src_info
     _ast_type = ast_type'
     _children = orig._children
@@ -34,7 +34,7 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
       let conds = _info_seq[IfCondition](_conditions)
       let properties =
         [as (String, json.Item):
-          ("node", "If")
+          ("node", "ExpIf")
           ("conditions", conds)
         ]
       match _else_block
@@ -46,13 +46,13 @@ class val If is (Node & NodeWithType[If] & NodeWithChildren)
     end
 
   fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): If =>
-    If._with_ast_type(this, ast_type')
+  fun val with_ast_type(ast_type': types.AstType): ExpIf =>
+    ExpIf._with_ast_type(this, ast_type')
   fun children(): NodeSeq => _children
   fun conditions(): NodeSeq[IfCondition] => _conditions
   fun else_block(): (Node | None) => _else_block
 
-class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
+class val ExpIfDef is (Node & NodeWithType[ExpIfDef] & NodeWithChildren)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
   let _children: NodeSeq
@@ -69,7 +69,7 @@ class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
     _conditions = conditions'
     _else_block = else_block'
 
-  new val _with_ast_type(orig: IfDef, ast_type': types.AstType) =>
+  new val _with_ast_type(orig: ExpIfDef, ast_type': types.AstType) =>
     _src_info = orig._src_info
     _ast_type = ast_type'
     _children = orig._children
@@ -83,7 +83,7 @@ class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
       let conds = _info_seq[IfCondition](_conditions)
       let properties =
         [as (String, json.Item):
-          ("node", "IfDef")
+          ("node", "ExpIfDef")
           ("conditions", conds)
         ]
       match _else_block
@@ -95,13 +95,13 @@ class val IfDef is (Node & NodeWithType[IfDef] & NodeWithChildren)
     end
 
   fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): IfDef =>
-    IfDef._with_ast_type(this, ast_type')
+  fun val with_ast_type(ast_type': types.AstType): ExpIfDef =>
+    ExpIfDef._with_ast_type(this, ast_type')
   fun children(): NodeSeq => _children
   fun conditions(): NodeSeq[IfCondition] => _conditions
   fun else_block(): (Node | None) => _else_block
 
-class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
+class val ExpIfType is (Node & NodeWithType[ExpIfType] & NodeWithChildren)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
   let _children: NodeSeq
@@ -118,7 +118,7 @@ class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
     _conditions = conditions'
     _else_block = else_block'
 
-  new val _with_ast_type(orig: IfType, ast_type': types.AstType) =>
+  new val _with_ast_type(orig: ExpIfType, ast_type': types.AstType) =>
     _src_info = orig._src_info
     _ast_type = ast_type'
     _children = orig._children
@@ -132,7 +132,7 @@ class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
       let conds = _info_seq[IfCondition](_conditions)
       let items =
         [as (String, json.Item):
-          ("node", "IfType")
+          ("node", "ExpIfType")
           ("conditions", conds)
         ]
       match _else_block
@@ -143,8 +143,8 @@ class val IfType is (Node & NodeWithType[IfType] & NodeWithChildren)
     end
 
   fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): IfType =>
-    IfType._with_ast_type(this, ast_type')
+  fun val with_ast_type(ast_type': types.AstType): ExpIfType =>
+    ExpIfType._with_ast_type(this, ast_type')
   fun children(): NodeSeq => _children
   fun conditions(): NodeSeq[IfCondition] => _conditions
   fun else_block(): (Node | None) => _else_block

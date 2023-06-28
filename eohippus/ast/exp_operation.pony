@@ -2,7 +2,7 @@ use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
-class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
+class val ExpOperation is (Node & NodeWithType[ExpOperation] & NodeWithChildren)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
   let _children: NodeSeq
@@ -21,7 +21,7 @@ class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
     _op = op'
     _rhs = rhs'
 
-  new val _with_ast_type(orig: Operation, ast_type': types.AstType) =>
+  new val _with_ast_type(orig: ExpOperation, ast_type': types.AstType) =>
     _src_info = orig._src_info
     _ast_type = ast_type'
     _children = orig._children
@@ -35,7 +35,7 @@ class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
     recover
       let items =
         [ as (String, json.Item):
-          ("node", "Operation")
+          ("node", "ExpOperation")
           ("op", _op.info())
           ("rhs", _rhs.info())
         ]
@@ -48,8 +48,8 @@ class val Operation is (Node & NodeWithType[Operation] & NodeWithChildren)
 
   fun ast_type(): (types.AstType | None) => _ast_type
 
-  fun val with_ast_type(ast_type': types.AstType): Operation =>
-    Operation._with_ast_type(this, ast_type')
+  fun val with_ast_type(ast_type': types.AstType): ExpOperation =>
+    ExpOperation._with_ast_type(this, ast_type')
 
   fun children(): NodeSeq => _children
 

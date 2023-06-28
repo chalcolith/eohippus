@@ -104,19 +104,8 @@ class SrcFileBuilder
 
     let docstring': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
 
-    let us': ast.NodeSeq[ast.Node] =
-      try
-        _Build.values(b, us)?
-      else
-        return _Build.bind_error(r, c, b, "Usings")
-      end
-
-    let td': ast.NodeSeq[ast.Node] =
-      try
-        _Build.values(b, td)?
-      else
-        return _Build.bind_error(r, c, b, "Typedefs")
-      end
+    let us': ast.NodeSeq[ast.Node] = _Build.values(b, us)
+    let td': ast.NodeSeq[ast.Node] = _Build.values(b, td)
 
     let m = ast.SrcFile(_Build.info(r), c, t1', docstring', us', td')
     (m, b)

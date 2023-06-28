@@ -35,9 +35,12 @@ class ExpressionBuilder
     | let r: NamedRule => r
     else
       let kwd = _keyword.kwd()
-      recover val
-        NamedRule("NotKwd", Neg(kwd))
-      end
+      let not_kwd' =
+        recover val
+          NamedRule("NotKeyword", Neg(kwd))
+        end
+      _not_kwd = not_kwd'
+      not_kwd'
     end
 
   fun ref annotation(): NamedRule =>
@@ -84,8 +87,10 @@ class ExpressionBuilder
     let bar = _token(ast.Tokens.bar())
     let binary_op = _operator.binary_op()
     let ccurly = _token(ast.Tokens.close_curly())
+    let colon = _token(ast.Tokens.colon())
     let comma = _token(ast.Tokens.comma())
     let cparen = _token(ast.Tokens.close_paren())
+    let csquare = _token(ast.Tokens.close_square())
     let dot = _token(ast.Tokens.dot())
     let equals = _token(ast.Tokens.equals())
     let hash = _token(ast.Tokens.hash())
@@ -114,8 +119,10 @@ class ExpressionBuilder
     let not_kwd' = not_kwd()
     let ocurly = _token(ast.Tokens.open_curly())
     let oparen = _token(ast.Tokens.open_paren())
+    let osquare = _token(ast.Tokens.open_square())
     let postfix_op = _operator.postfix_op()
     let prefix_op = _operator.prefix_op()
+    let ques = _token(ast.Tokens.ques())
     let semicolon = _token(ast.Tokens.semicolon())
     let subtype = _token(ast.Tokens.subtype())
     let trivia = _trivia.trivia()
@@ -123,7 +130,7 @@ class ExpressionBuilder
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
       recover val
-        let call_params = NamedRule("Expression_CallParams", None)
+        let call_args = NamedRule("Expression_CallArgs", None)
         let exp_array = NamedRule("Expression_Array", None)
         let exp_assignment = NamedRule("Expression_Assignment", None)      // x
         let exp_atom = NamedRule("Expression_Atom", None)                  // x
@@ -155,15 +162,16 @@ class ExpressionBuilder
         let exp_tuple = NamedRule("Expression_Tuple", None)
         let exp_while = NamedRule("Expression_While", None)
         let exp_with = NamedRule("Expression_With", None)
-        let type_arg = NamedRule("Type_Arg", None)
-        let type_args = NamedRule("Type_Args", None)
-        let type_atom = NamedRule("Type_Atom", None)
-        let type_infix = NamedRule("Type_Infix", None)
+        let type_arg = NamedRule("Type_Arg", None)                         // x
+        let type_args = NamedRule("Type_Args", None)                       // x
+        let type_atom = NamedRule("Type_Atom", None)                       // x
+        let type_infix = NamedRule("Type_Infix", None)                     // x
         let type_lambda = NamedRule("Type_Lambda", None)
-        let type_nominal = NamedRule("Type_Nominal", None)
+        let type_nominal = NamedRule("Type_Nominal", None)                 // x
+        let type_param = NamedRule("Type_Param", None)
         let type_params = NamedRule("Type_Params", None)
         let type_tuple = NamedRule("Type_Tuple", None)
-        let type_type = NamedRule("Type_Type", None)
+        let type_type = NamedRule("Type_Type", None)                       // x
 
         let ann = Variable("ann")
         let args = Variable("args")
@@ -178,10 +186,19 @@ class ExpressionBuilder
         let if_true = Variable("if_true")
         let keyword = Variable("keyword")
         let lhs = Variable("lhs")
+        let name = Variable("name")
         let op = Variable("op")
         let params = Variable("params")
+        let partial = Variable("partial")
+        let ptypes = Variable("ptypes")
+        let rcap = Variable("rcap")
         let rhs = Variable("rhs")
+        let rtype = Variable("rtype")
         let then_block = Variable("then_block")
+        let targ = Variable("targ")
+        let tparams = Variable("tparams")
+        let ttype = Variable("ttype")
+        let types = Variable("types")
 
         // seq <= annotation? item (';'? item)*
         exp_seq.set_body(
@@ -197,8 +214,7 @@ class ExpressionBuilder
                   ]))
               ]))
           ],
-          _ExpActions~_annotation[ast.Sequence](ann, body, this~_seq_body()))
-        )
+          _ExpActions~_seq[ast.Sequence](ann, body, this~_seq_body())))
 
         // item <= assignment / jump
         exp_item.set_body(
@@ -256,6 +272,14 @@ class ExpressionBuilder
             exp_prefix
             exp_hash
           ]))
+
+        // exp_hash <= '#' exp_postfix
+        exp_hash.set_body(
+          Conj([
+            hash
+            Bind(rhs, exp_postfix)
+          ]),
+          _ExpActions~_hash(rhs))
 
         // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
         exp_if.set_body(
@@ -357,8 +381,8 @@ class ExpressionBuilder
           ]))
 
         // postfix <= (postfix postfix_op identifier) /
-        //            (postfix type_params) /
-        //            (postfix call_params) /
+        //            (postfix type_args) /
+        //            (postfix call_args) /
         //            atom
         exp_postfix.set_body(
           Disj([
@@ -369,15 +393,20 @@ class ExpressionBuilder
             ], _ExpActions~_binop(lhs, op, rhs))
             Conj([
               Bind(lhs, exp_postfix)
-              Bind(params, type_params)
-            ], _ExpActions~_postfix_type(lhs, params))
+              Bind(args, type_args)
+            ], _ExpActions~_postfix_type_args(lhs, args))
             Conj([
               Bind(lhs, exp_postfix)
-              Bind(params, call_params)
-            ], _ExpActions~_postfix_call(lhs, params))
+              Bind(args, call_args)
+            ], _ExpActions~_postfix_call(lhs, args))
             exp_atom
           ]))
 
+        // jump <= (('return' / 'break') (assignment / infix)?) /
+        //         'continue' /
+        //         'error' /
+        //         'compile_intrinsic' /
+        //         'compile_error'
         exp_jump.set_body(
           Disj([
             Conj([
@@ -394,6 +423,8 @@ class ExpressionBuilder
           ],
           _ExpActions~_jump(keyword, rhs)))
 
+        // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
+        //         object / '__loc' / 'this' / literal / (~keyword identifier)
         exp_atom.set_body(
           Disj([
             exp_tuple
@@ -412,6 +443,7 @@ class ExpressionBuilder
             ])
           ]))
 
+        // type <= atom_type (arrow type)?
         type_type.set_body(
           Conj([
             Bind(lhs, type_atom)
@@ -424,6 +456,8 @@ class ExpressionBuilder
           ]),
           _TypeActions~_type_type(lhs, rhs))
 
+        // atom_type <= 'this' / cap / '(' tuple_type ')' / '(' infix_type ')' /
+        //              nominal_type / lambda_type
         type_atom.set_body(
           Disj([
             kwd_this
@@ -435,6 +469,7 @@ class ExpressionBuilder
           ]),
           {(r, c, b) => (ast.TypeAtom(_Build.info(r), c), b) })
 
+        // tuple_type <= infix_type (',' infix_type)+
         type_tuple.set_body(
           Conj([
             type_infix
@@ -445,6 +480,7 @@ class ExpressionBuilder
           ]),
           {(r, c, b) => (ast.TypeTuple(_Build.info(r), c), b) })
 
+        // infix_type <= type ('&' / '|') infix_type
         type_infix.set_body(
           Conj([
             Bind(lhs, type_type)
@@ -453,6 +489,8 @@ class ExpressionBuilder
           ]),
           _TypeActions~_type_infix(lhs, op, rhs))
 
+        // nominal_type <= identifier ('.' identifier)? type_args
+        //                 (cap / gencap)? ('^' / '!')?
         type_nominal.set_body(
           Conj([
             Bind(lhs, id)
@@ -466,34 +504,73 @@ class ExpressionBuilder
           ]),
           _TypeActions~_type_nominal(lhs, rhs, args, cap, eph))
 
+        // type_arg <= type / literal / ('#' exp_postfix)
         type_arg.set_body(
           Disj([
-            Bind(rhs, type_type)
-            Bind(rhs, literal)
-            Conj([ hash; Bind(rhs, exp_postfix) ])
+            Bind(targ, type_type)
+            Bind(targ, literal)
+            Conj([ hash; Bind(targ, exp_postfix) ])
           ]),
-          _TypeActions~_type_arg(rhs))
+          _TypeActions~_type_arg(targ))
 
+        // type_args <= '[' type_arg (',' type_arg)* ']'
         type_args.set_body(
           Conj([
+            osquare
             type_arg
             Star(
               Conj([
                 comma
                 type_arg
               ]))
+            csquare
           ]),
           _TypeActions~_type_args())
 
-        // lambda_type.set_body(
-        //   Conj([
-        //     Bind(at, Ques(at))
-        //     open_curly
-        //     Bind(cap, Ques(kwd_kap))
-        //     Bind(name, Ques(id))
-        //     Bind()
-        //   ])
-        // )
+        // type_param <= id (':' type_type)? ('=' type_arg)?
+        type_param.set_body(
+          Conj([
+            Bind(name, id)
+            Ques(Bind(ttype, type_type))
+            Ques(Bind(targ, type_arg))
+          ]),
+          _TypeActions~_type_param(name, ttype, targ))
+
+        // type_params <= '[' type_param (',' type_param)* ']'
+        type_params.set_body(
+          Conj([
+            osquare
+            Conj([
+              type_param
+              Star(Conj([ comma; type_param ]))
+            ])
+            csquare
+          ]),
+          _TypeActions~_type_params())
+
+        // lambda_type <= '@'? '{' cap? id? type_params? '(' (type_type (',' type_type)*)? ')' (':' type_type)? '?'? '}' (cap / gencap)? ('^' / '!')?
+        type_lambda.set_body(
+          Conj([
+            Bind(bare, Ques(at))
+            ocurly
+            Bind(cap, Ques(kwd_cap))
+            Bind(name, Ques(id))
+            Bind(tparams, Ques(type_params))
+            oparen
+            Bind(ptypes, Ques(
+              Conj([
+                type_type
+                Star(Conj([comma; type_type]))
+              ])))
+            cparen
+            Bind(rtype, Ques(Conj([colon; type_type])))
+            Bind(partial, Ques(ques))
+            ccurly
+            Bind(rcap, Ques(Disj([kwd_cap; kwd_gencap])))
+            Bind(eph, Ques(Disj([hat; bang])))
+          ]),
+          _TypeActions~_type_lambda(bare, cap, name, tparams, ptypes, rtype,
+            partial, rcap, eph))
 
         (exp_seq, exp_item)
       end

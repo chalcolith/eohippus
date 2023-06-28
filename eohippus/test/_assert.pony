@@ -17,7 +17,54 @@ primitive _Assert
       })
     h.long_test(10_000_000_000)
 
-  fun test_match(h: TestHelper,
+  fun test_json(
+    h: TestHelper,
+    rule: parser.NamedRule,
+    source: ReadSeq[parser.Segment] val,
+    data: parser.Data,
+    expected_json: (String | None)) : Promise[Bool]
+  =>
+    let segments = Lists[parser.Segment].from(source.values())
+    let start = parser.Loc(segments)
+    let promise = Promise[Bool]
+    let pony_parser = parser.Parser(segments)
+    let callback =
+      recover val
+        {(r: (parser.Success | parser.Failure), v: ast.NodeSeq[ast.Node]) =>
+          match r
+          | let success: parser.Success =>
+            match expected_json
+            | let expected_str: String =>
+              let actual_str =
+                recover val
+                  let json = String
+                  for v' in v.values() do
+                    json.append(v'.info().string())
+                  end
+                  json
+                end
+
+              promise(h.assert_eq[String](expected_str, actual_str))
+            else
+              h.fail("Match succeeded when it should have failed.")
+              promise(false)
+            end
+          | let failure: parser.Failure =>
+            match expected_json
+            | let expected_str: String =>
+              h.fail("Match failed when it should have succeeded: "
+                + failure.get_message())
+              promise(false)
+            end
+          end
+          promise(true)
+        }
+      end
+    pony_parser.parse(rule, data, callback)
+    promise
+
+  fun test_match(
+    h: TestHelper,
     rule: parser.NamedRule,
     source: ReadSeq[parser.Segment] val,
     start_index: USize,
@@ -36,14 +83,14 @@ primitive _Assert
     let pony_parser = parser.Parser(segments)
     let callback =
       recover val
-        _Callback(h, start, expected_match, expected_length,
+        _MatchCallback(h, start, expected_match, expected_length,
           expected_value, expected_error, assertion, promise)
       end
 
     pony_parser.parse(rule, data, callback, start)
     promise
 
-class _Callback
+class _MatchCallback
   let _h: TestHelper
   let _start: parser.Loc
   let _expected_match: Bool

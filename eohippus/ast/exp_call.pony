@@ -4,7 +4,7 @@ use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
-class val Call is (Node & NodeWithType[Call] & NodeWithChildren)
+class val ExpCall is (Node & NodeWithType[ExpCall] & NodeWithChildren)
   let _src_info: SrcInfo
   let _ast_type: (types.AstType | None)
   let _children: NodeSeq
@@ -33,7 +33,7 @@ class val Call is (Node & NodeWithType[Call] & NodeWithChildren)
             }))
       end
 
-  new val _with_ast_type(orig: Call, ast_type': types.AstType) =>
+  new val _with_ast_type(orig: ExpCall, ast_type': types.AstType) =>
     _src_info = orig._src_info
     _ast_type = ast_type'
     _children = orig._children
@@ -47,15 +47,15 @@ class val Call is (Node & NodeWithType[Call] & NodeWithChildren)
     let args' = _info_seq(_args)
     recover
       json.Object([
-        ("node", "Call")
+        ("node", "ExpCall")
         ("lhs", _lhs.info())
         ("args", args')
       ])
     end
 
   fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): Call =>
-    Call._with_ast_type(this, ast_type')
+  fun val with_ast_type(ast_type': types.AstType): ExpCall =>
+    ExpCall._with_ast_type(this, ast_type')
   fun children(): NodeSeq => _children
 
   fun lhs(): Node => _lhs

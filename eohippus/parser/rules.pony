@@ -8,6 +8,8 @@ type Variable is k.Variable
 
 type NamedRule is k.NamedRule[U8, Data, ast.Node]
 type RuleNode is k.RuleNode[U8, Data, ast.Node]
+type RuleNodeWithBody is k.RuleNodeWithBody[U8, Data, ast.Node]
+type RuleNodeWithChildren is k.RuleNodeWithChildren[U8, Data, ast.Node]
 type Single is k.Single[U8, Data, ast.Node]
 type Literal is k.Literal[U8, Data, ast.Node]
 type Conj is k.Conj[U8, Data, ast.Node]

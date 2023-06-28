@@ -3,7 +3,7 @@ use "itertools"
 use ast = "../ast"
 
 primitive _ExpActions
-  fun tag _annotation[T: ast.Node val](
+  fun tag _seq[T: ast.Node val](
     ann: Variable,
     body: Variable,
     body_action: {(Success, ast.NodeSeq[ast.Node]): T} val,
@@ -20,17 +20,15 @@ primitive _ExpActions
 
     let body_value = body_action(r', body')
 
-    try
-      let ann' = _Build.values(b, ann)?
-      let ids =
-        recover val
-          Array[ast.Identifier].>concat(Iter[ast.Node](ann'.values())
-            .filter_map[ast.Identifier](
-              {(n) => try n as ast.Identifier end }))
-        end
-      if ids.size() > 0 then
-        return (ast.Annotation(_Build.info(r), c, ids, body_value), b)
+    let ann' = _Build.values(b, ann)
+    let ids =
+      recover val
+        Array[ast.Identifier].>concat(Iter[ast.Node](ann'.values())
+          .filter_map[ast.Identifier](
+            {(n) => try n as ast.Identifier end }))
       end
+    if ids.size() > 0 then
+      return (ast.Annotation(_Build.info(r), c, ids, body_value), b)
     end
     (body_value, b)
 
@@ -60,7 +58,21 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/Assignment/RHS")
       end
-    (ast.Operation(_Build.info(r), c, lhs', op', rhs'), b)
+    (ast.ExpOperation(_Build.info(r), c, lhs', op', rhs'), b)
+
+  fun tag _hash(
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq[ast.Node],
+    b: Bindings): ((ast.Node | None), Bindings)
+  =>
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
+      end
+    (ast.ExpHash(_Build.info(r), c, rhs'), b)
 
   fun tag _if(
     firstif: Variable,
@@ -77,15 +89,11 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
       end
     let elseifs' =
-      try
-        recover val
-          Array[ast.IfCondition].>concat(
-            Iter[ast.Node](_Build.values(b, elseifs)?.values())
-              .filter_map[ast.IfCondition](
-                {(n) => try n as ast.IfCondition end }))
-        end
-      else
-        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      recover val
+        Array[ast.IfCondition].>concat(
+          Iter[ast.Node](_Build.values(b, elseifs).values())
+            .filter_map[ast.IfCondition](
+              {(n) => try n as ast.IfCondition end }))
       end
     let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
@@ -96,7 +104,7 @@ primitive _ExpActions
         conditions'
       end
 
-    (ast.If(_Build.info(r), c, conditions, else_block'), b)
+    (ast.ExpIf(_Build.info(r), c, conditions, else_block'), b)
 
   fun tag _ifdef(
     firstif: Variable,
@@ -113,15 +121,11 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/If/Firstif")
       end
     let elseifs' =
-      try
-        recover val
-          Array[ast.IfCondition].>concat(
-            Iter[ast.Node](_Build.values(b, elseifs)?.values())
-              .filter_map[ast.IfCondition](
-                {(n) => try n as ast.IfCondition end }))
-        end
-      else
-        return _Build.bind_error(r, c, b, "Expression/If/Elsifs")
+      recover val
+        Array[ast.IfCondition].>concat(
+          Iter[ast.Node](_Build.values(b, elseifs).values())
+            .filter_map[ast.IfCondition](
+              {(n) => try n as ast.IfCondition end }))
       end
     let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
@@ -132,7 +136,7 @@ primitive _ExpActions
         conditions'
       end
 
-    (ast.IfDef(_Build.info(r), c, conditions, else_block'), b)
+    (ast.ExpIfDef(_Build.info(r), c, conditions, else_block'), b)
 
   fun tag _iftype(
     firstif: Variable,
@@ -149,15 +153,11 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/IfType/Firstif")
       end
     let elseifs' =
-      try
-        recover val
-          Array[ast.IfCondition].>concat(
-            Iter[ast.Node](_Build.values(b, elseifs)?.values())
-              .filter_map[ast.IfCondition](
-                {(n) => try n as ast.IfCondition end }))
-        end
-      else
-        return _Build.bind_error(r, c, b, "Expression/IfType/Elseifs")
+      recover val
+        Array[ast.IfCondition].>concat(
+          Iter[ast.Node](_Build.values(b, elseifs).values())
+            .filter_map[ast.IfCondition](
+              {(n) => try n as ast.IfCondition end }))
       end
     let else_block' = _Build.value_or_none(b, else_block)
     let conditions =
@@ -167,7 +167,7 @@ primitive _ExpActions
           .>append(elseifs')
       end
 
-    (ast.IfType(_Build.info(r), c, conditions, else_block'), b)
+    (ast.ExpIfType(_Build.info(r), c, conditions, else_block'), b)
 
   fun tag _ifcond(
     if_true: Variable,
@@ -200,12 +200,7 @@ primitive _ExpActions
     c: ast.NodeSeq[ast.Node],
     b: Bindings): ((ast.Node | None), Bindings)
   =>
-    let cond_children =
-      try
-        _Build.values(b, if_true)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/IfTypeConf/IfTrue")
-      end
+    let cond_children = _Build.values(b, if_true)
     let lhs' =
       try
         _Build.value(b, lhs)?
@@ -232,7 +227,7 @@ primitive _ExpActions
       end
     let cond_info = ast.SrcInfo(
       r.data.locator(), lhs'.src_info().start(), rhs'.src_info().next())
-    let cond = ast.Operation(cond_info, cond_children, lhs', op', rhs')
+    let cond = ast.ExpOperation(cond_info, cond_children, lhs', op', rhs')
 
     (ast.IfCondition(_Build.info(r), c, cond, then_block'), b)
 
@@ -255,9 +250,9 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/Prefix/RHS")
       end
-    (ast.Operation(_Build.info(r), c, None, op', rhs'), b)
+    (ast.ExpOperation(_Build.info(r), c, None, op', rhs'), b)
 
-  fun tag _postfix_type(
+  fun tag _postfix_type_args(
     lhs: Variable,
     params: Variable,
     r: Success,
@@ -268,19 +263,19 @@ primitive _ExpActions
       try
         _Build.value(b, lhs)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Op")
+        return _Build.bind_error(r, c, b, "Expression/Postfix/TParams/LHS")
       end
     let params' =
       try
-        _Build.values(b, params)?
+        _Build.value(b, params)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Params")
+        return _Build.bind_error(r, c, b, "Expression/Postfix/TParamsParams")
       end
-    (ast.TypeParams(_Build.info(r), c, lhs', params'), b)
+    (ast.ExpGeneric(_Build.info(r), c, lhs', params'), b)
 
   fun tag _postfix_call(
     lhs: Variable,
-    params: Variable,
+    args: Variable,
     r: Success,
     c: ast.NodeSeq[ast.Node],
     b: Bindings): ((ast.Node | None), Bindings)
@@ -289,15 +284,10 @@ primitive _ExpActions
       try
         _Build.value(b, lhs)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Op")
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Call/LHS")
       end
-    let params' =
-      try
-        _Build.values(b, params)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Params")
-      end
-    (ast.Call(_Build.info(r), c, lhs', params'), b)
+    let args' = _Build.values(b, args)
+    (ast.ExpCall(_Build.info(r), c, lhs', args'), b)
 
   fun tag _jump(
     keyword: Variable,
@@ -313,4 +303,4 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
       end
     let rhs' = try _Build.value(b, rhs)? end
-    (ast.Jump(_Build.info(r), c, keyword', rhs'), b)
+    (ast.ExpJump(_Build.info(r), c, keyword', rhs'), b)

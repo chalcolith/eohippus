@@ -32,8 +32,12 @@ primitive _Build
       b(v)?._2(0)?
     end
 
-  fun values(b: Bindings, v: Variable): ast.NodeSeq[ast.Node]? =>
-    b(v)?._2
+  fun values(b: Bindings, v: Variable): ast.NodeSeq[ast.Node] =>
+    try
+      b(v)?._2
+    else
+      []
+    end
 
   fun with_post[T: ast.Node val](
     body: RuleNode,

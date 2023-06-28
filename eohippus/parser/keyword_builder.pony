@@ -4,6 +4,8 @@ use ast = "../ast"
 use ".."
 
 class KeywordBuilder
+  let _kwd_strings: Array[String] val
+
   let _context: Context
   let _trivia: TriviaBuilder
 
@@ -16,31 +18,50 @@ class KeywordBuilder
     _context = context
     _trivia = trivia
 
+    _kwd_strings = [
+      ast.Keywords.kwd_addressof()
+      ast.Keywords.kwd_as()
+      ast.Keywords.kwd_box()
+      ast.Keywords.kwd_break()
+      ast.Keywords.kwd_compile_error()
+      ast.Keywords.kwd_compile_intrinsic()
+      ast.Keywords.kwd_continue()
+      ast.Keywords.kwd_digestof()
+      ast.Keywords.kwd_else()
+      ast.Keywords.kwd_elseif()
+      ast.Keywords.kwd_end()
+      ast.Keywords.kwd_error()
+      ast.Keywords.kwd_false()
+      ast.Keywords.kwd_hash_alias()
+      ast.Keywords.kwd_hash_any()
+      ast.Keywords.kwd_hash_read()
+      ast.Keywords.kwd_hash_send()
+      ast.Keywords.kwd_hash_share()
+      ast.Keywords.kwd_if()
+      ast.Keywords.kwd_ifdef()
+      ast.Keywords.kwd_iftype()
+      ast.Keywords.kwd_iso()
+      ast.Keywords.kwd_loc()
+      ast.Keywords.kwd_not()
+      ast.Keywords.kwd_primitive()
+      ast.Keywords.kwd_ref()
+      ast.Keywords.kwd_return()
+      ast.Keywords.kwd_tag()
+      ast.Keywords.kwd_then()
+      ast.Keywords.kwd_this()
+      ast.Keywords.kwd_trn()
+      ast.Keywords.kwd_true()
+      ast.Keywords.kwd_use()
+      ast.Keywords.kwd_val()
+    ]
+
     let t = _trivia.trivia()
     _keywords =
       recover val
         let k = Map[String, NamedRule]
-        _add_rule("Keyword_Addressof", ast.Keywords.kwd_addressof(), t, k)
-        _add_rule("Keyword_As", ast.Keywords.kwd_as(), t, k)
-        _add_rule("Keyword_Break", ast.Keywords.kwd_break(), t, k)
-        _add_rule("Keyword_CompileError", ast.Keywords.kwd_compile_error(), t, k)
-        _add_rule("Keyword_CompileIntrinsic", ast.Keywords.kwd_compile_intrinsic(), t, k)
-        _add_rule("Keyword_Continue", ast.Keywords.kwd_continue(), t, k)
-        _add_rule("Keyword_Digestof", ast.Keywords.kwd_digestof(), t, k)
-        _add_rule("Keyword_Else", ast.Keywords.kwd_else(), t, k)
-        _add_rule("Keyword_Elseif", ast.Keywords.kwd_elseif(), t, k)
-        _add_rule("Keyword_End", ast.Keywords.kwd_end(), t, k)
-        _add_rule("Keyword_Error", ast.Keywords.kwd_error(), t, k)
-        _add_rule("Keyword_If", ast.Keywords.kwd_if(), t, k)
-        _add_rule("Keyword_Ifdef", ast.Keywords.kwd_ifdef(), t, k)
-        _add_rule("Keyword_Iftype", ast.Keywords.kwd_iftype(), t, k)
-        _add_rule("Keyword_Loc", ast.Keywords.kwd_loc(), t, k)
-        _add_rule("Keyword_Not", ast.Keywords.kwd_not(), t, k)
-        _add_rule("Keyword_Primitive", ast.Keywords.kwd_primitive(), t, k)
-        _add_rule("Keyword_Return", ast.Keywords.kwd_return(), t, k)
-        _add_rule("Keyword_Then", ast.Keywords.kwd_then(), t, k)
-        _add_rule("Keyword_This", ast.Keywords.kwd_this(), t, k)
-        _add_rule("Keyword_Use", ast.Keywords.kwd_use(), t, k)
+        for str in _kwd_strings.values() do
+          _add_rule("Keyword_" + str, str, t, k)
+        end
         k
       end
 
@@ -81,10 +102,44 @@ class KeywordBuilder
     match _kwd
     | let r: NamedRule => r
     else
+      let t = _trivia.trivia()
       let kwd' =
         recover val
+          let literals = Array[Literal]
+          for str in _kwd_strings.values() do
+            literals.push(Literal(str))
+          end
+
+          let str = Variable("str")
+          let post = Variable("post")
+
           NamedRule("Keyword",
-            Disj(Array[NamedRule].>concat(_keywords.values())))
+            Conj([
+              Bind(str, Disj(literals))
+              Bind(post, t)
+            ]),
+            {(r, c, b) =>
+              let str' =
+                try
+                  _Build.value(b, str)?
+                else
+                  return _Build.bind_error(r, c, b, "Keyword/Str")
+                end
+              let post' =
+                try
+                  _Build.value(b, post)? as ast.Trivia
+                else
+                  return _Build.bind_error(r, c, b, "Keyword/Post")
+                end
+              let src_info = _Build.info(r)
+              let keyword =
+                recover val
+                  String
+                    .>concat(src_info.start().values(post'.src_info().start()))
+                end
+
+              (ast.Keyword(_Build.info(r), post', keyword), b)
+            })
         end
       _kwd = kwd'
       kwd'

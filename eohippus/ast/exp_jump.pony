@@ -1,6 +1,6 @@
 use json = "../json"
 
-class val Jump is (Node & NodeWithChildren)
+class val ExpJump is (Node & NodeWithChildren)
   let _src_info: SrcInfo
   let _children: NodeSeq
 

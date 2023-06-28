@@ -4,41 +4,21 @@ use json = "../json"
 use parser = "../parser"
 use types = "../types"
 
-class val TypeParams is (Node & NodeWithType[TypeParams] & NodeWithChildren)
+class val TypeParams is (Node & NodeWithChildren)
   let _src_info: SrcInfo
-  let _ast_type: (types.AstType | None)
   let _children: NodeSeq
 
-  let _lhs: Node
-  let _param_seq: NodeSeq
-  let _params: NodeSeq
+  let _params: NodeSeq[TypeParam]
 
-  new val create(src_info': SrcInfo, children': NodeSeq,
-    lhs': Node, param_seq': NodeSeq)
-  =>
+  new val create(src_info': SrcInfo, children': NodeSeq) =>
     _src_info = src_info'
-    _ast_type = None
     _children = children'
-    _lhs = lhs'
-    _param_seq = param_seq'
     _params =
       recover val
-        Array[Node].>concat(Iter[Node](_param_seq.values())
-          .filter({(n) =>
-            match n
-            | let _: Trivia => false
-            | let _: Token => false
-            else true end
-          }))
+        Array[TypeParam].>concat(
+          Iter[Node](_children.values())
+            .filter_map[TypeParam]({(n) => try n as TypeParam end }))
       end
-
-  new val _with_ast_type(orig: TypeParams, ast_type': types.AstType) =>
-    _src_info = orig._src_info
-    _ast_type = ast_type'
-    _children = orig._children
-    _lhs = orig._lhs
-    _param_seq = orig._param_seq
-    _params = orig._params
 
   fun src_info(): SrcInfo => _src_info
 
@@ -47,7 +27,6 @@ class val TypeParams is (Node & NodeWithType[TypeParams] & NodeWithChildren)
       let items =
         [ as (String, json.Item val):
           ("node", "TypeParams")
-          ("lhs", _lhs.info())
         ]
       let params' = _info_seq(_params)
       if params'.size() > 0 then
@@ -56,13 +35,51 @@ class val TypeParams is (Node & NodeWithType[TypeParams] & NodeWithChildren)
       json.Object(items)
     end
 
-  fun ast_type(): (types.AstType | None) => _ast_type
+  fun children(): NodeSeq => _children
 
-  fun val with_ast_type(ast_type': types.AstType): TypeParams =>
-    TypeParams._with_ast_type(this, ast_type')
+  fun params(): NodeSeq[TypeParam] => _params
+
+class val TypeParam is (Node & NodeWithChildren)
+  let _src_info: SrcInfo
+  let _children: NodeSeq
+
+  let _name: Node
+  let _type: (Node | None)
+  let _arg: (Node | None)
+
+  new val create(src_info': SrcInfo, children': NodeSeq, name': Node,
+    type_type': (Node | None), arg': (Node | None))
+  =>
+    _src_info = src_info'
+    _children = children'
+    _name = name'
+    _type = type_type'
+    _arg = arg'
+
+  fun src_info(): SrcInfo => _src_info
+
+  fun info(): json.Item val =>
+    recover
+      let items =
+        [ as (String, json.Item val):
+          ("node", "TypeParam")
+          ("name", _name.info())
+        ]
+      match _type
+      | let type': Node =>
+        items.push(("type", type'.info()))
+      end
+      match _arg
+      | let arg': Node =>
+        items.push(("arg", arg'.info()))
+      end
+      json.Object(items)
+    end
 
   fun children(): NodeSeq => _children
 
-  fun lhs(): Node => _lhs
+  fun name(): Node => _name
 
-  fun params(): NodeSeq => _params
+  fun param_type(): (Node | None) => _type
+
+  fun arg(): (Node | None) => _arg

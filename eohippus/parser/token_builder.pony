@@ -45,19 +45,37 @@ class TokenBuilder
     _tokens = Map[String, NamedRule]
 
     let t = _trivia.trivia()
+    _add_rule("Token_Amp", ast.Tokens.amp(), t, _tokens)
     _add_rule("Token_Arrow", ast.Tokens.arrow(), t, _tokens)
+    _add_rule("Token_At", ast.Tokens.at(), t, _tokens)
     _add_rule("Token_Backslash", ast.Tokens.backslash(), t, _tokens)
+    _add_rule("Token_Bang", ast.Tokens.bang(), t, _tokens)
+    _add_rule("Token_Bar", ast.Tokens.bar(), t, _tokens)
     _add_rule("Token_Chain", ast.Tokens.chain(), t, _tokens)
+    _add_rule("Token_Close_Curly", ast.Tokens.close_curly(), t, _tokens)
+    _add_rule("Token_Close_Paren", ast.Tokens.close_paren(), t, _tokens)
+    _add_rule("Token_Close_Square", ast.Tokens.close_square(), t, _tokens)
+    _add_rule("Token_Colon", ast.Tokens.colon(), t, _tokens)
     _add_rule("Token_Comma", ast.Tokens.comma(), t, _tokens)
+    _add_rule("Token_Decimal_Point", ast.Tokens.decimal_point(), t, _tokens)
     _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
     _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
     _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
+    _add_rule("Token_Hash", ast.Tokens.hash(), t, _tokens)
+    _add_rule("Token_Hat", ast.Tokens.hat(), t, _tokens)
     _add_rule("Token_Minus", ast.Tokens.minus(), t, _tokens)
     _add_rule("Token_MinusTilde", ast.Tokens.minus_tilde(), t, _tokens)
+    _add_rule("Token_Open_Curly", ast.Tokens.open_curly(), t, _tokens)
+    _add_rule("Token_Open_Paren", ast.Tokens.open_paren(), t, _tokens)
+    _add_rule("Token_Open_Square", ast.Tokens.open_square(), t, _tokens)
+    _add_rule("Token_Ques", ast.Tokens.ques(), t, _tokens)
     _add_rule("Token_Semicolon", ast.Tokens.semicolon(), t, _tokens)
+    _add_rule("Token_Single_Quote", ast.Tokens.single_quote(), t, _tokens)
     _add_rule("Token_Subtype", ast.Tokens.subtype(), t, _tokens)
     _add_rule("Token_Tilde", ast.Tokens.tilde(), t, _tokens)
-    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(), t, _tokens)
+    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(), t,
+      _tokens)
+    _add_rule("Token_Underscore", ast.Tokens.underscore(), t, _tokens)
 
   fun tag _add_rule(
     name: String,
