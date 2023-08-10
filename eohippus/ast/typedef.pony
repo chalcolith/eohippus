@@ -1,30 +1,44 @@
 use json = "../json"
 use parser = "../parser"
 
-class val TypedefPrimitive is (Node & NodeWithDocstring)
-  let _src_info: SrcInfo
-  let _docstring: NodeSeq[Docstring]
-  let _identifier: Identifier
+type TypeDef is TypeDefPrimitive
 
-  new val create(src_info': SrcInfo, docstring': NodeSeq[Docstring],
-    identifier': Identifier)
-  =>
-    _src_info = src_info'
-    _docstring = docstring'
-    _identifier = identifier'
+class val TypeDefPrimitive is NodeData
+  let identifier: NodeWith[Identifier]
 
-  fun src_info(): SrcInfo => _src_info
+  new val create(identifier': NodeWith[Identifier]) =>
+    identifier = identifier'
 
-  fun has_error(): Bool => false
+  fun name(): String => "TypeDefPrimitive"
 
-  fun info(): json.Item val =>
-    recover
-      json.Object([
-        ("node", "TypedefPrimitive")
-        ("name", _identifier.info())
-      ])
-    end
+  fun add_json_props(props: Array[(String, json.Item)]) =>
+    props.push(("identifier", identifier.get_json()))
 
-  fun docstring(): NodeSeq[Docstring] => _docstring
 
-  fun identifier(): Identifier => _identifier
+// class val TypedefPrimitive is (Node & NodeWithDocstring)
+//   let _src_info: SrcInfo
+//   let _docstring: NodeSeq[Docstring]
+//   let _identifier: Identifier
+
+//   new val create(src_info': SrcInfo, docstring': NodeSeq[Docstring],
+//     identifier': Identifier)
+//   =>
+//     _src_info = src_info'
+//     _docstring = docstring'
+//     _identifier = identifier'
+
+//   fun src_info(): SrcInfo => _src_info
+
+//   fun has_error(): Bool => false
+
+//   fun info(): json.Item val =>
+//     recover
+//       json.Object([
+//         ("node", "TypedefPrimitive")
+//         ("name", _identifier.info())
+//       ])
+//     end
+
+//   fun docstring(): NodeSeq[Docstring] => _docstring
+
+//   fun identifier(): Identifier => _identifier

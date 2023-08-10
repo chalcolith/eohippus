@@ -1,7 +1,7 @@
 use "collections"
 use ".."
 
-type Item is (Object box | Sequence box | String | F64 | Bool)
+type Item is (Object box | Sequence box | String | I128 | F64 | Bool)
 
 class Object
   embed _items: Map[String, Item] = _items.create()
@@ -60,10 +60,12 @@ class Object
           result.append(seq.get_string(pretty, indent'))
         | let str: String =>
           result.append("\"" + StringUtil.escape(str) + "\"")
-        | let num: F64 =>
-          result.append(num.string())
-        | let bol: Bool =>
-          result.append(if bol then "true" else "false" end)
+        | let int: I128 =>
+          result.append(int.string())
+        | let flt: F64 =>
+          result.append(flt.string())
+        | let bool: Bool =>
+          result.append(if bool then "true" else "false" end)
         end
       end
     end
@@ -82,6 +84,9 @@ class Sequence
 
   new create(items: ReadSeq[Item]) =>
     _items.append(items)
+
+  new from_iter(items: Iterator[Item]) =>
+    _items.concat(items)
 
   fun size(): USize => _items.size()
 
@@ -120,10 +125,12 @@ class Sequence
         result.append(seq.get_string(pretty, indent'))
       | let str: String =>
         result.append("\"" + StringUtil.escape(str) + "\"")
-      | let num: F64 =>
-        result.append(num.string())
-      | let bol: Bool =>
-        result.append(if bol then "true" else "false" end)
+      | let int: I128 =>
+        result.append(int.string())
+      | let flt: F64 =>
+        result.append(flt.string())
+      | let bool: Bool =>
+        result.append(if bool then "true" else "false" end)
       end
     end
     if pretty then

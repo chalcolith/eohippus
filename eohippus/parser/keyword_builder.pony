@@ -53,6 +53,7 @@ class KeywordBuilder
       ast.Keywords.kwd_true()
       ast.Keywords.kwd_use()
       ast.Keywords.kwd_val()
+      ast.Keywords.kwd_where()
     ]
 
     let t = _trivia.trivia()
@@ -76,14 +77,16 @@ class KeywordBuilder
         NamedRule(name,
           _Build.with_post[ast.Trivia](
             recover
-              Conj([
-                Literal(str)
-                Neg(Single(_Letters.with_underscore()))
-              ])
+              Conj(
+                [ Literal(str)
+                  Neg(Single(_Letters.with_underscore())) ])
             end,
             t,
-            {(r, _, b, p) => (ast.Keyword(_Build.info(r), p, str), b)}
-          ))
+            {(r, c, b, p) =>
+              let value = ast.NodeWith[ast.Keyword](
+                _Build.info(r), c, ast.Keyword(str)
+                where post_trivia' = p)
+              (value, b) }))
       end
     m.insert(str, rule)
 
@@ -125,21 +128,23 @@ class KeywordBuilder
                 else
                   return _Build.bind_error(r, c, b, "Keyword/Str")
                 end
-              let post' =
-                try
-                  _Build.value(b, post)? as ast.Trivia
-                else
-                  return _Build.bind_error(r, c, b, "Keyword/Post")
-                end
+              let post' = _Build.values[ast.Trivia](b, post)
               let src_info = _Build.info(r)
               let keyword =
                 recover val
-                  String
-                    .>concat(src_info.start().values(post'.src_info().start()))
+                  let next =
+                    try
+                      post'(0)?.src_info().start
+                    else
+                      r.next
+                    end
+                  String .> concat(src_info.start.values(next))
                 end
 
-              (ast.Keyword(_Build.info(r), post', keyword), b)
-            })
+              let value = ast.NodeWith[ast.Keyword](
+                _Build.info(r), c, ast.Keyword(keyword)
+                where post_trivia' = post')
+              (value, b) })
         end
       _kwd = kwd'
       kwd'

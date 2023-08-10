@@ -5,19 +5,19 @@ use ".."
 
 primitive _Build
   fun info(success: Success): ast.SrcInfo =>
-    ast.SrcInfo(success.data.locator(), success.start, success.next)
+    ast.SrcInfo(success.data.locator, success.start, success.next)
 
-  fun docstrings(b: Bindings, ds: Variable): ast.NodeSeq[ast.Docstring] =>
+  fun doc_strings(b: Bindings, ds: Variable): ast.NodeSeqWith[ast.DocString] =>
     recover val
       try
-        Array[ast.Docstring].>concat(
+        Array[ast.NodeWith[ast.DocString]].>concat(
           Iter[ast.Node](b(ds)?._2.values())
-            .filter_map[ast.Docstring](
-              {(node: ast.Node): (ast.Docstring | None) =>
-                try node as ast.Docstring end
+            .filter_map[ast.NodeWith[ast.DocString]](
+              {(node: ast.Node): (ast.NodeWith[ast.DocString] | None) =>
+                try node as ast.NodeWith[ast.DocString] end
               }))
       else
-        Array[ast.Docstring]
+        Array[ast.NodeWith[ast.DocString]]
       end
     end
 
@@ -32,39 +32,39 @@ primitive _Build
       b(v)?._2(0)?
     end
 
-  fun values(b: Bindings, v: Variable): ast.NodeSeq[ast.Node] =>
-    try
-      b(v)?._2
-    else
-      []
+  fun values[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
+    : ast.NodeSeqWith[N]
+  =>
+    recover val
+      try
+        let vs = b(v)?._2
+        Array[ast.NodeWith[N]](vs.size()) .> concat(
+          Iter[ast.Node](vs.values())
+            .filter_map[ast.NodeWith[N]](
+              {(n) => try n as ast.NodeWith[N] end }))
+      else
+        []
+      end
     end
 
-  fun with_post[T: ast.Node val](
+  fun with_post[T: ast.NodeData val](
     body: RuleNode,
     post: RuleNode,
-    action: {(Success, ast.NodeSeq[ast.Node], Bindings, T)
-      : ((ast.Node | None), Bindings)} val)
+    action:
+      {(Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[T])
+        : ((ast.Node | None), Bindings)} val)
     : RuleNode ref
   =>
     let p = Variable("p")
     Conj(
-      [
-        body
-        Bind(p, post)
-      ],
-      {(r, c, b) =>
-        let t =
-          try
-            _Build.value(b, p)? as T
-          else
-            return _Build.bind_error(r, c, b, "post")
-          end
-        action(r, c, b, t)
-      }
-    )
+      [ body
+        Bind(p, Star(post)) ],
+      {(r, c, b) => action(r, c, b, _Build.values[T](b, p)) })
 
-  fun bind_error(r: Success, c: ast.NodeSeq[ast.Node], b: Bindings,
+  fun bind_error(r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)
   =>
-    (ast.ErrorSection(_Build.info(r), c,
-      ErrorMsg.internal_ast_node_not_bound(message)), b)
+    let message' = ErrorMsg.internal_ast_node_not_bound(message)
+    let value' = ast.NodeWith[ast.ErrorSection](
+      _Build.info(r), c, ast.ErrorSection(message'))
+    (value', b)

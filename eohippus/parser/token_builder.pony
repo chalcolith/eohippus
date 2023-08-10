@@ -80,16 +80,30 @@ class TokenBuilder
   fun tag _add_rule(
     name: String,
     str: String,
-    t: NamedRule,
+    trivia: NamedRule,
     m: Map[String, NamedRule])
   =>
     let rule =
       recover val
         NamedRule(name,
           _Build.with_post[ast.Trivia](
-            recover Literal(str) end, t,
-            {(r, _, b, p) => (ast.Token(_Build.info(r), p), b) }
-          ))
+            Literal(str),
+            trivia,
+            {(r, c, b, p) =>
+              let next =
+                try
+                  p(0)?.src_info().start
+                else
+                  r.next
+                end
+              let string =
+                recover val
+                  String .> concat(r.start.values(next))
+                end
+              let value = ast.NodeWith[ast.Token](
+                _Build.info(r), c, ast.Token(string)
+                where post_trivia' = p)
+              (value, b) }))
       end
     m.insert(str, rule)
 
@@ -115,25 +129,30 @@ class TokenBuilder
           NamedRule("Identifier",
             _Build.with_post[ast.Trivia](
               recover
-                Disj([
-                  Conj([
-                    Single(ast.Tokens.underscore())
-                    Star(Single(id_chars))
-                  ])
-                  Conj([
-                    Single(_Letters())
-                    Star(Single(id_chars))
-                  ])
-                ])
+                Disj(
+                  [ Conj(
+                      [ Single(ast.Tokens.underscore())
+                        Star(Single(id_chars)) ])
+                    Conj(
+                      [ Single(_Letters())
+                        Star(Single(id_chars)) ]) ])
               end,
               trivia,
-              {(r, _, b, p) =>
-                let str =
-                  recover val
-                    String.>concat(r.start.values(p.src_info().start()))
+              {(r, c, b, p) =>
+                let next =
+                  try
+                    p(0)?.src_info().start
+                  else
+                    r.next
                   end
-                (ast.Identifier(_Build.info(r), p, str), b)
-              }))
+                let string =
+                  recover val
+                    String .> concat(r.start.values(next))
+                  end
+                let value = ast.NodeWith[ast.Identifier](
+                  _Build.info(r), c, ast.Identifier(string)
+                  where post_trivia' = p)
+                (value, b) }))
         end
       _identifier = identifier'
       identifier'

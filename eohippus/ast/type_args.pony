@@ -1,58 +1,69 @@
 use json = "../json"
 
-class val TypeArgs is (Node & NodeWithChildren)
-  let _src_info: SrcInfo
-  let _children: NodeSeq
-  let _args: NodeSeq[TypeArg]
+class val TypeArg is NodeData
+  let arg: Node
 
-  new val create(
-    src_info': SrcInfo,
-    children': NodeSeq,
-    args': NodeSeq[TypeArg])
-  =>
-    _src_info = src_info'
-    _children = children'
-    _args = args'
+  new val create(arg': Node) =>
+    arg = arg'
 
-  fun src_info(): SrcInfo => _src_info
+  fun name(): String => "TypeArg"
 
-  fun info(): json.Item val =>
-    recover
-      let items =
-        [ as (String, json.Item):
-          ("node", "TypeArgs")
-        ]
-      let args' = _info_seq(_args)
-      if args'.size() > 0 then
-        items.push(("args", args'))
-      end
-      json.Object(items)
-    end
+  fun add_json_props(props: Array[(String, json.Item)]) =>
+    props.push(("arg", arg.get_json()))
 
-  fun children(): NodeSeq => _children
+// class val TypeArgs is (Node & NodeWithChildren)
+//   let _src_info: SrcInfo
+//   let _children: NodeSeq
+//   let _args: NodeSeq[TypeArg]
 
-  fun args(): NodeSeq => _args
+//   new val create(
+//     src_info': SrcInfo,
+//     children': NodeSeq,
+//     args': NodeSeq[TypeArg])
+//   =>
+//     _src_info = src_info'
+//     _children = children'
+//     _args = args'
 
-class val TypeArg is (Node & NodeWithChildren)
-  let _src_info: SrcInfo
-  let _children: NodeSeq
-  let _arg: Node
+//   fun src_info(): SrcInfo => _src_info
 
-  new val create(src_info': SrcInfo, children': NodeSeq, arg': Node) =>
-    _src_info = src_info'
-    _children = children'
-    _arg = arg'
+//   fun info(): json.Item val =>
+//     recover
+//       let items =
+//         [ as (String, json.Item):
+//           ("node", "TypeArgs")
+//         ]
+//       let args' = _info_seq(_args)
+//       if args'.size() > 0 then
+//         items.push(("args", args'))
+//       end
+//       json.Object(items)
+//     end
 
-  fun src_info(): SrcInfo => _src_info
+//   fun children(): NodeSeq => _children
 
-  fun info(): json.Item val =>
-    recover
-      json.Object([
-        ("node", "TypeArg")
-        ("arg", _arg.info())
-      ])
-    end
+//   fun args(): NodeSeq => _args
 
-  fun children(): NodeSeq => _children
+// class val TypeArg is (Node & NodeWithChildren)
+//   let _src_info: SrcInfo
+//   let _children: NodeSeq
+//   let _arg: Node
 
-  fun arg(): Node => _arg
+//   new val create(src_info': SrcInfo, children': NodeSeq, arg': Node) =>
+//     _src_info = src_info'
+//     _children = children'
+//     _arg = arg'
+
+//   fun src_info(): SrcInfo => _src_info
+
+//   fun info(): json.Item val =>
+//     recover
+//       json.Object([
+//         ("node", "TypeArg")
+//         ("arg", _arg.info())
+//       ])
+//     end
+
+//   fun children(): NodeSeq => _children
+
+//   fun arg(): Node => _arg
