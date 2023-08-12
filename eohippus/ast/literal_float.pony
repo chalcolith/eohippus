@@ -9,7 +9,7 @@ class val LiteralFloat is NodeDataWithValue[F64]
   fun name(): String => "LiteralFloat"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("value", _value.string()))
+    props.push(("value", _value))
 
   fun value(): F64 => _value
 

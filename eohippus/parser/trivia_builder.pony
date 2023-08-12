@@ -5,9 +5,7 @@ use ast = "../ast"
 class TriviaBuilder
   let _context: Context
 
-  var _trivia: MapIs[USize, NamedRule] = MapIs[USize, NamedRule]
-
-  var _post_trivia: (NamedRule | None) = None
+  var _trivia: (NamedRule | None) = None
   var _comment: (NamedRule | None) = None
   var _comment_line: (NamedRule | None) = None
   var _comment_nested: (NamedRule | None) = None
@@ -20,27 +18,21 @@ class TriviaBuilder
     _context = context
 
   fun ref trivia(min: USize = 0): NamedRule =>
-    try
-      _trivia(min)?
+    match _trivia
+    | let r: NamedRule => r
     else
-      let r = _build_trivia(min)
-      _trivia(min) = r
-      r
+      let trivia' =
+        recover val
+          NamedRule("Trivia" + min.string(),
+            Plus(
+              Disj(
+                [ comment()
+                  ws()
+                  eol() ])))
+        end
+      _trivia = trivia'
+      trivia'
     end
-
-  fun ref _build_trivia(min: USize): NamedRule =>
-    let trivia' =
-      recover val
-        NamedRule("Trivia" + min.string(),
-          Star(
-            Disj(
-              [ comment()
-                ws()
-                eol() ]),
-            min))
-      end
-    _trivia(min) = trivia'
-    trivia'
 
   fun ref comment(): NamedRule =>
     match _comment

@@ -24,7 +24,8 @@ class val LiteralChar is NodeDataWithValue[U32]
       | CharUnicode => "CharUnicode"
       end
     props.push(("kind", kind_str))
-    props.push(("value", _value.string()))
+    let str = recover val String .> push_utf32(_value) end
+    props.push(("value", str))
 
   fun value(): U32 => _value
 

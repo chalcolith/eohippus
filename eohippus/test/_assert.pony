@@ -17,6 +17,56 @@ primitive _Assert
       })
     h.long_test(10_000_000_000)
 
+  fun test_match(
+    h: TestHelper,
+    rule: parser.NamedRule,
+    data: parser.Data,
+    source: String,
+    expected_json: (String | None))
+    : Promise[Bool]
+  =>
+    let segments = Cons[parser.Segment](source, Nil[parser.Segment])
+    let start = parser.Loc(segments, 0)
+    let promise = Promise[Bool]
+    let pony_parser = parser.Parser(segments)
+    let callback =
+      recover val
+        {(r: (parser.Success | parser.Failure), v: ast.NodeSeq) =>
+          match r
+          | let success: parser.Success =>
+            match expected_json
+            | let expected_raw: String =>
+              let expected = expected_raw.clone()
+              expected.replace("\r\n", "\n")
+              try
+                while expected(expected.size() - 1)? == '\n' do
+                  expected.trim_in_place(0, expected.size() - 1)
+                end
+              end
+              let actual: String iso = String
+              for value in v.values() do
+                actual.append(value.get_json().string())
+              end
+              promise(h.assert_eq[String](consume expected, consume actual))
+            else
+              h.fail("Match succeeded when it should have failed.")
+              promise(false)
+            end
+          | let failure: parser.Failure =>
+            match expected_json
+            | let expected_raw: String =>
+              h.fail("Match failed when it should have succeeded: " +
+                failure.get_message())
+              promise(false)
+            else
+              promise(true)
+            end
+          end }
+      end
+    pony_parser.parse(rule, data, callback)
+    promise
+
+
   // fun test_json(
   //   h: TestHelper,
   //   rule: parser.NamedRule,

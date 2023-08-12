@@ -9,7 +9,7 @@ class val LiteralBool is NodeDataWithValue[Bool]
   fun name(): String => "LiteralBool"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("value", _value.string()))
+    props.push(("value", _value))
 
   fun value(): Bool => _value
 

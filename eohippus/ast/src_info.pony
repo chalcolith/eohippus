@@ -25,19 +25,20 @@ class val SrcInfo is Equatable[SrcInfo]
     next = next'
     derived_from = derived_from'
 
-  // new val from_info(src_info: SrcInfo, derived_from': (SrcDerivation, Node)) =>
-  //   locator = src_info.locator
-  //   start = src_info.start
-  //   next = src_info.next
-  //   derived_from = derived_from'
-
   fun eq(other: box->SrcInfo): Bool =>
     (start == other.start) and (next == other.next)
 
   fun ne(other: box->SrcInfo): Bool =>
     not this.eq(other)
 
-  fun literal_source(): String =>
+  fun literal_source(post: (NodeSeq | None) = None): String =>
+    let next' =
+      try
+        (post as NodeSeq)(0)?.src_info().start
+      else
+        next
+      end
+
     recover val
-      String .> concat(start.values(next))
+      String .> concat(start.values(next'))
     end

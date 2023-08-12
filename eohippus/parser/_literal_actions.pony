@@ -5,8 +5,7 @@ primitive _LiteralActions
   fun tag _bool(
     r: Success,
     c: ast.NodeSeq,
-    b: Bindings,
-    p: ast.NodeSeqWith[ast.Trivia])
+    b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
     let src_info = _Build.info(r)
@@ -14,8 +13,7 @@ primitive _LiteralActions
     let true_str = ast.Keywords.kwd_true()
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
     let value = ast.NodeWith[ast.LiteralBool](
-      src_info, c, ast.LiteralBool(is_true)
-      where post_trivia' = p)
+      src_info, c, ast.LiteralBool(is_true))
     (value, b)
 
   fun tag _integer(
@@ -36,14 +34,19 @@ primitive _LiteralActions
       else
         ast.DecimalInteger
       end
+    let src_info = _Build.info(r)
+    var str = src_info.literal_source(p)
     let base: U8 =
       match kind
-      | ast.DecimalInteger => 10
-      | ast.HexadecimalInteger => 16
-      | ast.BinaryInteger => 2
+      | ast.DecimalInteger =>
+        10
+      | ast.HexadecimalInteger =>
+        str = str.trim(2)
+        16
+      | ast.BinaryInteger =>
+        str = str.trim(2)
+        2
       end
-    let src_info = _Build.info(r)
-    let str = src_info.literal_source()
     let num: U128 = try str.u128(base)? else 0 end
     let value = ast.NodeWith[ast.LiteralInteger](
       src_info, c, ast.LiteralInteger(num, kind)
@@ -62,7 +65,7 @@ primitive _LiteralActions
     : ((ast.Node | None), Bindings)
   =>
     let src_info = _Build.info(r)
-    let str = src_info.literal_source()
+    let str = src_info.literal_source(p)
     let num: F64 = try str.f64()? else 0.0 end
     let value = ast.NodeWith[ast.LiteralFloat](
       src_info, c, ast.LiteralFloat(num)
@@ -219,7 +222,7 @@ primitive _LiteralActions
     let outdented =
       if (kind is ast.StringTripleQuote) and (indented.size() > 0) then
         // get pairs of (start, next) for each line in the string
-        let trimmed: String trn = String
+        let trimmed: String iso = String
         let lines = _string_lines(indented)
         if lines.size() > 1 then
           try

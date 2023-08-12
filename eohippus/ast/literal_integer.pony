@@ -23,7 +23,7 @@ class val LiteralInteger is NodeDataWithValue[U128]
       | BinaryInteger => "BinaryInteger"
       end
     props.push(("kind", kind_str))
-    props.push(("value", _value.string()))
+    props.push(("value", I128.from[U128](_value)))
 
   fun value(): U128 => _value
 

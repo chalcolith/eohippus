@@ -57,8 +57,7 @@ primitive _Build
   =>
     let p = Variable("p")
     Conj(
-      [ body
-        Bind(p, Star(post)) ],
+      [ body; Bind(p, Ques(post)) ],
       {(r, c, b) => action(r, c, b, _Build.values[T](b, p)) })
 
   fun bind_error(r: Success, c: ast.NodeSeq, b: Bindings,

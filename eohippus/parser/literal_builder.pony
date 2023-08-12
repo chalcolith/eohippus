@@ -57,17 +57,9 @@ class LiteralBuilder
 
       let lb' =
         recover val
-          let post = Variable("post")
-
-          NamedRule("Literal_Bool",
-            _Build.with_post[ast.Trivia](
-              recover
-                Disj(
-                  [ kwd_true
-                    kwd_false ])
-              end,
-              trivia,
-              _LiteralActions~_bool()))
+          NamedRule(
+            "Literal_Bool",
+            Disj([ kwd_true; kwd_false ], _LiteralActions~_bool()))
         end
       _bool = lb'
       lb'
@@ -173,16 +165,16 @@ class LiteralBuilder
             _Build.with_post[ast.Trivia](
               recover
                 Conj(
-                  [ Bind(int_part, integer())
+                  [ Bind(int_part, integer_dec())
                     Ques(
                       Conj(
                         [ Single(ast.Tokens.decimal_point())
-                          Bind(frac_part, integer()) ]))
+                          Bind(frac_part, integer_dec()) ]))
                     Ques(
                       Conj(
                         [ Single("eE")
                           Bind(exp_sign, Ques(Single("-+")))
-                          Bind(exponent, integer()) ])) ])
+                          Bind(exponent, integer_dec()) ])) ])
               end,
               trivia,
               _LiteralActions~_float(int_part, frac_part, exp_sign, exponent)))
