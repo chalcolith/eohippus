@@ -11,11 +11,19 @@ interface val _Assertion
 
 primitive _Assert
   fun test_all(h: TestHelper, promises: ReadSeq[Promise[Bool]]) =>
-    Promises[Bool].join(promises.values())
-      .next[None]({(results) =>
-        h.complete(Iter[Bool](results.values()).all({(x) => x }))
-      })
-    h.long_test(10_000_000_000)
+    Promises[Bool]
+      .join(promises.values())
+      .next[None](
+        {(results: Array[Bool] val) =>
+          let succeeded = Iter[Bool](results.values()).all({(x) => x })
+          if not succeeded then
+            h.fail("One or more tests failed!")
+          end
+          h.complete(succeeded) },
+        {() =>
+          h.fail("One or more tests was rejected!")
+          h.complete(false) })
+    h.long_test(100_000_000_000)
 
   fun test_match(
     h: TestHelper,

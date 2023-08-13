@@ -205,8 +205,8 @@ class LiteralBuilder
                             Conj(
                               [ Neg(Single(ast.Tokens.single_quote()))
                                 Disj(
-                                  [ Bind(esc, char_escape())
-                                    Bind(uni, char_unicode())
+                                  [ Bind(uni, char_unicode())
+                                    Bind(esc, char_escape())
                                     Single("") ]) ]),
                             1))
                         Error(ErrorMsg.literal_char_empty()) ])
@@ -215,7 +215,7 @@ class LiteralBuilder
                         Error(ErrorMsg.literal_char_unterminated()) ]) ])
               end,
               trivia,
-              _LiteralActions~_char(bod, esc, uni)))
+              _LiteralActions~_char(bod, uni, esc)))
         end
       _char = lc'
       lc'
@@ -255,11 +255,15 @@ class LiteralBuilder
                 Disj(
                   [ Conj(
                       [ Single("u")
-                        Star(Single(_Hex()), 4, None, 4) ])
+                        Disj([
+                          Star(Single(_Hex()), 4, None, 4)
+                          Error(ErrorMsg.literal_char_unicode_invalid()) ]) ])
                     Conj(
                       [ Single("U")
-                        Star(Single(_Hex()), 6, None, 6) ])
-                    Error(ErrorMsg.literal_char_unicode_invalid()) ]) ]))
+                        Disj([
+                          Star(Single(_Hex()), 6, None, 6)
+                          Error(ErrorMsg.literal_char_unicode_invalid()) ]) ])
+                  ]) ]))
         end
       _char_unicode = lcu'
       lcu'
@@ -311,8 +315,7 @@ class LiteralBuilder
       st'
     end
 
-  fun ref _string_delim(name: String, delim: NamedRule): NamedRule
-  =>
+  fun ref _string_delim(name: String, delim: RuleNode): NamedRule =>
     recover val
       NamedRule(name,
         Conj(
@@ -321,15 +324,32 @@ class LiteralBuilder
               Conj(
                 [ Neg(delim)
                   Disj(
-                    [ char_unicode()
-                      char_escape()
-                      Plus(
-                        Single(""),
-                        {(r, c, b) =>
-                          let value = ast.NodeWith[ast.Span](
-                            _Build.info(r), c, ast.Span)
-                          (value, b) }) ]) ]))
+                    [ _string_char_uni()
+                      _string_char_esc()
+                      _string_char() ]) ]))
             Disj(
               [ delim
                 Error(ErrorMsg.literal_string_unterminated()) ]) ]))
+    end
+
+  fun ref _string_char_uni(): RuleNode =>
+    recover val
+      Conj(
+        [ char_unicode() ],
+        {(r, c, b) => (_LiteralActions._char_uni(r, r, c, []), b) })
+    end
+
+  fun ref _string_char_esc(): RuleNode =>
+    recover val
+      Conj(
+        [ char_escape() ],
+        {(r, c, b) => (_LiteralActions._char_esc(r, r, c, []), b) })
+    end
+
+  fun ref _string_char(): RuleNode =>
+    recover val
+      Single(
+        "",
+        {(r, c, b) =>
+          (ast.NodeWith[ast.Span](_Build.info(r), c, ast.Span), b) })
     end

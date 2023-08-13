@@ -33,6 +33,8 @@ primitive StringUtil
             result.append("\\x")
             result.append(Format.int[U32](rune, FormatHexBare where prec = 2))
           end
+        elseif rune == '"' then
+          result.append("\\\"")
         elseif rune < 128 then
           result.push(U8.from[U32](rune))
         elseif rune < 0xff then

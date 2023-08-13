@@ -171,7 +171,6 @@ class iso _TestParserLiteralChar is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.literal.char()
-    h.fail()
 
     let expected_1 =
       """
@@ -182,44 +181,51 @@ class iso _TestParserLiteralChar is UnitTest
         }
       """
 
+    let expected_2 =
+      """
+        {
+          "name": "LiteralChar",
+          "kind": "CharEscaped",
+          "value": "\n"
+        }
+      """
+
+    let expected_3 =
+      """
+        {
+          "name": "LiteralChar",
+          "kind": "CharEscaped",
+          "value": "A"
+        }
+      """
+
+    let expected_4 =
+      """
+        {
+          "name": "LiteralChar",
+          "kind": "CharLiteral",
+          "value": "\uFFFD"
+        }
+      """
+
+    let expected_5 =
+      """
+        {
+          "name": "LiteralChar",
+          "kind": "CharUnicode",
+          "value": "\uFFFD"
+        }
+      """
+
     _Assert.test_all(
       h,
-      [ _Assert.test_match(h, rule, setup.data, "'A'", expected_1) ])
-
-    // let src1 = setup.src("'A'")
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 3)
-    // let exp1 = ast.LiteralChar.from(inf1, 'A')
-
-    // let src2 = setup.src("'\\n'")
-    // let loc2 = parser.Loc(src2)
-    // let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 4)
-    // let exp2 = ast.LiteralChar.from(inf2, '\n')
-
-    // let src3 = setup.src("'\\x41'")
-    // let loc3 = parser.Loc(src3)
-    // let inf3 = ast.SrcInfo(setup.data.locator(), loc3, loc3 + 6)
-    // let exp3 = ast.LiteralChar.from(inf3, 65)
-
-    // let src4 = setup.src("'ABCD'")
-    // let loc4 = parser.Loc(src4)
-    // let inf4 = ast.SrcInfo(setup.data.locator(), loc4, loc4 + 6)
-    // let exp4 = ast.LiteralChar.from(inf4, 0x41424344)
-
-    // let src5 = setup.src("''")
-    // let loc5 = parser.Loc(src5)
-    // let inf5 = ast.SrcInfo(setup.data.locator(), loc5, loc5 + 2)
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, 3, exp1)
-    //   _Assert.test_match(h, rule, src1, 1, setup.data, false)
-    //   _Assert.test_match(h, rule, src2, 0, setup.data, true, 4, exp2)
-    //   _Assert.test_match(h, rule, src2, 1, setup.data, false)
-    //   _Assert.test_match(h, rule, src3, 0, setup.data, true, 6, exp3)
-    //   _Assert.test_match(h, rule, src4, 0, setup.data, true, 6, exp4)
-    //   _Assert.test_match(h, rule, src5, 0, setup.data, false, 0, None,
-    //     ErrorMsg.literal_char_empty())
-    // ])
+      [ _Assert.test_match(h, rule, setup.data, "'A'", expected_1)
+        _Assert.test_match(h, rule, setup.data, "'\\n'", expected_2)
+        _Assert.test_match(h, rule, setup.data, "'\\x41'", expected_3)
+        _Assert.test_match(h, rule, setup.data, "'ABCD'", expected_4)
+        _Assert.test_match(h, rule, setup.data, "'\\uFFFD'", expected_5)
+        _Assert.test_match(h, rule, setup.data, "''", None)
+        _Assert.test_match(h, rule, setup.data, " ", None) ])
 
 class iso _TestParserLiteralStringRegular is UnitTest
   fun name(): String => "parser/literal/String/regular"
@@ -228,18 +234,41 @@ class iso _TestParserLiteralStringRegular is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.literal.string()
-    h.fail()
 
-    // let str1 = "one, two, \" three \0x2f"
-    // let src1 = setup.src("\"one, two, \\\" three \\0x2f\"")
-    // let len1 = USize(26)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len1)
-    // let exp1 = ast.LiteralString.from(setup.context, false, inf1, str1)
+    let expected_1 =
+      """
+        {
+          "name": "LiteralString",
+          "kind": "StringLiteral",
+          "value": "hello"
+        }
+      """
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, len1, exp1)
-    // ])
+    let expected_2 =
+      """
+        {
+          "name": "LiteralString",
+          "kind": "StringLiteral",
+          "value": "one, two, \" three /"
+        }
+      """
+
+    let expected_3 =
+      """
+        {
+          "name": "LiteralString",
+          "kind": "StringLiteral",
+          "value": "a\"/"
+        }
+      """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "\"hello\"", expected_1)
+        _Assert.test_match(
+          h, rule, setup.data, "\"one, two, \\\" three \\x2f\"", expected_2)
+        _Assert.test_match(h, rule, setup.data, "\"a\\\"\\x2f\"", expected_3)
+      ])
 
 class iso _TestParserLiteralStringTriple is UnitTest
   fun name(): String => "parser/literal/String/triple"
@@ -248,15 +277,18 @@ class iso _TestParserLiteralStringTriple is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.literal.string()
-    h.fail()
 
-    // let str1 = "one\ntwo\nthree"
-    // let src1 = setup.src("\"\"\"  \n   one\n   two\n   three\n\"\"\"")
-    // let len1 = USize(32)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len1)
-    // let exp1 = ast.LiteralString.from(setup.context, true, inf1, str1)
+    let expected =
+      """
+        {
+          "name": "LiteralString",
+          "kind": "StringTripleQuote",
+          "value": "one\ntwo\nthree"
+        }
+      """
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, len1, exp1)
-    // ])
+    let source = "\"\"\"  \n   one\n   two\n   three\n\"\"\""
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])

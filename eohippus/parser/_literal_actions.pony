@@ -74,8 +74,8 @@ primitive _LiteralActions
 
   fun tag _char(
     bod: Variable,
-    esc: Variable,
     uni: Variable,
+    esc: Variable,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings,
@@ -90,73 +90,12 @@ primitive _LiteralActions
       end
 
     var num: U32 = 0
-    var kind: ast.CharLiteralKind = ast.CharLiteral
+    let str = recover val String .> concat(br.start.values(br.next)) end
 
     if b.contains(esc) then
-      kind = ast.CharEscaped
-
-      var at_start = true
-      var got_slash = false
-      var is_hex = false
-
-      for ch in br.start.values(br.next) do
-        if at_start then
-          at_start = false
-          if ch == '\\' then
-            got_slash = true
-            continue
-          end
-        elseif is_hex then
-          if (ch >= '0') and (ch <= '9') then
-            num = (num * 16) + U32.from[U8](ch - '0')
-          elseif (ch >= 'a') and (ch <= 'f') then
-            num = (num * 16) + U32.from[U8](ch - 'a') + 10
-          elseif (ch >= 'A') and (ch <= 'F') then
-            num = (num * 16) + U32.from[U8](ch - 'A') + 10
-          end
-        elseif got_slash then
-          if (ch == 'x') or (ch == 'X') then
-            is_hex = true
-            continue
-          elseif ch == 'a' then
-            num = '\a'
-          elseif ch == 'b' then
-            num = '\b'
-          elseif ch == 'e' then
-            num = '\e'
-          elseif ch == 'f' then
-            num = '\f'
-          elseif ch == 'n' then
-            num = '\n'
-          elseif ch == 'r' then
-            num = '\r'
-          elseif ch == '\t' then
-            num = '\t'
-          elseif ch == '\v' then
-            num = '\v'
-          elseif ch == '\\' then
-            num = '\\'
-          elseif ch == '0' then
-            num = '\0'
-          elseif ch == '\'' then
-            num = '\''
-          elseif ch == '"' then
-            num = '"'
-          end
-          break
-        end
-      end
+      (_char_esc(r, br, c, p), b)
     elseif b.contains(uni) then
-      kind = ast.CharUnicode
-      for ch in (br.start + 2).values(br.next) do
-        if (ch >= '0') and (ch <= '9') then
-          num = (num * 16) + U32.from[U8](ch - '0')
-        elseif (ch >= 'a') and (ch <= 'f') then
-          num = (num * 16) + U32.from[U8](ch - 'a') + 10
-        elseif (ch >= 'A') and (ch <= 'F') then
-          num = (num * 16) + U32.from[U8](ch - 'A') + 10
-        end
-      end
+      (_char_uni(r, br, c, p), b)
     else
       for ch in br.start.values(br.next) do
         if (ch and 0b11111000) == 0b11110000 then
@@ -171,12 +110,99 @@ primitive _LiteralActions
           num = (num << 8) or U32.from[U8](ch)
         end
       end
+      let value = ast.NodeWith[ast.LiteralChar](
+        _Build.info(r), c, ast.LiteralChar(num, ast.CharLiteral)
+        where post_trivia' = p)
+      (value, b)
     end
 
-    let value = ast.NodeWith[ast.LiteralChar](
-      _Build.info(r), c, ast.LiteralChar(num, kind)
+  fun tag _char_esc(
+    outer: Success,
+    body: Success,
+    c: ast.NodeSeq,
+    p: ast.NodeSeqWith[ast.Trivia])
+    : ast.NodeWith[ast.LiteralChar]
+  =>
+    var num: U32 = 0
+    var at_start = true
+    var got_slash = false
+    var is_hex = false
+
+    for ch in body.start.values(body.next) do
+      if at_start then
+        at_start = false
+        if ch == '\\' then
+          got_slash = true
+          continue
+        end
+      end
+
+      if is_hex then
+        if (ch >= '0') and (ch <= '9') then
+          num = (num * 16) + U32.from[U8](ch - '0')
+        elseif (ch >= 'a') and (ch <= 'f') then
+          num = (num * 16) + U32.from[U8](ch - 'a') + 10
+        elseif (ch >= 'A') and (ch <= 'F') then
+          num = (num * 16) + U32.from[U8](ch - 'A') + 10
+        end
+      elseif got_slash then
+        if (ch == 'x') or (ch == 'X') then
+          is_hex = true
+          continue
+        elseif ch == 'a' then
+          num = '\a'
+        elseif ch == 'b' then
+          num = '\b'
+        elseif ch == 'e' then
+          num = '\e'
+        elseif ch == 'f' then
+          num = '\f'
+        elseif ch == 'n' then
+          num = '\n'
+        elseif ch == 'r' then
+          num = '\r'
+        elseif ch == '\t' then
+          num = '\t'
+        elseif ch == '\v' then
+          num = '\v'
+        elseif ch == '\\' then
+          num = '\\'
+        elseif ch == '0' then
+          num = '\0'
+        elseif ch == '\'' then
+          num = '\''
+        elseif ch == '"' then
+          num = '"'
+        end
+        break
+      end
+    end
+
+    ast.NodeWith[ast.LiteralChar](
+      _Build.info(outer), c, ast.LiteralChar(num, ast.CharEscaped)
       where post_trivia' = p)
-    (value, b)
+
+  fun tag _char_uni(
+    outer: Success,
+    body: Success,
+    c: ast.NodeSeq,
+    p: ast.NodeSeqWith[ast.Trivia])
+    : ast.NodeWith[ast.LiteralChar]
+  =>
+    var num: U32 = 0
+    for ch in (body.start + 2).values(body.next) do
+      if (ch >= '0') and (ch <= '9') then
+        num = (num * 16) + U32.from[U8](ch - '0')
+      elseif (ch >= 'a') and (ch <= 'f') then
+        num = (num * 16) + U32.from[U8](ch - 'a') + 10
+      elseif (ch >= 'A') and (ch <= 'F') then
+        num = (num * 16) + U32.from[U8](ch - 'A') + 10
+      end
+    end
+
+    ast.NodeWith[ast.LiteralChar](
+      _Build.info(outer), c, ast.LiteralChar(num, ast.CharUnicode)
+      where post_trivia' = p)
 
   fun tag _string(
     tri: Variable,
@@ -197,25 +223,25 @@ primitive _LiteralActions
     // assemble the string (with first indent if triple)
     let indented =
       recover val
-        let indented' = String
+        let indented_i = String
         for child in c.values() do
           match child
           | let tok: ast.NodeWith[ast.Token] =>
             if first_token then
               for t in tok.post_trivia().values() do
                 let si = t.src_info()
-                indented'.concat(si.start.values(si.next))
+                indented_i.concat(si.start.values(si.next))
               end
               first_token = false
             end
           | let ch: ast.NodeWith[ast.LiteralChar] =>
-            indented'.push_utf32(ch.data().value())
+            indented_i.push_utf32(ch.data().value())
           | let sp: ast.NodeWith[ast.Span] =>
             let si = sp.src_info()
-            indented'.concat(si.start.values(si.next))
+            indented_i.concat(si.start.values(si.next))
           end
         end
-        indented'
+        indented_i
       end
 
     // remove indents from triple-quoted strings
