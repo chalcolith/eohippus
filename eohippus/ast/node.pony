@@ -114,6 +114,29 @@ class val NodeWith[D: NodeData val] is Node
       // if _children.size() > 0 then
       //   props.push(("children", json_seq(_children)))
       // end
+      match _error_section
+      | let errsec: NodeWith[ErrorSection] =>
+        props.push(("error_section", errsec.data().message))
+      end
+      if _doc_strings.size() > 0 then
+        let ds_seq = json.Sequence.from_iter(
+          Iter[NodeWith[DocString]](_doc_strings.values())
+          .map[json.Item val]({(n) => n.get_json() }))
+        props.push(("doc_strings", ds_seq))
+      end
+      if _pre_trivia.size() > 0 then
+        let pt_seq = json.Sequence.from_iter(
+          Iter[NodeWith[Trivia]](_pre_trivia.values())
+          .map[json.Item val]({(n) => n.get_json() }))
+        props.push(("pre_trivia", pt_seq))
+      end
+      if _post_trivia.size() > 0 then
+        let pt_seq = json.Sequence.from_iter(
+          Iter[NodeWith[Trivia]](_post_trivia.values())
+          .map[json.Item val]({(n) => n.get_json() }))
+        props.push(("post_trivia", pt_seq))
+      end
+
       json.Object(props)
     end
 

@@ -18,20 +18,20 @@ class iso _TestParserExpressionIdentifier is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.token.identifier()
-    h.fail()
 
-    // let id = "a1_'"
-    // let src1 = setup.src(id)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 4)
-    // let tri1 =
-    //   ast.Trivia(ast.SrcInfo(inf1.locator(), inf1.next(), inf1.next()), [])
-    // let exp1 = ast.Identifier(inf1, tri1, id)
+    let expected =
+      """
+        {
+          "name": "Identifier",
+          "string": "a1_'"
+        }
+      """
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, 4, exp1)
-    //   _Assert.test_match(h, rule, src1, 4, setup.data, false)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "a1_'", expected)
+        _Assert.test_match(h, rule, setup.data, "1abc", None)
+        _Assert.test_match(h, rule, setup.data, "", None) ])
 
 class iso _TestParserExpressionIf is UnitTest
   fun name(): String => "parser/expression/If"

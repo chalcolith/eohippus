@@ -61,7 +61,7 @@ class TypedefBuilder
             Conj(
               [ kwd_primitive
                 Bind(id, identifier)
-                Bind(ds, doc_string) ]),
+                Bind(ds, Ques(doc_string)) ]),
               this~_typedef_primitive_action(id, ds))
         end
       _typedef_primitive = primitive'
@@ -82,9 +82,9 @@ class TypedefBuilder
       else
         return _Build.bind_error(r, c, b, "Identifier")
       end
-
-    let ds': ast.NodeSeqWith[ast.DocString] = _Build.doc_strings(b, ds)
+    let ds' = _Build.values[ast.DocString](b, ds)
 
     let value = ast.NodeWith[ast.TypeDefPrimitive](
-      _Build.info(r), c, ast.TypeDefPrimitive(id'))
+      _Build.info(r), c, ast.TypeDefPrimitive(id')
+      where doc_strings' = ds')
     (value, b)

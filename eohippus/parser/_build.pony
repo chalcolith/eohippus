@@ -7,20 +7,6 @@ primitive _Build
   fun info(success: Success): ast.SrcInfo =>
     ast.SrcInfo(success.data.locator, success.start, success.next)
 
-  fun doc_strings(b: Bindings, ds: Variable): ast.NodeSeqWith[ast.DocString] =>
-    recover val
-      try
-        Array[ast.NodeWith[ast.DocString]].>concat(
-          Iter[ast.Node](b(ds)?._2.values())
-            .filter_map[ast.NodeWith[ast.DocString]](
-              {(node: ast.Node): (ast.NodeWith[ast.DocString] | None) =>
-                try node as ast.NodeWith[ast.DocString] end
-              }))
-      else
-        Array[ast.NodeWith[ast.DocString]]
-      end
-    end
-
   fun result(b: Bindings, v: Variable): Success? =>
     b(v)?._1
 

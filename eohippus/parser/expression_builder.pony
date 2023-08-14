@@ -10,7 +10,6 @@ class ExpressionBuilder
   let _operator: OperatorBuilder
   let _literal: LiteralBuilder
 
-  var _not_kwd: (NamedRule | None) = None
   var _annotation: (NamedRule | None) = None
   var _exp_seq: (NamedRule | None) = None
   var _exp_item: (NamedRule | None) = None
@@ -29,19 +28,6 @@ class ExpressionBuilder
     _keyword = keyword
     _operator = operator
     _literal = literal
-
-  fun ref not_kwd(): NamedRule =>
-    match _not_kwd
-    | let r: NamedRule => r
-    else
-      let kwd = _keyword.kwd()
-      let not_kwd' =
-        recover val
-          NamedRule("NotKeyword", Neg(kwd))
-        end
-      _not_kwd = not_kwd'
-      not_kwd'
-    end
 
   fun ref annotation(): NamedRule =>
     match _annotation
@@ -117,7 +103,7 @@ class ExpressionBuilder
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
     let literal = _literal.literal()
-    let not_kwd' = not_kwd()
+    let not_kwd = _keyword.not_kwd()
     let ocurly = _token(ast.Tokens.open_curly())
     let oparen = _token(ast.Tokens.open_paren())
     let osquare = _token(ast.Tokens.open_square())

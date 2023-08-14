@@ -11,6 +11,7 @@ class KeywordBuilder
 
   let _keywords: Map[String, NamedRule] val
   var _kwd: (NamedRule | None) = None
+  var _not_kwd: (NamedRule | None) = None
   var _cap: (NamedRule | None) = None
   var _gencap: (NamedRule | None) = None
 
@@ -105,49 +106,58 @@ class KeywordBuilder
     match _kwd
     | let r: NamedRule => r
     else
-      let t = _trivia.trivia()
+      let trivia = _trivia.trivia()
       let kwd' =
         recover val
-          let literals = Array[Literal]
-          for str in _kwd_strings.values() do
-            literals.push(Literal(str))
-          end
+          let literals =
+            recover val
+              let literals' = Array[Literal](_kwd_strings.size())
+              for str in _kwd_strings.values() do
+                literals'.push(Literal(str))
+              end
+              literals'
+            end
 
           let str = Variable("str")
-          let post = Variable("post")
 
-          NamedRule("Keyword",
-            Conj([
-              Bind(str, Disj(literals))
-              Bind(post, t)
-            ]),
-            {(r, c, b) =>
-              let str' =
-                try
-                  _Build.value(b, str)?
-                else
-                  return _Build.bind_error(r, c, b, "Keyword/Str")
-                end
-              let post' = _Build.values[ast.Trivia](b, post)
-              let src_info = _Build.info(r)
-              let keyword =
-                recover val
-                  let next =
-                    try
-                      post'(0)?.src_info().start
-                    else
-                      r.next
-                    end
-                  String .> concat(src_info.start.values(next))
-                end
-
-              let value = ast.NodeWith[ast.Keyword](
-                _Build.info(r), c, ast.Keyword(keyword)
-                where post_trivia' = post')
-              (value, b) })
+          NamedRule(
+            "Keyword",
+            _Build.with_post[ast.Trivia](
+              recover val
+                Bind(str, Disj(literals))
+              end,
+              trivia,
+              {(r, c, b, p) =>
+                let src_info = _Build.info(r)
+                let next =
+                  try
+                    p(0)?.src_info().start
+                  else
+                    src_info.next
+                  end
+                let string =
+                  recover val
+                    String .> concat(src_info.start.values(next))
+                  end
+                let value = ast.NodeWith[ast.Keyword](
+                  src_info, c, ast.Keyword(string)
+                  where post_trivia' = p)
+                (value, b) }))
         end
       _kwd = kwd'
       kwd'
+    end
+
+  fun ref not_kwd(): NamedRule =>
+    match _not_kwd
+    | let r: NamedRule => r
+    else
+      let not_kwd' =
+        recover val
+          NamedRule("NotKeyword", Neg(kwd()))
+        end
+      _not_kwd = not_kwd'
+      not_kwd'
     end
 
   fun ref cap(): NamedRule =>

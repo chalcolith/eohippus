@@ -102,14 +102,13 @@ class SrcFileBuilder
     : ((ast.Node | None), Bindings)
   =>
     let t1' = _Build.values[ast.Trivia](b, t1)
-    let doc_strings' = _Build.doc_strings(b, ds)
-
-    let us': ast.NodeSeqWith[ast.Using] = _Build.values[ast.Using](b, us)
-    let td': ast.NodeSeqWith[ast.TypeDef] = _Build.values[ast.TypeDef](b, td)
+    let ds' = _Build.values[ast.DocString](b, ds)
+    let us' = _Build.values[ast.Using](b, us)
+    let td' = _Build.values[ast.TypeDef](b, td)
 
     let value = ast.NodeWith[ast.SrcFile](
       _Build.info(r), c, ast.SrcFile(r.data.locator, us', td')
-      where doc_strings' = doc_strings', pre_trivia' = t1')
+      where doc_strings' = ds', pre_trivia' = t1')
     (value, b)
 
   fun ref using(): NamedRule =>

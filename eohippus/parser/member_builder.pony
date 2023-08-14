@@ -43,9 +43,9 @@ class MemberBuilder
       let s = Variable("s")
       let doc_string' =
         recover val
-          NamedRule("DocString",
-            Conj(
-              [ Bind(s, literal_string) ]),
+          NamedRule(
+            "DocString",
+            Bind(s, literal_string),
             this~_doc_string_action(s))
         end
       _doc_string = doc_string'

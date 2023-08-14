@@ -66,10 +66,25 @@ class iso _TestParserLiteralIntegerDec is UnitTest
         }
       """
 
+    let expected_t =
+      """
+        {
+          "name": "LiteralInteger",
+          "kind": "DecimalInteger",
+          "value": 1234,
+          "post_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            }
+          ]
+        }
+      """
+
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, "1234", expected)
-        _Assert.test_match(h, rule, setup.data, "1234 ", expected)
+        _Assert.test_match(h, rule, setup.data, "1234 ", expected_t)
         _Assert.test_match(h, rule, setup.data, "1_2_3_4", expected)
         _Assert.test_match(h, rule, setup.data, "_1234", None)
         _Assert.test_match(h, rule, setup.data, "", None)
@@ -140,6 +155,19 @@ class iso _TestParserLiteralFloat is UnitTest
           "value": 2.345e+63
         }
       """
+    let expected_2_t =
+      """
+        {
+          "name": "LiteralFloat",
+          "value": 2.345e+63,
+          "post_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            }
+          ]
+        }
+      """
     let expected_3 =
       """
         {
@@ -159,7 +187,7 @@ class iso _TestParserLiteralFloat is UnitTest
       h,
       [ _Assert.test_match(h, rule, setup.data, "123.456e-42", expected_1)
         _Assert.test_match(h, rule, setup.data, "23.45e62", expected_2)
-        _Assert.test_match(h, rule, setup.data, "23.45e62 ", expected_2)
+        _Assert.test_match(h, rule, setup.data, "23.45e62 ", expected_2_t)
         _Assert.test_match(h, rule, setup.data, "345.678", expected_3)
         _Assert.test_match(h, rule, setup.data, "456", expected_4)
         _Assert.test_match(h, rule, setup.data, "", None) ])
