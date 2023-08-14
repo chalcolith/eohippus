@@ -33,9 +33,9 @@ primitive _Assert
     expected_json: (String | None))
     : Promise[Bool]
   =>
+    let promise = Promise[Bool]
     let segments = Cons[parser.Segment](source, Nil[parser.Segment])
     let start = parser.Loc(segments, 0)
-    let promise = Promise[Bool]
     let pony_parser = parser.Parser(segments)
     let callback =
       recover val
@@ -74,6 +74,37 @@ primitive _Assert
     pony_parser.parse(rule, data, callback)
     promise
 
+  fun test_with(
+    h: TestHelper,
+    rule: parser.NamedRule,
+    data: parser.Data,
+    source: String,
+    assertion: {(parser.Success, ast.NodeSeq): (Bool, String)} val)
+    : Promise[Bool]
+  =>
+    let promise = Promise[Bool]
+    let segments = Cons[parser.Segment](source, Nil[parser.Segment])
+    let start = parser.Loc(segments, 0)
+    let pony_parser = parser.Parser(segments)
+    let callback =
+      recover val
+        {(r: (parser.Success | parser.Failure), v: ast.NodeSeq) =>
+          match r
+          | let success: parser.Success =>
+            (let succeeded, let message) = assertion(success, v)
+            if succeeded then
+              promise(true)
+            else
+              h.fail("Assertion failed: " + message)
+              promise(false)
+            end
+          | let failure: parser.Failure =>
+            h.fail("Test failed: " + failure.get_message())
+            promise(false)
+          end }
+      end
+    pony_parser.parse(rule, data, callback)
+    promise
 
   // fun test_json(
   //   h: TestHelper,

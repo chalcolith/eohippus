@@ -68,7 +68,7 @@ class TriviaBuilder
                 Look(Disj([ eol(); eof() ])) ]),
             {(r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.TriviaLineComment))
+                _Build.info(r), c, ast.Trivia(ast.LineCommentTrivia))
               (value, b) })
         end
       _comment_line = comment_line'
@@ -92,7 +92,7 @@ class TriviaBuilder
                 Literal("*/") ]),
             {(r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.TriviaNestedComment))
+                _Build.info(r), c, ast.Trivia(ast.NestedCommentTrivia))
               (value, b) })
         end
       _comment_nested = comment_nested'
@@ -109,7 +109,7 @@ class TriviaBuilder
             Plus(Single(" \t")),
             {(r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.TriviaWhiteSpace))
+                _Build.info(r), c, ast.Trivia(ast.WhiteSpaceTrivia))
               (value, b) })
         end
       _ws = ws'
@@ -130,7 +130,7 @@ class TriviaBuilder
             ]),
             {(r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.TriviaEndOfLine))
+                _Build.info(r), c, ast.Trivia(ast.EndOfLineTrivia))
               (value, b) })
         end
       _eol = eol'
@@ -159,7 +159,7 @@ class TriviaBuilder
             Neg(Single),
             {(r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.TriviaEndOfFile))
+                _Build.info(r), c, ast.Trivia(ast.EndOfFileTrivia))
               (value, b) })
         end
       _eof = eof'

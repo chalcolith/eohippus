@@ -20,19 +20,19 @@ class iso _TestParserTriviaEOF is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.trivia.eof()
-    h.fail()
 
-    // let src1 = setup.src("")
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1)
-    // let exp1 = recover ast.TriviaEOF(inf1) end
+    let expected =
+      """
+        {
+          "name": "Trivia",
+          "kind": "EndOfFileTrivia"
+        }
+      """
 
-    // let src2 = setup.src("a")
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, 0, exp1)
-    //   _Assert.test_match(h, rule, src2, 0, setup.data, false)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "", expected)
+        _Assert.test_match(h, rule, setup.data, " ", None) ])
 
 class iso _TestParserTriviaEOL is UnitTest
   fun name(): String => "parser/trivia/EOL"
@@ -41,37 +41,21 @@ class iso _TestParserTriviaEOL is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.trivia.eol()
-    h.fail()
 
-    // let src1 = setup.src(" \n ")
-    // let loc1 = parser.Loc(src1, 1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 1)
-    // let exp1 = recover ast.TriviaEOL(inf1) end
+    let expected =
+      """
+        {
+          "name": "Trivia",
+          "kind": "EndOfLineTrivia"
+        }
+      """
 
-    // let src2 = setup.src(" \r\n ")
-    // let loc2 = parser.Loc(src2, 1)
-    // let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 2)
-    // let exp2 = recover ast.TriviaEOL(inf2) end
-
-    // let src3 = setup.src(" \r ")
-    // let loc3 = parser.Loc(src3, 1)
-    // let inf3 = ast.SrcInfo(setup.data.locator(), loc3, loc3 + 1)
-    // let exp3 = recover ast.TriviaEOL(inf3) end
-
-    // let src4 = setup.src("")
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 1, setup.data, true, 1, exp1)
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, false)
-
-    //   _Assert.test_match(h, rule, src2, 1, setup.data, true, 2, exp2)
-    //   _Assert.test_match(h, rule, src2, 3, setup.data, false)
-
-    //   _Assert.test_match(h, rule, src3, 1, setup.data, true, 1, exp3)
-    //   _Assert.test_match(h, rule, src3, 0, setup.data, false)
-
-    //   _Assert.test_match(h, rule, src4, 0, setup.data, false)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "\n", expected)
+        _Assert.test_match(h, rule, setup.data, "\r\n", expected)
+        _Assert.test_match(h, rule, setup.data, "\r", expected)
+        _Assert.test_match(h, rule, setup.data, " ", None) ])
 
 class _TestParserTriviaWS is UnitTest
   fun name(): String => "parser/trivia/WS"
@@ -80,21 +64,20 @@ class _TestParserTriviaWS is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.trivia.ws()
-    h.fail()
 
-    // let src1 = setup.src(" \t")
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 2)
-    // let exp1 = recover ast.TriviaWS(inf1) end
+    let expected =
+      """
+        {
+          "name": "Trivia",
+          "kind": "WhiteSpaceTrivia"
+        }
+      """
 
-    // let src2 = setup.src("")
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, 2, exp1)
-    //   _Assert.test_match(h, rule, src1, 2, setup.data, false)
-
-    //   _Assert.test_match(h, rule, src2, 0, setup.data, false)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, " ", expected)
+        _Assert.test_match(h, rule, setup.data, "\t", expected)
+        _Assert.test_match(h, rule, setup.data, "", None) ])
 
 class _TestParserTriviaComment is UnitTest
   fun name(): String => "parser/trivia/Comment"
@@ -103,25 +86,30 @@ class _TestParserTriviaComment is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.trivia.comment()
-    h.fail()
 
-    // let src1 = setup.src("a // b c\n d")
-    // let loc1 = parser.Loc(src1, 2)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 6)
-    // let exp1 = recover ast.TriviaLineComment(inf1) end
+    let expected_1 =
+      """
+        {
+          "name": "Trivia",
+          "kind": "LineCommentTrivia"
+        }
+      """
 
-    // let src2 = setup.src("a /* b * \n c / d */ e")
-    // let loc2 = parser.Loc(src2, 2)
-    // let inf2 = ast.SrcInfo(setup.data.locator(), loc2, loc2 + 17)
-    // let exp2 = recover ast.TriviaNestedComment(inf2) end
+    let expected_2 =
+      """
+        {
+          "name": "Trivia",
+          "kind": "NestedCommentTrivia"
+        }
+      """
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 2, setup.data, true, 6, exp1)
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, false)
-
-    //   _Assert.test_match(h, rule, src2, 2, setup.data, true, 17, exp2)
-    //   _Assert.test_match(h, rule, src2, 0, setup.data, false)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "// foo\n", expected_1)
+        _Assert.test_match(h, rule, setup.data, "// foo", expected_1)
+        _Assert.test_match(h, rule, setup.data, "/* foo */", expected_2)
+        _Assert.test_match(h, rule, setup.data, "/* foo", None)
+        _Assert.test_match(h, rule, setup.data, "foo", None) ])
 
 class iso _TestParserTriviaTrivia is UnitTest
   fun name(): String => "parser/trivia/Trivia"
@@ -130,22 +118,23 @@ class iso _TestParserTriviaTrivia is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.trivia.trivia()
-    h.fail()
 
-    // let src1 = setup.src(" /* c1 */\t// c2\n ")
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + 17)
-    // let exp1 = ast.Trivia(inf1, [])
+    let assert_all_trivia =
+      {(r: parser.Success, v: ast.NodeSeq): (Bool, String) =>
+        if v.size() == 0 then
+          return (false, "expected at least one trivia node")
+        end
+        for n in v.values() do
+          match n
+          | let t: ast.NodeWith[ast.Trivia] =>
+            None
+          else
+            return (false, "value is not a trivia node")
+          end
+        end
+        (true, "") }
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, 17, exp1, None,
-    //     {(node: ast.Node) =>
-    //       match node
-    //       | let parent: ast.NodeWithChildren =>
-    //         h.assert_eq[USize](6, parent.children().size())
-    //       else
-    //         false
-    //       end
-    //     })
-    //   _Assert.test_match(h, rule, src1, 17, setup.data, true, 0)
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+        h, rule, setup.data, " /* c1 */\t// c2\n ", assert_all_trivia) ])
