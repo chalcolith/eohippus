@@ -37,11 +37,11 @@ VERSION := "$(tag) [$(config)]"
 GEN_FILES_IN := $(shell find $(SRC_DIR) -name \*.pony.in)
 GEN_FILES = $(patsubst %.pony.in, %.pony, $(GEN_FILES_IN))
 
-EXAMPLES := $(notdir $(shell find $(EXAMPLES_DIR)/* -maxdepth 0 -type d))
-EXAMPLES_SOURCE_FILES := $(shell find $(EXAMPLES_DIR) -name *.pony)
-EXAMPLES_BINARIES := $(addprefix $(BUILD_DIR)/,$(EXAMPLES))
+#EXAMPLES := $(notdir $(shell find $(EXAMPLES_DIR)/* -maxdepth 0 -type d))
+#EXAMPLES_SOURCE_FILES := $(shell find $(EXAMPLES_DIR) -name *.pony)
+#EXAMPLES_BINARIES := $(addprefix $(BUILD_DIR)/,$(EXAMPLES))
 
-# build: $(binary)
+build: $(tests_binary)
 
 test: unit-tests # build-examples
 

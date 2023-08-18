@@ -108,7 +108,7 @@ class SrcFileBuilder
 
     let value = ast.NodeWith[ast.SrcFile](
       _Build.info(r), c, ast.SrcFile(r.data.locator, us', td')
-      where doc_strings' = ds', pre_trivia' = t1')
+      where pre_trivia' = t1', doc_strings' = ds')
     (value, b)
 
   fun ref using(): NamedRule =>
@@ -198,6 +198,6 @@ class SrcFileBuilder
 
     let df' = try _Build.value(b, df)? as ast.NodeWith[ast.Identifier] end
 
-    let value = ast.NodeWith[ast.UsingPony](
+    let value = ast.NodeWith[ast.Using](
       _Build.info(r), c, ast.UsingPony(id', pt', def_true, df'))
     (value, b)

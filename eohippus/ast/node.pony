@@ -1,6 +1,5 @@
 use "itertools"
 
-use ast = "."
 use json = "../json"
 use types = "../types"
 
@@ -15,7 +14,8 @@ trait val NodeData
     recover val
       json.Sequence.from_iter(
         Iter[NodeWith[D]](seq.values())
-          .map[json.Item val]({(n) => n.get_json() }))
+          .map[json.Item val](
+            {(n): json.Item val => n.get_json()}))
     end
 
 trait val NodeDataWithValue[T: Any val] is NodeData
@@ -121,19 +121,22 @@ class val NodeWith[D: NodeData val] is Node
       if _doc_strings.size() > 0 then
         let ds_seq = json.Sequence.from_iter(
           Iter[NodeWith[DocString]](_doc_strings.values())
-          .map[json.Item val]({(n) => n.get_json() }))
+            .map[json.Item val](
+              {(n: NodeWith[DocString]): json.Item val => n.get_json() }))
         props.push(("doc_strings", ds_seq))
       end
       if _pre_trivia.size() > 0 then
         let pt_seq = json.Sequence.from_iter(
           Iter[NodeWith[Trivia]](_pre_trivia.values())
-          .map[json.Item val]({(n) => n.get_json() }))
+            .map[json.Item val](
+              {(n: NodeWith[Trivia]): json.Item val => n.get_json() }))
         props.push(("pre_trivia", pt_seq))
       end
       if _post_trivia.size() > 0 then
         let pt_seq = json.Sequence.from_iter(
           Iter[NodeWith[Trivia]](_post_trivia.values())
-          .map[json.Item val]({(n) => n.get_json() }))
+            .map[json.Item val](
+              {(n: NodeWith[Trivia]): json.Item val => n.get_json() }))
         props.push(("post_trivia", pt_seq))
       end
 

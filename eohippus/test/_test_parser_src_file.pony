@@ -9,7 +9,7 @@ use ".."
 primitive _TestParserSrcFile
   fun apply(test: PonyTest) =>
     test(_TestParserSrcFileTriviaDocstring)
-    test(_TestParserSrcFileUsing)
+    test(_TestParserSrcFileUsingSingle)
     test(_TestParserSrcFileUsingErrorSection)
 
 class iso _TestParserSrcFileTriviaDocstring is UnitTest
@@ -67,8 +67,8 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-class iso _TestParserSrcFileUsing is UnitTest
-  fun name(): String => "parser/src_file/SrcFile/Using"
+class iso _TestParserSrcFileUsingSingle is UnitTest
+  fun name(): String => "parser/src_file/SrcFile/Using/single"
   fun exclusion_group(): String => "parser/src_file"
 
   fun apply(h: TestHelper) =>
@@ -79,14 +79,14 @@ class iso _TestParserSrcFileUsing is UnitTest
       """
       """
 
-    let source = "use \"foo\" if windows\nuse baz = \"bar\" if not osx"
+    let source = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
 
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
-  fun name(): String => "parser/src_file/SrcFile/Using+ErrorSection"
+  fun name(): String => "parser/src_file/SrcFile/Using/error_section"
   fun exclusion_group(): String => "parser/src_file"
 
   fun apply(h: TestHelper) =>

@@ -27,7 +27,8 @@ primitive _Build
         Array[ast.NodeWith[N]](vs.size()) .> concat(
           Iter[ast.Node](vs.values())
             .filter_map[ast.NodeWith[N]](
-              {(n) => try n as ast.NodeWith[N] end }))
+              {(n: ast.Node): (ast.NodeWith[N] | None) =>
+                try n as ast.NodeWith[N] end }))
       else
         []
       end
