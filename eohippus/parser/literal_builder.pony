@@ -273,21 +273,15 @@ class LiteralBuilder
     match _string
     | let r: NamedRule => r
     else
-      let trivia = _trivia.trivia()
-
       let tri = Variable("tri")
 
       let s' =
         recover val
           NamedRule("Literal_String",
-            _Build.with_post[ast.Trivia](
-              recover
-                Disj(
-                  [ Bind(tri, string_triple())
-                    string_regular() ])
-              end,
-              trivia,
-              _LiteralActions~_string(tri)))
+            Disj(
+              [ Bind(tri, string_triple())
+                string_regular() ]),
+            _LiteralActions~_string(tri))
         end
       _string = s'
       s'

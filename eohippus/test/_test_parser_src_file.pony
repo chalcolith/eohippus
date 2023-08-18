@@ -19,33 +19,53 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file()
-    h.fail()
 
-    // let code = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
-    // let len = code.size()
+    let expected =
+      """
+        {
+          "name": "SrcFile",
+          "locator": "parser/src_file/SrcFile/Trivia+Docstring",
+          "usings": [],
+          "type_defs": [],
+          "doc_strings": [
+            {
+              "name": "DocString",
+              "string": {
+                "name": "LiteralString",
+                "kind": "StringTripleQuote",
+                "value": "This is a doc string\n"
+              }
+            }
+          ],
+          "pre_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            },
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            },
+            {
+              "name": "Trivia",
+              "kind": "LineCommentTrivia"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            },
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            }
+          ]
+        }
+      """
+    let source = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
 
-    // let src1 = setup.src(code)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len)
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, len, None, None,
-    //     {(node: ast.Node) =>
-    //       match node
-    //       | let src_file: ast.SrcFile =>
-    //         match src_file.docstring()
-    //         | let docstrings: ast.NodeSeq[ast.Docstring] =>
-    //           try
-    //             return
-    //               h.assert_eq[USize](1, docstrings.size()) and
-    //               h.assert_eq[String]("This is a doc string\n",
-    //                 docstrings(0)?.value())
-    //           end
-    //         end
-    //       end
-    //       false
-    //     })
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
 class iso _TestParserSrcFileUsing is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Using"
@@ -54,39 +74,16 @@ class iso _TestParserSrcFileUsing is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file()
-    h.fail()
 
-    // let code = "use \"foo\" if windows\nuse baz = \"bar\" if not osx"
-    // let len = code.size()
+    let expected =
+      """
+      """
 
-    // let src1 = setup.src(code)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len)
+    let source = "use \"foo\" if windows\nuse baz = \"bar\" if not osx"
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, len, None, None,
-    //     {(node: ast.Node) =>
-    //       try
-    //         let src_file_node = node as ast.SrcFile
-
-    //         let using1 = src_file_node.usings()(0)? as ast.UsingPony
-    //         let def1 = (using1.def_id() as ast.Identifier).name()
-
-    //         let using2 = src_file_node.usings()(1)? as ast.UsingPony
-    //         let name2 = (using2.identifier() as ast.Identifier).name()
-    //         let def2 = (using2.def_id() as ast.Identifier).name()
-
-    //         h.assert_eq[String]("foo", using1.path().value()) and
-    //         h.assert_eq[String]("windows", def1) and
-    //         h.assert_eq[Bool](true, using1.def_flag())
-    //         h.assert_eq[String]("bar", using2.path().value()) and
-    //         h.assert_eq[String]("baz", name2) and
-    //         h.assert_eq[Bool](false, using2.def_flag())
-    //       else
-    //         false
-    //       end
-    //     })
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Using+ErrorSection"

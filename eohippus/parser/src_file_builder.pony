@@ -53,7 +53,7 @@ class SrcFileBuilder
           NamedRule("SrcFile",
             Conj([
               // pre-trivia
-              Bind(t1, trivia)
+              Bind(t1, Ques(trivia))
 
               // zero or more docstrings
               Bind(ds, Star(

@@ -41,37 +41,39 @@ class Object
       end
     let result: String iso = String
     result.append("{")
-    if pretty then result.append("\n") end
-    var first = true
-    for key in _keys.values() do
-      try
-        if first then
-          first = false
-        else
-          result.append(",")
-          if pretty then result.append("\n") end
-        end
-        result.append(indent')
-        result.append("\"" + key + "\": ")
-        match _items(key)?
-        | let obj: Object box =>
-          result.append(obj.get_string(pretty, indent'))
-        | let seq: Sequence box =>
-          result.append(seq.get_string(pretty, indent'))
-        | let str: String =>
-          result.append("\"" + StringUtil.escape(str) + "\"")
-        | let int: I128 =>
-          result.append(int.string())
-        | let flt: F64 =>
-          result.append(flt.string())
-        | let bool: Bool =>
-          result.append(if bool then "true" else "false" end)
+    if _keys.size() > 0 then
+      if pretty then result.append("\n") end
+      var first = true
+      for key in _keys.values() do
+        try
+          if first then
+            first = false
+          else
+            result.append(",")
+            if pretty then result.append("\n") end
+          end
+          result.append(indent')
+          result.append("\"" + key + "\": ")
+          match _items(key)?
+          | let obj: Object box =>
+            result.append(obj.get_string(pretty, indent'))
+          | let seq: Sequence box =>
+            result.append(seq.get_string(pretty, indent'))
+          | let str: String =>
+            result.append("\"" + StringUtil.escape(str) + "\"")
+          | let int: I128 =>
+            result.append(int.string())
+          | let flt: F64 =>
+            result.append(flt.string())
+          | let bool: Bool =>
+            result.append(if bool then "true" else "false" end)
+          end
         end
       end
-    end
-    if pretty then
-      result.append("\n")
-      result.append(indent)
+      if pretty then
+        result.append("\n")
+        result.append(indent)
+      end
     end
     result.append("}")
     consume result
@@ -108,34 +110,36 @@ class Sequence
       end
     let result: String iso = String
     result.append("[")
-    if pretty then result.append("\n") end
-    var first = true
-    for item in _items.values() do
-      if first then
-        first = false
-      else
-        result.append(",")
-        if pretty then result.append("\n") end
+    if _items.size() > 0 then
+      if pretty then result.append("\n") end
+      var first = true
+      for item in _items.values() do
+        if first then
+          first = false
+        else
+          result.append(",")
+          if pretty then result.append("\n") end
+        end
+        if pretty then result.append(indent') end
+        match item
+        | let obj: this->Object =>
+          result.append(obj.get_string(pretty, indent'))
+        | let seq: this->Sequence =>
+          result.append(seq.get_string(pretty, indent'))
+        | let str: String =>
+          result.append("\"" + StringUtil.escape(str) + "\"")
+        | let int: I128 =>
+          result.append(int.string())
+        | let flt: F64 =>
+          result.append(flt.string())
+        | let bool: Bool =>
+          result.append(if bool then "true" else "false" end)
+        end
       end
-      if pretty then result.append(indent') end
-      match item
-      | let obj: this->Object =>
-        result.append(obj.get_string(pretty, indent'))
-      | let seq: this->Sequence =>
-        result.append(seq.get_string(pretty, indent'))
-      | let str: String =>
-        result.append("\"" + StringUtil.escape(str) + "\"")
-      | let int: I128 =>
-        result.append(int.string())
-      | let flt: F64 =>
-        result.append(flt.string())
-      | let bool: Bool =>
-        result.append(if bool then "true" else "false" end)
+      if pretty then
+        result.append("\n")
+        result.append(indent)
       end
-    end
-    if pretty then
-      result.append("\n")
-      result.append(indent)
     end
     result.append("]")
     consume result

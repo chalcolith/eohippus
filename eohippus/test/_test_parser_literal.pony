@@ -315,7 +315,7 @@ class iso _TestParserLiteralStringTriple is UnitTest
         }
       """
 
-    let source = "\"\"\"  \n   one\n   two\n   three\n\"\"\""
+    let source = "\"\"\"  \n   one\n   two\n   three\n\"\"\" "
 
     _Assert.test_all(
       h,
