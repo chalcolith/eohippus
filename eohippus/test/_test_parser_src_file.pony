@@ -25,18 +25,6 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
         {
           "name": "SrcFile",
           "locator": "parser/src_file/SrcFile/Trivia+Docstring",
-          "usings": [],
-          "type_defs": [],
-          "doc_strings": [
-            {
-              "name": "DocString",
-              "string": {
-                "name": "LiteralString",
-                "kind": "StringTripleQuote",
-                "value": "This is a doc string\n"
-              }
-            }
-          ],
           "pre_trivia": [
             {
               "name": "Trivia",
@@ -57,6 +45,22 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
             {
               "name": "Trivia",
               "kind": "WhiteSpaceTrivia"
+            }
+          ],
+          "doc_strings": [
+            {
+              "name": "DocString",
+              "string": {
+                "name": "LiteralString",
+                "kind": "StringTripleQuote",
+                "value": "This is a doc string\n",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia"
+                  }
+                ]
+              }
             }
           ]
         }
@@ -86,7 +90,13 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
               "path": {
                 "name": "LiteralString",
                 "kind": "StringLiteral",
-                "value": "foo"
+                "value": "foo",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia"
+                  }
+                ]
               },
               "def_true": "true",
               "define": {
@@ -115,7 +125,13 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
               "path": {
                 "name": "LiteralString",
                 "kind": "StringLiteral",
-                "value": "bar"
+                "value": "bar",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia"
+                  }
+                ]
               },
               "def_true": "false",
               "define": {
@@ -149,17 +165,64 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
 
     let expected =
       """
+        {
+          "name": "SrcFile",
+          "locator": "parser/src_file/SrcFile/Using/error_section",
+          "usings": [
+            {
+              "name": "Using",
+              "path": {
+                "name": "LiteralString",
+                "kind": "StringLiteral",
+                "value": "bar",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "EndOfLineTrivia"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "EndOfLineTrivia"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Using",
+              "path": {
+                "name": "LiteralString",
+                "kind": "StringLiteral",
+                "value": "baz",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "EndOfLineTrivia"
+                  }
+                ]
+              }
+            }
+          ],
+          "error_sections": [
+            {
+              "name": "ErrorSection",
+              "message": "expected either a \"use\" statement or a type definition"
+            }
+          ],
+          "pre_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "LineCommentTrivia"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            }
+          ]
+        }
       """
 
-    let source =
-      """
-        // comment
-        use "bar"
-
-        gousbnfg
-
-        use "baz"
-      """
+    //            0           11         20  22      30  32  36       42
+    let source = "// comment\nuse \"bar\"\n\ngousbnfg\n\nuse \"baz\"\n"
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])

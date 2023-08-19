@@ -273,15 +273,21 @@ class LiteralBuilder
     match _string
     | let r: NamedRule => r
     else
+      let trivia = _trivia.trivia()
       let tri = Variable("tri")
 
       let s' =
         recover val
-          NamedRule("Literal_String",
-            Disj(
-              [ Bind(tri, string_triple())
-                string_regular() ]),
-            _LiteralActions~_string(tri))
+          NamedRule(
+            "Literal_String",
+            _Build.with_post[ast.Trivia](
+              recover val
+                Disj(
+                  [ Bind(tri, string_triple())
+                    string_regular() ])
+              end,
+              trivia,
+              _LiteralActions~_string(tri)))
         end
       _string = s'
       s'
@@ -293,7 +299,7 @@ class LiteralBuilder
     else
       let sr' = _string_delim(
         "Literal_String_Regular",
-        _token(ast.Tokens.double_quote()))
+        Literal(ast.Tokens.double_quote()))
       _string_regular = sr'
       sr'
     end
@@ -304,7 +310,7 @@ class LiteralBuilder
     else
       let st' = _string_delim(
         "Literal_String_Triple",
-        _token(ast.Tokens.triple_double_quote()))
+        Literal(ast.Tokens.triple_double_quote()))
       _string_triple = st'
       st'
     end

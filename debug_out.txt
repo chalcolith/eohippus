@@ -1,0 +1,1652 @@
+1 test started, 0 complete: parser/src_file/SrcFile/Using/error_section started
+RULE SrcFile @0:0
+  CONJ @0:0
+    BIND t1 @0:0
+      STAR {0,1} @0:0
+        RULE Trivia0 @0:0
+          STAR {1,} @0:0
+            DISJ @0:0
+              RULE Comment @0:0
+                DISJ @0:0
+                  RULE Comment_Line @0:0
+                    CONJ @0:0
+                      LIT @0:0
+                      = Success(@[0,2))
+                      STAR {0,} @0:2
+                        CONJ @0:2
+                          NEG  @0:2
+                            RULE EOL @0:2
+                              DISJ @0:2
+                                LIT @0:2
+                                = Failure(@2)
+                                LIT @0:2
+                                = Failure(@2)
+                                LIT @0:2
+                                = Failure(@2)
+                              < Failure(@2)
+                              memoize EOL Failure(@2)
+                            EOL = Failure(@2)
+                          = Success(@[2,2))
+                          SING @0:2
+                          = Success(@[2,3))
+                        = Success(@[2,3))
+                        CONJ @0:3
+                          NEG  @0:3
+                            RULE EOL @0:3
+                              DISJ @0:3
+                                LIT @0:3
+                                = Failure(@3)
+                                LIT @0:3
+                                = Failure(@3)
+                                LIT @0:3
+                                = Failure(@3)
+                              < Failure(@3)
+                              memoize EOL Failure(@3)
+                            EOL = Failure(@3)
+                          = Success(@[3,3))
+                          SING @0:3
+                          = Success(@[3,4))
+                        = Success(@[3,4))
+                        CONJ @0:4
+                          NEG  @0:4
+                            RULE EOL @0:4
+                              DISJ @0:4
+                                LIT @0:4
+                                = Failure(@4)
+                                LIT @0:4
+                                = Failure(@4)
+                                LIT @0:4
+                                = Failure(@4)
+                              < Failure(@4)
+                              memoize EOL Failure(@4)
+                            EOL = Failure(@4)
+                          = Success(@[4,4))
+                          SING @0:4
+                          = Success(@[4,5))
+                        = Success(@[4,5))
+                        CONJ @0:5
+                          NEG  @0:5
+                            RULE EOL @0:5
+                              DISJ @0:5
+                                LIT @0:5
+                                = Failure(@5)
+                                LIT @0:5
+                                = Failure(@5)
+                                LIT @0:5
+                                = Failure(@5)
+                              < Failure(@5)
+                              memoize EOL Failure(@5)
+                            EOL = Failure(@5)
+                          = Success(@[5,5))
+                          SING @0:5
+                          = Success(@[5,6))
+                        = Success(@[5,6))
+                        CONJ @0:6
+                          NEG  @0:6
+                            RULE EOL @0:6
+                              DISJ @0:6
+                                LIT @0:6
+                                = Failure(@6)
+                                LIT @0:6
+                                = Failure(@6)
+                                LIT @0:6
+                                = Failure(@6)
+                              < Failure(@6)
+                              memoize EOL Failure(@6)
+                            EOL = Failure(@6)
+                          = Success(@[6,6))
+                          SING @0:6
+                          = Success(@[6,7))
+                        = Success(@[6,7))
+                        CONJ @0:7
+                          NEG  @0:7
+                            RULE EOL @0:7
+                              DISJ @0:7
+                                LIT @0:7
+                                = Failure(@7)
+                                LIT @0:7
+                                = Failure(@7)
+                                LIT @0:7
+                                = Failure(@7)
+                              < Failure(@7)
+                              memoize EOL Failure(@7)
+                            EOL = Failure(@7)
+                          = Success(@[7,7))
+                          SING @0:7
+                          = Success(@[7,8))
+                        = Success(@[7,8))
+                        CONJ @0:8
+                          NEG  @0:8
+                            RULE EOL @0:8
+                              DISJ @0:8
+                                LIT @0:8
+                                = Failure(@8)
+                                LIT @0:8
+                                = Failure(@8)
+                                LIT @0:8
+                                = Failure(@8)
+                              < Failure(@8)
+                              memoize EOL Failure(@8)
+                            EOL = Failure(@8)
+                          = Success(@[8,8))
+                          SING @0:8
+                          = Success(@[8,9))
+                        = Success(@[8,9))
+                        CONJ @0:9
+                          NEG  @0:9
+                            RULE EOL @0:9
+                              DISJ @0:9
+                                LIT @0:9
+                                = Failure(@9)
+                                LIT @0:9
+                                = Failure(@9)
+                                LIT @0:9
+                                = Failure(@9)
+                              < Failure(@9)
+                              memoize EOL Failure(@9)
+                            EOL = Failure(@9)
+                          = Success(@[9,9))
+                          SING @0:9
+                          = Success(@[9,10))
+                        = Success(@[9,10))
+                        CONJ @0:10
+                          NEG  @0:10
+                            RULE EOL @0:10
+                              DISJ @0:10
+                                LIT @0:10
+                                = Failure(@10)
+                                LIT @0:10
+                                = Success(@[10,11))
+                              = Success(@[10,11))
+                              memoize EOL Success(@[10,11))
+                            EOL = Success(EOL@[10,11))
+                          = Failure(@10)
+                        = Failure(@10)
+                      = Success(@[2,10))
+                      LOOK @0:10
+                        DISJ @0:10
+                          RULE EOL @0:10
+                            found EOL Success(@[10,11))
+                          EOL = Success(EOL@[10,11))
+                        = Success(@[10,11))
+                      = Success(@[10,10))
+                    = Success(@[0,10))
+                    memoize Comment_Line Success(@[0,10))
+                  Comment_Line = Success(Comment_Line@[0,10))
+                = Success(@[0,10))
+                memoize Comment Success(@[0,10))
+              Comment = Success(Comment@[0,10))
+            = Success(@[0,10))
+            DISJ @0:10
+              RULE Comment @0:10
+                DISJ @0:10
+                  RULE Comment_Line @0:10
+                    CONJ @0:10
+                      LIT @0:10
+                      = Failure(@10)
+                    = Failure(@10)
+                    memoize Comment_Line Failure(@10)
+                  Comment_Line = Failure(@10)
+                  RULE Comment_Nested @0:10
+                    CONJ @0:10
+                      LIT @0:10
+                      = Failure(@10)
+                    = Failure(@10)
+                    memoize Comment_Nested Failure(@10)
+                  Comment_Nested = Failure(@10)
+                < Failure(@10)
+                memoize Comment Failure(@10)
+              Comment = Failure(@10)
+              RULE WS @0:10
+                STAR {1,} @0:10
+                  SING @0:10
+                  = Failure(@10)
+                = Failure(@10)
+                memoize WS Failure(@10)
+              WS = Failure(@10)
+              RULE EOL @0:10
+                found EOL Success(@[10,11))
+              EOL = Success(EOL@[10,11))
+            = Success(@[10,11))
+            DISJ @0:11
+              RULE Comment @0:11
+                DISJ @0:11
+                  RULE Comment_Line @0:11
+                    CONJ @0:11
+                      LIT @0:11
+                      = Failure(@11)
+                    = Failure(@11)
+                    memoize Comment_Line Failure(@11)
+                  Comment_Line = Failure(@11)
+                  RULE Comment_Nested @0:11
+                    CONJ @0:11
+                      LIT @0:11
+                      = Failure(@11)
+                    = Failure(@11)
+                    memoize Comment_Nested Failure(@11)
+                  Comment_Nested = Failure(@11)
+                < Failure(@11)
+                memoize Comment Failure(@11)
+              Comment = Failure(@11)
+              RULE WS @0:11
+                STAR {1,} @0:11
+                  SING @0:11
+                  = Failure(@11)
+                = Failure(@11)
+                memoize WS Failure(@11)
+              WS = Failure(@11)
+              RULE EOL @0:11
+                DISJ @0:11
+                  LIT @0:11
+                  = Failure(@11)
+                  LIT @0:11
+                  = Failure(@11)
+                  LIT @0:11
+                  = Failure(@11)
+                < Failure(@11)
+                memoize EOL Failure(@11)
+              EOL = Failure(@11)
+            < Failure(@11)
+          = Success(@[0,11))
+          memoize Trivia0 Success(@[0,11))
+        Trivia0 = Success(Trivia0@[0,11))
+        RULE Trivia0 @0:11
+          STAR {1,} @0:11
+            DISJ @0:11
+              RULE Comment @0:11
+                found Comment Failure(@11)
+              Comment = Failure(@11)
+              RULE WS @0:11
+                found WS Failure(@11)
+              WS = Failure(@11)
+              RULE EOL @0:11
+                found EOL Failure(@11)
+              EOL = Failure(@11)
+            < Failure(@11)
+          = Failure(@11)
+          memoize Trivia0 Failure(@11)
+        Trivia0 = Failure(@11)
+      = Success(@[0,11))
+    = t1 := Success(@[0,11))
+    BIND ds @0:11
+      STAR {0,} @0:11
+        DISJ @0:11
+          RULE DocString @0:11
+            BIND s @0:11
+              RULE Literal_String @0:11
+                CONJ @0:11
+                  DISJ @0:11
+                    BIND tri @0:11
+                      RULE Literal_String_Triple @0:11
+                        CONJ @0:11
+                          LIT @0:11
+                          = Failure(@11)
+                        = Failure(@11)
+                        memoize Literal_String_Triple Failure(@11)
+                      Literal_String_Triple = Failure(@11)
+                    = tri := Failure(@11)
+                    RULE Literal_String_Regular @0:11
+                      CONJ @0:11
+                        LIT @0:11
+                        = Failure(@11)
+                      = Failure(@11)
+                      memoize Literal_String_Regular Failure(@11)
+                    Literal_String_Regular = Failure(@11)
+                  < Failure(@11)
+                = Failure(@11)
+                memoize Literal_String Failure(@11)
+              Literal_String = Failure(@11)
+            = s := Failure(@11)
+            memoize DocString Failure(@11)
+          DocString = Failure(@11)
+          RULE Error_Section @0:11
+            CONJ @0:11
+              NEG  @0:11
+                DISJ @0:11
+                  DISJ @0:11
+                    RULE DocString @0:11
+                      found DocString Failure(@11)
+                    DocString = Failure(@11)
+                    RULE Using @0:11
+                      DISJ @0:11
+                        RULE UsingPony @0:11
+                          CONJ @0:11
+                            RULE Keyword_use @0:11
+                              CONJ @0:11
+                                CONJ @0:11
+                                  LIT @0:11
+                                  = Success(@[11,14))
+                                  NEG  @0:14
+                                    SING @0:14
+                                    = Failure(@14)
+                                  = Success(@[14,14))
+                                = Success(@[11,14))
+                                BIND p @0:14
+                                  STAR {0,1} @0:14
+                                    RULE Trivia0 @0:14
+                                      STAR {1,} @0:14
+                                        DISJ @0:14
+                                          RULE Comment @0:14
+                                            DISJ @0:14
+                                              RULE Comment_Line @0:14
+                                                CONJ @0:14
+                                                  LIT @0:14
+                                                  = Failure(@14)
+                                                = Failure(@14)
+                                                memoize Comment_Line Failure(@14)
+                                              Comment_Line = Failure(@14)
+                                              RULE Comment_Nested @0:14
+                                                CONJ @0:14
+                                                  LIT @0:14
+                                                  = Failure(@14)
+                                                = Failure(@14)
+                                                memoize Comment_Nested Failure(@14)
+                                              Comment_Nested = Failure(@14)
+                                            < Failure(@14)
+                                            memoize Comment Failure(@14)
+                                          Comment = Failure(@14)
+                                          RULE WS @0:14
+                                            STAR {1,} @0:14
+                                              SING @0:14
+                                              = Success(@[14,15))
+                                              SING @0:15
+                                              = Failure(@15)
+                                            = Success(@[14,15))
+                                            memoize WS Success(@[14,15))
+                                          WS = Success(WS@[14,15))
+                                        = Success(@[14,15))
+                                        DISJ @0:15
+                                          RULE Comment @0:15
+                                            DISJ @0:15
+                                              RULE Comment_Line @0:15
+                                                CONJ @0:15
+                                                  LIT @0:15
+                                                  = Failure(@15)
+                                                = Failure(@15)
+                                                memoize Comment_Line Failure(@15)
+                                              Comment_Line = Failure(@15)
+                                              RULE Comment_Nested @0:15
+                                                CONJ @0:15
+                                                  LIT @0:15
+                                                  = Failure(@15)
+                                                = Failure(@15)
+                                                memoize Comment_Nested Failure(@15)
+                                              Comment_Nested = Failure(@15)
+                                            < Failure(@15)
+                                            memoize Comment Failure(@15)
+                                          Comment = Failure(@15)
+                                          RULE WS @0:15
+                                            STAR {1,} @0:15
+                                              SING @0:15
+                                              = Failure(@15)
+                                            = Failure(@15)
+                                            memoize WS Failure(@15)
+                                          WS = Failure(@15)
+                                          RULE EOL @0:15
+                                            DISJ @0:15
+                                              LIT @0:15
+                                              = Failure(@15)
+                                              LIT @0:15
+                                              = Failure(@15)
+                                              LIT @0:15
+                                              = Failure(@15)
+                                            < Failure(@15)
+                                            memoize EOL Failure(@15)
+                                          EOL = Failure(@15)
+                                        < Failure(@15)
+                                      = Success(@[14,15))
+                                      memoize Trivia0 Success(@[14,15))
+                                    Trivia0 = Success(Trivia0@[14,15))
+                                    RULE Trivia0 @0:15
+                                      STAR {1,} @0:15
+                                        DISJ @0:15
+                                          RULE Comment @0:15
+                                            found Comment Failure(@15)
+                                          Comment = Failure(@15)
+                                          RULE WS @0:15
+                                            found WS Failure(@15)
+                                          WS = Failure(@15)
+                                          RULE EOL @0:15
+                                            found EOL Failure(@15)
+                                          EOL = Failure(@15)
+                                        < Failure(@15)
+                                      = Failure(@15)
+                                      memoize Trivia0 Failure(@15)
+                                    Trivia0 = Failure(@15)
+                                  = Success(@[14,15))
+                                = p := Success(@[14,15))
+                              = Success(@[11,15))
+                              memoize Keyword_use Success(@[11,15))
+                            Keyword_use = Success(Keyword_use@[11,15))
+                            STAR {0,1} @0:15
+                              CONJ @0:15
+                                BIND id @0:15
+                                  RULE Identifier @0:15
+                                    CONJ @0:15
+                                      DISJ @0:15
+                                        CONJ @0:15
+                                          SING @0:15
+                                          = Failure(@15)
+                                        = Failure(@15)
+                                        CONJ @0:15
+                                          SING @0:15
+                                          = Failure(@15)
+                                        = Failure(@15)
+                                      < Failure(@15)
+                                    = Failure(@15)
+                                    memoize Identifier Failure(@15)
+                                  Identifier = Failure(@15)
+                                = id := Failure(@15)
+                              = Failure(@15)
+                            = Success(@[15,15))
+                            BIND pt @0:15
+                              RULE Literal_String @0:15
+                                CONJ @0:15
+                                  DISJ @0:15
+                                    BIND tri @0:15
+                                      RULE Literal_String_Triple @0:15
+                                        CONJ @0:15
+                                          LIT @0:15
+                                          = Failure(@15)
+                                        = Failure(@15)
+                                        memoize Literal_String_Triple Failure(@15)
+                                      Literal_String_Triple = Failure(@15)
+                                    = tri := Failure(@15)
+                                    RULE Literal_String_Regular @0:15
+                                      CONJ @0:15
+                                        LIT @0:15
+                                        = Success(@[15,16))
+                                        STAR {0,} @0:16
+                                          CONJ @0:16
+                                            NEG  @0:16
+                                              LIT @0:16
+                                              = Failure(@16)
+                                            = Success(@[16,16))
+                                            DISJ @0:16
+                                              CONJ @0:16
+                                                RULE Literal_Char_Escape_Unicode @0:16
+                                                  CONJ @0:16
+                                                    SING @0:16
+                                                    = Failure(@16)
+                                                  = Failure(@16)
+                                                  memoize Literal_Char_Escape_Unicode Failure(@16)
+                                                Literal_Char_Escape_Unicode = Failure(@16)
+                                              = Failure(@16)
+                                              CONJ @0:16
+                                                RULE Literal_Char_Escape @0:16
+                                                  CONJ @0:16
+                                                    SING @0:16
+                                                    = Failure(@16)
+                                                  = Failure(@16)
+                                                  memoize Literal_Char_Escape Failure(@16)
+                                                Literal_Char_Escape = Failure(@16)
+                                              = Failure(@16)
+                                              SING @0:16
+                                              = Success(@[16,17))
+                                            = Success(@[16,17))
+                                          = Success(@[16,17))
+                                          CONJ @0:17
+                                            NEG  @0:17
+                                              LIT @0:17
+                                              = Failure(@17)
+                                            = Success(@[17,17))
+                                            DISJ @0:17
+                                              CONJ @0:17
+                                                RULE Literal_Char_Escape_Unicode @0:17
+                                                  CONJ @0:17
+                                                    SING @0:17
+                                                    = Failure(@17)
+                                                  = Failure(@17)
+                                                  memoize Literal_Char_Escape_Unicode Failure(@17)
+                                                Literal_Char_Escape_Unicode = Failure(@17)
+                                              = Failure(@17)
+                                              CONJ @0:17
+                                                RULE Literal_Char_Escape @0:17
+                                                  CONJ @0:17
+                                                    SING @0:17
+                                                    = Failure(@17)
+                                                  = Failure(@17)
+                                                  memoize Literal_Char_Escape Failure(@17)
+                                                Literal_Char_Escape = Failure(@17)
+                                              = Failure(@17)
+                                              SING @0:17
+                                              = Success(@[17,18))
+                                            = Success(@[17,18))
+                                          = Success(@[17,18))
+                                          CONJ @0:18
+                                            NEG  @0:18
+                                              LIT @0:18
+                                              = Failure(@18)
+                                            = Success(@[18,18))
+                                            DISJ @0:18
+                                              CONJ @0:18
+                                                RULE Literal_Char_Escape_Unicode @0:18
+                                                  CONJ @0:18
+                                                    SING @0:18
+                                                    = Failure(@18)
+                                                  = Failure(@18)
+                                                  memoize Literal_Char_Escape_Unicode Failure(@18)
+                                                Literal_Char_Escape_Unicode = Failure(@18)
+                                              = Failure(@18)
+                                              CONJ @0:18
+                                                RULE Literal_Char_Escape @0:18
+                                                  CONJ @0:18
+                                                    SING @0:18
+                                                    = Failure(@18)
+                                                  = Failure(@18)
+                                                  memoize Literal_Char_Escape Failure(@18)
+                                                Literal_Char_Escape = Failure(@18)
+                                              = Failure(@18)
+                                              SING @0:18
+                                              = Success(@[18,19))
+                                            = Success(@[18,19))
+                                          = Success(@[18,19))
+                                          CONJ @0:19
+                                            NEG  @0:19
+                                              LIT @0:19
+                                              = Success(@[19,20))
+                                            = Failure(@19)
+                                          = Failure(@19)
+                                        = Success(@[16,19))
+                                        DISJ @0:19
+                                          LIT @0:19
+                                          = Success(@[19,20))
+                                        = Success(@[19,20))
+                                      = Success(@[15,20))
+                                      memoize Literal_String_Regular Success(@[15,20))
+                                    Literal_String_Regular = Success(Literal_String_Regular@[15,20))
+                                  = Success(@[15,20))
+                                  BIND p @0:20
+                                    STAR {0,1} @0:20
+                                      RULE Trivia0 @0:20
+                                        STAR {1,} @0:20
+                                          DISJ @0:20
+                                            RULE Comment @0:20
+                                              DISJ @0:20
+                                                RULE Comment_Line @0:20
+                                                  CONJ @0:20
+                                                    LIT @0:20
+                                                    = Failure(@20)
+                                                  = Failure(@20)
+                                                  memoize Comment_Line Failure(@20)
+                                                Comment_Line = Failure(@20)
+                                                RULE Comment_Nested @0:20
+                                                  CONJ @0:20
+                                                    LIT @0:20
+                                                    = Failure(@20)
+                                                  = Failure(@20)
+                                                  memoize Comment_Nested Failure(@20)
+                                                Comment_Nested = Failure(@20)
+                                              < Failure(@20)
+                                              memoize Comment Failure(@20)
+                                            Comment = Failure(@20)
+                                            RULE WS @0:20
+                                              STAR {1,} @0:20
+                                                SING @0:20
+                                                = Failure(@20)
+                                              = Failure(@20)
+                                              memoize WS Failure(@20)
+                                            WS = Failure(@20)
+                                            RULE EOL @0:20
+                                              DISJ @0:20
+                                                LIT @0:20
+                                                = Failure(@20)
+                                                LIT @0:20
+                                                = Success(@[20,21))
+                                              = Success(@[20,21))
+                                              memoize EOL Success(@[20,21))
+                                            EOL = Success(EOL@[20,21))
+                                          = Success(@[20,21))
+                                          DISJ @0:21
+                                            RULE Comment @0:21
+                                              DISJ @0:21
+                                                RULE Comment_Line @0:21
+                                                  CONJ @0:21
+                                                    LIT @0:21
+                                                    = Failure(@21)
+                                                  = Failure(@21)
+                                                  memoize Comment_Line Failure(@21)
+                                                Comment_Line = Failure(@21)
+                                                RULE Comment_Nested @0:21
+                                                  CONJ @0:21
+                                                    LIT @0:21
+                                                    = Failure(@21)
+                                                  = Failure(@21)
+                                                  memoize Comment_Nested Failure(@21)
+                                                Comment_Nested = Failure(@21)
+                                              < Failure(@21)
+                                              memoize Comment Failure(@21)
+                                            Comment = Failure(@21)
+                                            RULE WS @0:21
+                                              STAR {1,} @0:21
+                                                SING @0:21
+                                                = Failure(@21)
+                                              = Failure(@21)
+                                              memoize WS Failure(@21)
+                                            WS = Failure(@21)
+                                            RULE EOL @0:21
+                                              DISJ @0:21
+                                                LIT @0:21
+                                                = Failure(@21)
+                                                LIT @0:21
+                                                = Success(@[21,22))
+                                              = Success(@[21,22))
+                                              memoize EOL Success(@[21,22))
+                                            EOL = Success(EOL@[21,22))
+                                          = Success(@[21,22))
+                                          DISJ @0:22
+                                            RULE Comment @0:22
+                                              DISJ @0:22
+                                                RULE Comment_Line @0:22
+                                                  CONJ @0:22
+                                                    LIT @0:22
+                                                    = Failure(@22)
+                                                  = Failure(@22)
+                                                  memoize Comment_Line Failure(@22)
+                                                Comment_Line = Failure(@22)
+                                                RULE Comment_Nested @0:22
+                                                  CONJ @0:22
+                                                    LIT @0:22
+                                                    = Failure(@22)
+                                                  = Failure(@22)
+                                                  memoize Comment_Nested Failure(@22)
+                                                Comment_Nested = Failure(@22)
+                                              < Failure(@22)
+                                              memoize Comment Failure(@22)
+                                            Comment = Failure(@22)
+                                            RULE WS @0:22
+                                              STAR {1,} @0:22
+                                                SING @0:22
+                                                = Failure(@22)
+                                              = Failure(@22)
+                                              memoize WS Failure(@22)
+                                            WS = Failure(@22)
+                                            RULE EOL @0:22
+                                              DISJ @0:22
+                                                LIT @0:22
+                                                = Failure(@22)
+                                                LIT @0:22
+                                                = Failure(@22)
+                                                LIT @0:22
+                                                = Failure(@22)
+                                              < Failure(@22)
+                                              memoize EOL Failure(@22)
+                                            EOL = Failure(@22)
+                                          < Failure(@22)
+                                        = Success(@[20,22))
+                                        memoize Trivia0 Success(@[20,22))
+                                      Trivia0 = Success(Trivia0@[20,22))
+                                      RULE Trivia0 @0:22
+                                        STAR {1,} @0:22
+                                          DISJ @0:22
+                                            RULE Comment @0:22
+                                              found Comment Failure(@22)
+                                            Comment = Failure(@22)
+                                            RULE WS @0:22
+                                              found WS Failure(@22)
+                                            WS = Failure(@22)
+                                            RULE EOL @0:22
+                                              found EOL Failure(@22)
+                                            EOL = Failure(@22)
+                                          < Failure(@22)
+                                        = Failure(@22)
+                                        memoize Trivia0 Failure(@22)
+                                      Trivia0 = Failure(@22)
+                                    = Success(@[20,22))
+                                  = p := Success(@[20,22))
+                                = Success(@[15,22))
+                                memoize Literal_String Success(@[15,22))
+                              Literal_String = Success(Literal_String@[15,22))
+                            = pt := Success(@[15,22))
+                            STAR {0,1} @0:22
+                              CONJ @0:22
+                                RULE Keyword_if @0:22
+                                  CONJ @0:22
+                                    CONJ @0:22
+                                      LIT @0:22
+                                      = Failure(@22)
+                                    = Failure(@22)
+                                  = Failure(@22)
+                                  memoize Keyword_if Failure(@22)
+                                Keyword_if = Failure(@22)
+                              = Failure(@22)
+                            = Success(@[22,22))
+                          = Success(@[11,22))
+                          memoize UsingPony Success(@[11,22))
+                        UsingPony = Success(UsingPony@[11,22))
+                      = Success(@[11,22))
+                      memoize Using Success(@[11,22))
+                    Using = Success(Using@[11,22))
+                  = Success(@[11,22))
+                = Success(@[11,22))
+              = Failure(@11)
+            = Failure(@11)
+            memoize Error_Section Failure(@11)
+          Error_Section = Failure(@11)
+        < Failure(@11)
+      = Success(@[11,11))
+    = ds := Success(@[11,11))
+    BIND us @0:11
+      STAR {0,} @0:11
+        DISJ @0:11
+          RULE Using @0:11
+            found Using Success(@[11,22))
+          Using = Success(Using@[11,22))
+        = Success(@[11,22))
+        DISJ @0:22
+          RULE Using @0:22
+            DISJ @0:22
+              RULE UsingPony @0:22
+                CONJ @0:22
+                  RULE Keyword_use @0:22
+                    CONJ @0:22
+                      CONJ @0:22
+                        LIT @0:22
+                        = Failure(@22)
+                      = Failure(@22)
+                    = Failure(@22)
+                    memoize Keyword_use Failure(@22)
+                  Keyword_use = Failure(@22)
+                = Failure(@22)
+                memoize UsingPony Failure(@22)
+              UsingPony = Failure(@22)
+            < Failure(@22)
+            memoize Using Failure(@22)
+          Using = Failure(@22)
+          RULE Error_Section @0:22
+            CONJ @0:22
+              NEG  @0:22
+                DISJ @0:22
+                  DISJ @0:22
+                    RULE Using @0:22
+                      found Using Failure(@22)
+                    Using = Failure(@22)
+                    RULE Typedef @0:22
+                      DISJ @0:22
+                        RULE Typedef_Primitive @0:22
+                          CONJ @0:22
+                            RULE Keyword_primitive @0:22
+                              CONJ @0:22
+                                CONJ @0:22
+                                  LIT @0:22
+                                  = Failure(@22)
+                                = Failure(@22)
+                              = Failure(@22)
+                              memoize Keyword_primitive Failure(@22)
+                            Keyword_primitive = Failure(@22)
+                          = Failure(@22)
+                          memoize Typedef_Primitive Failure(@22)
+                        Typedef_Primitive = Failure(@22)
+                      < Failure(@22)
+                      memoize Typedef Failure(@22)
+                    Typedef = Failure(@22)
+                  < Failure(@22)
+                  RULE EOF @0:22
+                    NEG  @0:22
+                      SING @0:22
+                      = Success(@[22,23))
+                    = Failure(@22)
+                    memoize EOF Failure(@22)
+                  EOF = Failure(@22)
+                < Failure(@22)
+              = Success(@[22,22))
+              STAR {1,} @0:22
+                CONJ @0:22
+                  NEG  @0:22
+                    DISJ @0:22
+                      RULE DOL @0:22
+                        STAR {2,} @0:22
+                          CONJ @0:22
+                            RULE EOL @0:22
+                              found EOL Failure(@22)
+                            EOL = Failure(@22)
+                          = Failure(@22)
+                        = Failure(@22)
+                        memoize DOL Failure(@22)
+                      DOL = Failure(@22)
+                      RULE EOF @0:22
+                        found EOF Failure(@22)
+                      EOF = Failure(@22)
+                    < Failure(@22)
+                  = Success(@[22,22))
+                  SING @0:22
+                  = Success(@[22,23))
+                = Success(@[22,23))
+                CONJ @0:23
+                  NEG  @0:23
+                    DISJ @0:23
+                      RULE DOL @0:23
+                        STAR {2,} @0:23
+                          CONJ @0:23
+                            RULE EOL @0:23
+                              DISJ @0:23
+                                LIT @0:23
+                                = Failure(@23)
+                                LIT @0:23
+                                = Failure(@23)
+                                LIT @0:23
+                                = Failure(@23)
+                              < Failure(@23)
+                              memoize EOL Failure(@23)
+                            EOL = Failure(@23)
+                          = Failure(@23)
+                        = Failure(@23)
+                        memoize DOL Failure(@23)
+                      DOL = Failure(@23)
+                      RULE EOF @0:23
+                        NEG  @0:23
+                          SING @0:23
+                          = Success(@[23,24))
+                        = Failure(@23)
+                        memoize EOF Failure(@23)
+                      EOF = Failure(@23)
+                    < Failure(@23)
+                  = Success(@[23,23))
+                  SING @0:23
+                  = Success(@[23,24))
+                = Success(@[23,24))
+                CONJ @0:24
+                  NEG  @0:24
+                    DISJ @0:24
+                      RULE DOL @0:24
+                        STAR {2,} @0:24
+                          CONJ @0:24
+                            RULE EOL @0:24
+                              DISJ @0:24
+                                LIT @0:24
+                                = Failure(@24)
+                                LIT @0:24
+                                = Failure(@24)
+                                LIT @0:24
+                                = Failure(@24)
+                              < Failure(@24)
+                              memoize EOL Failure(@24)
+                            EOL = Failure(@24)
+                          = Failure(@24)
+                        = Failure(@24)
+                        memoize DOL Failure(@24)
+                      DOL = Failure(@24)
+                      RULE EOF @0:24
+                        NEG  @0:24
+                          SING @0:24
+                          = Success(@[24,25))
+                        = Failure(@24)
+                        memoize EOF Failure(@24)
+                      EOF = Failure(@24)
+                    < Failure(@24)
+                  = Success(@[24,24))
+                  SING @0:24
+                  = Success(@[24,25))
+                = Success(@[24,25))
+                CONJ @0:25
+                  NEG  @0:25
+                    DISJ @0:25
+                      RULE DOL @0:25
+                        STAR {2,} @0:25
+                          CONJ @0:25
+                            RULE EOL @0:25
+                              DISJ @0:25
+                                LIT @0:25
+                                = Failure(@25)
+                                LIT @0:25
+                                = Failure(@25)
+                                LIT @0:25
+                                = Failure(@25)
+                              < Failure(@25)
+                              memoize EOL Failure(@25)
+                            EOL = Failure(@25)
+                          = Failure(@25)
+                        = Failure(@25)
+                        memoize DOL Failure(@25)
+                      DOL = Failure(@25)
+                      RULE EOF @0:25
+                        NEG  @0:25
+                          SING @0:25
+                          = Success(@[25,26))
+                        = Failure(@25)
+                        memoize EOF Failure(@25)
+                      EOF = Failure(@25)
+                    < Failure(@25)
+                  = Success(@[25,25))
+                  SING @0:25
+                  = Success(@[25,26))
+                = Success(@[25,26))
+                CONJ @0:26
+                  NEG  @0:26
+                    DISJ @0:26
+                      RULE DOL @0:26
+                        STAR {2,} @0:26
+                          CONJ @0:26
+                            RULE EOL @0:26
+                              DISJ @0:26
+                                LIT @0:26
+                                = Failure(@26)
+                                LIT @0:26
+                                = Failure(@26)
+                                LIT @0:26
+                                = Failure(@26)
+                              < Failure(@26)
+                              memoize EOL Failure(@26)
+                            EOL = Failure(@26)
+                          = Failure(@26)
+                        = Failure(@26)
+                        memoize DOL Failure(@26)
+                      DOL = Failure(@26)
+                      RULE EOF @0:26
+                        NEG  @0:26
+                          SING @0:26
+                          = Success(@[26,27))
+                        = Failure(@26)
+                        memoize EOF Failure(@26)
+                      EOF = Failure(@26)
+                    < Failure(@26)
+                  = Success(@[26,26))
+                  SING @0:26
+                  = Success(@[26,27))
+                = Success(@[26,27))
+                CONJ @0:27
+                  NEG  @0:27
+                    DISJ @0:27
+                      RULE DOL @0:27
+                        STAR {2,} @0:27
+                          CONJ @0:27
+                            RULE EOL @0:27
+                              DISJ @0:27
+                                LIT @0:27
+                                = Failure(@27)
+                                LIT @0:27
+                                = Failure(@27)
+                                LIT @0:27
+                                = Failure(@27)
+                              < Failure(@27)
+                              memoize EOL Failure(@27)
+                            EOL = Failure(@27)
+                          = Failure(@27)
+                        = Failure(@27)
+                        memoize DOL Failure(@27)
+                      DOL = Failure(@27)
+                      RULE EOF @0:27
+                        NEG  @0:27
+                          SING @0:27
+                          = Success(@[27,28))
+                        = Failure(@27)
+                        memoize EOF Failure(@27)
+                      EOF = Failure(@27)
+                    < Failure(@27)
+                  = Success(@[27,27))
+                  SING @0:27
+                  = Success(@[27,28))
+                = Success(@[27,28))
+                CONJ @0:28
+                  NEG  @0:28
+                    DISJ @0:28
+                      RULE DOL @0:28
+                        STAR {2,} @0:28
+                          CONJ @0:28
+                            RULE EOL @0:28
+                              DISJ @0:28
+                                LIT @0:28
+                                = Failure(@28)
+                                LIT @0:28
+                                = Failure(@28)
+                                LIT @0:28
+                                = Failure(@28)
+                              < Failure(@28)
+                              memoize EOL Failure(@28)
+                            EOL = Failure(@28)
+                          = Failure(@28)
+                        = Failure(@28)
+                        memoize DOL Failure(@28)
+                      DOL = Failure(@28)
+                      RULE EOF @0:28
+                        NEG  @0:28
+                          SING @0:28
+                          = Success(@[28,29))
+                        = Failure(@28)
+                        memoize EOF Failure(@28)
+                      EOF = Failure(@28)
+                    < Failure(@28)
+                  = Success(@[28,28))
+                  SING @0:28
+                  = Success(@[28,29))
+                = Success(@[28,29))
+                CONJ @0:29
+                  NEG  @0:29
+                    DISJ @0:29
+                      RULE DOL @0:29
+                        STAR {2,} @0:29
+                          CONJ @0:29
+                            RULE EOL @0:29
+                              DISJ @0:29
+                                LIT @0:29
+                                = Failure(@29)
+                                LIT @0:29
+                                = Failure(@29)
+                                LIT @0:29
+                                = Failure(@29)
+                              < Failure(@29)
+                              memoize EOL Failure(@29)
+                            EOL = Failure(@29)
+                          = Failure(@29)
+                        = Failure(@29)
+                        memoize DOL Failure(@29)
+                      DOL = Failure(@29)
+                      RULE EOF @0:29
+                        NEG  @0:29
+                          SING @0:29
+                          = Success(@[29,30))
+                        = Failure(@29)
+                        memoize EOF Failure(@29)
+                      EOF = Failure(@29)
+                    < Failure(@29)
+                  = Success(@[29,29))
+                  SING @0:29
+                  = Success(@[29,30))
+                = Success(@[29,30))
+                CONJ @0:30
+                  NEG  @0:30
+                    DISJ @0:30
+                      RULE DOL @0:30
+                        STAR {2,} @0:30
+                          CONJ @0:30
+                            RULE EOL @0:30
+                              DISJ @0:30
+                                LIT @0:30
+                                = Failure(@30)
+                                LIT @0:30
+                                = Success(@[30,31))
+                              = Success(@[30,31))
+                              memoize EOL Success(@[30,31))
+                            EOL = Success(EOL@[30,31))
+                            STAR {0,1} @0:31
+                              RULE WS @0:31
+                                STAR {1,} @0:31
+                                  SING @0:31
+                                  = Failure(@31)
+                                = Failure(@31)
+                                memoize WS Failure(@31)
+                              WS = Failure(@31)
+                            = Success(@[31,31))
+                          = Success(@[30,31))
+                          CONJ @0:31
+                            RULE EOL @0:31
+                              DISJ @0:31
+                                LIT @0:31
+                                = Failure(@31)
+                                LIT @0:31
+                                = Success(@[31,32))
+                              = Success(@[31,32))
+                              memoize EOL Success(@[31,32))
+                            EOL = Success(EOL@[31,32))
+                            STAR {0,1} @0:32
+                              RULE WS @0:32
+                                STAR {1,} @0:32
+                                  SING @0:32
+                                  = Failure(@32)
+                                = Failure(@32)
+                                memoize WS Failure(@32)
+                              WS = Failure(@32)
+                            = Success(@[32,32))
+                          = Success(@[31,32))
+                          CONJ @0:32
+                            RULE EOL @0:32
+                              DISJ @0:32
+                                LIT @0:32
+                                = Failure(@32)
+                                LIT @0:32
+                                = Failure(@32)
+                                LIT @0:32
+                                = Failure(@32)
+                              < Failure(@32)
+                              memoize EOL Failure(@32)
+                            EOL = Failure(@32)
+                          = Failure(@32)
+                        = Success(@[30,32))
+                        memoize DOL Success(@[30,32))
+                      DOL = Success(DOL@[30,32))
+                    = Success(@[30,32))
+                  = Failure(@30)
+                = Failure(@30)
+              = Success(@[22,30))
+              DISJ @0:30
+                RULE DOL @0:30
+                  found DOL Success(@[30,32))
+                DOL = Success(DOL@[30,32))
+              = Success(@[30,32))
+            = Success(@[22,32))
+            memoize Error_Section Success(@[22,32))
+          Error_Section = Success(Error_Section@[22,32))
+        = Success(@[22,32))
+        DISJ @0:32
+          RULE Using @0:32
+            DISJ @0:32
+              RULE UsingPony @0:32
+                CONJ @0:32
+                  RULE Keyword_use @0:32
+                    CONJ @0:32
+                      CONJ @0:32
+                        LIT @0:32
+                        = Success(@[32,35))
+                        NEG  @0:35
+                          SING @0:35
+                          = Failure(@35)
+                        = Success(@[35,35))
+                      = Success(@[32,35))
+                      BIND p @0:35
+                        STAR {0,1} @0:35
+                          RULE Trivia0 @0:35
+                            STAR {1,} @0:35
+                              DISJ @0:35
+                                RULE Comment @0:35
+                                  DISJ @0:35
+                                    RULE Comment_Line @0:35
+                                      CONJ @0:35
+                                        LIT @0:35
+                                        = Failure(@35)
+                                      = Failure(@35)
+                                      memoize Comment_Line Failure(@35)
+                                    Comment_Line = Failure(@35)
+                                    RULE Comment_Nested @0:35
+                                      CONJ @0:35
+                                        LIT @0:35
+                                        = Failure(@35)
+                                      = Failure(@35)
+                                      memoize Comment_Nested Failure(@35)
+                                    Comment_Nested = Failure(@35)
+                                  < Failure(@35)
+                                  memoize Comment Failure(@35)
+                                Comment = Failure(@35)
+                                RULE WS @0:35
+                                  STAR {1,} @0:35
+                                    SING @0:35
+                                    = Success(@[35,36))
+                                    SING @0:36
+                                    = Failure(@36)
+                                  = Success(@[35,36))
+                                  memoize WS Success(@[35,36))
+                                WS = Success(WS@[35,36))
+                              = Success(@[35,36))
+                              DISJ @0:36
+                                RULE Comment @0:36
+                                  DISJ @0:36
+                                    RULE Comment_Line @0:36
+                                      CONJ @0:36
+                                        LIT @0:36
+                                        = Failure(@36)
+                                      = Failure(@36)
+                                      memoize Comment_Line Failure(@36)
+                                    Comment_Line = Failure(@36)
+                                    RULE Comment_Nested @0:36
+                                      CONJ @0:36
+                                        LIT @0:36
+                                        = Failure(@36)
+                                      = Failure(@36)
+                                      memoize Comment_Nested Failure(@36)
+                                    Comment_Nested = Failure(@36)
+                                  < Failure(@36)
+                                  memoize Comment Failure(@36)
+                                Comment = Failure(@36)
+                                RULE WS @0:36
+                                  STAR {1,} @0:36
+                                    SING @0:36
+                                    = Failure(@36)
+                                  = Failure(@36)
+                                  memoize WS Failure(@36)
+                                WS = Failure(@36)
+                                RULE EOL @0:36
+                                  DISJ @0:36
+                                    LIT @0:36
+                                    = Failure(@36)
+                                    LIT @0:36
+                                    = Failure(@36)
+                                    LIT @0:36
+                                    = Failure(@36)
+                                  < Failure(@36)
+                                  memoize EOL Failure(@36)
+                                EOL = Failure(@36)
+                              < Failure(@36)
+                            = Success(@[35,36))
+                            memoize Trivia0 Success(@[35,36))
+                          Trivia0 = Success(Trivia0@[35,36))
+                          RULE Trivia0 @0:36
+                            STAR {1,} @0:36
+                              DISJ @0:36
+                                RULE Comment @0:36
+                                  found Comment Failure(@36)
+                                Comment = Failure(@36)
+                                RULE WS @0:36
+                                  found WS Failure(@36)
+                                WS = Failure(@36)
+                                RULE EOL @0:36
+                                  found EOL Failure(@36)
+                                EOL = Failure(@36)
+                              < Failure(@36)
+                            = Failure(@36)
+                            memoize Trivia0 Failure(@36)
+                          Trivia0 = Failure(@36)
+                        = Success(@[35,36))
+                      = p := Success(@[35,36))
+                    = Success(@[32,36))
+                    memoize Keyword_use Success(@[32,36))
+                  Keyword_use = Success(Keyword_use@[32,36))
+                  STAR {0,1} @0:36
+                    CONJ @0:36
+                      BIND id @0:36
+                        RULE Identifier @0:36
+                          CONJ @0:36
+                            DISJ @0:36
+                              CONJ @0:36
+                                SING @0:36
+                                = Failure(@36)
+                              = Failure(@36)
+                              CONJ @0:36
+                                SING @0:36
+                                = Failure(@36)
+                              = Failure(@36)
+                            < Failure(@36)
+                          = Failure(@36)
+                          memoize Identifier Failure(@36)
+                        Identifier = Failure(@36)
+                      = id := Failure(@36)
+                    = Failure(@36)
+                  = Success(@[36,36))
+                  BIND pt @0:36
+                    RULE Literal_String @0:36
+                      CONJ @0:36
+                        DISJ @0:36
+                          BIND tri @0:36
+                            RULE Literal_String_Triple @0:36
+                              CONJ @0:36
+                                LIT @0:36
+                                = Failure(@36)
+                              = Failure(@36)
+                              memoize Literal_String_Triple Failure(@36)
+                            Literal_String_Triple = Failure(@36)
+                          = tri := Failure(@36)
+                          RULE Literal_String_Regular @0:36
+                            CONJ @0:36
+                              LIT @0:36
+                              = Success(@[36,37))
+                              STAR {0,} @0:37
+                                CONJ @0:37
+                                  NEG  @0:37
+                                    LIT @0:37
+                                    = Failure(@37)
+                                  = Success(@[37,37))
+                                  DISJ @0:37
+                                    CONJ @0:37
+                                      RULE Literal_Char_Escape_Unicode @0:37
+                                        CONJ @0:37
+                                          SING @0:37
+                                          = Failure(@37)
+                                        = Failure(@37)
+                                        memoize Literal_Char_Escape_Unicode Failure(@37)
+                                      Literal_Char_Escape_Unicode = Failure(@37)
+                                    = Failure(@37)
+                                    CONJ @0:37
+                                      RULE Literal_Char_Escape @0:37
+                                        CONJ @0:37
+                                          SING @0:37
+                                          = Failure(@37)
+                                        = Failure(@37)
+                                        memoize Literal_Char_Escape Failure(@37)
+                                      Literal_Char_Escape = Failure(@37)
+                                    = Failure(@37)
+                                    SING @0:37
+                                    = Success(@[37,38))
+                                  = Success(@[37,38))
+                                = Success(@[37,38))
+                                CONJ @0:38
+                                  NEG  @0:38
+                                    LIT @0:38
+                                    = Failure(@38)
+                                  = Success(@[38,38))
+                                  DISJ @0:38
+                                    CONJ @0:38
+                                      RULE Literal_Char_Escape_Unicode @0:38
+                                        CONJ @0:38
+                                          SING @0:38
+                                          = Failure(@38)
+                                        = Failure(@38)
+                                        memoize Literal_Char_Escape_Unicode Failure(@38)
+                                      Literal_Char_Escape_Unicode = Failure(@38)
+                                    = Failure(@38)
+                                    CONJ @0:38
+                                      RULE Literal_Char_Escape @0:38
+                                        CONJ @0:38
+                                          SING @0:38
+                                          = Failure(@38)
+                                        = Failure(@38)
+                                        memoize Literal_Char_Escape Failure(@38)
+                                      Literal_Char_Escape = Failure(@38)
+                                    = Failure(@38)
+                                    SING @0:38
+                                    = Success(@[38,39))
+                                  = Success(@[38,39))
+                                = Success(@[38,39))
+                                CONJ @0:39
+                                  NEG  @0:39
+                                    LIT @0:39
+                                    = Failure(@39)
+                                  = Success(@[39,39))
+                                  DISJ @0:39
+                                    CONJ @0:39
+                                      RULE Literal_Char_Escape_Unicode @0:39
+                                        CONJ @0:39
+                                          SING @0:39
+                                          = Failure(@39)
+                                        = Failure(@39)
+                                        memoize Literal_Char_Escape_Unicode Failure(@39)
+                                      Literal_Char_Escape_Unicode = Failure(@39)
+                                    = Failure(@39)
+                                    CONJ @0:39
+                                      RULE Literal_Char_Escape @0:39
+                                        CONJ @0:39
+                                          SING @0:39
+                                          = Failure(@39)
+                                        = Failure(@39)
+                                        memoize Literal_Char_Escape Failure(@39)
+                                      Literal_Char_Escape = Failure(@39)
+                                    = Failure(@39)
+                                    SING @0:39
+                                    = Success(@[39,40))
+                                  = Success(@[39,40))
+                                = Success(@[39,40))
+                                CONJ @0:40
+                                  NEG  @0:40
+                                    LIT @0:40
+                                    = Success(@[40,41))
+                                  = Failure(@40)
+                                = Failure(@40)
+                              = Success(@[37,40))
+                              DISJ @0:40
+                                LIT @0:40
+                                = Success(@[40,41))
+                              = Success(@[40,41))
+                            = Success(@[36,41))
+                            memoize Literal_String_Regular Success(@[36,41))
+                          Literal_String_Regular = Success(Literal_String_Regular@[36,41))
+                        = Success(@[36,41))
+                        BIND p @0:41
+                          STAR {0,1} @0:41
+                            RULE Trivia0 @0:41
+                              STAR {1,} @0:41
+                                DISJ @0:41
+                                  RULE Comment @0:41
+                                    DISJ @0:41
+                                      RULE Comment_Line @0:41
+                                        CONJ @0:41
+                                          LIT @0:41
+                                          = Failure(@41)
+                                        = Failure(@41)
+                                        memoize Comment_Line Failure(@41)
+                                      Comment_Line = Failure(@41)
+                                      RULE Comment_Nested @0:41
+                                        CONJ @0:41
+                                          LIT @0:41
+                                          = Failure(@41)
+                                        = Failure(@41)
+                                        memoize Comment_Nested Failure(@41)
+                                      Comment_Nested = Failure(@41)
+                                    < Failure(@41)
+                                    memoize Comment Failure(@41)
+                                  Comment = Failure(@41)
+                                  RULE WS @0:41
+                                    STAR {1,} @0:41
+                                      SING @0:41
+                                      = Failure(@41)
+                                    = Failure(@41)
+                                    memoize WS Failure(@41)
+                                  WS = Failure(@41)
+                                  RULE EOL @0:41
+                                    DISJ @0:41
+                                      LIT @0:41
+                                      = Failure(@41)
+                                      LIT @0:41
+                                      = Success(@[41,42))
+                                    = Success(@[41,42))
+                                    memoize EOL Success(@[41,42))
+                                  EOL = Success(EOL@[41,42))
+                                = Success(@[41,42))
+                                DISJ @0:42
+                                  RULE Comment @0:42
+                                    DISJ @0:42
+                                      RULE Comment_Line @0:42
+                                        CONJ @0:42
+                                          LIT @0:42
+                                          = Failure(@42)
+                                        = Failure(@42)
+                                        memoize Comment_Line Failure(@42)
+                                      Comment_Line = Failure(@42)
+                                      RULE Comment_Nested @0:42
+                                        CONJ @0:42
+                                          LIT @0:42
+                                          = Failure(@42)
+                                        = Failure(@42)
+                                        memoize Comment_Nested Failure(@42)
+                                      Comment_Nested = Failure(@42)
+                                    < Failure(@42)
+                                    memoize Comment Failure(@42)
+                                  Comment = Failure(@42)
+                                  RULE WS @0:42
+                                    STAR {1,} @0:42
+                                      SING @0:42
+                                      = Failure(@42)
+                                    = Failure(@42)
+                                    memoize WS Failure(@42)
+                                  WS = Failure(@42)
+                                  RULE EOL @0:42
+                                    DISJ @0:42
+                                      LIT @0:42
+                                      = Failure(@42)
+                                      LIT @0:42
+                                      = Failure(@42)
+                                      LIT @0:42
+                                      = Failure(@42)
+                                    < Failure(@42)
+                                    memoize EOL Failure(@42)
+                                  EOL = Failure(@42)
+                                < Failure(@42)
+                              = Success(@[41,42))
+                              memoize Trivia0 Success(@[41,42))
+                            Trivia0 = Success(Trivia0@[41,42))
+                            RULE Trivia0 @0:42
+                              STAR {1,} @0:42
+                                DISJ @0:42
+                                  RULE Comment @0:42
+                                    found Comment Failure(@42)
+                                  Comment = Failure(@42)
+                                  RULE WS @0:42
+                                    found WS Failure(@42)
+                                  WS = Failure(@42)
+                                  RULE EOL @0:42
+                                    found EOL Failure(@42)
+                                  EOL = Failure(@42)
+                                < Failure(@42)
+                              = Failure(@42)
+                              memoize Trivia0 Failure(@42)
+                            Trivia0 = Failure(@42)
+                          = Success(@[41,42))
+                        = p := Success(@[41,42))
+                      = Success(@[36,42))
+                      memoize Literal_String Success(@[36,42))
+                    Literal_String = Success(Literal_String@[36,42))
+                  = pt := Success(@[36,42))
+                  STAR {0,1} @0:42
+                    CONJ @0:42
+                      RULE Keyword_if @0:42
+                        CONJ @0:42
+                          CONJ @0:42
+                            LIT @0:42
+                            = Failure(@42)
+                          = Failure(@42)
+                        = Failure(@42)
+                        memoize Keyword_if Failure(@42)
+                      Keyword_if = Failure(@42)
+                    = Failure(@42)
+                  = Success(@[42,42))
+                = Success(@[32,42))
+                memoize UsingPony Success(@[32,42))
+              UsingPony = Success(UsingPony@[32,42))
+            = Success(@[32,42))
+            memoize Using Success(@[32,42))
+          Using = Success(Using@[32,42))
+        = Success(@[32,42))
+        DISJ @0:42
+          RULE Using @0:42
+            DISJ @0:42
+              RULE UsingPony @0:42
+                CONJ @0:42
+                  RULE Keyword_use @0:42
+                    CONJ @0:42
+                      CONJ @0:42
+                        LIT @0:42
+                        = Failure(@42)
+                      = Failure(@42)
+                    = Failure(@42)
+                    memoize Keyword_use Failure(@42)
+                  Keyword_use = Failure(@42)
+                = Failure(@42)
+                memoize UsingPony Failure(@42)
+              UsingPony = Failure(@42)
+            < Failure(@42)
+            memoize Using Failure(@42)
+          Using = Failure(@42)
+          RULE Error_Section @0:42
+            CONJ @0:42
+              NEG  @0:42
+                DISJ @0:42
+                  DISJ @0:42
+                    RULE Using @0:42
+                      found Using Failure(@42)
+                    Using = Failure(@42)
+                    RULE Typedef @0:42
+                      DISJ @0:42
+                        RULE Typedef_Primitive @0:42
+                          CONJ @0:42
+                            RULE Keyword_primitive @0:42
+                              CONJ @0:42
+                                CONJ @0:42
+                                  LIT @0:42
+                                  = Failure(@42)
+                                = Failure(@42)
+                              = Failure(@42)
+                              memoize Keyword_primitive Failure(@42)
+                            Keyword_primitive = Failure(@42)
+                          = Failure(@42)
+                          memoize Typedef_Primitive Failure(@42)
+                        Typedef_Primitive = Failure(@42)
+                      < Failure(@42)
+                      memoize Typedef Failure(@42)
+                    Typedef = Failure(@42)
+                  < Failure(@42)
+                  RULE EOF @0:42
+                    NEG  @0:42
+                      SING @0:42
+                      = Failure(@42)
+                    = Success(@[42,42))
+                    memoize EOF Success(@[42,42))
+                  EOF = Success(EOF@[42,42))
+                = Success(@[42,42))
+              = Failure(@42)
+            = Failure(@42)
+            memoize Error_Section Failure(@42)
+          Error_Section = Failure(@42)
+        < Failure(@42)
+      = Success(@[11,42))
+    = us := Success(@[11,42))
+    BIND td @0:42
+      STAR {0,} @0:42
+        DISJ @0:42
+          RULE Typedef @0:42
+            found Typedef Failure(@42)
+          Typedef = Failure(@42)
+          RULE Error_Section @0:42
+            CONJ @0:42
+              NEG  @0:42
+                DISJ @0:42
+                  DISJ @0:42
+                    RULE Typedef @0:42
+                      found Typedef Failure(@42)
+                    Typedef = Failure(@42)
+                  < Failure(@42)
+                  RULE EOF @0:42
+                    found EOF Success(@[42,42))
+                  EOF = Success(EOF@[42,42))
+                = Success(@[42,42))
+              = Failure(@42)
+            = Failure(@42)
+            memoize Error_Section Failure(@42)
+          Error_Section = Failure(@42)
+        < Failure(@42)
+      = Success(@[42,42))
+    = td := Success(@[42,42))
+    RULE EOF @0:42
+      found EOF Success(@[42,42))
+    EOF = Success(EOF@[42,42))
+  = Success(@[0,42))
+  memoize SrcFile Success(@[0,42))
+SrcFile = Success(SrcFile@[0,42))
+1 test started, 1 complete: parser/src_file/SrcFile/Using/error_section complete
+[91m**** FAILED: parser/src_file/SrcFile/Using/error_section[0m
+C:\Users\Gordon\Source\Repos\Pony\eohippus\eohippus\test\_assert.pony:58: Assert eq failed.  Expected () == ({
+  "name": "SrcFile",
+  "pre_trivia": [
+    {
+      "name": "Trivia",
+      "kind": "LineCommentTrivia"
+    },
+    {
+      "name": "Trivia",
+      "kind": "EndOfLineTrivia"
+    }
+  ],
+  "locator": "parser/src_file/SrcFile/Using/error_section",
+  "usings": [
+    {
+      "name": "Using",
+      "path": {
+        "name": "LiteralString",
+        "kind": "StringLiteral",
+        "value": "bar",
+        "post_trivia": [
+          {
+            "name": "Trivia",
+            "kind": "EndOfLineTrivia"
+          },
+          {
+            "name": "Trivia",
+            "kind": "EndOfLineTrivia"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Using",
+      "path": {
+        "name": "LiteralString",
+        "kind": "StringLiteral",
+        "value": "baz",
+        "post_trivia": [
+          {
+            "name": "Trivia",
+            "kind": "EndOfLineTrivia"
+          }
+        ]
+      }
+    }
+  ],
+  "error_sections": [
+    {
+      "name": "ErrorSection",
+      "message": "expected either a \"use\" statement or a type definition"
+    }
+  ]
+})
+One or more tests failed!
+Complete(false) called
+----
+---- 1 test ran.
+[92m---- Passed: 0[0m
+[91m**** FAILED: 1 test, listed below:[0m
+[91m**** FAILED: parser/src_file/SrcFile/Using/error_section[0m

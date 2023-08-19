@@ -27,7 +27,7 @@ class val TypeTuple is NodeData
   fun name(): String => "TypeTuple"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("types", json_seq(types)))
+    props.push(("types", Nodes.get_json(types)))
 
 class val TypeInfix is NodeData
   let lhs: NodeWith[TypeType]
@@ -79,7 +79,7 @@ class val TypeNominal is NodeData
       props.push(("rhs", rhs'.get_json()))
     end
     if args.size() > 0 then
-      props.push(("args", json_seq(args)))
+      props.push(("args", Nodes.get_json(args)))
     end
     match cap
     | let cap': NodeWith[Keyword] =>
@@ -129,8 +129,8 @@ class val TypeLambda is NodeData
     | let identifier': Node =>
       props.push(("identifier", identifier'.get_json()))
     end
-    props.push(("type_params", json_seq(type_params)))
-    props.push(("param_types", json_seq(param_types)))
+    props.push(("type_params", Nodes.get_json(type_params)))
+    props.push(("param_types", Nodes.get_json(param_types)))
     match return_type
     | let return_type': Node =>
       props.push(("return_type", return_type'.get_json()))

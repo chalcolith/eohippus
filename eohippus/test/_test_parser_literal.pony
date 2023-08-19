@@ -311,7 +311,13 @@ class iso _TestParserLiteralStringTriple is UnitTest
         {
           "name": "LiteralString",
           "kind": "StringTripleQuote",
-          "value": "one\ntwo\nthree"
+          "value": "one\ntwo\nthree",
+          "post_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            }
+          ]
         }
       """
 

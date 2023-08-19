@@ -16,16 +16,15 @@ class MemberBuilder
     message: String)
     : RuleNode
   =>
-    let trivia = _trivia.trivia()
     let dol = _trivia.dol()
     let eof = _trivia.eof()
 
     recover val
       NamedRule("Error_Section",
         Conj(
-          [ Neg(Disj([Disj(allowed); eof]))
-            Plus(Conj([Neg(Disj([dol; eof])); Single()]))
-            Look(Disj([dol; trivia; eof])) ],
+          [ Neg(Disj([ Disj(allowed); eof ]))
+            Plus(Conj([ Neg(Disj([ dol; eof ])); Single() ]))
+            Disj([ dol; eof ]) ],
           {(r, c, b) =>
             let value = ast.NodeWith[ast.ErrorSection](
               _Build.info(r), c, ast.ErrorSection(message))

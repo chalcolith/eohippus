@@ -143,7 +143,13 @@ class TriviaBuilder
     else
       let dol' =
         recover val
-          NamedRule("DOL", Conj([eol(); eol()]))
+          NamedRule(
+            "DOL",
+            Star(
+              Conj(
+                [ eol()
+                  Ques(ws()) ]),
+              2))
         end
       _dol = dol'
       dol'

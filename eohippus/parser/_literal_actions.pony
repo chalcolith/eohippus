@@ -208,7 +208,8 @@ primitive _LiteralActions
     tri: Variable,
     r: Success,
     c: ast.NodeSeq,
-    b: Bindings)
+    b: Bindings,
+    p: ast.NodeSeqWith[ast.Trivia])
     : ((ast.Node | None), Bindings)
   =>
     let kind =
@@ -217,7 +218,7 @@ primitive _LiteralActions
       else
         ast.StringLiteral
       end
-    var first_token = true
+    // var first_token = true
 
     // assemble the string (with first indent if triple)
     let indented =
@@ -225,14 +226,14 @@ primitive _LiteralActions
         let indented' = String
         for child in c.values() do
           match child
-          | let tok: ast.NodeWith[ast.Token] =>
-            if first_token then
-              for t in tok.post_trivia().values() do
-                let si = t.src_info()
-                indented'.concat(si.start.values(si.next))
-              end
-              first_token = false
-            end
+          // | let tok: ast.NodeWith[ast.Token] =>
+          //   if first_token then
+          //     for t in tok.post_trivia().values() do
+          //       let si = t.src_info()
+          //       indented'.concat(si.start.values(si.next))
+          //     end
+          //     first_token = false
+          //   end
           | let ch: ast.NodeWith[ast.LiteralChar] =>
             indented'.push_utf32(ch.data().value())
           | let sp: ast.NodeWith[ast.Span] =>
@@ -291,7 +292,8 @@ primitive _LiteralActions
       end
 
     let value = ast.NodeWith[ast.LiteralString](
-      _Build.info(r), c, ast.LiteralString(outdented, kind))
+      _Build.info(r), c, ast.LiteralString(outdented, kind)
+      where post_trivia' = p)
     (value, b)
 
   fun tag _string_lines(str: String box): Array[(USize, USize)] val =>

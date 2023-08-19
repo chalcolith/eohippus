@@ -38,7 +38,13 @@ class iso _TestParserTypedefPrimitiveSimple is UnitTest
               "string": {
                 "name": "LiteralString",
                 "kind": "StringTripleQuote",
-                "value": "docs"
+                "value": "docs",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia"
+                  }
+                ]
               }
             }
           ]

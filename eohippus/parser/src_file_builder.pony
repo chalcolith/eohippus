@@ -101,14 +101,24 @@ class SrcFileBuilder
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let t1' = _Build.values[ast.Trivia](b, t1)
-    let ds' = _Build.values[ast.DocString](b, ds)
-    let us' = _Build.values[ast.Using](b, us)
-    let td' = _Build.values[ast.TypeDef](b, td)
+    ( let es': ast.NodeSeqWith[ast.ErrorSection],
+      let t1': ast.NodeSeqWith[ast.Trivia],
+      let ds': ast.NodeSeqWith[ast.DocString],
+      let us': ast.NodeSeqWith[ast.Using],
+      let td': ast.NodeSeqWith[ast.TypeDef] )
+    =
+      recover val
+        let errs = Array[ast.NodeWith[ast.ErrorSection]]
+        ( errs,
+          _Build.values_with_errors[ast.Trivia](b, t1, errs),
+          _Build.values_with_errors[ast.DocString](b, ds, errs),
+          _Build.values_with_errors[ast.Using](b, us, errs),
+          _Build.values_with_errors[ast.TypeDef](b, td, errs) )
+      end
 
     let value = ast.NodeWith[ast.SrcFile](
       _Build.info(r), c, ast.SrcFile(r.data.locator, us', td')
-      where pre_trivia' = t1', doc_strings' = ds')
+      where pre_trivia' = t1', doc_strings' = ds', error_sections' = es')
     (value, b)
 
   fun ref using(): NamedRule =>

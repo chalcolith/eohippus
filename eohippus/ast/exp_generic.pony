@@ -12,7 +12,7 @@ class val ExpGeneric is NodeData
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("lhs", lhs.get_json()))
-    props.push(("args", json_seq(args)))
+    props.push(("args", Nodes.get_json(args)))
 
 // class val ExpGeneric is (Node & NodeWithType[ExpGeneric] & NodeWithChildren)
 //   let _src_info: SrcInfo

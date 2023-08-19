@@ -34,6 +34,26 @@ primitive _Build
       end
     end
 
+  fun values_with_errors[N: ast.NodeData val = ast.NodeData](
+    b: Bindings,
+    v: Variable,
+    e: Array[ast.NodeWith[ast.ErrorSection]] ref)
+    : ast.NodeSeqWith[N]
+  =>
+    let rvals: Array[ast.NodeWith[N]] trn = Array[ast.NodeWith[N]]()
+    try
+      let vvals = b(v)?._2
+      for vval in vvals.values() do
+        match vval
+        | let node: ast.NodeWith[N] =>
+          rvals.push(node)
+        | let err: ast.NodeWith[ast.ErrorSection] =>
+          e.push(err)
+        end
+      end
+    end
+    consume rvals
+
   fun with_post[T: ast.NodeData val](
     body: RuleNode,
     post: RuleNode,
