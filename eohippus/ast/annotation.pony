@@ -9,7 +9,7 @@ class val Annotation is NodeData
   fun name(): String => "Annotation"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("identifiers", json_seq[Identifier](identifiers)))
+    props.push(("identifiers", json_seq(identifiers)))
 
 
 // class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)

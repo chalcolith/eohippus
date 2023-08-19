@@ -12,7 +12,7 @@ class val ExpCall is NodeData
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("lhs", lhs.get_json()))
-    props.push(("args", json_seq[Sequence](args)))
+    props.push(("args", json_seq(args)))
 
 
 // class val ExpCall is (Node & NodeWithType[ExpCall] & NodeWithChildren)

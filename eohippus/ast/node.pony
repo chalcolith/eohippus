@@ -8,12 +8,10 @@ trait val NodeData
 
   fun add_json_props(props: Array[(String, json.Item)])
 
-  fun json_seq[D: NodeData val = NodeData](seq: NodeSeqWith[D] val)
-    : json.Sequence val
-  =>
+  fun json_seq(seq: NodeSeq): json.Sequence val =>
     recover val
       json.Sequence.from_iter(
-        Iter[NodeWith[D]](seq.values())
+        Iter[Node](seq.values())
           .map[json.Item val](
             {(n): json.Item val => n.get_json()}))
     end
@@ -24,7 +22,6 @@ trait val NodeDataWithValue[T: Any val] is NodeData
 trait val Node
   fun src_info(): SrcInfo
   fun children(): NodeSeq
-  fun error_section(): (NodeWith[ErrorSection] | None)
   fun annotation(): (NodeWith[Annotation] | None)
   fun doc_strings(): NodeSeqWith[DocString]
   fun pre_trivia(): NodeSeqWith[Trivia]
@@ -37,7 +34,6 @@ class val NodeWith[D: NodeData val] is Node
   let _src_info: SrcInfo
   let _children: NodeSeq
   let _data: D
-  let _error_section: (NodeWith[ErrorSection] | None)
   let _annotation: (NodeWith[Annotation] | None)
   let _doc_strings: NodeSeqWith[DocString]
   let _pre_trivia: NodeSeqWith[Trivia]
@@ -48,7 +44,6 @@ class val NodeWith[D: NodeData val] is Node
     src_info': SrcInfo,
     children': NodeSeq,
     data': D,
-    error_section': (NodeWith[ErrorSection] | None) = None,
     annotation': (NodeWith[Annotation] | None) = None,
     doc_strings': NodeSeqWith[DocString] = [],
     pre_trivia': NodeSeqWith[Trivia] = [],
@@ -58,7 +53,6 @@ class val NodeWith[D: NodeData val] is Node
     _src_info = src_info'
     _children = children'
     _data = data'
-    _error_section = error_section'
     _annotation = annotation'
     _doc_strings =
       if (doc_strings'.size() == 0) or
@@ -95,8 +89,6 @@ class val NodeWith[D: NodeData val] is Node
 
   fun data(): D => _data
 
-  fun error_section(): (NodeWith[ErrorSection] | None) => _error_section
-
   fun doc_strings(): NodeSeqWith[DocString] => _doc_strings
 
   fun annotation(): (NodeWith[Annotation] | None) => _annotation
@@ -114,10 +106,6 @@ class val NodeWith[D: NodeData val] is Node
       // if _children.size() > 0 then
       //   props.push(("children", json_seq(_children)))
       // end
-      match _error_section
-      | let errsec: NodeWith[ErrorSection] =>
-        props.push(("error_section", errsec.data().message))
-      end
       if _doc_strings.size() > 0 then
         let ds_seq = json.Sequence.from_iter(
           Iter[NodeWith[DocString]](_doc_strings.values())

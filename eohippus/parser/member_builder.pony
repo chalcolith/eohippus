@@ -23,11 +23,9 @@ class MemberBuilder
     recover val
       NamedRule("Error_Section",
         Conj(
-          [
-            Neg(Disj([Disj(allowed); eof]))
+          [ Neg(Disj([Disj(allowed); eof]))
             Plus(Conj([Neg(Disj([dol; eof])); Single()]))
-            Look(Disj([dol; trivia; eof]))
-          ],
+            Look(Disj([dol; trivia; eof])) ],
           {(r, c, b) =>
             let value = ast.NodeWith[ast.ErrorSection](
               _Build.info(r), c, ast.ErrorSection(message))

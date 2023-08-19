@@ -30,7 +30,7 @@ class val ExpIf is NodeData
       | IfType => "IfType"
       end
     props.push(("kind", kind_str))
-    props.push(("conditions", json_seq[IfCondition](conditions)))
+    props.push(("conditions", json_seq(conditions)))
     match else_block
     | let block: Node =>
       props.push(("else_block", block.get_json()))

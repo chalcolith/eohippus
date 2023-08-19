@@ -20,8 +20,8 @@ class val SrcFile is NodeData
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("locator", locator))
     if usings.size() > 0 then
-      props.push(("usings", json_seq[Using](usings)))
+      props.push(("usings", json_seq(usings)))
     end
     if type_defs.size() > 0 then
-      props.push(("type_defs", json_seq[TypeDef](type_defs)))
+      props.push(("type_defs", json_seq(type_defs)))
     end

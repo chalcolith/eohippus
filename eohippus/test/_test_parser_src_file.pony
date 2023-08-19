@@ -77,6 +77,60 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
 
     let expected =
       """
+        {
+          "name": "SrcFile",
+          "locator": "parser/src_file/SrcFile/Using/single",
+          "usings": [
+            {
+              "name": "Using",
+              "path": {
+                "name": "LiteralString",
+                "kind": "StringLiteral",
+                "value": "foo"
+              },
+              "def_true": "true",
+              "define": {
+                "name": "Identifier",
+                "string": "windows",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "EndOfLineTrivia"
+                  }
+                ]
+              }
+            },
+            {
+              "name": "Using",
+              "identifier": {
+                "name": "Identifier",
+                "string": "baz",
+                "post_trivia": [
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia"
+                  }
+                ]
+              },
+              "path": {
+                "name": "LiteralString",
+                "kind": "StringLiteral",
+                "value": "bar"
+              },
+              "def_true": "false",
+              "define": {
+                "name": "Identifier",
+                "string": "osx"
+              }
+            }
+          ],
+          "pre_trivia": [
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia"
+            }
+          ]
+        }
       """
 
     let source = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
@@ -92,37 +146,20 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file()
-    h.fail()
 
-    // let code =
-    //   """
-    //     // comment
-    //     use "bar"
+    let expected =
+      """
+      """
 
-    //     gousbnfg
+    let source =
+      """
+        // comment
+        use "bar"
 
-    //     use "baz"
-    //   """
-    // let len = code.size()
+        gousbnfg
 
-    // let src1 = setup.src(code)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + len)
+        use "baz"
+      """
 
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, len, None, None,
-    //     {(node: ast.Node) =>
-    //       try
-    //         let src_file = node as ast.SrcFile
-    //         let usings = src_file.usings()
-
-    //         (h.assert_eq[USize](2, usings.size())) and
-    //         (Iter[ast.Node](src_file.children().values())
-    //           .filter_map[ast.ErrorSection](
-    //             {(child) => try child as ast.ErrorSection end})
-    //           .count() == 1)
-    //       else
-    //         false
-    //       end
-    //     })
-    // ])
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
