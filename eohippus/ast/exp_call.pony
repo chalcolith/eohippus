@@ -2,9 +2,9 @@ use json = "../json"
 
 class val ExpCall is NodeData
   let lhs: Node
-  let args: NodeSeqWith[Sequence]
+  let args: NodeSeqWith[ExpSequence]
 
-  new val create(lhs': Node, args': NodeSeqWith[Sequence]) =>
+  new val create(lhs': Node, args': NodeSeqWith[ExpSequence]) =>
     lhs = lhs'
     args = args'
 

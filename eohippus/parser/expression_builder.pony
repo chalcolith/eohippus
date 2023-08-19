@@ -39,13 +39,14 @@ class ExpressionBuilder
 
       let annotation' =
         recover val
-          NamedRule("Annotation",
-            Conj([
-              bs
-              id
-              Star(Conj([ comma; id ]))
-              bs
-            ]))
+          NamedRule(
+            "Annotation",
+            Conj(
+              [ bs
+                id
+                Star(Conj([ comma; id ]))
+                bs ],
+              _ExpActions~_annotation()))
         end
       _annotation = annotation'
       annotation'
@@ -192,6 +193,198 @@ class ExpressionBuilder
         let ttype = Variable("ttype")
         let types = Variable("types")
 
+        // seq <= annotation? item (';'? item)*
+        exp_seq.set_body(
+          Conj(
+            [ Bind(ann, Ques(annotation()))
+              Bind(body,
+                Conj(
+                  [ exp_item
+                    Star(
+                      Conj(
+                        [ Ques(semicolon)
+                          exp_item ])) ])) ],
+          _ExpActions~_seq(ann, body)))
+
+        // item <= assignment / jump / infix
+        exp_item.set_body(
+          Disj(
+            [ exp_assignment
+              exp_jump
+              exp_infix ]))
+
+        // assignment <= (infix '=' assignment) / infix
+        exp_assignment.set_body(
+          Disj(
+            [ Conj(
+                [ Bind(lhs, exp_infix)
+                  Bind(op, equals)
+                  Bind(rhs, exp_assignment) ],
+                _ExpActions~_binop(lhs, op, rhs))
+            exp_infix ]))
+
+        // jump <= (('return' / 'break') (assignment / infix)?) /
+        //         'continue' /
+        //         'error' /
+        //         'compile_intrinsic' /
+        //         'compile_error'
+        exp_jump.set_body(
+          Disj(
+            [ Conj(
+                [ Disj([ Bind(keyword, kwd_return); Bind(keyword, kwd_break) ])
+                  Ques(Bind(rhs, Disj([ exp_assignment; exp_infix ]))) ])
+              Bind(keyword, kwd_continue)
+              Bind(keyword, kwd_error)
+              Bind(keyword, kwd_compile_intrinsic)
+              Bind(keyword, kwd_compile_error) ],
+            _ExpActions~_jump(keyword, rhs)))
+
+        // infix <= (term binary_op infix) / (term 'as' type) / term
+        exp_infix.set_body(
+          Disj(
+            [ Disj(
+                [ Conj(
+                    [ Bind(lhs, exp_term)
+                      Bind(op, binary_op)
+                      Bind(rhs, exp_infix) ])
+                  Conj(
+                    [ Bind(lhs, exp_term)
+                      Bind(op, kwd_as)
+                      Bind(rhs, type_type) ]) ],
+                _ExpActions~_binop(lhs, op, rhs))
+              exp_term ]))
+
+        // term <= if / ifdef / iftype / match / while / repeate / for / with /
+        //         try / recover / consume / decl / prefix / hash
+        exp_term.set_body(
+          Disj(
+            [ exp_if
+              exp_ifdef
+              exp_iftype
+              exp_match
+              exp_while
+              exp_repeat
+              exp_for
+              exp_with
+              exp_try
+              exp_recover
+              exp_consume
+              exp_decl
+              exp_prefix
+              exp_hash ]))
+
+        // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
+        exp_if.set_body(
+          Conj(
+            [ kwd_if
+              Bind(firstif, exp_cond)
+              Bind(
+                elseifs,
+                Star(
+                  Conj(
+                    [ kwd_elseif
+                      exp_cond ])))
+              Ques(
+                Conj(
+                  [ kwd_else
+                    Bind(else_block, exp_seq) ]))
+              kwd_end ],
+            _ExpActions~_if(firstif, elseifs, else_block)))
+
+        // cond <= seq 'then' seq
+        exp_cond.set_body(
+          Conj(
+            [ Bind(if_true, exp_seq)
+              kwd_then
+              Bind(then_block, exp_seq) ],
+            _ExpActions~_ifcond(if_true, then_block)))
+
+        // ifdef <= 'ifdef' cond ('elseif' cond)* ('else' seq)? 'end'
+        exp_ifdef.set_body(
+          Conj(
+            [ kwd_ifdef
+              Bind(firstif, exp_cond)
+              Bind(
+                elseifs,
+                Star(
+                  Conj(
+                    [ kwd_elseif
+                      exp_cond ])))
+              Ques(
+                Conj(
+                  [ kwd_else
+                    Bind(else_block, exp_seq) ]))
+              kwd_end ],
+            _ExpActions~_ifdef(firstif, elseifs, else_block)))
+
+        // iftype <= 'iftype' type '<:' type 'then' seq ('elseif' type '<:' type)*
+        //           ('else' seq)? 'end'
+        exp_iftype.set_body(
+          Conj(
+            [ kwd_iftype
+              Bind(
+                firstif,
+                Conj(
+                  [ Bind(if_true,
+                      Conj(
+                        [ Bind(lhs, type_type)
+                          Bind(op, subtype)
+                          Bind(rhs, type_type) ]))
+                    kwd_then
+                    Bind(then_block, exp_seq) ],
+                  _ExpActions~_iftype_cond(if_true, lhs, op, rhs, then_block)))
+              Bind(
+                elseifs,
+                Star(
+                  Conj(
+                    [ kwd_elseif
+                      Bind(if_true,
+                        Conj(
+                          [ Bind(lhs, type_type)
+                            Bind(op, subtype)
+                            Bind(rhs, type_type) ]))
+                      kwd_then
+                      Bind(then_block, exp_seq) ],
+                    _ExpActions~_iftype_cond(
+                      if_true, lhs, op, rhs, then_block))))
+              Ques(
+                Conj(
+                  [ kwd_else
+                    Bind(else_block, exp_seq) ]))
+              kwd_end ],
+            _ExpActions~_iftype(firstif, elseifs, else_block)))
+
+        // prefix <= (prefix_op prefix) / postfix
+        exp_prefix.set_body(
+          Disj(
+            [ Conj(
+                [ Bind(op, prefix_op)
+                  Bind(rhs, exp_prefix) ],
+                _ExpActions~_prefix(op, rhs))
+              exp_postfix ]))
+
+
+
+        // // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
+        // //         object / '__loc' / 'this' / literal / (~keyword identifier)
+        // exp_atom.set_body(
+        //   Disj([
+        //     exp_tuple
+        //     exp_parens
+        //     exp_array
+        //     exp_ffi
+        //     exp_bare_lambda
+        //     exp_lambda
+        //     exp_object
+        //     kwd_loc
+        //     kwd_this
+        //     literal
+        //     Conj([
+        //       not_kwd'
+        //       id
+        //     ])
+        //   ]))
+
         // // exp_call_args <= '(' exp_call_args_pos? exp_call_args_named? ')'
         // exp_call_args.set_body(
         //   Conj([
@@ -235,79 +428,6 @@ class ExpressionBuilder
         //   ]),
         //   _ExpActions~_call_arg_named(name, rhs))
 
-        // // seq <= annotation? item (';'? item)*
-        // exp_seq.set_body(
-        //   Conj([
-        //     Bind(ann, Ques(annotation()))
-        //     Bind(body,
-        //       Conj([
-        //         exp_item
-        //         Star(
-        //           Conj([
-        //             Ques(semicolon)
-        //             exp_item
-        //           ]))
-        //       ]))
-        //   ],
-        //   _ExpActions~_seq[ast.Sequence](ann, body, this~_seq_body())))
-
-        // // item <= assignment / jump
-        // exp_item.set_body(
-        //   Disj([
-        //     exp_assignment
-        //     exp_jump
-        //     exp_infix
-        //   ]))
-
-        // // assignment <= (infix '=' assignment) / infix
-        // exp_assignment.set_body(
-        //   Disj([
-        //     Conj([
-        //       Bind(lhs, exp_infix)
-        //       Bind(op, equals)
-        //       Bind(rhs, exp_assignment)
-        //     ], _ExpActions~_binop(lhs, op, rhs))
-        //     exp_infix
-        //   ]))
-
-        // // infix <= (term binary_op infix) / (term 'as' type) / term
-        // exp_infix.set_body(
-        //   Disj([
-        //     Disj([
-        //       Conj([
-        //         Bind(lhs, exp_term)
-        //         Bind(op, binary_op)
-        //         Bind(rhs, exp_infix)
-        //       ])
-        //       Conj([
-        //         Bind(lhs, exp_term)
-        //         Bind(op, kwd_as)
-        //         Bind(rhs, type_type)
-        //       ])
-        //     ], _ExpActions~_binop(lhs, op, rhs))
-        //     exp_term
-        //   ]))
-
-        // // term <= if / ifdef / iftype / match / while / repeate / for / with /
-        // //         try / recover / consume / decl / prefix / hash
-        // exp_term.set_body(
-        //   Disj([
-        //     exp_if
-        //     exp_ifdef
-        //     exp_iftype
-        //     exp_match
-        //     exp_while
-        //     exp_repeat
-        //     exp_for
-        //     exp_with
-        //     exp_try
-        //     exp_recover
-        //     exp_consume
-        //     exp_decl
-        //     exp_prefix
-        //     exp_hash
-        //   ]))
-
         // // exp_hash <= '#' exp_postfix
         // exp_hash.set_body(
         //   Conj([
@@ -315,105 +435,6 @@ class ExpressionBuilder
         //     Bind(rhs, exp_postfix)
         //   ]),
         //   _ExpActions~_hash(rhs))
-
-        // // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
-        // exp_if.set_body(
-        //   Conj([
-        //     kwd_if
-        //     Bind(firstif, exp_cond)
-        //     Bind(elseifs,
-        //       Star(
-        //         Conj([
-        //           kwd_elseif
-        //           exp_cond
-        //         ])))
-        //     Ques(
-        //       Conj([
-        //         kwd_else
-        //         Bind(else_block, exp_seq)
-        //       ]))
-        //     kwd_end
-        //   ],
-        //   _ExpActions~_if(firstif, elseifs, else_block)))
-
-        // // ifdef <= 'ifdef' cond ('elseif' cond)* ('else' seq)? 'end'
-        // exp_ifdef.set_body(
-        //   Conj([
-        //     kwd_ifdef
-        //     Bind(firstif, exp_cond)
-        //     Bind(elseifs,
-        //       Star(
-        //         Conj([
-        //           kwd_elseif
-        //           exp_cond
-        //         ])))
-        //     Ques(
-        //       Conj([
-        //         kwd_else
-        //         Bind(else_block, exp_seq)
-        //       ]))
-        //     kwd_end
-        //   ],
-        //   _ExpActions~_ifdef(firstif, elseifs, else_block)))
-
-        // // iftype <= 'iftype' type '<:' type 'then' seq ('elseif' type '<:' type)*
-        // //           ('else' seq)? 'end'
-        // exp_iftype.set_body(
-        //   Conj([
-        //     kwd_iftype
-        //     Bind(firstif,
-        //       Conj([
-        //         Bind(if_true,
-        //           Conj([
-        //             Bind(lhs, type_type)
-        //             Bind(op, subtype)
-        //             Bind(rhs, type_type)
-        //           ]))
-        //         kwd_then
-        //         Bind(then_block, exp_seq)
-        //       ],
-        //       _ExpActions~_iftype_cond(if_true, lhs, op, rhs, then_block)))
-        //     Bind(elseifs,
-        //       Star(
-        //         Conj([
-        //           kwd_elseif
-        //           Bind(if_true,
-        //             Conj([
-        //               Bind(lhs, type_type)
-        //               Bind(op, subtype)
-        //               Bind(rhs, type_type)
-        //             ]))
-        //           kwd_then
-        //           Bind(then_block, exp_seq)
-        //         ],
-        //         _ExpActions~_iftype_cond(if_true, lhs, op, rhs, then_block))))
-        //     Ques(
-        //       Conj([
-        //         kwd_else
-        //         Bind(else_block, exp_seq)
-        //       ]))
-        //     kwd_end
-        //   ],
-        //   _ExpActions~_iftype(firstif, elseifs, else_block)))
-
-        // // cond <= seq 'then' seq
-        // exp_cond.set_body(
-        //   Conj([
-        //     Bind(if_true, exp_seq)
-        //     kwd_then
-        //     Bind(then_block, exp_seq)
-        //   ],
-        //   _ExpActions~_ifcond(if_true, then_block)))
-
-        // // prefix <= (prefix_op prefix) / postfix
-        // exp_prefix.set_body(
-        //   Disj([
-        //     Conj([
-        //       Bind(op, prefix_op)
-        //       Bind(rhs, exp_prefix)
-        //     ], _ExpActions~_prefix(op, rhs))
-        //     exp_postfix
-        //   ]))
 
         // // postfix <= (postfix postfix_op identifier) /
         // //            (postfix type_args) /
@@ -435,47 +456,6 @@ class ExpressionBuilder
         //       Bind(args, exp_call_args)
         //     ], _ExpActions~_postfix_call(lhs, args))
         //     exp_atom
-        //   ]))
-
-        // // jump <= (('return' / 'break') (assignment / infix)?) /
-        // //         'continue' /
-        // //         'error' /
-        // //         'compile_intrinsic' /
-        // //         'compile_error'
-        // exp_jump.set_body(
-        //   Disj([
-        //     Conj([
-        //       Disj([
-        //         Bind(keyword, kwd_return)
-        //         Bind(keyword, kwd_break)
-        //       ])
-        //       Ques(Bind(rhs, Disj([ exp_assignment; exp_infix ])))
-        //     ])
-        //     Bind(keyword, kwd_continue)
-        //     Bind(keyword, kwd_error)
-        //     Bind(keyword, kwd_compile_intrinsic)
-        //     Bind(keyword, kwd_compile_error)
-        //   ],
-        //   _ExpActions~_jump(keyword, rhs)))
-
-        // // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
-        // //         object / '__loc' / 'this' / literal / (~keyword identifier)
-        // exp_atom.set_body(
-        //   Disj([
-        //     exp_tuple
-        //     exp_parens
-        //     exp_array
-        //     exp_ffi
-        //     exp_bare_lambda
-        //     exp_lambda
-        //     exp_object
-        //     kwd_loc
-        //     kwd_this
-        //     literal
-        //     Conj([
-        //       not_kwd'
-        //       id
-        //     ])
         //   ]))
 
         // // type <= atom_type (arrow type)?
