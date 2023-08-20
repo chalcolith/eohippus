@@ -306,7 +306,70 @@ primitive _ExpActions
       _Build.info(r), c, ast.ExpOperation(None, op', rhs'))
     (value, b)
 
+  fun tag _postfix_type_args(
+    lhs: Variable,
+    args: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/LHS")
+      end
+    let args' =
+      try
+        _Build.value(b, args)? as ast.NodeWith[ast.TypeArgs]
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/TypeArgs")
+      end
 
+    let value = ast.NodeWith[ast.ExpGeneric](
+      _Build.info(r), c, ast.ExpGeneric(lhs', args'))
+    (value, b)
+
+  fun tag _postfix_call_args(
+    lhs: Variable,
+    args: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let lhs' =
+      try
+        _Build.value(b, lhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Postfix/Call/LHS")
+      end
+    let args' =
+      try
+        _Build.value(b, args)? as ast.NodeWith[ast.CallArgs]
+      else
+        return _Build.bind_error(r, c, b, "Expression/PostFix/Call/CallArgs")
+      end
+
+    let value = ast.NodeWith[ast.ExpCall](
+      _Build.info(r), c, ast.ExpCall(lhs', args'))
+    (value, b)
+
+  fun tag _call_args(
+    pos: Variable,
+    named: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let pos' = _Build.values[ast.ExpSequence](b, pos)
+    let named' = _Build.values[ast.ExpOperation](b, named)
+
+    let value = ast.NodeWith[ast.CallArgs](
+      _Build.info(r), c, ast.CallArgs(pos', named'))
+    (value, b)
 
   // fun tag _hash(
   //   rhs: Variable,
@@ -322,44 +385,3 @@ primitive _ExpActions
   //       return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
   //     end
   //   (ast.ExpHash(_Build.info(r), c, rhs'), b)
-
-
-
-  // fun tag _postfix_type_args(
-  //   lhs: Variable,
-  //   params: Variable,
-  //   r: Success,
-  //   c: ast.NodeSeq[ast.Node],
-  //   b: Bindings)
-  //   : ((ast.Node | None), Bindings)
-  // =>
-  //   let lhs' =
-  //     try
-  //       _Build.value(b, lhs)?
-  //     else
-  //       return _Build.bind_error(r, c, b, "Expression/Postfix/TParams/LHS")
-  //     end
-  //   let params' =
-  //     try
-  //       _Build.value(b, params)?
-  //     else
-  //       return _Build.bind_error(r, c, b, "Expression/Postfix/TParamsParams")
-  //     end
-  //   (ast.ExpGeneric(_Build.info(r), c, lhs', params'), b)
-
-  // fun tag _postfix_call(
-  //   lhs: Variable,
-  //   args: Variable,
-  //   r: Success,
-  //   c: ast.NodeSeq[ast.Node],
-  //   b: Bindings)
-  //   : ((ast.Node | None), Bindings)
-  // =>
-  //   let lhs' =
-  //     try
-  //       _Build.value(b, lhs)?
-  //     else
-  //       return _Build.bind_error(r, c, b, "Expression/Postfix/Call/LHS")
-  //     end
-  //   let args' = _Build.values(b, args)
-  //   (ast.ExpCall(_Build.info(r), c, lhs', args'), b)

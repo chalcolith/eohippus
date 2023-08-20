@@ -3,24 +3,72 @@ use "itertools"
 use ast = "../ast"
 
 primitive _TypeActions
-  // fun tag _type_arrow(
-  //   lhs: Variable,
-  //   rhs: Variable,
-  //   r: Success,
-  //   c: ast.NodeSeq[ast.Node],
-  //   b: Bindings): ((ast.Node | None), Bindings)
-  // =>
-  //   let lhs' =
-  //     try
-  //       _Build.value(b, lhs)?
-  //     else
-  //       return _Build.bind_error(r, c, b, "Type/Type/LHS")
-  //     end
+  fun tag _type_args(
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let args = _Build.children[ast.TypeType](c)
 
-  //   let rhs' = _Build.value_or_none(b, rhs)
-  //   let value = ast.NodeWith[ast.TypeArrow](
-  //     _Build.info(r), c, ast.TypeArrow(lhs', rhs'))
-  //   (value, b)
+    let value = ast.NodeWith[ast.TypeArgs](
+      _Build.info(r), c, ast.TypeArgs(args))
+    (value, b)
+
+  fun tag _type_arrow(
+    lhs: Variable,
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let lhs' =
+      try
+        _Build.value(b, lhs)? as ast.NodeWith[ast.TypeType]
+      else
+        return _Build.bind_error(r, c, b, "Type/Arrow/LHS")
+      end
+    match _Build.value_or_none(b, rhs)
+    | let rhs': ast.NodeWith[ast.TypeType] =>
+      let value = ast.NodeWith[ast.TypeType](
+        _Build.info(r), c, ast.TypeArrow(lhs', rhs'))
+      (value, b)
+    else
+      (lhs', b)
+    end
+
+  fun tag _type_atom(
+    child: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    try
+      match _Build.value(b, child)?
+      | let t': ast.NodeWith[ast.TypeType] =>
+        (t', b)
+      | let n': ast.Node =>
+        let value = ast.NodeWith[ast.TypeAtom](
+          _Build.info(r), c, ast.TypeAtom(n'))
+        (value, b)
+      end
+    else
+      return _Build.bind_error(r, c, b, "Type/Atom/Child")
+    end
+
+  fun tag _type_tuple(
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let types = _Build.children[ast.TypeType](c)
+
+    let value = ast.NodeWith[ast.TypeTuple](
+      _Build.info(r), c, ast.TypeTuple(types))
+    (value, b)
 
   // fun tag _type_infix(
   //   lhs: Variable,
@@ -85,19 +133,6 @@ primitive _TypeActions
   //       return _Build.bind_error(r, c, b, "Type/Arg/RHS")
   //     end
   //   (ast.TypeArg(_Build.info(r), c, targ'), b)
-
-  // fun tag _type_args(
-  //   r: Success,
-  //   c: ast.NodeSeq[ast.Node],
-  //   b: Bindings): ((ast.Node | None), Bindings)
-  // =>
-  //   let args =
-  //     recover val
-  //       Array[ast.TypeArg].>concat(
-  //         Iter[ast.Node](c.values())
-  //           .filter_map[ast.TypeArg]({(n) => try n as ast.TypeArg end }))
-  //     end
-  //   (ast.TypeArgs(_Build.info(r), c, args), b)
 
   // fun tag _type_param(
   //   name: Variable,

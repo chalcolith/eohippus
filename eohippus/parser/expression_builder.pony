@@ -118,14 +118,14 @@ class ExpressionBuilder
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
       recover val
+        let call_arg_named = NamedRule("Exp_CallArg_Named", None)
+        let call_args = NamedRule("Exp_CallArgs", None)                     // x
+        let call_args_named = NamedRule("Exp_CallArgs_Named", None)
+        let call_args_pos = NamedRule("Exp_CallArgs_Pos", None)
         let exp_array = NamedRule("Exp_Array", None)
         let exp_assignment = NamedRule("Exp_Assignment", None)              // x
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
         let exp_bare_lambda = NamedRule("Exp_BareLambda", None)
-        let exp_call_arg_named = NamedRule("Exp_CallArg_Named", None)
-        let exp_call_args = NamedRule("Exp_CallArgs", None)
-        let exp_call_args_named = NamedRule("Exp_CallArgs_Named", None)
-        let exp_call_args_pos = NamedRule("Exp_CallArgs_Pos", None)
         let exp_cond = NamedRule("Exp_IfCondition", None)                   // x
         let exp_consume = NamedRule("Exp_Consume", None)
         let exp_decl = NamedRule("Exp_Declaration", None)
@@ -169,6 +169,7 @@ class ExpressionBuilder
         let bare = Variable("bare")
         let body = Variable("body")
         let cap = Variable("cap")
+        let child = Variable("child")
         let condition = Variable("condition")
         let else_block = Variable("else_block")
         let elseifs = Variable("elseifs")
@@ -363,70 +364,125 @@ class ExpressionBuilder
                 _ExpActions~_prefix(op, rhs))
               exp_postfix ]))
 
+        // postfix <= (postfix postfix_op identifier) /
+        //            (postfix type_args) /
+        //            (postfix call_args) /
+        //            atom
+        exp_postfix.set_body(
+          Disj(
+            [ Conj(
+                [ Bind(lhs, exp_postfix)
+                  Bind(op, postfix_op)
+                  Bind(rhs, id) ],
+                _ExpActions~_binop(lhs, op, rhs))
+              Conj(
+                [ Bind(lhs, exp_postfix)
+                  Bind(args, type_args) ],
+                _ExpActions~_postfix_type_args(lhs, args))
+              Conj(
+                [ Bind(lhs, exp_postfix)
+                  Bind(args, call_args) ],
+                _ExpActions~_postfix_call_args(lhs, args))
+              exp_atom ]))
 
+        // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
+        //         object / '__loc' / 'this' / literal / (~keyword identifier)
+        exp_atom.set_body(
+          Disj(
+            [ exp_tuple
+              exp_parens
+              exp_array
+              exp_ffi
+              exp_bare_lambda
+              exp_lambda
+              exp_object
+              kwd_loc
+              kwd_this
+              literal
+              Conj(
+                [ not_kwd
+                  id ]) ]))
 
-        // // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
-        // //         object / '__loc' / 'this' / literal / (~keyword identifier)
-        // exp_atom.set_body(
-        //   Disj([
-        //     exp_tuple
-        //     exp_parens
-        //     exp_array
-        //     exp_ffi
-        //     exp_bare_lambda
-        //     exp_lambda
-        //     exp_object
-        //     kwd_loc
-        //     kwd_this
-        //     literal
-        //     Conj([
-        //       not_kwd'
-        //       id
-        //     ])
-        //   ]))
+        // type_args <= '[' type_arg (',' type_arg)* ']'
+        type_args.set_body(
+          Conj(
+            [ osquare
+              type_type
+              Star(
+                Conj(
+                  [ comma
+                    type_type ]))
+              csquare ]),
+            _TypeActions~_type_args())
 
-        // // exp_call_args <= '(' exp_call_args_pos? exp_call_args_named? ')'
-        // exp_call_args.set_body(
-        //   Conj([
-        //     oparen
-        //     Ques(Bind(pos, exp_call_args_pos))
-        //     Ques(Bind(named, exp_call_args_named))
-        //     cparen
-        //   ]),
-        //   _ExpActions~_call_args(pos, named))
+        // type <= atom_type (arrow type)?
+        type_type.set_body(
+          Conj(
+            [ Bind(lhs, type_atom)
+              Ques(
+                Conj(
+                  [ arrow
+                    Bind(rhs, type_type) ])) ]),
+            _TypeActions~_type_arrow(lhs, rhs))
 
-        // // exp_call_args_pos <= exp_seq (',' exp_seq)*
-        // exp_call_args_pos.set_body(
-        //   Conj([
-        //     exp_seq
-        //     Star(
-        //       Conj([
-        //         comma
-        //         exp_seq
-        //       ]))
-        //   ]),
-        //   _ExpActions~_call_args_pos())
+        // atom_type <= 'this' / cap / '(' tuple_type ')' / '(' infix_type ')' /
+        //              nominal_type / lambda_type
+        type_atom.set_body(
+          Disj(
+            [ Bind(child, kwd_this)
+              Bind(child, kwd_cap)
+              Conj([ oparen; Bind(child, type_tuple); cparen ])
+              Conj([ oparen; Bind(child, type_infix); cparen ])
+              Bind(child, type_nominal)
+              Bind(child, type_lambda) ]),
+            _TypeActions~_type_atom(child))
 
-        // // exp_call_args_named <= 'where' exp_call_arg_named (',' exp_call_arg_named)*
-        // exp_call_args_named.set_body(
-        //   Conj([
-        //     kwd_where
-        //     exp_call_arg_named
-        //     Star(
-        //       Conj([
-        //         comma
-        //         exp_call_arg_named
-        //       ]))
-        //   ]),
-        //   _ExpActions~_call_args_named())
+        // tuple_type <= infix_type (',' infix_type)+
+        type_tuple.set_body(
+          Conj(
+            [ type_infix
+              Plus(
+                Conj(
+                  [ comma
+                    type_infix ])) ]),
+            _TypeActions~_type_tuple())
 
-        // exp_call_arg_named.set_body(
-        //   Conj([
-        //     Bind(name, id)
-        //     equals
-        //     Bind(rhs, exp_seq)
-        //   ]),
-        //   _ExpActions~_call_arg_named(name, rhs))
+        // call_args <= '(' call_args_pos? call_args_named? ')'
+        call_args.set_body(
+          Conj(
+            [ oparen
+              Ques(Bind(pos, call_args_pos))
+              Ques(Bind(named, call_args_named))
+              cparen ]),
+            _ExpActions~_call_args(pos, named))
+
+        // call_args_pos <= exp_seq (',' exp_seq)*
+        call_args_pos.set_body(
+          Conj(
+            [ exp_seq
+              Star(
+                Conj(
+                  [ comma
+                    exp_seq ])) ]))
+
+        // call_args_named <= 'where' call_arg_named
+        //                    (',' call_arg_named)*
+        call_args_named.set_body(
+          Conj(
+            [ kwd_where
+              call_arg_named
+              Star(
+                Conj(
+                  [ comma
+                    call_arg_named ])) ]))
+
+        // call_arg_named <= identifier '=' exp_seq
+        call_arg_named.set_body(
+          Conj(
+            [ Bind(name, id)
+              Bind(op, equals)
+              Bind(rhs, exp_seq) ]),
+            _ExpActions~_binop(name, op, rhs))
 
         // // exp_hash <= '#' exp_postfix
         // exp_hash.set_body(
@@ -435,65 +491,6 @@ class ExpressionBuilder
         //     Bind(rhs, exp_postfix)
         //   ]),
         //   _ExpActions~_hash(rhs))
-
-        // // postfix <= (postfix postfix_op identifier) /
-        // //            (postfix type_args) /
-        // //            (postfix call_args) /
-        // //            atom
-        // exp_postfix.set_body(
-        //   Disj([
-        //     Conj([
-        //       Bind(lhs, exp_postfix)
-        //       Bind(op, postfix_op)
-        //       Bind(rhs, id)
-        //     ], _ExpActions~_binop(lhs, op, rhs))
-        //     Conj([
-        //       Bind(lhs, exp_postfix)
-        //       Bind(args, type_args)
-        //     ], _ExpActions~_postfix_type_args(lhs, args))
-        //     Conj([
-        //       Bind(lhs, exp_postfix)
-        //       Bind(args, exp_call_args)
-        //     ], _ExpActions~_postfix_call(lhs, args))
-        //     exp_atom
-        //   ]))
-
-        // // type <= atom_type (arrow type)?
-        // type_type.set_body(
-        //   Conj([
-        //     Bind(lhs, type_atom)
-        //     Ques(
-        //       Conj([
-        //         arrow
-        //         Bind(rhs, type_type)
-        //       ])
-        //     )
-        //   ]),
-        //   _TypeActions~_type_type(lhs, rhs))
-
-        // // atom_type <= 'this' / cap / '(' tuple_type ')' / '(' infix_type ')' /
-        // //              nominal_type / lambda_type
-        // type_atom.set_body(
-        //   Disj([
-        //     kwd_this
-        //     kwd_cap
-        //     Conj([ oparen; type_tuple; cparen ])
-        //     Conj([ oparen; type_infix; cparen ])
-        //     type_nominal
-        //     type_lambda
-        //   ]),
-        //   {(r, c, b) => (ast.TypeAtom(_Build.info(r), c), b) })
-
-        // // tuple_type <= infix_type (',' infix_type)+
-        // type_tuple.set_body(
-        //   Conj([
-        //     type_infix
-        //     Plus(Conj([
-        //       comma
-        //       type_infix
-        //     ]))
-        //   ]),
-        //   {(r, c, b) => (ast.TypeTuple(_Build.info(r), c), b) })
 
         // // infix_type <= type ('&' / '|') infix_type
         // type_infix.set_body(
@@ -527,20 +524,6 @@ class ExpressionBuilder
         //     Conj([ hash; Bind(targ, exp_postfix) ])
         //   ]),
         //   _TypeActions~_type_arg(targ))
-
-        // // type_args <= '[' type_arg (',' type_arg)* ']'
-        // type_args.set_body(
-        //   Conj([
-        //     osquare
-        //     type_arg
-        //     Star(
-        //       Conj([
-        //         comma
-        //         type_arg
-        //       ]))
-        //     csquare
-        //   ]),
-        //   _TypeActions~_type_args())
 
         // // type_param <= id (':' type_type)? ('=' type_arg)?
         // type_param.set_body(

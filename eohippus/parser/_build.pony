@@ -18,20 +18,25 @@ primitive _Build
       b(v)?._2(0)?
     end
 
-  fun values[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
+  fun children[N: ast.NodeData val = ast.NodeData](c: ast.NodeSeq)
     : ast.NodeSeqWith[N]
   =>
     recover val
-      try
-        let vs = b(v)?._2
-        Array[ast.NodeWith[N]](vs.size()) .> concat(
-          Iter[ast.Node](vs.values())
-            .filter_map[ast.NodeWith[N]](
-              {(n: ast.Node): (ast.NodeWith[N] | None) =>
-                try n as ast.NodeWith[N] end }))
-      else
-        []
-      end
+      Array[ast.NodeWith[N]](c.size()) .> concat(
+        Iter[ast.Node](c.values())
+          .filter_map[ast.NodeWith[N]](
+            {(n: ast.Node): (ast.NodeWith[N] | None) =>
+              try n as ast.NodeWith[N] end }))
+    end
+
+  fun values[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
+    : ast.NodeSeqWith[N]
+  =>
+    try
+      let vs = b(v)?._2
+      children[N](vs)
+    else
+      []
     end
 
   fun values_with_errors[N: ast.NodeData val = ast.NodeData](
