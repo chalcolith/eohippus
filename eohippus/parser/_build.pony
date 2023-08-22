@@ -13,9 +13,13 @@ primitive _Build
   fun value(b: Bindings, v: Variable): ast.Node? =>
     b(v)?._2(0)?
 
-  fun value_or_none(b: Bindings, v: Variable): (ast.Node | None) =>
+  fun value_or_none[N: ast.NodeData val = ast.NodeData](
+    b: Bindings,
+    v: Variable)
+    : (ast.NodeWith[N] | None)
+  =>
     try
-      b(v)?._2(0)?
+      b(v)?._2(0)? as ast.NodeWith[N]
     end
 
   fun children[N: ast.NodeData val = ast.NodeData](c: ast.NodeSeq)

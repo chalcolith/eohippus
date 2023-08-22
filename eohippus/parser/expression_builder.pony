@@ -155,14 +155,14 @@ class ExpressionBuilder
         let exp_with = NamedRule("Exp_With", None)
         let type_arg = NamedRule("Type_Arg", None)                          // x
         let type_args = NamedRule("Type_Args", None)                        // x
+        let type_arrow = NamedRule("Type_Arrow", None)                      // x
         let type_atom = NamedRule("Type_Atom", None)                        // x
         let type_infix = NamedRule("Type_Infix", None)                      // x
         let type_lambda = NamedRule("Type_Lambda", None)
         let type_nominal = NamedRule("Type_Nominal", None)                  // x
         let type_param = NamedRule("Type_Param", None)                      // x
         let type_params = NamedRule("Type_Params", None)                    // x
-        let type_tuple = NamedRule("Type_Tuple", None)
-        let type_type = NamedRule("Type_Type", None)                        // x
+        let type_tuple = NamedRule("Type_Tuple", None)                      // x
 
         let ann = Variable("ann")
         let args = Variable("args")
@@ -186,10 +186,12 @@ class ExpressionBuilder
         let pos = Variable("pos")
         let ptypes = Variable("ptypes")
         let rcap = Variable("rcap")
+        let reph = Variable("reph")
         let rhs = Variable("rhs")
         let rtype = Variable("rtype")
         let then_block = Variable("then_block")
         let targ = Variable("targ")
+        let tinit = Variable("tinit")
         let tparams = Variable("tparams")
         let ttype = Variable("ttype")
         let types = Variable("types")
@@ -251,7 +253,7 @@ class ExpressionBuilder
                   Conj(
                     [ Bind(lhs, exp_term)
                       Bind(op, kwd_as)
-                      Bind(rhs, type_type) ]) ],
+                      Bind(rhs, type_arrow) ]) ],
                 _ExpActions~_binop(lhs, op, rhs))
               exp_term ]))
 
@@ -328,9 +330,9 @@ class ExpressionBuilder
                 Conj(
                   [ Bind(if_true,
                       Conj(
-                        [ Bind(lhs, type_type)
+                        [ Bind(lhs, type_arrow)
                           Bind(op, subtype)
-                          Bind(rhs, type_type) ]))
+                          Bind(rhs, type_arrow) ]))
                     kwd_then
                     Bind(then_block, exp_seq) ],
                   _ExpActions~_iftype_cond(if_true, lhs, op, rhs, then_block)))
@@ -341,9 +343,9 @@ class ExpressionBuilder
                     [ kwd_elseif
                       Bind(if_true,
                         Conj(
-                          [ Bind(lhs, type_type)
+                          [ Bind(lhs, type_arrow)
                             Bind(op, subtype)
-                            Bind(rhs, type_type) ]))
+                            Bind(rhs, type_arrow) ]))
                       kwd_then
                       Bind(then_block, exp_seq) ],
                     _ExpActions~_iftype_cond(
@@ -407,22 +409,40 @@ class ExpressionBuilder
         type_args.set_body(
           Conj(
             [ osquare
-              type_type
+              type_arrow
               Star(
                 Conj(
                   [ comma
-                    type_type ]))
+                    type_arrow ]))
               csquare ]),
             _TypeActions~_type_args())
 
+        // type_params <= '[' type_param (',' type_param)* ']'
+        type_params.set_body(
+          Conj(
+            [ osquare
+              Conj(
+                [ type_param
+                  Star(Conj([ comma; type_param ])) ])
+              csquare ]),
+            _TypeActions~_type_params())
+
+        // type_param <= id (':' type_arrow)? ('=' type_arrow)?
+        type_param.set_body(
+          Conj(
+            [ Bind(name, id)
+              Ques(Conj([ colon; Bind(ttype, type_arrow) ]))
+              Ques(Conj([ equals; Bind(tinit, type_arg) ])) ]),
+            _TypeActions~_type_param(name, ttype, tinit))
+
         // type <= atom_type (arrow type)?
-        type_type.set_body(
+        type_arrow.set_body(
           Conj(
             [ Bind(lhs, type_atom)
               Ques(
                 Conj(
                   [ arrow
-                    Bind(rhs, type_type) ])) ]),
+                    Bind(rhs, type_arrow) ])) ]),
             _TypeActions~_type_arrow(lhs, rhs))
 
         // atom_type <= 'this' / cap / '(' tuple_type ')' / '(' infix_type ')' /
@@ -431,7 +451,7 @@ class ExpressionBuilder
           Disj(
             [ Bind(child, kwd_this)
               Bind(child, kwd_cap)
-              Conj([ oparen; Bind(child, type_tuple); cparen ])
+              Bind(child, type_tuple)
               Conj([ oparen; Bind(child, type_infix); cparen ])
               Bind(child, type_nominal)
               Bind(child, type_lambda) ]),
@@ -440,12 +460,61 @@ class ExpressionBuilder
         // tuple_type <= infix_type (',' infix_type)+
         type_tuple.set_body(
           Conj(
-            [ type_infix
-              Plus(
-                Conj(
-                  [ comma
-                    type_infix ])) ]),
+            [ oparen
+              type_infix
+              Plus(Conj([ comma; type_infix ]))
+              cparen ]),
             _TypeActions~_type_tuple())
+
+        // infix_type <=
+        type_infix.set_body(
+          Disj(
+            [ Bind(types,
+                Conj(
+                  [ type_arrow
+                    Star(Conj([ Bind(op, amp); type_arrow ])) ]))
+              Bind(types,
+                Conj(
+                  [ type_arrow
+                    Star(Conj([ Bind(op, bar); type_arrow ])) ])) ],
+            _TypeActions~_type_infix(types, op)))
+
+        // nominal_type <= identifier ('.' identifier)? type_params
+        //                 (cap / gencap)? ('^' / '!')?
+        type_nominal.set_body(
+          Conj(
+            [ Bind(lhs, id)
+              Ques(Conj([ dot; Bind(rhs, id) ]))
+              Bind(params, Ques(type_params))
+              Bind(cap, Ques(Disj([ kwd_cap; kwd_gencap ])))
+              Bind(eph, Ques(Disj([ hat; bang ]))) ]),
+            _TypeActions~_type_nominal(lhs, rhs, params, cap, eph))
+
+        // lambda_type <= '@'? '{' cap? id? type_params? '('
+        //                (type_arrow (',' type_arrow)*)? ')' (':' type_arrow)?
+        //                '?'? '}' (cap / gencap)? ('^' / '!')?
+        type_lambda.set_body(
+          Conj([
+            Bind(bare, Ques(at))
+            ocurly
+            Bind(cap, Ques(kwd_cap))
+            Bind(name, Ques(id))
+            Bind(tparams, Ques(type_params))
+            oparen
+            Bind(ptypes, Ques(
+              Conj([
+                type_arrow
+                Star(Conj([comma; type_arrow]))
+              ])))
+            cparen
+            Bind(rtype, Ques(Conj([colon; type_arrow])))
+            Bind(partial, Ques(ques))
+            ccurly
+            Bind(rcap, Ques(Disj([kwd_cap; kwd_gencap])))
+            Bind(reph, Ques(Disj([hat; bang])))
+          ]),
+          _TypeActions~_type_lambda(
+            bare, cap, name, tparams, ptypes, rtype, partial, rcap, reph))
 
         // call_args <= '(' call_args_pos? call_args_named? ')'
         call_args.set_body(
@@ -492,89 +561,8 @@ class ExpressionBuilder
         //   ]),
         //   _ExpActions~_hash(rhs))
 
-        // // infix_type <= type ('&' / '|') infix_type
-        // type_infix.set_body(
-        //   Conj([
-        //     Bind(lhs, type_type)
-        //     Bind(op, Disj([amp; bar]))
-        //     Bind(rhs, type_infix)
-        //   ]),
-        //   _TypeActions~_type_infix(lhs, op, rhs))
-
-        // // nominal_type <= identifier ('.' identifier)? type_args
-        // //                 (cap / gencap)? ('^' / '!')?
-        // type_nominal.set_body(
-        //   Conj([
-        //     Bind(lhs, id)
-        //     Ques(Conj([
-        //       dot
-        //       Bind(rhs, id)
-        //     ]))
-        //     Bind(args, Ques(type_args))
-        //     Bind(cap, Ques(Disj([kwd_cap; kwd_gencap])))
-        //     Bind(eph, Ques(Disj([hat; bang])))
-        //   ]),
-        //   _TypeActions~_type_nominal(lhs, rhs, args, cap, eph))
-
-        // // type_arg <= type / literal / ('#' exp_postfix)
-        // type_arg.set_body(
-        //   Disj([
-        //     Bind(targ, type_type)
-        //     Bind(targ, literal)
-        //     Conj([ hash; Bind(targ, exp_postfix) ])
-        //   ]),
-        //   _TypeActions~_type_arg(targ))
-
-        // // type_param <= id (':' type_type)? ('=' type_arg)?
-        // type_param.set_body(
-        //   Conj([
-        //     Bind(name, id)
-        //     Ques(Bind(ttype, type_type))
-        //     Ques(Bind(targ, type_arg))
-        //   ]),
-        //   _TypeActions~_type_param(name, ttype, targ))
-
-        // // type_params <= '[' type_param (',' type_param)* ']'
-        // type_params.set_body(
-        //   Conj([
-        //     osquare
-        //     Conj([
-        //       type_param
-        //       Star(Conj([ comma; type_param ]))
-        //     ])
-        //     csquare
-        //   ]),
-        //   _TypeActions~_type_params())
-
-        // // lambda_type <= '@'? '{' cap? id? type_params? '(' (type_type (',' type_type)*)? ')' (':' type_type)? '?'? '}' (cap / gencap)? ('^' / '!')?
-        // type_lambda.set_body(
-        //   Conj([
-        //     Bind(bare, Ques(at))
-        //     ocurly
-        //     Bind(cap, Ques(kwd_cap))
-        //     Bind(name, Ques(id))
-        //     Bind(tparams, Ques(type_params))
-        //     oparen
-        //     Bind(ptypes, Ques(
-        //       Conj([
-        //         type_type
-        //         Star(Conj([comma; type_type]))
-        //       ])))
-        //     cparen
-        //     Bind(rtype, Ques(Conj([colon; type_type])))
-        //     Bind(partial, Ques(ques))
-        //     ccurly
-        //     Bind(rcap, Ques(Disj([kwd_cap; kwd_gencap])))
-        //     Bind(eph, Ques(Disj([hat; bang])))
-        //   ]),
-        //   _TypeActions~_type_lambda(bare, cap, name, tparams, ptypes, rtype,
-        //     partial, rcap, eph))
-
         (exp_seq, exp_item)
       end
     _exp_seq = exp_seq'
     _exp_item = exp_item'
     (exp_seq', exp_item')
-
-  // fun tag _seq_body(r: Success, c: ast.NodeSeq) : ast.Sequence =>
-  //   ast.Sequence(_Build.info(r), c)
