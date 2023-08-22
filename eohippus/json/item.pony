@@ -5,13 +5,9 @@ type Item is (Object box | Sequence box | String | I128 | F64 | Bool)
 
 class Object
   embed _items: Map[String, Item] = _items.create()
-  embed _keys: Array[String] = _keys.create()
 
   new create(items: ReadSeq[(String, Item)] = []) =>
     for (key, value) in items.values() do
-      if not _keys.contains(key, {(a, b) => a == b}) then
-        _keys.push(key)
-      end
       _items(key) = value
     end
 
@@ -41,10 +37,11 @@ class Object
       end
     let result: String iso = String
     result.append("{")
-    if _keys.size() > 0 then
+    let keys = _items.keys()
+    if keys.has_next() then
       if pretty then result.append("\n") end
       var first = true
-      for key in _keys.values() do
+      for key in keys do
         try
           if first then
             first = false
@@ -84,7 +81,7 @@ class Object
 class Sequence
   embed _items: Array[Item] = _items.create()
 
-  new create(items: ReadSeq[Item]) =>
+  new create(items: ReadSeq[Item] = []) =>
     _items.append(items)
 
   new from_iter(items: Iterator[Item]) =>
