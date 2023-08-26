@@ -30,8 +30,8 @@ class SrcFileBuilder
     _member = member
     _typedef = typedef
 
-  fun ref errsec(allowed: ReadSeq[NamedRule] val, message: String): RuleNode =>
-    _member.errsec(allowed, message)
+  fun ref err_sec(allowed: ReadSeq[NamedRule] val, message: String): RuleNode =>
+    _member.error_section(allowed, message)
 
   fun ref src_file(): NamedRule =>
     match _src_file
@@ -43,7 +43,7 @@ class SrcFileBuilder
       let td = Variable("td")
 
       let trivia = _trivia.trivia()
-      let docstring = _member.docstring()
+      let doc_string = _member.doc_string()
       let typedef = _typedef.typedef()
       let eol = _trivia.eol()
       let eof = _trivia.eof()
@@ -53,13 +53,13 @@ class SrcFileBuilder
           NamedRule("SrcFile",
             Conj([
               // pre-trivia
-              Bind(t1, trivia)
+              Bind(t1, Ques(trivia))
 
               // zero or more docstrings
               Bind(ds, Star(
                 Disj([
-                  docstring
-                  errsec([docstring; using(); typedef],
+                  doc_string
+                  err_sec([doc_string; using(); typedef],
                     ErrorMsg.src_file_expected_docstring_using_or_typedef())
                 ])
               ))
@@ -68,7 +68,7 @@ class SrcFileBuilder
               Bind(us, Star(
                 Disj([
                   using()
-                  errsec([using(); typedef],
+                  err_sec([using(); typedef],
                     ErrorMsg.src_file_expected_using_or_typedef())
                 ])
               ))
@@ -77,7 +77,7 @@ class SrcFileBuilder
               Bind(td, Star(
                 Disj([
                   typedef
-                  errsec([typedef],
+                  err_sec([typedef],
                     ErrorMsg.src_file_expected_typedef())
                 ])
               ))
@@ -91,24 +91,35 @@ class SrcFileBuilder
       src_file'
     end
 
-  fun tag _src_file_action(t1: Variable, ds: Variable, us: Variable,
-    td: Variable, r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _src_file_action(
+    t1: Variable,
+    ds: Variable,
+    us: Variable,
+    td: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let t1': ast.Trivia =
-      try
-        _Build.value(b, t1)? as ast.Trivia
-      else
-        return _Build.bind_error(r, c, b, "Trivia")
+    ( let es': ast.NodeSeqWith[ast.ErrorSection],
+      let t1': ast.NodeSeqWith[ast.Trivia],
+      let ds': ast.NodeSeqWith[ast.DocString],
+      let us': ast.NodeSeqWith[ast.Using],
+      let td': ast.NodeSeqWith[ast.TypeDef] )
+    =
+      recover val
+        let errs = Array[ast.NodeWith[ast.ErrorSection]]
+        ( errs,
+          _Build.values_with_errors[ast.Trivia](b, t1, errs),
+          _Build.values_with_errors[ast.DocString](b, ds, errs),
+          _Build.values_with_errors[ast.Using](b, us, errs),
+          _Build.values_with_errors[ast.TypeDef](b, td, errs) )
       end
 
-    let docstring': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
-
-    let us': ast.NodeSeq[ast.Node] = _Build.values(b, us)
-    let td': ast.NodeSeq[ast.Node] = _Build.values(b, td)
-
-    let m = ast.SrcFile(_Build.info(r), c, t1', docstring', us', td')
-    (m, b)
+    let value = ast.NodeWith[ast.SrcFile](
+      _Build.info(r), c, ast.SrcFile(r.data.locator, us', td')
+      where pre_trivia' = t1', doc_strings' = ds', error_sections' = es')
+    (value, b)
 
   fun ref using(): NamedRule =>
     match _using
@@ -168,20 +179,26 @@ class SrcFileBuilder
       using_pony'
     end
 
-  fun tag _using_pony_action(id: Variable, pt: Variable, fl: Variable,
-    df: Variable, r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _using_pony_action(
+    id: Variable,
+    pt: Variable,
+    fl: Variable,
+    df: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ident = try _Build.value(b, id)? as ast.Identifier end
+    let id' = try _Build.value(b, id)? as ast.NodeWith[ast.Identifier] end
 
-    let path =
+    let pt' =
       try
-        _Build.value(b, pt)? as ast.LiteralString
+        _Build.value(b, pt)? as ast.NodeWith[ast.LiteralString]
       else
         return _Build.bind_error(r, c, b, "UsingPony/LiteralString")
       end
 
-    let flag =
+    let def_true =
       match try b(fl)?._1 end
       | let _: Success =>
         false
@@ -189,6 +206,8 @@ class SrcFileBuilder
         true
       end
 
-    let def = try _Build.value(b, df)? as ast.Identifier end
+    let df' = try _Build.value(b, df)? as ast.NodeWith[ast.Identifier] end
 
-    (ast.UsingPony(_Build.info(r), c, ident, path, flag, def), b)
+    let value = ast.NodeWith[ast.Using](
+      _Build.info(r), c, ast.UsingPony(id', pt', def_true, df'))
+    (value, b)

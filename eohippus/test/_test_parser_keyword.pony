@@ -13,12 +13,17 @@ class iso _TestParserSingleKeyword is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.keyword("then")
 
-    let src = setup.src("then")
-    let expected = "{\n  \"node\": \"Keyword\",\n  \"name\": \"then\"\n}"
+    let expected =
+      """
+        {
+          "name": "Keyword",
+          "string": "then"
+        }
+      """
 
-    _Assert.test_all(h, [
-      _Assert.test_json(h, rule, src, setup.data, expected)
-    ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "then", expected) ])
 
 class iso _TestParserNotKeyword is UnitTest
   fun name(): String => "parser/keyword/notkeyword"
@@ -26,12 +31,9 @@ class iso _TestParserNotKeyword is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.not_kwd()
+    let rule = setup.builder.keyword.not_kwd()
 
-    let src1 = setup.src("then")
-    let src2 = setup.src("baz")
-
-    _Assert.test_all(h, [
-      _Assert.test_json(h, rule, src1, setup.data, None)
-      _Assert.test_json(h, rule, src2, setup.data, "")
-    ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "then", None)
+        _Assert.test_match(h, rule, setup.data, "baz", "") ])

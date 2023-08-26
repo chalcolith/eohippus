@@ -1,49 +1,12 @@
-use "itertools"
-
 use json = "../json"
-use types = "../types"
-use ".."
 
-class val Annotation is (Node & NodeWithType[Annotation] & NodeWithChildren)
-  let _src_info: SrcInfo
-  let _ast_type: (types.AstType | None)
-  let _children: NodeSeq
+class val Annotation is NodeData
+  let identifiers: NodeSeqWith[Identifier]
 
-  let _identifiers: NodeSeq[Identifier]
-  let _body: Node
+  new val create(identifiers': NodeSeqWith[Identifier]) =>
+    identifiers = identifiers'
 
-  new val create(src_info': SrcInfo, children': NodeSeq,
-    identifiers': NodeSeq[Identifier], body': Node)
-  =>
-    _src_info = src_info'
-    _ast_type = None
-    _children = children'
-    _identifiers = identifiers'
-    _body = body'
+  fun name(): String => "Annotation"
 
-  new val _with_ast_type(orig: Annotation, ast_type': types.AstType) =>
-    _src_info = orig._src_info
-    _ast_type = ast_type'
-    _children = orig._children
-    _identifiers = orig._identifiers
-    _body = orig._body
-
-  fun src_info(): SrcInfo => _src_info
-
-  fun info(): json.Item val =>
-    let ids = _info_seq[Identifier](_identifiers)
-    recover
-      json.Object([
-        ("node", "Annotation")
-        ("identifiers", ids)
-        ("body", _body.info())
-      ])
-    end
-
-  fun ast_type(): (types.AstType | None) => _ast_type
-  fun val with_ast_type(ast_type': types.AstType): Annotation =>
-    Annotation._with_ast_type(this, ast_type')
-  fun children(): NodeSeq => _children
-
-  fun identifiers(): NodeSeq[Identifier] => _identifiers
-  fun body(): Node => _body
+  fun add_json_props(props: Array[(String, json.Item)]) =>
+    props.push(("identifiers", Nodes.get_json(identifiers)))

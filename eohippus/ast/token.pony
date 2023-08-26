@@ -1,5 +1,4 @@
 use json = "../json"
-use ".."
 
 primitive Tokens
   fun amp(): String => "&"
@@ -33,33 +32,13 @@ primitive Tokens
   fun triple_double_quote(): String => "\"\"\""
   fun underscore(): String => "_"
 
-class val Token is (Node & NodeWithTrivia & NodeWithName)
-  let _src_info: SrcInfo
-  let _body: Span
-  let _post_trivia: Trivia
-  let _name: String
+class val Token is NodeData
+  let string: String
 
-  new val create(src_info': SrcInfo, post_trivia': Trivia) =>
-    _src_info = src_info'
-    _body = Span(SrcInfo(src_info'.locator(), src_info'.start(),
-      post_trivia'.src_info().start()))
-    _post_trivia = post_trivia'
-    _name = _body.literal_source()
+  new create(string': String) =>
+    string = string'
 
-  fun src_info(): SrcInfo => _src_info
+  fun name(): String => "Token"
 
-  fun has_error(): Bool => false
-
-  fun info(): json.Item val =>
-    recover
-      json.Object([
-        ("node", "Token")
-        ("string", _name)
-      ])
-    end
-
-  fun body(): Span => _body
-
-  fun post_trivia(): Trivia => _post_trivia
-
-  fun name(): String => _name
+  fun add_json_props(props: Array[(String, json.Item)]) =>
+    props.push(("string", string))

@@ -5,9 +5,7 @@ use ast = "../ast"
 class TriviaBuilder
   let _context: Context
 
-  var _trivia: MapIs[USize, NamedRule] = MapIs[USize, NamedRule]
-
-  var _post_trivia: (NamedRule | None) = None
+  var _trivia: (NamedRule | None) = None
   var _comment: (NamedRule | None) = None
   var _comment_line: (NamedRule | None) = None
   var _comment_nested: (NamedRule | None) = None
@@ -20,22 +18,21 @@ class TriviaBuilder
     _context = context
 
   fun ref trivia(min: USize = 0): NamedRule =>
-    _trivia.get_or_else(min, _build_trivia(min))
-
-  fun ref _build_trivia(min: USize): NamedRule =>
-    let trivia' =
-      recover val
-        NamedRule("Trivia",
-          Star(
-            Disj([
-              comment()
-              ws()
-              eol()
-            ]), min),
-          {(r, c, b) => (ast.Trivia(_Build.info(r), c), b)})
-      end
-    _trivia(min) = trivia'
-    trivia'
+    match _trivia
+    | let r: NamedRule => r
+    else
+      let trivia' =
+        recover val
+          NamedRule("Trivia" + min.string(),
+            Plus(
+              Disj(
+                [ comment()
+                  ws()
+                  eol() ])))
+        end
+      _trivia = trivia'
+      trivia'
+    end
 
   fun ref comment(): NamedRule =>
     match _comment
@@ -61,16 +58,18 @@ class TriviaBuilder
       let comment_line' =
         recover val
           NamedRule("Comment_Line",
-            Conj([
-              Literal("//")
-              Star(
-                Conj([
-                  Neg(Single("\r\n"))
-                  Single()
-                ]))
-              Look(eol())
-            ]),
-            {(r, _, b) => (ast.TriviaLineComment(_Build.info(r)), b) })
+            Conj(
+              [ Literal("//")
+                Star(
+                  Conj([
+                    Neg(eol())
+                    Single()
+                  ]))
+                Look(Disj([ eol(); eof() ])) ]),
+            {(r, c, b) =>
+              let value = ast.NodeWith[ast.Trivia](
+                _Build.info(r), c, ast.Trivia(ast.LineCommentTrivia))
+              (value, b) })
         end
       _comment_line = comment_line'
       comment_line'
@@ -84,16 +83,17 @@ class TriviaBuilder
       let comment_nested' =
         recover val
           NamedRule("Comment_Nested",
-            Conj([
-              Literal("/*")
-              Star(
-                Conj([
-                  Neg(Literal("*/"))
-                  Single()
-                ]))
-              Literal("*/")
-            ]),
-            {(r, _, b) => (ast.TriviaNestedComment(_Build.info(r)), b) })
+            Conj(
+              [ Literal("/*")
+                Star(
+                  Conj(
+                    [ Neg(Literal("*/"))
+                      Single() ]))
+                Literal("*/") ]),
+            {(r, c, b) =>
+              let value = ast.NodeWith[ast.Trivia](
+                _Build.info(r), c, ast.Trivia(ast.NestedCommentTrivia))
+              (value, b) })
         end
       _comment_nested = comment_nested'
       comment_nested'
@@ -107,7 +107,10 @@ class TriviaBuilder
         recover val
           NamedRule("WS",
             Plus(Single(" \t")),
-            {(r, _, b) => (ast.TriviaWS(_Build.info(r)), b) })
+            {(r, c, b) =>
+              let value = ast.NodeWith[ast.Trivia](
+                _Build.info(r), c, ast.Trivia(ast.WhiteSpaceTrivia))
+              (value, b) })
         end
       _ws = ws'
       ws'
@@ -125,7 +128,10 @@ class TriviaBuilder
               Literal("\n")
               Literal("\r")
             ]),
-            {(r, _, b) => (ast.TriviaEOL(_Build.info(r)), b) })
+            {(r, c, b) =>
+              let value = ast.NodeWith[ast.Trivia](
+                _Build.info(r), c, ast.Trivia(ast.EndOfLineTrivia))
+              (value, b) })
         end
       _eol = eol'
       eol'
@@ -137,7 +143,13 @@ class TriviaBuilder
     else
       let dol' =
         recover val
-          NamedRule("DOL", Conj([eol(); eol()]))
+          NamedRule(
+            "DOL",
+            Star(
+              Conj(
+                [ eol()
+                  Ques(ws()) ]),
+              2))
         end
       _dol = dol'
       dol'
@@ -151,7 +163,10 @@ class TriviaBuilder
         recover val
           NamedRule("EOF",
             Neg(Single),
-            {(r, _, b) => (ast.TriviaEOL(_Build.info(r)), b) })
+            {(r, c, b) =>
+              let value = ast.NodeWith[ast.Trivia](
+                _Build.info(r), c, ast.Trivia(ast.EndOfFileTrivia))
+              (value, b) })
         end
       _eof = eof'
       eof'

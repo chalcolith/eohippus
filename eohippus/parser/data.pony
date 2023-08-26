@@ -1,9 +1,7 @@
 type Locator is String
 
 class val Data
-  let _locator: Locator
+  let locator: Locator
 
   new val create(locator': Locator) =>
-    _locator = locator'
-
-  fun locator(): Locator => _locator
+    locator = locator'

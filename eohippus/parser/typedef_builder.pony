@@ -1,5 +1,4 @@
 use ast = "../ast"
-use ".."
 
 class TypedefBuilder
   let _trivia: TriviaBuilder
@@ -9,10 +8,13 @@ class TypedefBuilder
   let _member: MemberBuilder
 
   var _typedef: (NamedRule | None) = None
-  var _td_primitive: (NamedRule | None) = None
+  var _typedef_primitive: (NamedRule | None) = None
 
-  new create(trivia: TriviaBuilder, token: TokenBuilder,
-    keyword: KeywordBuilder, expression: ExpressionBuilder,
+  new create(
+    trivia: TriviaBuilder,
+    token: TokenBuilder,
+    keyword: KeywordBuilder,
+    expression: ExpressionBuilder,
     member: MemberBuilder)
   =>
     _trivia = trivia
@@ -28,22 +30,22 @@ class TypedefBuilder
       let typedef' =
         recover val
           NamedRule("Typedef",
-            Disj([
-              td_primitive()
-              // typedef_interface()
-              // typedef_trait()
-              // typedef_class()
-              // typedef_actor()
-              // typedef_struct()
-              // typedef_is()
-            ]))
+            Disj(
+              [ typedef_primitive()
+                // typedef_interface()
+                // typedef_trait()
+                // typedef_class()
+                // typedef_actor()
+                // typedef_struct()
+                // typedef_is()
+              ]))
         end
       _typedef = typedef'
       typedef'
     end
 
-  fun ref td_primitive() : NamedRule =>
-    match _td_primitive
+  fun ref typedef_primitive() : NamedRule =>
+    match _typedef_primitive
     | let r: NamedRule => r
     else
       let id = Variable("id")
@@ -51,33 +53,38 @@ class TypedefBuilder
 
       let kwd_primitive = _keyword(ast.Keywords.kwd_primitive())
       let identifier = _token.identifier()
-      let docstring = _member.docstring()
+      let doc_string = _member.doc_string()
 
       let primitive' =
         recover val
           NamedRule("Typedef_Primitive",
-            Conj([
-              kwd_primitive
-              Bind(id, identifier)
-              Bind(ds, docstring)
-            ]),
-            this~_typedef_primitive_action(id, ds))
+            Conj(
+              [ kwd_primitive
+                Bind(id, identifier)
+                Bind(ds, Ques(doc_string)) ]),
+              this~_typedef_primitive_action(id, ds))
         end
-      _td_primitive = primitive'
+      _typedef_primitive = primitive'
       primitive'
     end
 
-  fun tag _typedef_primitive_action(id: Variable, ds: Variable,
-    r: Success, c: ast.NodeSeq[ast.Node], b: Bindings)
+  fun tag _typedef_primitive_action(
+    id: Variable,
+    ds: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let id': ast.Identifier =
+    let id': ast.NodeWith[ast.Identifier] =
       try
-        _Build.value(b, id)? as ast.Identifier
+        _Build.value(b, id)? as ast.NodeWith[ast.Identifier]
       else
         return _Build.bind_error(r, c, b, "Identifier")
       end
+    let ds' = _Build.values_with[ast.DocString](b, ds)
 
-    let ds': ast.NodeSeq[ast.Docstring] = _Build.docstrings(b, ds)
-
-    (ast.TypedefPrimitive(_Build.info(r), ds', id'), b)
+    let value = ast.NodeWith[ast.TypeDefPrimitive](
+      _Build.info(r), c, ast.TypeDefPrimitive(id')
+      where doc_strings' = ds')
+    (value, b)
