@@ -2,102 +2,67 @@ use "itertools"
 
 use json = "../json"
 
-// class val TypeLambda is (Node & NodeWithChildren)
-//   let _src_info: SrcInfo
-//   let _children: NodeSeq
+class val TypeLambda is NodeData
+  let bare: Bool
+  let cap: (NodeWith[Keyword] | None)
+  let identifier: (NodeWith[Identifier] | None)
+  let type_params: (NodeWith[TypeParams] | None)
+  let param_types: NodeSeqWith[TypeType]
+  let return_type: (NodeWith[TypeType] | None)
+  let partial: Bool
+  let rcap: (NodeWith[Keyword] | None)
+  let reph: (NodeWith[Token] | None)
 
-//   let _bare: Bool
-//   let _cap: (Node | None)
-//   let _name: (Node | None)
-//   let _tparams: NodeSeq
-//   let _ptypes: NodeSeq
-//   let _rtype: (Node | None)
-//   let _partial: Bool
-//   let _rcap: (Node | None)
-//   let _reph: (Node | None)
+  new val create(
+    bare': Bool,
+    cap': (NodeWith[Keyword] | None),
+    identifier': (NodeWith[Identifier] | None),
+    type_params': (NodeWith[TypeParams] | None),
+    param_types': NodeSeqWith[TypeType],
+    return_type': (NodeWith[TypeType] | None),
+    partial': Bool,
+    rcap': (NodeWith[Keyword] | None),
+    reph': (NodeWith[Token] | None))
+  =>
+    bare = bare'
+    cap = cap'
+    identifier = identifier'
+    type_params = type_params'
+    param_types = param_types'
+    return_type = return_type'
+    partial = partial'
+    rcap = rcap'
+    reph = reph'
 
-//   new val create(
-//     src_info': SrcInfo,
-//     children': NodeSeq,
-//     bare': Bool,
-//     cap': (Node | None),
-//     name': (Node | None),
-//     tparams': NodeSeq,
-//     ptypes': NodeSeq,
-//     rtype': (Node | None),
-//     partial': Bool,
-//     rcap': (Node | None),
-//     reph': (Node | None))
-//   =>
-//     _src_info = src_info'
-//     _children = children'
-//     _bare = bare'
-//     _cap = cap'
-//     _name = name'
-//     _tparams = tparams'
-//     _ptypes = ptypes'
-//     _rtype = rtype'
-//     _partial = partial'
-//     _rcap = rcap'
-//     _reph = reph'
+  fun name(): String => "TypeLambda"
 
-//   fun src_info(): SrcInfo => _src_info
-
-//   fun info(): json.Item val =>
-//     recover val
-//       let items =
-//         [ as (String, json.Item val):
-//           ("node", "TypeLambda")
-//           ("bare", _bare)
-//           ("partial", _partial)
-//         ]
-//       match _cap
-//       | let cap': Node =>
-//         items.push(("cap", cap'.info()))
-//       end
-//       match _name
-//       | let name': Node =>
-//         items.push(("name", name'.info()))
-//       end
-//       let tparams' = _info_seq(_tparams)
-//       if tparams'.size() > 0 then
-//         items.push(("tparams", tparams'))
-//       end
-//       let ptypes' = _info_seq(_ptypes)
-//       if ptypes'.size() > 0 then
-//         items.push(("ptypes", ptypes'))
-//       end
-//       match _rtype
-//       | let rtype': Node =>
-//         items.push(("rtype", rtype'.info()))
-//       end
-//       match _rcap
-//       | let rcap': Node =>
-//         items.push(("rcap", rcap'.info()))
-//       end
-//       match _reph
-//       | let reph': Node =>
-//         items.push(("reph", reph'.info()))
-//       end
-//       json.Object(items)
-//     end
-
-//   fun children(): NodeSeq => _children
-
-//   fun bare(): Bool => _bare
-
-//   fun cap(): (Node | None) => _cap
-
-//   fun name(): (Node | None) => _name
-
-//   fun tparams(): NodeSeq => _tparams
-
-//   fun ptypes(): NodeSeq => _ptypes
-
-//   fun rtype(): (Node | None) => _rtype
-
-//   fun partial(): Bool => _partial
-
-//   fun rcap(): (Node | None) => _rcap
-
-//   fun reph(): (Node | None) => _reph
+  fun add_json_props(props: Array[(String, json.Item)]) =>
+    props.push(("bare", bare.string()))
+    props.push(("partial", partial.string()))
+    match cap
+    | let cap': Node =>
+      props.push(("cap", cap'.get_json()))
+    end
+    match identifier
+    | let identifier': Node =>
+      props.push(("identifier", identifier'.get_json()))
+    end
+    match type_params
+    | let type_params': Node =>
+      props.push(("type_params", type_params'.get_json()))
+    end
+    if param_types.size() > 0 then
+      props.push(("param_types", Nodes.get_json(param_types)))
+    end
+    match return_type
+    | let return_type': Node =>
+      props.push(("return_type", return_type'.get_json()))
+    end
+    match rcap
+    | let rcap': Node =>
+      props.push(("rcap", rcap'.get_json()))
+    end
+    match reph
+    | let reph': Node =>
+      props.push(("reph", reph'.get_json()))
+    end
