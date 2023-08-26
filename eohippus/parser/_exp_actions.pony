@@ -33,18 +33,22 @@ primitive _ExpActions
       try
         _Build.value(b, ann)? as ast.NodeWith[ast.Annotation]
       end
-    let body' = _Build.values[ast.NodeData](b, body)
+    let body' = _Build.values(b, body)
+    let body_size = body'.size()
 
     let exps =
       recover val
-        Array[ast.Node](body'.size()) .> concat(
+        Array[ast.Node](body_size) .> concat(
           Iter[ast.Node](body'.values())
             .filter(
               {(n) =>
                 match n
-                | let _: ast.NodeWith[ast.Token] => false
-                else true
-                end }))
+                | let _: ast.NodeWith[ast.Token] =>
+                  false
+                else
+                  true
+                end
+              }))
       end
 
     let value = ast.NodeWith[ast.ExpSequence](
@@ -120,22 +124,14 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/If/FirstIf")
       end
-    let elseifs' =
-      recover val
-        Array[ast.NodeWith[ast.IfCondition]] .> concat(
-          Iter[ast.Node](_Build.values(b, elseifs).values())
-            .filter_map[ast.NodeWith[ast.IfCondition]](
-              {(n) => try n as ast.NodeWith[ast.IfCondition] end }))
-      end
-    let else_block' = _Build.value_or_none(b, else_block)
+    let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs)
     let conditions =
       recover val
-        let conditions' = Array[ast.NodeWith[ast.IfCondition]](
-          1 + elseifs'.size())
-        conditions'.push(firstif')
-        conditions'.append(elseifs')
-        conditions'
+        Array[ast.NodeWith[ast.IfCondition]](1 + elseifs'.size())
+          .> push(firstif')
+          .> append(elseifs')
       end
+    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
 
     let value = ast.NodeWith[ast.ExpIf](
       _Build.info(r), c, ast.ExpIf(ast.IfExp, conditions, else_block'))
@@ -181,20 +177,14 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/If/Firstif")
       end
-    let elseifs' =
-      recover val
-        Array[ast.NodeWith[ast.IfCondition]] .> concat(
-          Iter[ast.Node](_Build.values(b, elseifs).values())
-            .filter_map[ast.NodeWith[ast.IfCondition]](
-              {(n) => try n as ast.NodeWith[ast.IfCondition] end }))
-      end
-    let else_block' = _Build.value_or_none(b, else_block)
+    let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs)
     let conditions =
       recover val
         Array[ast.NodeWith[ast.IfCondition]](1 + elseifs'.size())
           .> push(firstif')
           .> append(elseifs')
       end
+    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
 
     let value = ast.NodeWith[ast.ExpIf](
       _Build.info(r), c, ast.ExpIf(ast.IfDef, conditions, else_block'))
@@ -215,20 +205,14 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/IfType/Firstif")
       end
-    let elseifs' =
-      recover val
-        Array[ast.NodeWith[ast.IfCondition]] .> concat(
-          Iter[ast.Node](_Build.values(b, elseifs).values())
-            .filter_map[ast.NodeWith[ast.IfCondition]](
-              {(n) => try n as ast.NodeWith[ast.IfCondition] end }))
-      end
-    let else_block' = _Build.value_or_none(b, else_block)
+    let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs)
     let conditions =
       recover val
         Array[ast.NodeWith[ast.IfCondition]](1 + elseifs'.size())
           .> push(firstif')
           .> append(elseifs')
       end
+    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
 
     let value = ast.NodeWith[ast.ExpIf](
       _Build.info(r), c, ast.ExpIf(ast.IfType, conditions, else_block'))
@@ -306,6 +290,24 @@ primitive _ExpActions
       _Build.info(r), c, ast.ExpOperation(None, op', rhs'))
     (value, b)
 
+  fun tag _hash(
+    rhs: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let rhs' =
+      try
+        _Build.value(b, rhs)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
+      end
+
+    let value = ast.NodeWith[ast.ExpHash](
+      _Build.info(r), c, ast.ExpHash(rhs'))
+    (value, b)
+
   fun tag _postfix_type_args(
     lhs: Variable,
     args: Variable,
@@ -364,24 +366,9 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let pos' = _Build.values[ast.ExpSequence](b, pos)
-    let named' = _Build.values[ast.ExpOperation](b, named)
+    let pos' = _Build.values_with[ast.ExpSequence](b, pos)
+    let named' = _Build.values_with[ast.ExpOperation](b, named)
 
     let value = ast.NodeWith[ast.CallArgs](
       _Build.info(r), c, ast.CallArgs(pos', named'))
     (value, b)
-
-  // fun tag _hash(
-  //   rhs: Variable,
-  //   r: Success,
-  //   c: ast.NodeSeq[ast.Node],
-  //   b: Bindings)
-  //   : ((ast.Node | None), Bindings)
-  // =>
-  //   let rhs' =
-  //     try
-  //       _Build.value(b, rhs)?
-  //     else
-  //       return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
-  //     end
-  //   (ast.ExpHash(_Build.info(r), c, rhs'), b)

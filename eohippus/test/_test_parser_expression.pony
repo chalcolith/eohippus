@@ -8,8 +8,10 @@ use ".."
 primitive _TestParserExpression
   fun apply(test: PonyTest) =>
     test(_TestParserExpressionIdentifier)
+    test(_TestParserExpressionItem)
     test(_TestParserExpressionIf)
     test(_TestParserExpressionIfDef)
+    test(_TestParserExpressionSequence)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -19,19 +21,61 @@ class iso _TestParserExpressionIdentifier is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.token.identifier()
 
-    let expected =
-      """
-        {
-          "name": "Identifier",
-          "string": "a1_'"
-        }
-      """
+    let expected = """ { "name": "Identifier", "string": "a1_'" } """
 
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, "a1_'", expected)
         _Assert.test_match(h, rule, setup.data, "1abc", None)
         _Assert.test_match(h, rule, setup.data, "", None) ])
+
+class iso _TestParserExpressionItem is UnitTest
+  fun name(): String => "parser/expression/Item"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let expected_id = """ { "name":"Identifier", "string": "foo" } """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "foo", expected_id) ])
+
+class iso _TestParserExpressionSequence is UnitTest
+  fun name(): String => "parser/expression/Sequence"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.seq()
+
+    let expected1 =
+      """
+        {
+          "name": "ExpSequence",
+          "expressions": [
+            {
+              "name": "Identifier",
+              "string": "foo"
+            },
+            {
+              "name": "LiteralInteger",
+              "kind": "DecimalInteger",
+              "value": 1
+            },
+            {
+              "name": "LiteralBool",
+              "value": true
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, "foo; 1; true", expected1)])
 
 class iso _TestParserExpressionIf is UnitTest
   fun name(): String => "parser/expression/If"
@@ -40,83 +84,55 @@ class iso _TestParserExpressionIf is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item()
-    h.fail()
 
-    // let src = "if true then foo elseif false then bar else baz end"
+    let source = "if true then foo elseif false then bar else baz end"
+    let expected =
+      """
+        {
+          "name": "ExpIf",
+          "kind": "IfExp",
+          "conditions": [
+            {
+              "if_true": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "LiteralBool", "value": true }
+                ]
+              },
+              "then_block": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "foo" }
+                ]
+              }
+            },
+            {
+              "if_true": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "LiteralBool", "value": false }
+                ]
+              },
+              "then_block": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "bar" }
+                ]
+              }
+            }
+          ],
+          "else_block": {
+            "name": "ExpSequence",
+            "expressions": [
+              { "name": "Identifier", "string": "baz" }
+            ]
+          }
+        }
+      """
 
-    // let src1 = setup.src(src)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + src.size())
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, src.size(),
-    //     None, None, {(node: ast.Node) =>
-    //       let str = node.string()
-
-    //       let if_exp =
-    //         try
-    //           node as ast.ExpIf
-    //         else
-    //           h.fail("Value is not an If node")
-    //           return false
-    //         end
-
-    //       let true_lit =
-    //         try
-    //           (if_exp.conditions()(0)?.if_true() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.LiteralBool
-    //         else
-    //           h.fail("First condition is not a LiteralBool")
-    //           return false
-    //         end
-    //       h.assert_eq[Bool](true, true_lit.value(), "Condition is not true")
-
-    //       let foo_id =
-    //         try
-    //           (if_exp.conditions()(0)?.then_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("First then block exp is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("foo", foo_id.name(),
-    //         "First identifier is not 'foo'")
-
-    //       let false_lit =
-    //         try
-    //           (if_exp.conditions()(1)?.if_true() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.LiteralBool
-    //         else
-    //           h.fail("Second condition is not a LiteralBool")
-    //           return false
-    //         end
-    //       h.assert_eq[Bool](false, false_lit.value(), "Condition is not false")
-
-    //       let bar_id =
-    //         try
-    //           (if_exp.conditions()(1)?.then_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("Second then block exp is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("bar", bar_id.name(),
-    //         "Second identifier is not 'bar'")
-
-    //       let baz_id =
-    //         try
-    //           (if_exp.else_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("Else block exp is not an identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("baz", baz_id.name(),
-    //         "Third identifier is not 'baz'")
-
-    //       true
-    //     })
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
 class iso _TestParserExpressionIfDef is UnitTest
   fun name(): String => "parser/expression/IfDef"
@@ -125,85 +141,52 @@ class iso _TestParserExpressionIfDef is UnitTest
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item()
-    h.fail()
 
-    // let src = "ifdef windows then foo elseif unix then bar else baz end"
+    let source = "ifdef windows then foo elseif unix then bar else baz end"
+    let expected =
+      """
+        {
+          "name": "ExpIf",
+          "kind": "IfDef",
+          "conditions": [
+            {
+              "if_true": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "windows" }
+                ]
+              },
+              "then_block": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "foo" }
+                ]
+              }
+            },
+            {
+              "if_true": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "unix" }
+                ]
+              },
+              "then_block": {
+                "name": "ExpSequence",
+                "expressions": [
+                  { "name": "Identifier", "string": "bar" }
+                ]
+              }
+            }
+          ],
+          "else_block": {
+            "name": "ExpSequence",
+            "expressions": [
+              { "name": "Identifier", "string": "baz" }
+            ]
+          }
+        }
+      """
 
-    // let src1 = setup.src(src)
-    // let loc1 = parser.Loc(src1)
-    // let inf1 = ast.SrcInfo(setup.data.locator(), loc1, loc1 + src.size())
-
-    // _Assert.test_all(h, [
-    //   _Assert.test_match(h, rule, src1, 0, setup.data, true, src.size(),
-    //     None, None, {(node: ast.Node) =>
-    //       let str = node.string()
-
-    //       let if_exp =
-    //         match node
-    //         | let ifdef_node: ast.ExpIfDef =>
-    //           ifdef_node
-    //         | let error_node: ast.ErrorSection =>
-    //           h.fail(error_node.message())
-    //           return false
-    //         else
-    //           h.fail("Value is not an If node")
-    //           return false
-    //         end
-
-    //       let windows_id =
-    //         try
-    //           (if_exp.conditions()(0)?.if_true() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("First condition is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("windows", windows_id.name(),
-    //         "Condition is not windows")
-
-    //       let foo_id =
-    //         try
-    //           (if_exp.conditions()(0)?.then_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("First then block exp is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("foo", foo_id.name(),
-    //         "First identifier is not 'foo'")
-
-    //       let unix_id =
-    //         try
-    //           (if_exp.conditions()(1)?.if_true() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("Second condition is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("unix", unix_id.name(), "Condition is not unix")
-
-    //       let bar_id =
-    //         try
-    //           (if_exp.conditions()(1)?.then_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("Second then block exp is not an Identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("bar", bar_id.name(),
-    //         "Second identifier is not 'bar'")
-
-    //       let baz_id =
-    //         try
-    //           (if_exp.else_block() as ast.NodeWithChildren)
-    //             .children()(0)? as ast.Identifier
-    //         else
-    //           h.fail("Else block exp is not an identifier")
-    //           return false
-    //         end
-    //       h.assert_eq[String]("baz", baz_id.name(),
-    //         "Third identifier is not 'baz'")
-
-    //       true
-    //     })
-    // ])
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])

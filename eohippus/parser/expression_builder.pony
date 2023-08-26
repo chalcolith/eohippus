@@ -366,6 +366,13 @@ class ExpressionBuilder
                 _ExpActions~_prefix(op, rhs))
               exp_postfix ]))
 
+        // exp_hash <= '#' exp_postfix
+        exp_hash.set_body(
+          Conj(
+            [ hash
+              Bind(rhs, exp_postfix) ]),
+            _ExpActions~_hash(rhs))
+
         // postfix <= (postfix postfix_op identifier) /
         //            (postfix type_args) /
         //            (postfix call_args) /
@@ -401,9 +408,7 @@ class ExpressionBuilder
               kwd_loc
               kwd_this
               literal
-              Conj(
-                [ not_kwd
-                  id ]) ]))
+              Conj([ not_kwd; id ]) ]))
 
         // type_args <= '[' type_arg (',' type_arg)* ']'
         type_args.set_body(
@@ -552,14 +557,6 @@ class ExpressionBuilder
               Bind(op, equals)
               Bind(rhs, exp_seq) ]),
             _ExpActions~_binop(name, op, rhs))
-
-        // // exp_hash <= '#' exp_postfix
-        // exp_hash.set_body(
-        //   Conj([
-        //     hash
-        //     Bind(rhs, exp_postfix)
-        //   ]),
-        //   _ExpActions~_hash(rhs))
 
         (exp_seq, exp_item)
       end

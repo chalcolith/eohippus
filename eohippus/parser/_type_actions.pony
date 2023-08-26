@@ -9,7 +9,7 @@ primitive _TypeActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let args = _Build.children[ast.TypeType](c)
+    let args = _Build.nodes_with[ast.TypeType](c)
 
     let value = ast.NodeWith[ast.TypeArgs](
       _Build.info(r), c, ast.TypeArgs(args))
@@ -21,7 +21,7 @@ primitive _TypeActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let params = _Build.children[ast.TypeParam](c)
+    let params = _Build.nodes_with[ast.TypeParam](c)
 
     let value = ast.NodeWith[ast.TypeParams](
       _Build.info(r), c, ast.TypeParams(params))
@@ -98,7 +98,7 @@ primitive _TypeActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let types = _Build.children[ast.TypeType](c)
+    let types = _Build.nodes_with[ast.TypeType](c)
 
     let value = ast.NodeWith[ast.TypeType](
       _Build.info(r), c, ast.TypeTuple(types))
@@ -112,7 +112,7 @@ primitive _TypeActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let types' = _Build.values[ast.TypeType](b, types)
+    let types' = _Build.values_with[ast.TypeType](b, types)
     let op' = _Build.value_or_none[ast.Token](b, op)
 
     let value = ast.NodeWith[ast.TypeType](
@@ -164,7 +164,7 @@ primitive _TypeActions
     let cap' = _Build.value_or_none[ast.Keyword](b, cap)
     let name' = _Build.value_or_none[ast.Identifier](b, name)
     let tparams' = _Build.value_or_none[ast.TypeParams](b, tparams)
-    let ptypes' = _Build.values[ast.TypeType](b, ptypes)
+    let ptypes' = _Build.values_with[ast.TypeType](b, ptypes)
     let rtype' = _Build.value_or_none[ast.TypeType](b, rtype)
     let partial' = _Build.value_or_none[ast.Token](b, partial) isnt None
     let rcap' = _Build.value_or_none[ast.Keyword](b, rcap)

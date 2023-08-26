@@ -74,7 +74,7 @@ class _Parser
         let possible_error =
           match _state
           | _ExpectItem => _handle_expect_item()?
-          | _ExpectName => _handle_expect_name()
+          | _ExpectName => _handle_expect_name()?
           | _InInt => _handle_in_int()?
           | _InFrac => _handle_in_frac()?
           | _InExp => _handle_in_exp()?
@@ -120,6 +120,17 @@ class _Parser
     elseif _ch == '[' then
       _value_stack.push(recover trn Sequence end)
       // state remains _ExpectItem
+    elseif _ch == ']' then
+      if _value_stack.size() == 0 then
+        return _invalid_char(_index)
+      end
+      match _value_stack.pop()?
+      | let seq: Sequence trn =>
+        _add_item(consume seq)?
+        _state = _ExpectComma
+      else
+        return _invalid_char(_index)
+      end
     elseif _ch == '"' then
       _value_stack.push(recover trn String end)
       _state = _InString
@@ -151,12 +162,15 @@ class _Parser
     end
     None
 
-  fun ref _handle_expect_name(): (ParseError | None) =>
+  fun ref _handle_expect_name(): (ParseError | None) ? =>
     if _is_ws(_ch) then
       return None
     elseif _ch == '"' then
       _value_stack.push(recover trn String end)
       _state = _InName
+    elseif _ch == '}' then
+      _add_item(_value_stack.pop()? as Object trn^)?
+      _state = _ExpectComma
     else
       return _invalid_char(_index)
     end

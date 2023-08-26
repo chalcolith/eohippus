@@ -165,8 +165,9 @@ class iso _TestParserLiteralFloat is UnitTest
     let expected_4 =
       """
         {
-          "name": "LiteralFloat",
-          "value": 456.0
+          "name": "LiteralInteger",
+          "kind": "DecimalInteger",
+          "value": 456
         }
       """
 

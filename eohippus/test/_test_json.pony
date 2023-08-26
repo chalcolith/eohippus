@@ -57,8 +57,12 @@ class iso _TestJsonSubsumes is UnitTest
     fun _test(h: TestHelper, source: String, expected: json.Item) =>
       match json.Parse(source)
       | let item: json.Item =>
-        h.assert_true(json.Subsumes(item, expected))
-        h.assert_true(json.Subsumes(expected, item))
+        h.assert_true(
+          json.Subsumes(item, expected),
+          item.string() + " does not subsume " + expected.string())
+        h.assert_true(
+          json.Subsumes(expected, item),
+          expected.string() + " does not subsume " + item.string())
       | let err: json.ParseError =>
         h.fail(
           "Parse failed: " + err.message + " at index " + err.index.string())
@@ -76,6 +80,8 @@ class iso _TestJsonSubsumes is UnitTest
       _test(h, "\"foo\"", "foo")
       _test(h, "\"foo\tbar\"", "foo\tbar")
       _test(h, "\"foo\\ufffdbar\"", "foo\uFFFDbar")
+      _test(h, "{}", recover val json.Object end)
+      _test(h, "[]", recover val json.Sequence end)
 
       let exp1 =
         recover val

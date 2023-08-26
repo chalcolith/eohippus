@@ -66,6 +66,22 @@ primitive _LiteralActions
   =>
     let src_info = _Build.info(r)
     let str = src_info.literal_source(p)
+
+    let int_result' = try _Build.result(b, int_part)? end
+    let frac_result' = try _Build.result(b, frac_part)? end
+    let exp_result' = try _Build.result(b, exponent)? end
+
+    if (int_result' isnt None) and
+       (frac_result' is None) and
+       (exp_result' is None)
+    then
+      let int_num: U128 = try str.u128(10)? else 0 end
+      let int_value = ast.NodeWith[ast.LiteralInteger](
+        src_info, c, ast.LiteralInteger(int_num, ast.DecimalInteger)
+        where post_trivia' = p)
+      return (int_value, b)
+    end
+
     let num: F64 = try str.f64()? else 0.0 end
     let value = ast.NodeWith[ast.LiteralFloat](
       src_info, c, ast.LiteralFloat(num)

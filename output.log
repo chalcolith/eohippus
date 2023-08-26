@@ -1,0 +1,2441 @@
+1 test started, 0 complete: parser/expression/Sequence started
+RULE Exp_Sequence @0:0
+  CONJ @0:0
+    BIND ann @0:0
+      STAR {0,1} @0:0
+        RULE Annotation @0:0
+          CONJ @0:0
+            RULE Token_Backslash @0:0
+              CONJ @0:0
+                LIT @0:0
+                = Failure(@0)
+              = Failure(@0)
+              memoize Token_Backslash Failure(@0)
+            Token_Backslash = Failure(@0)
+          = Failure(@0)
+          memoize Annotation Failure(@0)
+        Annotation = Failure(@0)
+      = Success(@[0,0))
+    = ann := Success(@[0,0))
+    BIND body @0:0
+      CONJ @0:0
+        RULE Exp_Item @0:0
+          mem_exp Exp_Item@0 <0> Failure(Exp_Item@0)
+          Exp_Item@0 <1>
+            DISJ @0:0
+              RULE Exp_Assignment @0:0
+                mem_exp Exp_Assignment@0 <0> Failure(Exp_Assignment@0)
+                Exp_Assignment@0 <1>
+                  DISJ @0:0
+                    CONJ @0:0
+                      BIND lhs @0:0
+                        RULE Exp_Infix @0:0
+                          mem_exp Exp_Infix@0 <0> Failure(Exp_Infix@0)
+                          Exp_Infix@0 <1>
+                            DISJ @0:0
+                              DISJ @0:0
+                                CONJ @0:0
+                                  BIND lhs @0:0
+                                    RULE Exp_Term @0:0
+                                      mem_exp Exp_Term@0 <0> Failure(Exp_Term@0)
+                                      Exp_Term@0 <1>
+                                        DISJ @0:0
+                                          RULE Exp_If @0:0
+                                            CONJ @0:0
+                                              RULE Keyword_if @0:0
+                                                CONJ @0:0
+                                                  CONJ @0:0
+                                                    LIT @0:0
+                                                    = Failure(@0)
+                                                  = Failure(@0)
+                                                = Failure(@0)
+                                                memoize Keyword_if Failure(@0)
+                                              Keyword_if = Failure(@0)
+                                            = Failure(@0)
+                                            memoize Exp_If Failure(@0)
+                                          Exp_If = Failure(@0)
+                                          RULE Exp_IfDef @0:0
+                                            CONJ @0:0
+                                              RULE Keyword_ifdef @0:0
+                                                CONJ @0:0
+                                                  CONJ @0:0
+                                                    LIT @0:0
+                                                    = Failure(@0)
+                                                  = Failure(@0)
+                                                = Failure(@0)
+                                                memoize Keyword_ifdef Failure(@0)
+                                              Keyword_ifdef = Failure(@0)
+                                            = Failure(@0)
+                                            memoize Exp_IfDef Failure(@0)
+                                          Exp_IfDef = Failure(@0)
+                                          RULE Exp_IfType @0:0
+                                            CONJ @0:0
+                                              RULE Keyword_iftype @0:0
+                                                CONJ @0:0
+                                                  CONJ @0:0
+                                                    LIT @0:0
+                                                    = Failure(@0)
+                                                  = Failure(@0)
+                                                = Failure(@0)
+                                                memoize Keyword_iftype Failure(@0)
+                                              Keyword_iftype = Failure(@0)
+                                            = Failure(@0)
+                                            memoize Exp_IfType Failure(@0)
+                                          Exp_IfType = Failure(@0)
+                                          RULE Exp_Match @0:0
+                                          Exp_Match = Failure(Exp_Match@0)
+                                          RULE Exp_While @0:0
+                                          Exp_While = Failure(Exp_While@0)
+                                          RULE Exp_Repeat @0:0
+                                          Exp_Repeat = Failure(Exp_Repeat@0)
+                                          RULE Exp_For @0:0
+                                          Exp_For = Failure(Exp_For@0)
+                                          RULE Exp_With @0:0
+                                          Exp_With = Failure(Exp_With@0)
+                                          RULE Exp_Try @0:0
+                                          Exp_Try = Failure(Exp_Try@0)
+                                          RULE Exp_Recover @0:0
+                                          Exp_Recover = Failure(Exp_Recover@0)
+                                          RULE Exp_Consume @0:0
+                                          Exp_Consume = Failure(Exp_Consume@0)
+                                          RULE Exp_Declaration @0:0
+                                          Exp_Declaration = Failure(Exp_Declaration@0)
+                                          RULE Exp_Prefix @0:0
+                                            mem_exp Exp_Prefix@0 <0> Failure(Exp_Prefix@0)
+                                            Exp_Prefix@0 <1>
+                                              DISJ @0:0
+                                                CONJ @0:0
+                                                  BIND op @0:0
+                                                    RULE Operator_Prefix @0:0
+                                                      DISJ @0:0
+                                                        RULE Keyword_return @0:0
+                                                          CONJ @0:0
+                                                            CONJ @0:0
+                                                              LIT @0:0
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Keyword_return Failure(@0)
+                                                        Keyword_return = Failure(@0)
+                                                        RULE Keyword_not @0:0
+                                                          CONJ @0:0
+                                                            CONJ @0:0
+                                                              LIT @0:0
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Keyword_not Failure(@0)
+                                                        Keyword_not = Failure(@0)
+                                                        RULE Keyword_addressof @0:0
+                                                          CONJ @0:0
+                                                            CONJ @0:0
+                                                              LIT @0:0
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Keyword_addressof Failure(@0)
+                                                        Keyword_addressof = Failure(@0)
+                                                        RULE Keyword_digestof @0:0
+                                                          CONJ @0:0
+                                                            CONJ @0:0
+                                                              LIT @0:0
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Keyword_digestof Failure(@0)
+                                                        Keyword_digestof = Failure(@0)
+                                                        RULE Token_Minus @0:0
+                                                          CONJ @0:0
+                                                            LIT @0:0
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Token_Minus Failure(@0)
+                                                        Token_Minus = Failure(@0)
+                                                        RULE Token_MinusTilde @0:0
+                                                          CONJ @0:0
+                                                            LIT @0:0
+                                                            = Failure(@0)
+                                                          = Failure(@0)
+                                                          memoize Token_MinusTilde Failure(@0)
+                                                        Token_MinusTilde = Failure(@0)
+                                                      < Failure(@0)
+                                                      memoize Operator_Prefix Failure(@0)
+                                                    Operator_Prefix = Failure(@0)
+                                                  = op := Failure(@0)
+                                                = Failure(@0)
+                                                RULE Exp_Postfix @0:0
+                                                  mem_exp Exp_Postfix@0 <0> Failure(Exp_Postfix@0)
+                                                  Exp_Postfix@0 <1>
+                                                    DISJ @0:0
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            Exp_Postfix: LR DETECTED
+                                                            fnd_exp Exp_Postfix@0 <0> Failure(Exp_Postfix@0)
+                                                          Exp_Postfix = Failure(Exp_Postfix@0)
+                                                        = lhs := Failure(Exp_Postfix@0)
+                                                      = Failure(@0)
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            fnd_exp Exp_Postfix@0 <0> Failure(Exp_Postfix@0)
+                                                          Exp_Postfix = Failure(Exp_Postfix@0)
+                                                        = lhs := Failure(Exp_Postfix@0)
+                                                      = Failure(@0)
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            fnd_exp Exp_Postfix@0 <0> Failure(Exp_Postfix@0)
+                                                          Exp_Postfix = Failure(Exp_Postfix@0)
+                                                        = lhs := Failure(Exp_Postfix@0)
+                                                      = Failure(@0)
+                                                      RULE Exp_Atom @0:0
+                                                        DISJ @0:0
+                                                          RULE Exp_Tuple @0:0
+                                                          Exp_Tuple = Failure(Exp_Tuple@0)
+                                                          RULE Exp_Parenthesized @0:0
+                                                          Exp_Parenthesized = Failure(Exp_Parenthesized@0)
+                                                          RULE Exp_Array @0:0
+                                                          Exp_Array = Failure(Exp_Array@0)
+                                                          RULE Exp_Ffi @0:0
+                                                          Exp_Ffi = Failure(Exp_Ffi@0)
+                                                          RULE Exp_BareLambda @0:0
+                                                          Exp_BareLambda = Failure(Exp_BareLambda@0)
+                                                          RULE Exp_Lambda @0:0
+                                                          Exp_Lambda = Failure(Exp_Lambda@0)
+                                                          RULE Exp_Object @0:0
+                                                          Exp_Object = Failure(Exp_Object@0)
+                                                          RULE Keyword___loc @0:0
+                                                            CONJ @0:0
+                                                              CONJ @0:0
+                                                                LIT @0:0
+                                                                = Failure(@0)
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                            memoize Keyword___loc Failure(@0)
+                                                          Keyword___loc = Failure(@0)
+                                                          RULE Keyword_this @0:0
+                                                            CONJ @0:0
+                                                              CONJ @0:0
+                                                                LIT @0:0
+                                                                = Failure(@0)
+                                                              = Failure(@0)
+                                                            = Failure(@0)
+                                                            memoize Keyword_this Failure(@0)
+                                                          Keyword_this = Failure(@0)
+                                                          RULE Literal @0:0
+                                                            DISJ @0:0
+                                                              RULE Literal_String @0:0
+                                                                CONJ @0:0
+                                                                  DISJ @0:0
+                                                                    BIND tri @0:0
+                                                                      RULE Literal_String_Triple @0:0
+                                                                        CONJ @0:0
+                                                                          LIT @0:0
+                                                                          = Failure(@0)
+                                                                        = Failure(@0)
+                                                                        memoize Literal_String_Triple Failure(@0)
+                                                                      Literal_String_Triple = Failure(@0)
+                                                                    = tri := Failure(@0)
+                                                                    RULE Literal_String_Regular @0:0
+                                                                      CONJ @0:0
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                      = Failure(@0)
+                                                                      memoize Literal_String_Regular Failure(@0)
+                                                                    Literal_String_Regular = Failure(@0)
+                                                                  < Failure(@0)
+                                                                = Failure(@0)
+                                                                memoize Literal_String Failure(@0)
+                                                              Literal_String = Failure(@0)
+                                                              RULE Literal_Char @0:0
+                                                                CONJ @0:0
+                                                                  CONJ @0:0
+                                                                    SING @0:0
+                                                                    = Failure(@0)
+                                                                  = Failure(@0)
+                                                                = Failure(@0)
+                                                                memoize Literal_Char Failure(@0)
+                                                              Literal_Char = Failure(@0)
+                                                              RULE Literal_Float @0:0
+                                                                CONJ @0:0
+                                                                  CONJ @0:0
+                                                                    BIND int_part @0:0
+                                                                      RULE Literal_Integer_Dec @0:0
+                                                                        CONJ @0:0
+                                                                          SING @0:0
+                                                                          = Failure(@0)
+                                                                        = Failure(@0)
+                                                                        memoize Literal_Integer_Dec Failure(@0)
+                                                                      Literal_Integer_Dec = Failure(@0)
+                                                                    = int_part := Failure(@0)
+                                                                  = Failure(@0)
+                                                                = Failure(@0)
+                                                                memoize Literal_Float Failure(@0)
+                                                              Literal_Float = Failure(@0)
+                                                              RULE Literal_Integer @0:0
+                                                                CONJ @0:0
+                                                                  DISJ @0:0
+                                                                    BIND hex @0:0
+                                                                      RULE Literal_Integer_Hex @0:0
+                                                                        CONJ @0:0
+                                                                          SING @0:0
+                                                                          = Failure(@0)
+                                                                        = Failure(@0)
+                                                                        memoize Literal_Integer_Hex Failure(@0)
+                                                                      Literal_Integer_Hex = Failure(@0)
+                                                                    = hex := Failure(@0)
+                                                                    BIND bin @0:0
+                                                                      RULE Literal_Integer_Bin @0:0
+                                                                        CONJ @0:0
+                                                                          SING @0:0
+                                                                          = Failure(@0)
+                                                                        = Failure(@0)
+                                                                        memoize Literal_Integer_Bin Failure(@0)
+                                                                      Literal_Integer_Bin = Failure(@0)
+                                                                    = bin := Failure(@0)
+                                                                    BIND dec @0:0
+                                                                      RULE Literal_Integer_Dec @0:0
+                                                                        found Literal_Integer_Dec Failure(@0)
+                                                                      Literal_Integer_Dec = Failure(@0)
+                                                                    = dec := Failure(@0)
+                                                                  < Failure(@0)
+                                                                = Failure(@0)
+                                                                memoize Literal_Integer Failure(@0)
+                                                              Literal_Integer = Failure(@0)
+                                                              RULE Literal_Bool @0:0
+                                                                DISJ @0:0
+                                                                  RULE Keyword_true @0:0
+                                                                    CONJ @0:0
+                                                                      CONJ @0:0
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                      = Failure(@0)
+                                                                    = Failure(@0)
+                                                                    memoize Keyword_true Failure(@0)
+                                                                  Keyword_true = Failure(@0)
+                                                                  RULE Keyword_false @0:0
+                                                                    CONJ @0:0
+                                                                      CONJ @0:0
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                      = Failure(@0)
+                                                                    = Failure(@0)
+                                                                    memoize Keyword_false Failure(@0)
+                                                                  Keyword_false = Failure(@0)
+                                                                < Failure(@0)
+                                                                memoize Literal_Bool Failure(@0)
+                                                              Literal_Bool = Failure(@0)
+                                                            < Failure(@0)
+                                                            memoize Literal Failure(@0)
+                                                          Literal = Failure(@0)
+                                                          CONJ @0:0
+                                                            RULE NotKeyword @0:0
+                                                              NEG  @0:0
+                                                                RULE Keyword @0:0
+                                                                  CONJ @0:0
+                                                                    BIND str @0:0
+                                                                      DISJ @0:0
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                        LIT @0:0
+                                                                        = Failure(@0)
+                                                                      < Failure(@0)
+                                                                    = str := Failure(@0)
+                                                                  = Failure(@0)
+                                                                  memoize Keyword Failure(@0)
+                                                                Keyword = Failure(@0)
+                                                              = Success(@[0,0))
+                                                              memoize NotKeyword Success(@[0,0))
+                                                            NotKeyword = Success(NotKeyword@[0,0))
+                                                            RULE Identifier @0:0
+                                                              CONJ @0:0
+                                                                DISJ @0:0
+                                                                  CONJ @0:0
+                                                                    SING @0:0
+                                                                    = Failure(@0)
+                                                                  = Failure(@0)
+                                                                  CONJ @0:0
+                                                                    SING @0:0
+                                                                    = Success(@[0,1))
+                                                                    STAR {0,} @0:1
+                                                                      SING @0:1
+                                                                      = Success(@[1,2))
+                                                                      SING @0:2
+                                                                      = Success(@[2,3))
+                                                                      SING @0:3
+                                                                      = Failure(@3)
+                                                                    = Success(@[1,3))
+                                                                  = Success(@[0,3))
+                                                                = Success(@[0,3))
+                                                                BIND p @0:3
+                                                                  STAR {0,1} @0:3
+                                                                    RULE Trivia0 @0:3
+                                                                      STAR {1,} @0:3
+                                                                        DISJ @0:3
+                                                                          RULE Comment @0:3
+                                                                            DISJ @0:3
+                                                                              RULE Comment_Line @0:3
+                                                                                CONJ @0:3
+                                                                                  LIT @0:3
+                                                                                  = Failure(@3)
+                                                                                = Failure(@3)
+                                                                                memoize Comment_Line Failure(@3)
+                                                                              Comment_Line = Failure(@3)
+                                                                              RULE Comment_Nested @0:3
+                                                                                CONJ @0:3
+                                                                                  LIT @0:3
+                                                                                  = Failure(@3)
+                                                                                = Failure(@3)
+                                                                                memoize Comment_Nested Failure(@3)
+                                                                              Comment_Nested = Failure(@3)
+                                                                            < Failure(@3)
+                                                                            memoize Comment Failure(@3)
+                                                                          Comment = Failure(@3)
+                                                                          RULE WS @0:3
+                                                                            STAR {1,} @0:3
+                                                                              SING @0:3
+                                                                              = Failure(@3)
+                                                                            = Failure(@3)
+                                                                            memoize WS Failure(@3)
+                                                                          WS = Failure(@3)
+                                                                          RULE EOL @0:3
+                                                                            DISJ @0:3
+                                                                              LIT @0:3
+                                                                              = Failure(@3)
+                                                                              LIT @0:3
+                                                                              = Failure(@3)
+                                                                              LIT @0:3
+                                                                              = Failure(@3)
+                                                                            < Failure(@3)
+                                                                            memoize EOL Failure(@3)
+                                                                          EOL = Failure(@3)
+                                                                        < Failure(@3)
+                                                                      = Failure(@3)
+                                                                      memoize Trivia0 Failure(@3)
+                                                                    Trivia0 = Failure(@3)
+                                                                  = Success(@[3,3))
+                                                                = p := Success(@[3,3))
+                                                              = Success(@[0,3))
+                                                              memoize Identifier Success(@[0,3))
+                                                            Identifier = Success(Identifier@[0,3))
+                                                          = Success(@[0,3))
+                                                        = Success(@[0,3))
+                                                        memoize Exp_Atom Success(@[0,3))
+                                                      Exp_Atom = Success(Exp_Atom@[0,3))
+                                                    = Success(@[0,3))
+                                                    mem_exp Exp_Postfix@0 <1> Success(@[0,3))
+                                                  Exp_Postfix@0 <2>
+                                                    DISJ @0:0
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            fnd_exp Exp_Postfix@0 <1> Success(@[0,3))
+                                                          Exp_Postfix = Success(Exp_Postfix@[0,3))
+                                                        = lhs := Success(@[0,3))
+                                                        BIND op @0:3
+                                                          RULE Operator_Postfix @0:3
+                                                            DISJ @0:3
+                                                              RULE Token_Chain @0:3
+                                                                CONJ @0:3
+                                                                  LIT @0:3
+                                                                  = Failure(@3)
+                                                                = Failure(@3)
+                                                                memoize Token_Chain Failure(@3)
+                                                              Token_Chain = Failure(@3)
+                                                              RULE Token_Tilde @0:3
+                                                                CONJ @0:3
+                                                                  LIT @0:3
+                                                                  = Failure(@3)
+                                                                = Failure(@3)
+                                                                memoize Token_Tilde Failure(@3)
+                                                              Token_Tilde = Failure(@3)
+                                                              RULE Token_Dot @0:3
+                                                                CONJ @0:3
+                                                                  LIT @0:3
+                                                                  = Failure(@3)
+                                                                = Failure(@3)
+                                                                memoize Token_Dot Failure(@3)
+                                                              Token_Dot = Failure(@3)
+                                                            < Failure(@3)
+                                                            memoize Operator_Postfix Failure(@3)
+                                                          Operator_Postfix = Failure(@3)
+                                                        = op := Failure(@3)
+                                                      = Failure(@0)
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            fnd_exp Exp_Postfix@0 <1> Success(@[0,3))
+                                                          Exp_Postfix = Success(Exp_Postfix@[0,3))
+                                                        = lhs := Success(@[0,3))
+                                                        BIND args @0:3
+                                                          RULE Type_Args @0:3
+                                                            CONJ @0:3
+                                                              RULE Token_Open_Square @0:3
+                                                                CONJ @0:3
+                                                                  LIT @0:3
+                                                                  = Failure(@3)
+                                                                = Failure(@3)
+                                                                memoize Token_Open_Square Failure(@3)
+                                                              Token_Open_Square = Failure(@3)
+                                                            = Failure(@3)
+                                                            memoize Type_Args Failure(@3)
+                                                          Type_Args = Failure(@3)
+                                                        = args := Failure(@3)
+                                                      = Failure(@0)
+                                                      CONJ @0:0
+                                                        BIND lhs @0:0
+                                                          RULE Exp_Postfix @0:0
+                                                            fnd_exp Exp_Postfix@0 <1> Success(@[0,3))
+                                                          Exp_Postfix = Success(Exp_Postfix@[0,3))
+                                                        = lhs := Success(@[0,3))
+                                                        BIND args @0:3
+                                                          RULE Exp_CallArgs @0:3
+                                                            CONJ @0:3
+                                                              RULE Token_Open_Paren @0:3
+                                                                CONJ @0:3
+                                                                  LIT @0:3
+                                                                  = Failure(@3)
+                                                                = Failure(@3)
+                                                                memoize Token_Open_Paren Failure(@3)
+                                                              Token_Open_Paren = Failure(@3)
+                                                            = Failure(@3)
+                                                            memoize Exp_CallArgs Failure(@3)
+                                                          Exp_CallArgs = Failure(@3)
+                                                        = args := Failure(@3)
+                                                      = Failure(@0)
+                                                      RULE Exp_Atom @0:0
+                                                        found Exp_Atom Success(@[0,3))
+                                                      Exp_Atom = Success(Exp_Atom@[0,3))
+                                                    = Success(@[0,3))
+                                                  mem_upd Exp_Postfix@0 <1> Success(@[0,3))
+                                                Exp_Postfix = Success(Exp_Postfix@[0,3))
+                                              = Success(@[0,3))
+                                            mem_upd Exp_Prefix@0 <0> Success(@[0,3))
+                                          Exp_Prefix = Success(Exp_Prefix@[0,3))
+                                        = Success(@[0,3))
+                                      mem_upd Exp_Term@0 <0> Success(@[0,3))
+                                    Exp_Term = Success(Exp_Term@[0,3))
+                                  = lhs := Success(@[0,3))
+                                  BIND op @0:3
+                                    RULE Operator_Binary @0:3
+                                    Operator_Binary = Failure(Operator_Binary@3)
+                                  = op := Failure(Operator_Binary@3)
+                                = Failure(@0)
+                                CONJ @0:0
+                                  BIND lhs @0:0
+                                    RULE Exp_Term @0:0
+                                      Exp_Term: LR DETECTED
+                                      fnd_exp Exp_Term@0 <0> Success(@[0,3))
+                                    Exp_Term = Success(Exp_Term@[0,3))
+                                  = lhs := Success(@[0,3))
+                                  BIND op @0:3
+                                    RULE Keyword_as @0:3
+                                      CONJ @0:3
+                                        CONJ @0:3
+                                          LIT @0:3
+                                          = Failure(@3)
+                                        = Failure(@3)
+                                      = Failure(@3)
+                                      memoize Keyword_as Failure(@3)
+                                    Keyword_as = Failure(@3)
+                                  = op := Failure(@3)
+                                = Failure(@0)
+                              < Failure(@0)
+                              RULE Exp_Term @0:0
+                                fnd_exp Exp_Term@0 <0> Success(@[0,3))
+                              Exp_Term = Success(Exp_Term@[0,3))
+                            = Success(@[0,3))
+                          mem_upd Exp_Infix@0 <0> Success(@[0,3))
+                        Exp_Infix = Success(Exp_Infix@[0,3))
+                      = lhs := Success(@[0,3))
+                      BIND op @0:3
+                        RULE Token_Equals @0:3
+                          CONJ @0:3
+                            LIT @0:3
+                            = Failure(@3)
+                          = Failure(@3)
+                          memoize Token_Equals Failure(@3)
+                        Token_Equals = Failure(@3)
+                      = op := Failure(@3)
+                    = Failure(@0)
+                    RULE Exp_Infix @0:0
+                      Exp_Infix: LR DETECTED
+                      fnd_exp Exp_Infix@0 <0> Success(@[0,3))
+                    Exp_Infix = Success(Exp_Infix@[0,3))
+                  = Success(@[0,3))
+                mem_upd Exp_Assignment@0 <0> Success(@[0,3))
+              Exp_Assignment = Success(Exp_Assignment@[0,3))
+            = Success(@[0,3))
+          memoize Exp_Prefix Success(@[0,3))
+          memoize Exp_Assignment Success(@[0,3))
+          memoize Exp_Item Failure(Exp_Item@0)
+          memoize Exp_Term Success(@[0,3))
+          memoize Exp_Postfix Success(@[0,3))
+          memoize Exp_Infix Success(@[0,3))
+          memoize Exp_Item Success(@[0,3))
+        Exp_Item = Success(Exp_Item@[0,3))
+        STAR {0,} @0:3
+          CONJ @0:3
+            STAR {0,1} @0:3
+              RULE Token_Semicolon @0:3
+                CONJ @0:3
+                  LIT @0:3
+                  = Success(@[3,4))
+                  BIND p @0:4
+                    STAR {0,1} @0:4
+                      RULE Trivia0 @0:4
+                        STAR {1,} @0:4
+                          DISJ @0:4
+                            RULE Comment @0:4
+                              DISJ @0:4
+                                RULE Comment_Line @0:4
+                                  CONJ @0:4
+                                    LIT @0:4
+                                    = Failure(@4)
+                                  = Failure(@4)
+                                  memoize Comment_Line Failure(@4)
+                                Comment_Line = Failure(@4)
+                                RULE Comment_Nested @0:4
+                                  CONJ @0:4
+                                    LIT @0:4
+                                    = Failure(@4)
+                                  = Failure(@4)
+                                  memoize Comment_Nested Failure(@4)
+                                Comment_Nested = Failure(@4)
+                              < Failure(@4)
+                              memoize Comment Failure(@4)
+                            Comment = Failure(@4)
+                            RULE WS @0:4
+                              STAR {1,} @0:4
+                                SING @0:4
+                                = Success(@[4,5))
+                                SING @0:5
+                                = Failure(@5)
+                              = Success(@[4,5))
+                              memoize WS Success(@[4,5))
+                            WS = Success(WS@[4,5))
+                          = Success(@[4,5))
+                          DISJ @0:5
+                            RULE Comment @0:5
+                              DISJ @0:5
+                                RULE Comment_Line @0:5
+                                  CONJ @0:5
+                                    LIT @0:5
+                                    = Failure(@5)
+                                  = Failure(@5)
+                                  memoize Comment_Line Failure(@5)
+                                Comment_Line = Failure(@5)
+                                RULE Comment_Nested @0:5
+                                  CONJ @0:5
+                                    LIT @0:5
+                                    = Failure(@5)
+                                  = Failure(@5)
+                                  memoize Comment_Nested Failure(@5)
+                                Comment_Nested = Failure(@5)
+                              < Failure(@5)
+                              memoize Comment Failure(@5)
+                            Comment = Failure(@5)
+                            RULE WS @0:5
+                              STAR {1,} @0:5
+                                SING @0:5
+                                = Failure(@5)
+                              = Failure(@5)
+                              memoize WS Failure(@5)
+                            WS = Failure(@5)
+                            RULE EOL @0:5
+                              DISJ @0:5
+                                LIT @0:5
+                                = Failure(@5)
+                                LIT @0:5
+                                = Failure(@5)
+                                LIT @0:5
+                                = Failure(@5)
+                              < Failure(@5)
+                              memoize EOL Failure(@5)
+                            EOL = Failure(@5)
+                          < Failure(@5)
+                        = Success(@[4,5))
+                        memoize Trivia0 Success(@[4,5))
+                      Trivia0 = Success(Trivia0@[4,5))
+                      RULE Trivia0 @0:5
+                        STAR {1,} @0:5
+                          DISJ @0:5
+                            RULE Comment @0:5
+                              found Comment Failure(@5)
+                            Comment = Failure(@5)
+                            RULE WS @0:5
+                              found WS Failure(@5)
+                            WS = Failure(@5)
+                            RULE EOL @0:5
+                              found EOL Failure(@5)
+                            EOL = Failure(@5)
+                          < Failure(@5)
+                        = Failure(@5)
+                        memoize Trivia0 Failure(@5)
+                      Trivia0 = Failure(@5)
+                    = Success(@[4,5))
+                  = p := Success(@[4,5))
+                = Success(@[3,5))
+                memoize Token_Semicolon Success(@[3,5))
+              Token_Semicolon = Success(Token_Semicolon@[3,5))
+              RULE Token_Semicolon @0:5
+                CONJ @0:5
+                  LIT @0:5
+                  = Failure(@5)
+                = Failure(@5)
+                memoize Token_Semicolon Failure(@5)
+              Token_Semicolon = Failure(@5)
+            = Success(@[3,5))
+            RULE Exp_Item @0:5
+              mem_exp Exp_Item@5 <0> Failure(Exp_Item@5)
+              Exp_Item@5 <1>
+                DISJ @0:5
+                  RULE Exp_Assignment @0:5
+                    mem_exp Exp_Assignment@5 <0> Failure(Exp_Assignment@5)
+                    Exp_Assignment@5 <1>
+                      DISJ @0:5
+                        CONJ @0:5
+                          BIND lhs @0:5
+                            RULE Exp_Infix @0:5
+                              mem_exp Exp_Infix@5 <0> Failure(Exp_Infix@5)
+                              Exp_Infix@5 <1>
+                                DISJ @0:5
+                                  DISJ @0:5
+                                    CONJ @0:5
+                                      BIND lhs @0:5
+                                        RULE Exp_Term @0:5
+                                          mem_exp Exp_Term@5 <0> Failure(Exp_Term@5)
+                                          Exp_Term@5 <1>
+                                            DISJ @0:5
+                                              RULE Exp_If @0:5
+                                                CONJ @0:5
+                                                  RULE Keyword_if @0:5
+                                                    CONJ @0:5
+                                                      CONJ @0:5
+                                                        LIT @0:5
+                                                        = Failure(@5)
+                                                      = Failure(@5)
+                                                    = Failure(@5)
+                                                    memoize Keyword_if Failure(@5)
+                                                  Keyword_if = Failure(@5)
+                                                = Failure(@5)
+                                                memoize Exp_If Failure(@5)
+                                              Exp_If = Failure(@5)
+                                              RULE Exp_IfDef @0:5
+                                                CONJ @0:5
+                                                  RULE Keyword_ifdef @0:5
+                                                    CONJ @0:5
+                                                      CONJ @0:5
+                                                        LIT @0:5
+                                                        = Failure(@5)
+                                                      = Failure(@5)
+                                                    = Failure(@5)
+                                                    memoize Keyword_ifdef Failure(@5)
+                                                  Keyword_ifdef = Failure(@5)
+                                                = Failure(@5)
+                                                memoize Exp_IfDef Failure(@5)
+                                              Exp_IfDef = Failure(@5)
+                                              RULE Exp_IfType @0:5
+                                                CONJ @0:5
+                                                  RULE Keyword_iftype @0:5
+                                                    CONJ @0:5
+                                                      CONJ @0:5
+                                                        LIT @0:5
+                                                        = Failure(@5)
+                                                      = Failure(@5)
+                                                    = Failure(@5)
+                                                    memoize Keyword_iftype Failure(@5)
+                                                  Keyword_iftype = Failure(@5)
+                                                = Failure(@5)
+                                                memoize Exp_IfType Failure(@5)
+                                              Exp_IfType = Failure(@5)
+                                              RULE Exp_Match @0:5
+                                              Exp_Match = Failure(Exp_Match@5)
+                                              RULE Exp_While @0:5
+                                              Exp_While = Failure(Exp_While@5)
+                                              RULE Exp_Repeat @0:5
+                                              Exp_Repeat = Failure(Exp_Repeat@5)
+                                              RULE Exp_For @0:5
+                                              Exp_For = Failure(Exp_For@5)
+                                              RULE Exp_With @0:5
+                                              Exp_With = Failure(Exp_With@5)
+                                              RULE Exp_Try @0:5
+                                              Exp_Try = Failure(Exp_Try@5)
+                                              RULE Exp_Recover @0:5
+                                              Exp_Recover = Failure(Exp_Recover@5)
+                                              RULE Exp_Consume @0:5
+                                              Exp_Consume = Failure(Exp_Consume@5)
+                                              RULE Exp_Declaration @0:5
+                                              Exp_Declaration = Failure(Exp_Declaration@5)
+                                              RULE Exp_Prefix @0:5
+                                                mem_exp Exp_Prefix@5 <0> Failure(Exp_Prefix@5)
+                                                Exp_Prefix@5 <1>
+                                                  DISJ @0:5
+                                                    CONJ @0:5
+                                                      BIND op @0:5
+                                                        RULE Operator_Prefix @0:5
+                                                          DISJ @0:5
+                                                            RULE Keyword_return @0:5
+                                                              CONJ @0:5
+                                                                CONJ @0:5
+                                                                  LIT @0:5
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Keyword_return Failure(@5)
+                                                            Keyword_return = Failure(@5)
+                                                            RULE Keyword_not @0:5
+                                                              CONJ @0:5
+                                                                CONJ @0:5
+                                                                  LIT @0:5
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Keyword_not Failure(@5)
+                                                            Keyword_not = Failure(@5)
+                                                            RULE Keyword_addressof @0:5
+                                                              CONJ @0:5
+                                                                CONJ @0:5
+                                                                  LIT @0:5
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Keyword_addressof Failure(@5)
+                                                            Keyword_addressof = Failure(@5)
+                                                            RULE Keyword_digestof @0:5
+                                                              CONJ @0:5
+                                                                CONJ @0:5
+                                                                  LIT @0:5
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Keyword_digestof Failure(@5)
+                                                            Keyword_digestof = Failure(@5)
+                                                            RULE Token_Minus @0:5
+                                                              CONJ @0:5
+                                                                LIT @0:5
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Token_Minus Failure(@5)
+                                                            Token_Minus = Failure(@5)
+                                                            RULE Token_MinusTilde @0:5
+                                                              CONJ @0:5
+                                                                LIT @0:5
+                                                                = Failure(@5)
+                                                              = Failure(@5)
+                                                              memoize Token_MinusTilde Failure(@5)
+                                                            Token_MinusTilde = Failure(@5)
+                                                          < Failure(@5)
+                                                          memoize Operator_Prefix Failure(@5)
+                                                        Operator_Prefix = Failure(@5)
+                                                      = op := Failure(@5)
+                                                    = Failure(@5)
+                                                    RULE Exp_Postfix @0:5
+                                                      mem_exp Exp_Postfix@5 <0> Failure(Exp_Postfix@5)
+                                                      Exp_Postfix@5 <1>
+                                                        DISJ @0:5
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                Exp_Postfix: LR DETECTED
+                                                                fnd_exp Exp_Postfix@5 <0> Failure(Exp_Postfix@5)
+                                                              Exp_Postfix = Failure(Exp_Postfix@5)
+                                                            = lhs := Failure(Exp_Postfix@5)
+                                                          = Failure(@5)
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                fnd_exp Exp_Postfix@5 <0> Failure(Exp_Postfix@5)
+                                                              Exp_Postfix = Failure(Exp_Postfix@5)
+                                                            = lhs := Failure(Exp_Postfix@5)
+                                                          = Failure(@5)
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                fnd_exp Exp_Postfix@5 <0> Failure(Exp_Postfix@5)
+                                                              Exp_Postfix = Failure(Exp_Postfix@5)
+                                                            = lhs := Failure(Exp_Postfix@5)
+                                                          = Failure(@5)
+                                                          RULE Exp_Atom @0:5
+                                                            DISJ @0:5
+                                                              RULE Exp_Tuple @0:5
+                                                              Exp_Tuple = Failure(Exp_Tuple@5)
+                                                              RULE Exp_Parenthesized @0:5
+                                                              Exp_Parenthesized = Failure(Exp_Parenthesized@5)
+                                                              RULE Exp_Array @0:5
+                                                              Exp_Array = Failure(Exp_Array@5)
+                                                              RULE Exp_Ffi @0:5
+                                                              Exp_Ffi = Failure(Exp_Ffi@5)
+                                                              RULE Exp_BareLambda @0:5
+                                                              Exp_BareLambda = Failure(Exp_BareLambda@5)
+                                                              RULE Exp_Lambda @0:5
+                                                              Exp_Lambda = Failure(Exp_Lambda@5)
+                                                              RULE Exp_Object @0:5
+                                                              Exp_Object = Failure(Exp_Object@5)
+                                                              RULE Keyword___loc @0:5
+                                                                CONJ @0:5
+                                                                  CONJ @0:5
+                                                                    LIT @0:5
+                                                                    = Failure(@5)
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                                memoize Keyword___loc Failure(@5)
+                                                              Keyword___loc = Failure(@5)
+                                                              RULE Keyword_this @0:5
+                                                                CONJ @0:5
+                                                                  CONJ @0:5
+                                                                    LIT @0:5
+                                                                    = Failure(@5)
+                                                                  = Failure(@5)
+                                                                = Failure(@5)
+                                                                memoize Keyword_this Failure(@5)
+                                                              Keyword_this = Failure(@5)
+                                                              RULE Literal @0:5
+                                                                DISJ @0:5
+                                                                  RULE Literal_String @0:5
+                                                                    CONJ @0:5
+                                                                      DISJ @0:5
+                                                                        BIND tri @0:5
+                                                                          RULE Literal_String_Triple @0:5
+                                                                            CONJ @0:5
+                                                                              LIT @0:5
+                                                                              = Failure(@5)
+                                                                            = Failure(@5)
+                                                                            memoize Literal_String_Triple Failure(@5)
+                                                                          Literal_String_Triple = Failure(@5)
+                                                                        = tri := Failure(@5)
+                                                                        RULE Literal_String_Regular @0:5
+                                                                          CONJ @0:5
+                                                                            LIT @0:5
+                                                                            = Failure(@5)
+                                                                          = Failure(@5)
+                                                                          memoize Literal_String_Regular Failure(@5)
+                                                                        Literal_String_Regular = Failure(@5)
+                                                                      < Failure(@5)
+                                                                    = Failure(@5)
+                                                                    memoize Literal_String Failure(@5)
+                                                                  Literal_String = Failure(@5)
+                                                                  RULE Literal_Char @0:5
+                                                                    CONJ @0:5
+                                                                      CONJ @0:5
+                                                                        SING @0:5
+                                                                        = Failure(@5)
+                                                                      = Failure(@5)
+                                                                    = Failure(@5)
+                                                                    memoize Literal_Char Failure(@5)
+                                                                  Literal_Char = Failure(@5)
+                                                                  RULE Literal_Float @0:5
+                                                                    CONJ @0:5
+                                                                      CONJ @0:5
+                                                                        BIND int_part @0:5
+                                                                          RULE Literal_Integer_Dec @0:5
+                                                                            CONJ @0:5
+                                                                              SING @0:5
+                                                                              = Success(@[5,6))
+                                                                              STAR {0,} @0:6
+                                                                                SING @0:6
+                                                                                = Failure(@6)
+                                                                              = Success(@[6,6))
+                                                                            = Success(@[5,6))
+                                                                            memoize Literal_Integer_Dec Success(@[5,6))
+                                                                          Literal_Integer_Dec = Success(Literal_Integer_Dec@[5,6))
+                                                                        = int_part := Success(@[5,6))
+                                                                        STAR {0,1} @0:6
+                                                                          CONJ @0:6
+                                                                            SING @0:6
+                                                                            = Failure(@6)
+                                                                          = Failure(@6)
+                                                                        = Success(@[6,6))
+                                                                        STAR {0,1} @0:6
+                                                                          CONJ @0:6
+                                                                            SING @0:6
+                                                                            = Failure(@6)
+                                                                          = Failure(@6)
+                                                                        = Success(@[6,6))
+                                                                      = Success(@[5,6))
+                                                                      BIND p @0:6
+                                                                        STAR {0,1} @0:6
+                                                                          RULE Trivia0 @0:6
+                                                                            STAR {1,} @0:6
+                                                                              DISJ @0:6
+                                                                                RULE Comment @0:6
+                                                                                  DISJ @0:6
+                                                                                    RULE Comment_Line @0:6
+                                                                                      CONJ @0:6
+                                                                                        LIT @0:6
+                                                                                        = Failure(@6)
+                                                                                      = Failure(@6)
+                                                                                      memoize Comment_Line Failure(@6)
+                                                                                    Comment_Line = Failure(@6)
+                                                                                    RULE Comment_Nested @0:6
+                                                                                      CONJ @0:6
+                                                                                        LIT @0:6
+                                                                                        = Failure(@6)
+                                                                                      = Failure(@6)
+                                                                                      memoize Comment_Nested Failure(@6)
+                                                                                    Comment_Nested = Failure(@6)
+                                                                                  < Failure(@6)
+                                                                                  memoize Comment Failure(@6)
+                                                                                Comment = Failure(@6)
+                                                                                RULE WS @0:6
+                                                                                  STAR {1,} @0:6
+                                                                                    SING @0:6
+                                                                                    = Failure(@6)
+                                                                                  = Failure(@6)
+                                                                                  memoize WS Failure(@6)
+                                                                                WS = Failure(@6)
+                                                                                RULE EOL @0:6
+                                                                                  DISJ @0:6
+                                                                                    LIT @0:6
+                                                                                    = Failure(@6)
+                                                                                    LIT @0:6
+                                                                                    = Failure(@6)
+                                                                                    LIT @0:6
+                                                                                    = Failure(@6)
+                                                                                  < Failure(@6)
+                                                                                  memoize EOL Failure(@6)
+                                                                                EOL = Failure(@6)
+                                                                              < Failure(@6)
+                                                                            = Failure(@6)
+                                                                            memoize Trivia0 Failure(@6)
+                                                                          Trivia0 = Failure(@6)
+                                                                        = Success(@[6,6))
+                                                                      = p := Success(@[6,6))
+                                                                    = Success(@[5,6))
+                                                                    memoize Literal_Float Success(@[5,6))
+                                                                  Literal_Float = Success(Literal_Float@[5,6))
+                                                                = Success(@[5,6))
+                                                                memoize Literal Success(@[5,6))
+                                                              Literal = Success(Literal@[5,6))
+                                                            = Success(@[5,6))
+                                                            memoize Exp_Atom Success(@[5,6))
+                                                          Exp_Atom = Success(Exp_Atom@[5,6))
+                                                        = Success(@[5,6))
+                                                        mem_exp Exp_Postfix@5 <1> Success(@[5,6))
+                                                      Exp_Postfix@5 <2>
+                                                        DISJ @0:5
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                fnd_exp Exp_Postfix@5 <1> Success(@[5,6))
+                                                              Exp_Postfix = Success(Exp_Postfix@[5,6))
+                                                            = lhs := Success(@[5,6))
+                                                            BIND op @0:6
+                                                              RULE Operator_Postfix @0:6
+                                                                DISJ @0:6
+                                                                  RULE Token_Chain @0:6
+                                                                    CONJ @0:6
+                                                                      LIT @0:6
+                                                                      = Failure(@6)
+                                                                    = Failure(@6)
+                                                                    memoize Token_Chain Failure(@6)
+                                                                  Token_Chain = Failure(@6)
+                                                                  RULE Token_Tilde @0:6
+                                                                    CONJ @0:6
+                                                                      LIT @0:6
+                                                                      = Failure(@6)
+                                                                    = Failure(@6)
+                                                                    memoize Token_Tilde Failure(@6)
+                                                                  Token_Tilde = Failure(@6)
+                                                                  RULE Token_Dot @0:6
+                                                                    CONJ @0:6
+                                                                      LIT @0:6
+                                                                      = Failure(@6)
+                                                                    = Failure(@6)
+                                                                    memoize Token_Dot Failure(@6)
+                                                                  Token_Dot = Failure(@6)
+                                                                < Failure(@6)
+                                                                memoize Operator_Postfix Failure(@6)
+                                                              Operator_Postfix = Failure(@6)
+                                                            = op := Failure(@6)
+                                                          = Failure(@5)
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                fnd_exp Exp_Postfix@5 <1> Success(@[5,6))
+                                                              Exp_Postfix = Success(Exp_Postfix@[5,6))
+                                                            = lhs := Success(@[5,6))
+                                                            BIND args @0:6
+                                                              RULE Type_Args @0:6
+                                                                CONJ @0:6
+                                                                  RULE Token_Open_Square @0:6
+                                                                    CONJ @0:6
+                                                                      LIT @0:6
+                                                                      = Failure(@6)
+                                                                    = Failure(@6)
+                                                                    memoize Token_Open_Square Failure(@6)
+                                                                  Token_Open_Square = Failure(@6)
+                                                                = Failure(@6)
+                                                                memoize Type_Args Failure(@6)
+                                                              Type_Args = Failure(@6)
+                                                            = args := Failure(@6)
+                                                          = Failure(@5)
+                                                          CONJ @0:5
+                                                            BIND lhs @0:5
+                                                              RULE Exp_Postfix @0:5
+                                                                fnd_exp Exp_Postfix@5 <1> Success(@[5,6))
+                                                              Exp_Postfix = Success(Exp_Postfix@[5,6))
+                                                            = lhs := Success(@[5,6))
+                                                            BIND args @0:6
+                                                              RULE Exp_CallArgs @0:6
+                                                                CONJ @0:6
+                                                                  RULE Token_Open_Paren @0:6
+                                                                    CONJ @0:6
+                                                                      LIT @0:6
+                                                                      = Failure(@6)
+                                                                    = Failure(@6)
+                                                                    memoize Token_Open_Paren Failure(@6)
+                                                                  Token_Open_Paren = Failure(@6)
+                                                                = Failure(@6)
+                                                                memoize Exp_CallArgs Failure(@6)
+                                                              Exp_CallArgs = Failure(@6)
+                                                            = args := Failure(@6)
+                                                          = Failure(@5)
+                                                          RULE Exp_Atom @0:5
+                                                            found Exp_Atom Success(@[5,6))
+                                                          Exp_Atom = Success(Exp_Atom@[5,6))
+                                                        = Success(@[5,6))
+                                                      mem_upd Exp_Postfix@5 <1> Success(@[5,6))
+                                                    Exp_Postfix = Success(Exp_Postfix@[5,6))
+                                                  = Success(@[5,6))
+                                                mem_upd Exp_Prefix@5 <0> Success(@[5,6))
+                                              Exp_Prefix = Success(Exp_Prefix@[5,6))
+                                            = Success(@[5,6))
+                                          mem_upd Exp_Term@5 <0> Success(@[5,6))
+                                        Exp_Term = Success(Exp_Term@[5,6))
+                                      = lhs := Success(@[5,6))
+                                      BIND op @0:6
+                                        RULE Operator_Binary @0:6
+                                        Operator_Binary = Failure(Operator_Binary@6)
+                                      = op := Failure(Operator_Binary@6)
+                                    = Failure(@5)
+                                    CONJ @0:5
+                                      BIND lhs @0:5
+                                        RULE Exp_Term @0:5
+                                          Exp_Term: LR DETECTED
+                                          fnd_exp Exp_Term@5 <0> Success(@[5,6))
+                                        Exp_Term = Success(Exp_Term@[5,6))
+                                      = lhs := Success(@[5,6))
+                                      BIND op @0:6
+                                        RULE Keyword_as @0:6
+                                          CONJ @0:6
+                                            CONJ @0:6
+                                              LIT @0:6
+                                              = Failure(@6)
+                                            = Failure(@6)
+                                          = Failure(@6)
+                                          memoize Keyword_as Failure(@6)
+                                        Keyword_as = Failure(@6)
+                                      = op := Failure(@6)
+                                    = Failure(@5)
+                                  < Failure(@5)
+                                  RULE Exp_Term @0:5
+                                    fnd_exp Exp_Term@5 <0> Success(@[5,6))
+                                  Exp_Term = Success(Exp_Term@[5,6))
+                                = Success(@[5,6))
+                              mem_upd Exp_Infix@5 <0> Success(@[5,6))
+                            Exp_Infix = Success(Exp_Infix@[5,6))
+                          = lhs := Success(@[5,6))
+                          BIND op @0:6
+                            RULE Token_Equals @0:6
+                              CONJ @0:6
+                                LIT @0:6
+                                = Failure(@6)
+                              = Failure(@6)
+                              memoize Token_Equals Failure(@6)
+                            Token_Equals = Failure(@6)
+                          = op := Failure(@6)
+                        = Failure(@5)
+                        RULE Exp_Infix @0:5
+                          Exp_Infix: LR DETECTED
+                          fnd_exp Exp_Infix@5 <0> Success(@[5,6))
+                        Exp_Infix = Success(Exp_Infix@[5,6))
+                      = Success(@[5,6))
+                    mem_upd Exp_Assignment@5 <0> Success(@[5,6))
+                  Exp_Assignment = Success(Exp_Assignment@[5,6))
+                = Success(@[5,6))
+              memoize Exp_Item Failure(Exp_Item@5)
+              memoize Exp_Infix Success(@[5,6))
+              memoize Exp_Postfix Success(@[5,6))
+              memoize Exp_Term Success(@[5,6))
+              memoize Exp_Prefix Success(@[5,6))
+              memoize Exp_Assignment Success(@[5,6))
+              memoize Exp_Item Success(@[5,6))
+            Exp_Item = Success(Exp_Item@[5,6))
+          = Success(@[3,6))
+          CONJ @0:6
+            STAR {0,1} @0:6
+              RULE Token_Semicolon @0:6
+                CONJ @0:6
+                  LIT @0:6
+                  = Success(@[6,7))
+                  BIND p @0:7
+                    STAR {0,1} @0:7
+                      RULE Trivia0 @0:7
+                        STAR {1,} @0:7
+                          DISJ @0:7
+                            RULE Comment @0:7
+                              DISJ @0:7
+                                RULE Comment_Line @0:7
+                                  CONJ @0:7
+                                    LIT @0:7
+                                    = Failure(@7)
+                                  = Failure(@7)
+                                  memoize Comment_Line Failure(@7)
+                                Comment_Line = Failure(@7)
+                                RULE Comment_Nested @0:7
+                                  CONJ @0:7
+                                    LIT @0:7
+                                    = Failure(@7)
+                                  = Failure(@7)
+                                  memoize Comment_Nested Failure(@7)
+                                Comment_Nested = Failure(@7)
+                              < Failure(@7)
+                              memoize Comment Failure(@7)
+                            Comment = Failure(@7)
+                            RULE WS @0:7
+                              STAR {1,} @0:7
+                                SING @0:7
+                                = Success(@[7,8))
+                                SING @0:8
+                                = Failure(@8)
+                              = Success(@[7,8))
+                              memoize WS Success(@[7,8))
+                            WS = Success(WS@[7,8))
+                          = Success(@[7,8))
+                          DISJ @0:8
+                            RULE Comment @0:8
+                              DISJ @0:8
+                                RULE Comment_Line @0:8
+                                  CONJ @0:8
+                                    LIT @0:8
+                                    = Failure(@8)
+                                  = Failure(@8)
+                                  memoize Comment_Line Failure(@8)
+                                Comment_Line = Failure(@8)
+                                RULE Comment_Nested @0:8
+                                  CONJ @0:8
+                                    LIT @0:8
+                                    = Failure(@8)
+                                  = Failure(@8)
+                                  memoize Comment_Nested Failure(@8)
+                                Comment_Nested = Failure(@8)
+                              < Failure(@8)
+                              memoize Comment Failure(@8)
+                            Comment = Failure(@8)
+                            RULE WS @0:8
+                              STAR {1,} @0:8
+                                SING @0:8
+                                = Failure(@8)
+                              = Failure(@8)
+                              memoize WS Failure(@8)
+                            WS = Failure(@8)
+                            RULE EOL @0:8
+                              DISJ @0:8
+                                LIT @0:8
+                                = Failure(@8)
+                                LIT @0:8
+                                = Failure(@8)
+                                LIT @0:8
+                                = Failure(@8)
+                              < Failure(@8)
+                              memoize EOL Failure(@8)
+                            EOL = Failure(@8)
+                          < Failure(@8)
+                        = Success(@[7,8))
+                        memoize Trivia0 Success(@[7,8))
+                      Trivia0 = Success(Trivia0@[7,8))
+                      RULE Trivia0 @0:8
+                        STAR {1,} @0:8
+                          DISJ @0:8
+                            RULE Comment @0:8
+                              found Comment Failure(@8)
+                            Comment = Failure(@8)
+                            RULE WS @0:8
+                              found WS Failure(@8)
+                            WS = Failure(@8)
+                            RULE EOL @0:8
+                              found EOL Failure(@8)
+                            EOL = Failure(@8)
+                          < Failure(@8)
+                        = Failure(@8)
+                        memoize Trivia0 Failure(@8)
+                      Trivia0 = Failure(@8)
+                    = Success(@[7,8))
+                  = p := Success(@[7,8))
+                = Success(@[6,8))
+                memoize Token_Semicolon Success(@[6,8))
+              Token_Semicolon = Success(Token_Semicolon@[6,8))
+              RULE Token_Semicolon @0:8
+                CONJ @0:8
+                  LIT @0:8
+                  = Failure(@8)
+                = Failure(@8)
+                memoize Token_Semicolon Failure(@8)
+              Token_Semicolon = Failure(@8)
+            = Success(@[6,8))
+            RULE Exp_Item @0:8
+              mem_exp Exp_Item@8 <0> Failure(Exp_Item@8)
+              Exp_Item@8 <1>
+                DISJ @0:8
+                  RULE Exp_Assignment @0:8
+                    mem_exp Exp_Assignment@8 <0> Failure(Exp_Assignment@8)
+                    Exp_Assignment@8 <1>
+                      DISJ @0:8
+                        CONJ @0:8
+                          BIND lhs @0:8
+                            RULE Exp_Infix @0:8
+                              mem_exp Exp_Infix@8 <0> Failure(Exp_Infix@8)
+                              Exp_Infix@8 <1>
+                                DISJ @0:8
+                                  DISJ @0:8
+                                    CONJ @0:8
+                                      BIND lhs @0:8
+                                        RULE Exp_Term @0:8
+                                          mem_exp Exp_Term@8 <0> Failure(Exp_Term@8)
+                                          Exp_Term@8 <1>
+                                            DISJ @0:8
+                                              RULE Exp_If @0:8
+                                                CONJ @0:8
+                                                  RULE Keyword_if @0:8
+                                                    CONJ @0:8
+                                                      CONJ @0:8
+                                                        LIT @0:8
+                                                        = Failure(@8)
+                                                      = Failure(@8)
+                                                    = Failure(@8)
+                                                    memoize Keyword_if Failure(@8)
+                                                  Keyword_if = Failure(@8)
+                                                = Failure(@8)
+                                                memoize Exp_If Failure(@8)
+                                              Exp_If = Failure(@8)
+                                              RULE Exp_IfDef @0:8
+                                                CONJ @0:8
+                                                  RULE Keyword_ifdef @0:8
+                                                    CONJ @0:8
+                                                      CONJ @0:8
+                                                        LIT @0:8
+                                                        = Failure(@8)
+                                                      = Failure(@8)
+                                                    = Failure(@8)
+                                                    memoize Keyword_ifdef Failure(@8)
+                                                  Keyword_ifdef = Failure(@8)
+                                                = Failure(@8)
+                                                memoize Exp_IfDef Failure(@8)
+                                              Exp_IfDef = Failure(@8)
+                                              RULE Exp_IfType @0:8
+                                                CONJ @0:8
+                                                  RULE Keyword_iftype @0:8
+                                                    CONJ @0:8
+                                                      CONJ @0:8
+                                                        LIT @0:8
+                                                        = Failure(@8)
+                                                      = Failure(@8)
+                                                    = Failure(@8)
+                                                    memoize Keyword_iftype Failure(@8)
+                                                  Keyword_iftype = Failure(@8)
+                                                = Failure(@8)
+                                                memoize Exp_IfType Failure(@8)
+                                              Exp_IfType = Failure(@8)
+                                              RULE Exp_Match @0:8
+                                              Exp_Match = Failure(Exp_Match@8)
+                                              RULE Exp_While @0:8
+                                              Exp_While = Failure(Exp_While@8)
+                                              RULE Exp_Repeat @0:8
+                                              Exp_Repeat = Failure(Exp_Repeat@8)
+                                              RULE Exp_For @0:8
+                                              Exp_For = Failure(Exp_For@8)
+                                              RULE Exp_With @0:8
+                                              Exp_With = Failure(Exp_With@8)
+                                              RULE Exp_Try @0:8
+                                              Exp_Try = Failure(Exp_Try@8)
+                                              RULE Exp_Recover @0:8
+                                              Exp_Recover = Failure(Exp_Recover@8)
+                                              RULE Exp_Consume @0:8
+                                              Exp_Consume = Failure(Exp_Consume@8)
+                                              RULE Exp_Declaration @0:8
+                                              Exp_Declaration = Failure(Exp_Declaration@8)
+                                              RULE Exp_Prefix @0:8
+                                                mem_exp Exp_Prefix@8 <0> Failure(Exp_Prefix@8)
+                                                Exp_Prefix@8 <1>
+                                                  DISJ @0:8
+                                                    CONJ @0:8
+                                                      BIND op @0:8
+                                                        RULE Operator_Prefix @0:8
+                                                          DISJ @0:8
+                                                            RULE Keyword_return @0:8
+                                                              CONJ @0:8
+                                                                CONJ @0:8
+                                                                  LIT @0:8
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Keyword_return Failure(@8)
+                                                            Keyword_return = Failure(@8)
+                                                            RULE Keyword_not @0:8
+                                                              CONJ @0:8
+                                                                CONJ @0:8
+                                                                  LIT @0:8
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Keyword_not Failure(@8)
+                                                            Keyword_not = Failure(@8)
+                                                            RULE Keyword_addressof @0:8
+                                                              CONJ @0:8
+                                                                CONJ @0:8
+                                                                  LIT @0:8
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Keyword_addressof Failure(@8)
+                                                            Keyword_addressof = Failure(@8)
+                                                            RULE Keyword_digestof @0:8
+                                                              CONJ @0:8
+                                                                CONJ @0:8
+                                                                  LIT @0:8
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Keyword_digestof Failure(@8)
+                                                            Keyword_digestof = Failure(@8)
+                                                            RULE Token_Minus @0:8
+                                                              CONJ @0:8
+                                                                LIT @0:8
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Token_Minus Failure(@8)
+                                                            Token_Minus = Failure(@8)
+                                                            RULE Token_MinusTilde @0:8
+                                                              CONJ @0:8
+                                                                LIT @0:8
+                                                                = Failure(@8)
+                                                              = Failure(@8)
+                                                              memoize Token_MinusTilde Failure(@8)
+                                                            Token_MinusTilde = Failure(@8)
+                                                          < Failure(@8)
+                                                          memoize Operator_Prefix Failure(@8)
+                                                        Operator_Prefix = Failure(@8)
+                                                      = op := Failure(@8)
+                                                    = Failure(@8)
+                                                    RULE Exp_Postfix @0:8
+                                                      mem_exp Exp_Postfix@8 <0> Failure(Exp_Postfix@8)
+                                                      Exp_Postfix@8 <1>
+                                                        DISJ @0:8
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                Exp_Postfix: LR DETECTED
+                                                                fnd_exp Exp_Postfix@8 <0> Failure(Exp_Postfix@8)
+                                                              Exp_Postfix = Failure(Exp_Postfix@8)
+                                                            = lhs := Failure(Exp_Postfix@8)
+                                                          = Failure(@8)
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                fnd_exp Exp_Postfix@8 <0> Failure(Exp_Postfix@8)
+                                                              Exp_Postfix = Failure(Exp_Postfix@8)
+                                                            = lhs := Failure(Exp_Postfix@8)
+                                                          = Failure(@8)
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                fnd_exp Exp_Postfix@8 <0> Failure(Exp_Postfix@8)
+                                                              Exp_Postfix = Failure(Exp_Postfix@8)
+                                                            = lhs := Failure(Exp_Postfix@8)
+                                                          = Failure(@8)
+                                                          RULE Exp_Atom @0:8
+                                                            DISJ @0:8
+                                                              RULE Exp_Tuple @0:8
+                                                              Exp_Tuple = Failure(Exp_Tuple@8)
+                                                              RULE Exp_Parenthesized @0:8
+                                                              Exp_Parenthesized = Failure(Exp_Parenthesized@8)
+                                                              RULE Exp_Array @0:8
+                                                              Exp_Array = Failure(Exp_Array@8)
+                                                              RULE Exp_Ffi @0:8
+                                                              Exp_Ffi = Failure(Exp_Ffi@8)
+                                                              RULE Exp_BareLambda @0:8
+                                                              Exp_BareLambda = Failure(Exp_BareLambda@8)
+                                                              RULE Exp_Lambda @0:8
+                                                              Exp_Lambda = Failure(Exp_Lambda@8)
+                                                              RULE Exp_Object @0:8
+                                                              Exp_Object = Failure(Exp_Object@8)
+                                                              RULE Keyword___loc @0:8
+                                                                CONJ @0:8
+                                                                  CONJ @0:8
+                                                                    LIT @0:8
+                                                                    = Failure(@8)
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                                memoize Keyword___loc Failure(@8)
+                                                              Keyword___loc = Failure(@8)
+                                                              RULE Keyword_this @0:8
+                                                                CONJ @0:8
+                                                                  CONJ @0:8
+                                                                    LIT @0:8
+                                                                    = Failure(@8)
+                                                                  = Failure(@8)
+                                                                = Failure(@8)
+                                                                memoize Keyword_this Failure(@8)
+                                                              Keyword_this = Failure(@8)
+                                                              RULE Literal @0:8
+                                                                DISJ @0:8
+                                                                  RULE Literal_String @0:8
+                                                                    CONJ @0:8
+                                                                      DISJ @0:8
+                                                                        BIND tri @0:8
+                                                                          RULE Literal_String_Triple @0:8
+                                                                            CONJ @0:8
+                                                                              LIT @0:8
+                                                                              = Failure(@8)
+                                                                            = Failure(@8)
+                                                                            memoize Literal_String_Triple Failure(@8)
+                                                                          Literal_String_Triple = Failure(@8)
+                                                                        = tri := Failure(@8)
+                                                                        RULE Literal_String_Regular @0:8
+                                                                          CONJ @0:8
+                                                                            LIT @0:8
+                                                                            = Failure(@8)
+                                                                          = Failure(@8)
+                                                                          memoize Literal_String_Regular Failure(@8)
+                                                                        Literal_String_Regular = Failure(@8)
+                                                                      < Failure(@8)
+                                                                    = Failure(@8)
+                                                                    memoize Literal_String Failure(@8)
+                                                                  Literal_String = Failure(@8)
+                                                                  RULE Literal_Char @0:8
+                                                                    CONJ @0:8
+                                                                      CONJ @0:8
+                                                                        SING @0:8
+                                                                        = Failure(@8)
+                                                                      = Failure(@8)
+                                                                    = Failure(@8)
+                                                                    memoize Literal_Char Failure(@8)
+                                                                  Literal_Char = Failure(@8)
+                                                                  RULE Literal_Float @0:8
+                                                                    CONJ @0:8
+                                                                      CONJ @0:8
+                                                                        BIND int_part @0:8
+                                                                          RULE Literal_Integer_Dec @0:8
+                                                                            CONJ @0:8
+                                                                              SING @0:8
+                                                                              = Failure(@8)
+                                                                            = Failure(@8)
+                                                                            memoize Literal_Integer_Dec Failure(@8)
+                                                                          Literal_Integer_Dec = Failure(@8)
+                                                                        = int_part := Failure(@8)
+                                                                      = Failure(@8)
+                                                                    = Failure(@8)
+                                                                    memoize Literal_Float Failure(@8)
+                                                                  Literal_Float = Failure(@8)
+                                                                  RULE Literal_Integer @0:8
+                                                                    CONJ @0:8
+                                                                      DISJ @0:8
+                                                                        BIND hex @0:8
+                                                                          RULE Literal_Integer_Hex @0:8
+                                                                            CONJ @0:8
+                                                                              SING @0:8
+                                                                              = Failure(@8)
+                                                                            = Failure(@8)
+                                                                            memoize Literal_Integer_Hex Failure(@8)
+                                                                          Literal_Integer_Hex = Failure(@8)
+                                                                        = hex := Failure(@8)
+                                                                        BIND bin @0:8
+                                                                          RULE Literal_Integer_Bin @0:8
+                                                                            CONJ @0:8
+                                                                              SING @0:8
+                                                                              = Failure(@8)
+                                                                            = Failure(@8)
+                                                                            memoize Literal_Integer_Bin Failure(@8)
+                                                                          Literal_Integer_Bin = Failure(@8)
+                                                                        = bin := Failure(@8)
+                                                                        BIND dec @0:8
+                                                                          RULE Literal_Integer_Dec @0:8
+                                                                            found Literal_Integer_Dec Failure(@8)
+                                                                          Literal_Integer_Dec = Failure(@8)
+                                                                        = dec := Failure(@8)
+                                                                      < Failure(@8)
+                                                                    = Failure(@8)
+                                                                    memoize Literal_Integer Failure(@8)
+                                                                  Literal_Integer = Failure(@8)
+                                                                  RULE Literal_Bool @0:8
+                                                                    DISJ @0:8
+                                                                      RULE Keyword_true @0:8
+                                                                        CONJ @0:8
+                                                                          CONJ @0:8
+                                                                            LIT @0:8
+                                                                            = Success(@[8,12))
+                                                                            NEG  @0:12
+                                                                              SING @0:12
+                                                                              = Failure(@12)
+                                                                            = Success(@[12,12))
+                                                                          = Success(@[8,12))
+                                                                          BIND p @0:12
+                                                                            STAR {0,1} @0:12
+                                                                              RULE Trivia0 @0:12
+                                                                                STAR {1,} @0:12
+                                                                                  DISJ @0:12
+                                                                                    RULE Comment @0:12
+                                                                                      DISJ @0:12
+                                                                                        RULE Comment_Line @0:12
+                                                                                          CONJ @0:12
+                                                                                            LIT @0:12
+                                                                                            = Failure(@12)
+                                                                                          = Failure(@12)
+                                                                                          memoize Comment_Line Failure(@12)
+                                                                                        Comment_Line = Failure(@12)
+                                                                                        RULE Comment_Nested @0:12
+                                                                                          CONJ @0:12
+                                                                                            LIT @0:12
+                                                                                            = Failure(@12)
+                                                                                          = Failure(@12)
+                                                                                          memoize Comment_Nested Failure(@12)
+                                                                                        Comment_Nested = Failure(@12)
+                                                                                      < Failure(@12)
+                                                                                      memoize Comment Failure(@12)
+                                                                                    Comment = Failure(@12)
+                                                                                    RULE WS @0:12
+                                                                                      STAR {1,} @0:12
+                                                                                        SING @0:12
+                                                                                        = Failure(@12)
+                                                                                      = Failure(@12)
+                                                                                      memoize WS Failure(@12)
+                                                                                    WS = Failure(@12)
+                                                                                    RULE EOL @0:12
+                                                                                      DISJ @0:12
+                                                                                        LIT @0:12
+                                                                                        = Failure(@12)
+                                                                                        LIT @0:12
+                                                                                        = Failure(@12)
+                                                                                        LIT @0:12
+                                                                                        = Failure(@12)
+                                                                                      < Failure(@12)
+                                                                                      memoize EOL Failure(@12)
+                                                                                    EOL = Failure(@12)
+                                                                                  < Failure(@12)
+                                                                                = Failure(@12)
+                                                                                memoize Trivia0 Failure(@12)
+                                                                              Trivia0 = Failure(@12)
+                                                                            = Success(@[12,12))
+                                                                          = p := Success(@[12,12))
+                                                                        = Success(@[8,12))
+                                                                        memoize Keyword_true Success(@[8,12))
+                                                                      Keyword_true = Success(Keyword_true@[8,12))
+                                                                    = Success(@[8,12))
+                                                                    memoize Literal_Bool Success(@[8,12))
+                                                                  Literal_Bool = Success(Literal_Bool@[8,12))
+                                                                = Success(@[8,12))
+                                                                memoize Literal Success(@[8,12))
+                                                              Literal = Success(Literal@[8,12))
+                                                            = Success(@[8,12))
+                                                            memoize Exp_Atom Success(@[8,12))
+                                                          Exp_Atom = Success(Exp_Atom@[8,12))
+                                                        = Success(@[8,12))
+                                                        mem_exp Exp_Postfix@8 <1> Success(@[8,12))
+                                                      Exp_Postfix@8 <2>
+                                                        DISJ @0:8
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                fnd_exp Exp_Postfix@8 <1> Success(@[8,12))
+                                                              Exp_Postfix = Success(Exp_Postfix@[8,12))
+                                                            = lhs := Success(@[8,12))
+                                                            BIND op @0:12
+                                                              RULE Operator_Postfix @0:12
+                                                                DISJ @0:12
+                                                                  RULE Token_Chain @0:12
+                                                                    CONJ @0:12
+                                                                      LIT @0:12
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Token_Chain Failure(@12)
+                                                                  Token_Chain = Failure(@12)
+                                                                  RULE Token_Tilde @0:12
+                                                                    CONJ @0:12
+                                                                      LIT @0:12
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Token_Tilde Failure(@12)
+                                                                  Token_Tilde = Failure(@12)
+                                                                  RULE Token_Dot @0:12
+                                                                    CONJ @0:12
+                                                                      LIT @0:12
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Token_Dot Failure(@12)
+                                                                  Token_Dot = Failure(@12)
+                                                                < Failure(@12)
+                                                                memoize Operator_Postfix Failure(@12)
+                                                              Operator_Postfix = Failure(@12)
+                                                            = op := Failure(@12)
+                                                          = Failure(@8)
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                fnd_exp Exp_Postfix@8 <1> Success(@[8,12))
+                                                              Exp_Postfix = Success(Exp_Postfix@[8,12))
+                                                            = lhs := Success(@[8,12))
+                                                            BIND args @0:12
+                                                              RULE Type_Args @0:12
+                                                                CONJ @0:12
+                                                                  RULE Token_Open_Square @0:12
+                                                                    CONJ @0:12
+                                                                      LIT @0:12
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Token_Open_Square Failure(@12)
+                                                                  Token_Open_Square = Failure(@12)
+                                                                = Failure(@12)
+                                                                memoize Type_Args Failure(@12)
+                                                              Type_Args = Failure(@12)
+                                                            = args := Failure(@12)
+                                                          = Failure(@8)
+                                                          CONJ @0:8
+                                                            BIND lhs @0:8
+                                                              RULE Exp_Postfix @0:8
+                                                                fnd_exp Exp_Postfix@8 <1> Success(@[8,12))
+                                                              Exp_Postfix = Success(Exp_Postfix@[8,12))
+                                                            = lhs := Success(@[8,12))
+                                                            BIND args @0:12
+                                                              RULE Exp_CallArgs @0:12
+                                                                CONJ @0:12
+                                                                  RULE Token_Open_Paren @0:12
+                                                                    CONJ @0:12
+                                                                      LIT @0:12
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Token_Open_Paren Failure(@12)
+                                                                  Token_Open_Paren = Failure(@12)
+                                                                = Failure(@12)
+                                                                memoize Exp_CallArgs Failure(@12)
+                                                              Exp_CallArgs = Failure(@12)
+                                                            = args := Failure(@12)
+                                                          = Failure(@8)
+                                                          RULE Exp_Atom @0:8
+                                                            found Exp_Atom Success(@[8,12))
+                                                          Exp_Atom = Success(Exp_Atom@[8,12))
+                                                        = Success(@[8,12))
+                                                      mem_upd Exp_Postfix@8 <1> Success(@[8,12))
+                                                    Exp_Postfix = Success(Exp_Postfix@[8,12))
+                                                  = Success(@[8,12))
+                                                mem_upd Exp_Prefix@8 <0> Success(@[8,12))
+                                              Exp_Prefix = Success(Exp_Prefix@[8,12))
+                                            = Success(@[8,12))
+                                          mem_upd Exp_Term@8 <0> Success(@[8,12))
+                                        Exp_Term = Success(Exp_Term@[8,12))
+                                      = lhs := Success(@[8,12))
+                                      BIND op @0:12
+                                        RULE Operator_Binary @0:12
+                                        Operator_Binary = Failure(Operator_Binary@12)
+                                      = op := Failure(Operator_Binary@12)
+                                    = Failure(@8)
+                                    CONJ @0:8
+                                      BIND lhs @0:8
+                                        RULE Exp_Term @0:8
+                                          Exp_Term: LR DETECTED
+                                          fnd_exp Exp_Term@8 <0> Success(@[8,12))
+                                        Exp_Term = Success(Exp_Term@[8,12))
+                                      = lhs := Success(@[8,12))
+                                      BIND op @0:12
+                                        RULE Keyword_as @0:12
+                                          CONJ @0:12
+                                            CONJ @0:12
+                                              LIT @0:12
+                                              = Failure(@12)
+                                            = Failure(@12)
+                                          = Failure(@12)
+                                          memoize Keyword_as Failure(@12)
+                                        Keyword_as = Failure(@12)
+                                      = op := Failure(@12)
+                                    = Failure(@8)
+                                  < Failure(@8)
+                                  RULE Exp_Term @0:8
+                                    fnd_exp Exp_Term@8 <0> Success(@[8,12))
+                                  Exp_Term = Success(Exp_Term@[8,12))
+                                = Success(@[8,12))
+                              mem_upd Exp_Infix@8 <0> Success(@[8,12))
+                            Exp_Infix = Success(Exp_Infix@[8,12))
+                          = lhs := Success(@[8,12))
+                          BIND op @0:12
+                            RULE Token_Equals @0:12
+                              CONJ @0:12
+                                LIT @0:12
+                                = Failure(@12)
+                              = Failure(@12)
+                              memoize Token_Equals Failure(@12)
+                            Token_Equals = Failure(@12)
+                          = op := Failure(@12)
+                        = Failure(@8)
+                        RULE Exp_Infix @0:8
+                          Exp_Infix: LR DETECTED
+                          fnd_exp Exp_Infix@8 <0> Success(@[8,12))
+                        Exp_Infix = Success(Exp_Infix@[8,12))
+                      = Success(@[8,12))
+                    mem_upd Exp_Assignment@8 <0> Success(@[8,12))
+                  Exp_Assignment = Success(Exp_Assignment@[8,12))
+                = Success(@[8,12))
+              memoize Exp_Prefix Success(@[8,12))
+              memoize Exp_Assignment Success(@[8,12))
+              memoize Exp_Item Failure(Exp_Item@8)
+              memoize Exp_Term Success(@[8,12))
+              memoize Exp_Postfix Success(@[8,12))
+              memoize Exp_Infix Success(@[8,12))
+              memoize Exp_Item Success(@[8,12))
+            Exp_Item = Success(Exp_Item@[8,12))
+          = Success(@[6,12))
+          CONJ @0:12
+            STAR {0,1} @0:12
+              RULE Token_Semicolon @0:12
+                CONJ @0:12
+                  LIT @0:12
+                  = Failure(@12)
+                = Failure(@12)
+                memoize Token_Semicolon Failure(@12)
+              Token_Semicolon = Failure(@12)
+            = Success(@[12,12))
+            RULE Exp_Item @0:12
+              mem_exp Exp_Item@12 <0> Failure(Exp_Item@12)
+              Exp_Item@12 <1>
+                DISJ @0:12
+                  RULE Exp_Assignment @0:12
+                    mem_exp Exp_Assignment@12 <0> Failure(Exp_Assignment@12)
+                    Exp_Assignment@12 <1>
+                      DISJ @0:12
+                        CONJ @0:12
+                          BIND lhs @0:12
+                            RULE Exp_Infix @0:12
+                              mem_exp Exp_Infix@12 <0> Failure(Exp_Infix@12)
+                              Exp_Infix@12 <1>
+                                DISJ @0:12
+                                  DISJ @0:12
+                                    CONJ @0:12
+                                      BIND lhs @0:12
+                                        RULE Exp_Term @0:12
+                                          mem_exp Exp_Term@12 <0> Failure(Exp_Term@12)
+                                          Exp_Term@12 <1>
+                                            DISJ @0:12
+                                              RULE Exp_If @0:12
+                                                CONJ @0:12
+                                                  RULE Keyword_if @0:12
+                                                    CONJ @0:12
+                                                      CONJ @0:12
+                                                        LIT @0:12
+                                                        = Failure(@12)
+                                                      = Failure(@12)
+                                                    = Failure(@12)
+                                                    memoize Keyword_if Failure(@12)
+                                                  Keyword_if = Failure(@12)
+                                                = Failure(@12)
+                                                memoize Exp_If Failure(@12)
+                                              Exp_If = Failure(@12)
+                                              RULE Exp_IfDef @0:12
+                                                CONJ @0:12
+                                                  RULE Keyword_ifdef @0:12
+                                                    CONJ @0:12
+                                                      CONJ @0:12
+                                                        LIT @0:12
+                                                        = Failure(@12)
+                                                      = Failure(@12)
+                                                    = Failure(@12)
+                                                    memoize Keyword_ifdef Failure(@12)
+                                                  Keyword_ifdef = Failure(@12)
+                                                = Failure(@12)
+                                                memoize Exp_IfDef Failure(@12)
+                                              Exp_IfDef = Failure(@12)
+                                              RULE Exp_IfType @0:12
+                                                CONJ @0:12
+                                                  RULE Keyword_iftype @0:12
+                                                    CONJ @0:12
+                                                      CONJ @0:12
+                                                        LIT @0:12
+                                                        = Failure(@12)
+                                                      = Failure(@12)
+                                                    = Failure(@12)
+                                                    memoize Keyword_iftype Failure(@12)
+                                                  Keyword_iftype = Failure(@12)
+                                                = Failure(@12)
+                                                memoize Exp_IfType Failure(@12)
+                                              Exp_IfType = Failure(@12)
+                                              RULE Exp_Match @0:12
+                                              Exp_Match = Failure(Exp_Match@12)
+                                              RULE Exp_While @0:12
+                                              Exp_While = Failure(Exp_While@12)
+                                              RULE Exp_Repeat @0:12
+                                              Exp_Repeat = Failure(Exp_Repeat@12)
+                                              RULE Exp_For @0:12
+                                              Exp_For = Failure(Exp_For@12)
+                                              RULE Exp_With @0:12
+                                              Exp_With = Failure(Exp_With@12)
+                                              RULE Exp_Try @0:12
+                                              Exp_Try = Failure(Exp_Try@12)
+                                              RULE Exp_Recover @0:12
+                                              Exp_Recover = Failure(Exp_Recover@12)
+                                              RULE Exp_Consume @0:12
+                                              Exp_Consume = Failure(Exp_Consume@12)
+                                              RULE Exp_Declaration @0:12
+                                              Exp_Declaration = Failure(Exp_Declaration@12)
+                                              RULE Exp_Prefix @0:12
+                                                mem_exp Exp_Prefix@12 <0> Failure(Exp_Prefix@12)
+                                                Exp_Prefix@12 <1>
+                                                  DISJ @0:12
+                                                    CONJ @0:12
+                                                      BIND op @0:12
+                                                        RULE Operator_Prefix @0:12
+                                                          DISJ @0:12
+                                                            RULE Keyword_return @0:12
+                                                              CONJ @0:12
+                                                                CONJ @0:12
+                                                                  LIT @0:12
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Keyword_return Failure(@12)
+                                                            Keyword_return = Failure(@12)
+                                                            RULE Keyword_not @0:12
+                                                              CONJ @0:12
+                                                                CONJ @0:12
+                                                                  LIT @0:12
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Keyword_not Failure(@12)
+                                                            Keyword_not = Failure(@12)
+                                                            RULE Keyword_addressof @0:12
+                                                              CONJ @0:12
+                                                                CONJ @0:12
+                                                                  LIT @0:12
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Keyword_addressof Failure(@12)
+                                                            Keyword_addressof = Failure(@12)
+                                                            RULE Keyword_digestof @0:12
+                                                              CONJ @0:12
+                                                                CONJ @0:12
+                                                                  LIT @0:12
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Keyword_digestof Failure(@12)
+                                                            Keyword_digestof = Failure(@12)
+                                                            RULE Token_Minus @0:12
+                                                              CONJ @0:12
+                                                                LIT @0:12
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Token_Minus Failure(@12)
+                                                            Token_Minus = Failure(@12)
+                                                            RULE Token_MinusTilde @0:12
+                                                              CONJ @0:12
+                                                                LIT @0:12
+                                                                = Failure(@12)
+                                                              = Failure(@12)
+                                                              memoize Token_MinusTilde Failure(@12)
+                                                            Token_MinusTilde = Failure(@12)
+                                                          < Failure(@12)
+                                                          memoize Operator_Prefix Failure(@12)
+                                                        Operator_Prefix = Failure(@12)
+                                                      = op := Failure(@12)
+                                                    = Failure(@12)
+                                                    RULE Exp_Postfix @0:12
+                                                      mem_exp Exp_Postfix@12 <0> Failure(Exp_Postfix@12)
+                                                      Exp_Postfix@12 <1>
+                                                        DISJ @0:12
+                                                          CONJ @0:12
+                                                            BIND lhs @0:12
+                                                              RULE Exp_Postfix @0:12
+                                                                Exp_Postfix: LR DETECTED
+                                                                fnd_exp Exp_Postfix@12 <0> Failure(Exp_Postfix@12)
+                                                              Exp_Postfix = Failure(Exp_Postfix@12)
+                                                            = lhs := Failure(Exp_Postfix@12)
+                                                          = Failure(@12)
+                                                          CONJ @0:12
+                                                            BIND lhs @0:12
+                                                              RULE Exp_Postfix @0:12
+                                                                fnd_exp Exp_Postfix@12 <0> Failure(Exp_Postfix@12)
+                                                              Exp_Postfix = Failure(Exp_Postfix@12)
+                                                            = lhs := Failure(Exp_Postfix@12)
+                                                          = Failure(@12)
+                                                          CONJ @0:12
+                                                            BIND lhs @0:12
+                                                              RULE Exp_Postfix @0:12
+                                                                fnd_exp Exp_Postfix@12 <0> Failure(Exp_Postfix@12)
+                                                              Exp_Postfix = Failure(Exp_Postfix@12)
+                                                            = lhs := Failure(Exp_Postfix@12)
+                                                          = Failure(@12)
+                                                          RULE Exp_Atom @0:12
+                                                            DISJ @0:12
+                                                              RULE Exp_Tuple @0:12
+                                                              Exp_Tuple = Failure(Exp_Tuple@12)
+                                                              RULE Exp_Parenthesized @0:12
+                                                              Exp_Parenthesized = Failure(Exp_Parenthesized@12)
+                                                              RULE Exp_Array @0:12
+                                                              Exp_Array = Failure(Exp_Array@12)
+                                                              RULE Exp_Ffi @0:12
+                                                              Exp_Ffi = Failure(Exp_Ffi@12)
+                                                              RULE Exp_BareLambda @0:12
+                                                              Exp_BareLambda = Failure(Exp_BareLambda@12)
+                                                              RULE Exp_Lambda @0:12
+                                                              Exp_Lambda = Failure(Exp_Lambda@12)
+                                                              RULE Exp_Object @0:12
+                                                              Exp_Object = Failure(Exp_Object@12)
+                                                              RULE Keyword___loc @0:12
+                                                                CONJ @0:12
+                                                                  CONJ @0:12
+                                                                    LIT @0:12
+                                                                    = Failure(@12)
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                                memoize Keyword___loc Failure(@12)
+                                                              Keyword___loc = Failure(@12)
+                                                              RULE Keyword_this @0:12
+                                                                CONJ @0:12
+                                                                  CONJ @0:12
+                                                                    LIT @0:12
+                                                                    = Failure(@12)
+                                                                  = Failure(@12)
+                                                                = Failure(@12)
+                                                                memoize Keyword_this Failure(@12)
+                                                              Keyword_this = Failure(@12)
+                                                              RULE Literal @0:12
+                                                                DISJ @0:12
+                                                                  RULE Literal_String @0:12
+                                                                    CONJ @0:12
+                                                                      DISJ @0:12
+                                                                        BIND tri @0:12
+                                                                          RULE Literal_String_Triple @0:12
+                                                                            CONJ @0:12
+                                                                              LIT @0:12
+                                                                              = Failure(@12)
+                                                                            = Failure(@12)
+                                                                            memoize Literal_String_Triple Failure(@12)
+                                                                          Literal_String_Triple = Failure(@12)
+                                                                        = tri := Failure(@12)
+                                                                        RULE Literal_String_Regular @0:12
+                                                                          CONJ @0:12
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                          = Failure(@12)
+                                                                          memoize Literal_String_Regular Failure(@12)
+                                                                        Literal_String_Regular = Failure(@12)
+                                                                      < Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Literal_String Failure(@12)
+                                                                  Literal_String = Failure(@12)
+                                                                  RULE Literal_Char @0:12
+                                                                    CONJ @0:12
+                                                                      CONJ @0:12
+                                                                        SING @0:12
+                                                                        = Failure(@12)
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Literal_Char Failure(@12)
+                                                                  Literal_Char = Failure(@12)
+                                                                  RULE Literal_Float @0:12
+                                                                    CONJ @0:12
+                                                                      CONJ @0:12
+                                                                        BIND int_part @0:12
+                                                                          RULE Literal_Integer_Dec @0:12
+                                                                            CONJ @0:12
+                                                                              SING @0:12
+                                                                              = Failure(@12)
+                                                                            = Failure(@12)
+                                                                            memoize Literal_Integer_Dec Failure(@12)
+                                                                          Literal_Integer_Dec = Failure(@12)
+                                                                        = int_part := Failure(@12)
+                                                                      = Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Literal_Float Failure(@12)
+                                                                  Literal_Float = Failure(@12)
+                                                                  RULE Literal_Integer @0:12
+                                                                    CONJ @0:12
+                                                                      DISJ @0:12
+                                                                        BIND hex @0:12
+                                                                          RULE Literal_Integer_Hex @0:12
+                                                                            CONJ @0:12
+                                                                              SING @0:12
+                                                                              = Failure(@12)
+                                                                            = Failure(@12)
+                                                                            memoize Literal_Integer_Hex Failure(@12)
+                                                                          Literal_Integer_Hex = Failure(@12)
+                                                                        = hex := Failure(@12)
+                                                                        BIND bin @0:12
+                                                                          RULE Literal_Integer_Bin @0:12
+                                                                            CONJ @0:12
+                                                                              SING @0:12
+                                                                              = Failure(@12)
+                                                                            = Failure(@12)
+                                                                            memoize Literal_Integer_Bin Failure(@12)
+                                                                          Literal_Integer_Bin = Failure(@12)
+                                                                        = bin := Failure(@12)
+                                                                        BIND dec @0:12
+                                                                          RULE Literal_Integer_Dec @0:12
+                                                                            found Literal_Integer_Dec Failure(@12)
+                                                                          Literal_Integer_Dec = Failure(@12)
+                                                                        = dec := Failure(@12)
+                                                                      < Failure(@12)
+                                                                    = Failure(@12)
+                                                                    memoize Literal_Integer Failure(@12)
+                                                                  Literal_Integer = Failure(@12)
+                                                                  RULE Literal_Bool @0:12
+                                                                    DISJ @0:12
+                                                                      RULE Keyword_true @0:12
+                                                                        CONJ @0:12
+                                                                          CONJ @0:12
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                          = Failure(@12)
+                                                                        = Failure(@12)
+                                                                        memoize Keyword_true Failure(@12)
+                                                                      Keyword_true = Failure(@12)
+                                                                      RULE Keyword_false @0:12
+                                                                        CONJ @0:12
+                                                                          CONJ @0:12
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                          = Failure(@12)
+                                                                        = Failure(@12)
+                                                                        memoize Keyword_false Failure(@12)
+                                                                      Keyword_false = Failure(@12)
+                                                                    < Failure(@12)
+                                                                    memoize Literal_Bool Failure(@12)
+                                                                  Literal_Bool = Failure(@12)
+                                                                < Failure(@12)
+                                                                memoize Literal Failure(@12)
+                                                              Literal = Failure(@12)
+                                                              CONJ @0:12
+                                                                RULE NotKeyword @0:12
+                                                                  NEG  @0:12
+                                                                    RULE Keyword @0:12
+                                                                      CONJ @0:12
+                                                                        BIND str @0:12
+                                                                          DISJ @0:12
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                            LIT @0:12
+                                                                            = Failure(@12)
+                                                                          < Failure(@12)
+                                                                        = str := Failure(@12)
+                                                                      = Failure(@12)
+                                                                      memoize Keyword Failure(@12)
+                                                                    Keyword = Failure(@12)
+                                                                  = Success(@[12,12))
+                                                                  memoize NotKeyword Success(@[12,12))
+                                                                NotKeyword = Success(NotKeyword@[12,12))
+                                                                RULE Identifier @0:12
+                                                                  CONJ @0:12
+                                                                    DISJ @0:12
+                                                                      CONJ @0:12
+                                                                        SING @0:12
+                                                                        = Failure(@12)
+                                                                      = Failure(@12)
+                                                                      CONJ @0:12
+                                                                        SING @0:12
+                                                                        = Failure(@12)
+                                                                      = Failure(@12)
+                                                                    < Failure(@12)
+                                                                  = Failure(@12)
+                                                                  memoize Identifier Failure(@12)
+                                                                Identifier = Failure(@12)
+                                                              = Failure(@12)
+                                                            < Failure(@12)
+                                                            memoize Exp_Atom Failure(@12)
+                                                          Exp_Atom = Failure(@12)
+                                                        < Failure(@12)
+                                                      mem_upd Exp_Postfix@12 <0> Failure(Exp_Postfix@12)
+                                                    Exp_Postfix = Failure(Exp_Postfix@12)
+                                                  < Failure(@12)
+                                                mem_upd Exp_Prefix@12 <0> Failure(@12)
+                                              Exp_Prefix = Failure(@12)
+                                              RULE Exp_Hash @0:12
+                                                CONJ @0:12
+                                                  RULE Token_Hash @0:12
+                                                    CONJ @0:12
+                                                      LIT @0:12
+                                                      = Failure(@12)
+                                                    = Failure(@12)
+                                                    memoize Token_Hash Failure(@12)
+                                                  Token_Hash = Failure(@12)
+                                                = Failure(@12)
+                                                memoize Exp_Hash Failure(@12)
+                                              Exp_Hash = Failure(@12)
+                                            < Failure(@12)
+                                          mem_upd Exp_Term@12 <0> Failure(@12)
+                                        Exp_Term = Failure(@12)
+                                      = lhs := Failure(@12)
+                                    = Failure(@12)
+                                    CONJ @0:12
+                                      BIND lhs @0:12
+                                        RULE Exp_Term @0:12
+                                          Exp_Term: LR DETECTED
+                                          fnd_exp Exp_Term@12 <0> Failure(@12)
+                                        Exp_Term = Failure(@12)
+                                      = lhs := Failure(@12)
+                                    = Failure(@12)
+                                  < Failure(@12)
+                                  RULE Exp_Term @0:12
+                                    fnd_exp Exp_Term@12 <0> Failure(@12)
+                                  Exp_Term = Failure(@12)
+                                < Failure(@12)
+                              mem_upd Exp_Infix@12 <0> Failure(@12)
+                            Exp_Infix = Failure(@12)
+                          = lhs := Failure(@12)
+                        = Failure(@12)
+                        RULE Exp_Infix @0:12
+                          Exp_Infix: LR DETECTED
+                          fnd_exp Exp_Infix@12 <0> Failure(@12)
+                        Exp_Infix = Failure(@12)
+                      < Failure(@12)
+                    mem_upd Exp_Assignment@12 <0> Failure(@12)
+                  Exp_Assignment = Failure(@12)
+                  RULE Exp_Jump @0:12
+                    DISJ @0:12
+                      CONJ @0:12
+                        DISJ @0:12
+                          BIND keyword @0:12
+                            RULE Keyword_return @0:12
+                              found Keyword_return Failure(@12)
+                            Keyword_return = Failure(@12)
+                          = keyword := Failure(@12)
+                          BIND keyword @0:12
+                            RULE Keyword_break @0:12
+                              CONJ @0:12
+                                CONJ @0:12
+                                  LIT @0:12
+                                  = Failure(@12)
+                                = Failure(@12)
+                              = Failure(@12)
+                              memoize Keyword_break Failure(@12)
+                            Keyword_break = Failure(@12)
+                          = keyword := Failure(@12)
+                        < Failure(@12)
+                      = Failure(@12)
+                      BIND keyword @0:12
+                        RULE Keyword_continue @0:12
+                          CONJ @0:12
+                            CONJ @0:12
+                              LIT @0:12
+                              = Failure(@12)
+                            = Failure(@12)
+                          = Failure(@12)
+                          memoize Keyword_continue Failure(@12)
+                        Keyword_continue = Failure(@12)
+                      = keyword := Failure(@12)
+                      BIND keyword @0:12
+                        RULE Keyword_error @0:12
+                          CONJ @0:12
+                            CONJ @0:12
+                              LIT @0:12
+                              = Failure(@12)
+                            = Failure(@12)
+                          = Failure(@12)
+                          memoize Keyword_error Failure(@12)
+                        Keyword_error = Failure(@12)
+                      = keyword := Failure(@12)
+                      BIND keyword @0:12
+                        RULE Keyword_compile_intrinsic @0:12
+                          CONJ @0:12
+                            CONJ @0:12
+                              LIT @0:12
+                              = Failure(@12)
+                            = Failure(@12)
+                          = Failure(@12)
+                          memoize Keyword_compile_intrinsic Failure(@12)
+                        Keyword_compile_intrinsic = Failure(@12)
+                      = keyword := Failure(@12)
+                      BIND keyword @0:12
+                        RULE Keyword_compile_error @0:12
+                          CONJ @0:12
+                            CONJ @0:12
+                              LIT @0:12
+                              = Failure(@12)
+                            = Failure(@12)
+                          = Failure(@12)
+                          memoize Keyword_compile_error Failure(@12)
+                        Keyword_compile_error = Failure(@12)
+                      = keyword := Failure(@12)
+                    < Failure(@12)
+                    memoize Exp_Jump Failure(@12)
+                  Exp_Jump = Failure(@12)
+                  RULE Exp_Infix @0:12
+                    fnd_exp Exp_Infix@12 <0> Failure(@12)
+                  Exp_Infix = Failure(@12)
+                < Failure(@12)
+              memoize Exp_Item Failure(Exp_Item@12)
+              memoize Exp_Term Failure(@12)
+              memoize Exp_Postfix Failure(Exp_Postfix@12)
+              memoize Exp_Infix Failure(@12)
+              memoize Exp_Prefix Failure(@12)
+              memoize Exp_Assignment Failure(@12)
+              memoize Exp_Item Failure(@12)
+            Exp_Item = Failure(@12)
+          = Failure(@12)
+        = Success(@[3,12))
+      = Success(@[0,12))
+    = body := Success(@[0,12))
+  = Success(@[0,12))
+  memoize Exp_Sequence Success(@[0,12))
+Exp_Sequence = Success(Exp_Sequence@[0,12))
+1 test started, 1 complete: parser/expression/Sequence complete
+[91m**** FAILED: parser/expression/Sequence[0m
+C:\Users\Gordon\Source\Repos\Pony\eohippus\eohippus\test\_assert.pony:65: Assert true failed. Expected '{
+  "expressions": [
+    {
+      "string": "foo",
+      "name": "Identifier"
+    },
+    {
+      "value": 1,
+      "kind": "DecimalInteger",
+      "name": "LiteralInteger"
+    },
+    {
+      "value": true,
+      "name": "LiteralBool"
+    }
+  ],
+  "name": "ExpSequence"
+}'; actual '{
+  "expressions": [],
+  "name": "ExpSequence"
+}'
+One or more tests failed!
+Complete(false) called
+----
+---- 1 test ran.
+[92m---- Passed: 0[0m
+[91m**** FAILED: 1 test, listed below:[0m
+[91m**** FAILED: parser/expression/Sequence[0m

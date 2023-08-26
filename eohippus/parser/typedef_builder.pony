@@ -82,7 +82,7 @@ class TypedefBuilder
       else
         return _Build.bind_error(r, c, b, "Identifier")
       end
-    let ds' = _Build.values[ast.DocString](b, ds)
+    let ds' = _Build.values_with[ast.DocString](b, ds)
 
     let value = ast.NodeWith[ast.TypeDefPrimitive](
       _Build.info(r), c, ast.TypeDefPrimitive(id')

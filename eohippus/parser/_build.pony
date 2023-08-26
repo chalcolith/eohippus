@@ -19,28 +19,42 @@ primitive _Build
     : (ast.NodeWith[N] | None)
   =>
     try
-      b(v)?._2(0)? as ast.NodeWith[N]
+      match b(v)?._2(0)?
+      | let node: ast.NodeWith[N] =>
+        node
+      end
     end
 
-  fun children[N: ast.NodeData val = ast.NodeData](c: ast.NodeSeq)
+  fun values(b: Bindings, v: Variable) : ast.NodeSeq =>
+    try
+      b(v)?._2
+    else
+      []
+    end
+
+  fun values_with[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
+    : ast.NodeSeqWith[N]
+  =>
+    try
+      let vs = b(v)?._2
+      nodes_with[N](vs)
+    else
+      []
+    end
+
+  fun nodes_with[N: ast.NodeData val = ast.NodeData](c: ast.NodeSeq)
     : ast.NodeSeqWith[N]
   =>
     recover val
       Array[ast.NodeWith[N]](c.size()) .> concat(
         Iter[ast.Node](c.values())
           .filter_map[ast.NodeWith[N]](
-            {(n: ast.Node): (ast.NodeWith[N] | None) =>
-              try n as ast.NodeWith[N] end }))
-    end
-
-  fun values[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
-    : ast.NodeSeqWith[N]
-  =>
-    try
-      let vs = b(v)?._2
-      children[N](vs)
-    else
-      []
+            {(n) =>
+              match n
+              | let node: ast.NodeWith[N] =>
+                node
+              end
+            }))
     end
 
   fun values_with_errors[N: ast.NodeData val = ast.NodeData](
@@ -74,7 +88,7 @@ primitive _Build
     let p = Variable("p")
     Conj(
       [ body; Bind(p, Ques(post)) ],
-      {(r, c, b) => action(r, c, b, _Build.values[T](b, p)) })
+      {(r, c, b) => action(r, c, b, _Build.values_with[T](b, p)) })
 
   fun bind_error(r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)
