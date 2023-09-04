@@ -9,7 +9,7 @@ class val LiteralInteger is NodeDataWithValue[U128]
   let _value: U128
   let kind: LiteralIntegerKind
 
-  new create(value': U128, kind': LiteralIntegerKind) =>
+  new val create(value': U128, kind': LiteralIntegerKind) =>
     _value = value'
     kind = kind'
 

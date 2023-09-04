@@ -6,13 +6,13 @@ type Using is (UsingPony | UsingFFI)
 
 class val UsingPony is NodeData
   let identifier: (NodeWith[Identifier] | None)
-  let path: NodeWith[LiteralString]
+  let path: NodeWith[Literal]
   let def_true: Bool
   let define: (NodeWith[Identifier] | None)
 
   new val create(
     identifier': (NodeWith[Identifier] | None),
-    path': NodeWith[LiteralString],
+    path': NodeWith[Literal],
     def_true': Bool,
     define': (NodeWith[Identifier] | None))
   =>

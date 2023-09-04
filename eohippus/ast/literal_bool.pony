@@ -1,5 +1,12 @@
 use json = "../json"
 
+type Literal is
+  ( LiteralBool
+  | LiteralChar
+  | LiteralFloat
+  | LiteralInteger
+  | LiteralString )
+
 class val LiteralBool is NodeDataWithValue[Bool]
   let _value: Bool
 

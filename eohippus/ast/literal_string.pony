@@ -8,7 +8,7 @@ class val LiteralString is NodeDataWithValue[String]
   let _value: String
   let kind: StringLiteralKind
 
-  new create(value': String, kind': StringLiteralKind) =>
+  new val create(value': String, kind': StringLiteralKind) =>
     _value = value'
     kind = kind'
 

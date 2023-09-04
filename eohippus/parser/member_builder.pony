@@ -56,9 +56,9 @@ class MemberBuilder
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let s': ast.NodeWith[ast.LiteralString] =
+    let s' =
       try
-        _Build.value(b, s)? as ast.NodeWith[ast.LiteralString]
+        _Build.value_with[ast.Literal](b, s)?
       else
         return _Build.bind_error(r, c, b, "DocString/LiteralString")
       end

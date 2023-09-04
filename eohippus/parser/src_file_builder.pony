@@ -189,11 +189,11 @@ class SrcFileBuilder
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let id' = try _Build.value(b, id)? as ast.NodeWith[ast.Identifier] end
+    let id' = _Build.value_with_or_none[ast.Identifier](b, id)
 
     let pt' =
       try
-        _Build.value(b, pt)? as ast.NodeWith[ast.LiteralString]
+        _Build.value_with[ast.Literal](b, pt)?
       else
         return _Build.bind_error(r, c, b, "UsingPony/LiteralString")
       end
@@ -206,7 +206,7 @@ class SrcFileBuilder
         true
       end
 
-    let df' = try _Build.value(b, df)? as ast.NodeWith[ast.Identifier] end
+    let df' = _Build.value_with_or_none[ast.Identifier](b, df)
 
     let value = ast.NodeWith[ast.Using](
       _Build.info(r), c, ast.UsingPony(id', pt', def_true, df'))

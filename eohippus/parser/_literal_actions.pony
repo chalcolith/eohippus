@@ -12,7 +12,7 @@ primitive _LiteralActions
     let string = src_info.literal_source()
     let true_str = ast.Keywords.kwd_true()
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
-    let value = ast.NodeWith[ast.LiteralBool](
+    let value = ast.NodeWith[ast.Literal](
       src_info, c, ast.LiteralBool(is_true))
     (value, b)
 
@@ -48,7 +48,7 @@ primitive _LiteralActions
         2
       end
     let num: U128 = try str.u128(base)? else 0 end
-    let value = ast.NodeWith[ast.LiteralInteger](
+    let value = ast.NodeWith[ast.Literal](
       src_info, c, ast.LiteralInteger(num, kind)
       where post_trivia' = p)
     (value, b)
@@ -83,7 +83,7 @@ primitive _LiteralActions
     end
 
     let num: F64 = try str.f64()? else 0.0 end
-    let value = ast.NodeWith[ast.LiteralFloat](
+    let value = ast.NodeWith[ast.Literal](
       src_info, c, ast.LiteralFloat(num)
       where post_trivia' = p)
     (value, b)
@@ -126,7 +126,7 @@ primitive _LiteralActions
           num = (num << 8) or U32.from[U8](ch)
         end
       end
-      let value = ast.NodeWith[ast.LiteralChar](
+      let value = ast.NodeWith[ast.Literal](
         _Build.info(r), c, ast.LiteralChar(num, ast.CharLiteral)
         where post_trivia' = p)
       (value, b)
@@ -137,7 +137,7 @@ primitive _LiteralActions
     body: Success,
     c: ast.NodeSeq,
     p: ast.NodeSeqWith[ast.Trivia])
-    : ast.NodeWith[ast.LiteralChar]
+    : ast.NodeWith[ast.Literal]
   =>
     var num: U32 = 0
     var at_start = true
@@ -194,7 +194,7 @@ primitive _LiteralActions
       end
     end
 
-    ast.NodeWith[ast.LiteralChar](
+    ast.NodeWith[ast.Literal](
       _Build.info(outer), c, ast.LiteralChar(num, ast.CharEscaped)
       where post_trivia' = p)
 
@@ -203,7 +203,7 @@ primitive _LiteralActions
     body: Success,
     c: ast.NodeSeq,
     p: ast.NodeSeqWith[ast.Trivia])
-    : ast.NodeWith[ast.LiteralChar]
+    : ast.NodeWith[ast.Literal]
   =>
     var num: U32 = 0
     for ch in (body.start + 2).values(body.next) do
@@ -216,7 +216,7 @@ primitive _LiteralActions
       end
     end
 
-    ast.NodeWith[ast.LiteralChar](
+    ast.NodeWith[ast.Literal](
       _Build.info(outer), c, ast.LiteralChar(num, ast.CharUnicode)
       where post_trivia' = p)
 
@@ -250,8 +250,11 @@ primitive _LiteralActions
           //     end
           //     first_token = false
           //   end
-          | let ch: ast.NodeWith[ast.LiteralChar] =>
-            indented'.push_utf32(ch.data().value())
+          | let ch: ast.NodeWith[ast.Literal] =>
+            match ch.data()
+            | let chd: ast.LiteralChar =>
+              indented'.push_utf32(chd.value())
+            end
           | let sp: ast.NodeWith[ast.Span] =>
             let si = sp.src_info()
             indented'.concat(si.start.values(si.next))
@@ -307,7 +310,7 @@ primitive _LiteralActions
         indented
       end
 
-    let value = ast.NodeWith[ast.LiteralString](
+    let value = ast.NodeWith[ast.Literal](
       _Build.info(r), c, ast.LiteralString(outdented, kind)
       where post_trivia' = p)
     (value, b)
