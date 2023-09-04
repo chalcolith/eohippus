@@ -242,14 +242,6 @@ primitive _LiteralActions
         let indented' = String
         for child in c.values() do
           match child
-          // | let tok: ast.NodeWith[ast.Token] =>
-          //   if first_token then
-          //     for t in tok.post_trivia().values() do
-          //       let si = t.src_info()
-          //       indented'.concat(si.start.values(si.next))
-          //     end
-          //     first_token = false
-          //   end
           | let ch: ast.NodeWith[ast.Literal] =>
             match ch.data()
             | let chd: ast.LiteralChar =>

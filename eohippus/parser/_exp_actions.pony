@@ -9,13 +9,7 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ids =
-      recover val
-        Array[ast.NodeWith[ast.Identifier]](c.size() - 2) .> concat(
-          Iter[ast.Node](c.values())
-            .filter_map[ast.NodeWith[ast.Identifier]](
-              {(n) => try n as ast.NodeWith[ast.Identifier] end }))
-      end
+    let ids = _Build.nodes_with[ast.Identifier](c)
 
     let value = ast.NodeWith[ast.Annotation](
       _Build.info(r), c, ast.Annotation(ids))
@@ -29,13 +23,7 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ann' =
-      try
-        _Build.value(b, ann)? as ast.NodeWith[ast.Annotation]
-      end
-    let body' = _Build.values(b, body)
-    let body_size = body'.size()
-
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann)
     let expressions = _Build.values_with[ast.Expression](b, body)
 
     let value = ast.NodeWith[ast.Expression](
@@ -86,7 +74,7 @@ primitive _ExpActions
   =>
     let keyword' =
       try
-        _Build.value(b, keyword)? as ast.NodeWith[ast.Keyword]
+        _Build.value_with[ast.Keyword](b, keyword)?
       else
         return _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
       end
@@ -107,7 +95,7 @@ primitive _ExpActions
   =>
     let firstif' =
       try
-        _Build.value(b, firstif)? as ast.NodeWith[ast.IfCondition]
+        _Build.value_with[ast.IfCondition](b, firstif)?
       else
         return _Build.bind_error(r, c, b, "Expression/If/FirstIf")
       end

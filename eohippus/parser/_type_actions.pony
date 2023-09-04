@@ -38,7 +38,7 @@ primitive _TypeActions
   =>
     let name' =
       try
-        _Build.value(b, name)? as ast.NodeWith[ast.Identifier]
+        _Build.value_with[ast.Identifier](b, name)?
       else
         return _Build.bind_error(r, c, b, "Type/Param/Name")
       end
@@ -59,7 +59,7 @@ primitive _TypeActions
   =>
     let lhs' =
       try
-        _Build.value(b, lhs)? as ast.NodeWith[ast.TypeType]
+        _Build.value_with[ast.TypeType](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Type/Arrow/LHS")
       end
@@ -132,7 +132,7 @@ primitive _TypeActions
   =>
     let lhs' =
       try
-        _Build.value(b, lhs)? as ast.NodeWith[ast.Identifier]
+        _Build.value_with[ast.Identifier](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Type/Nominal/LHS")
       end
