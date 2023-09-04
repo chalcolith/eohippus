@@ -9,12 +9,12 @@ type IfKind is (IfExp | IfDef | IfType)
 class val ExpIf is NodeData
   let kind: IfKind
   let conditions: NodeSeqWith[IfCondition]
-  let else_block: (NodeWith[ExpSequence] | None)
+  let else_block: (NodeWith[Expression] | None)
 
   new val create(
     kind': IfKind,
     conditions': NodeSeqWith[IfCondition],
-    else_block': (NodeWith[ExpSequence] | None))
+    else_block': (NodeWith[Expression] | None))
   =>
     kind = kind'
     conditions = conditions'
@@ -37,10 +37,13 @@ class val ExpIf is NodeData
     end
 
 class val IfCondition is NodeData
-  let if_true: Node
-  let then_block: Node
+  let if_true: NodeWith[Expression]
+  let then_block: NodeWith[Expression]
 
-  new val create(if_true': Node, then_block': Node) =>
+  new val create(
+    if_true': NodeWith[Expression],
+    then_block': NodeWith[Expression])
+  =>
     if_true = if_true'
     then_block = then_block'
 

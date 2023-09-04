@@ -2,9 +2,12 @@ use json = "../json"
 
 class val ExpJump is NodeData
   let keyword: NodeWith[Keyword]
-  let rhs: (Node | None)
+  let rhs: (NodeWith[Expression] | None)
 
-  new val create(keyword': NodeWith[Keyword], rhs': (Node | None)) =>
+  new val create(
+    keyword': NodeWith[Keyword],
+    rhs': (NodeWith[Expression] | None))
+  =>
     keyword = keyword'
     rhs = rhs'
 

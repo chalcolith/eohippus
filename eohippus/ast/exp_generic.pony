@@ -1,10 +1,10 @@
 use json = "../json"
 
 class val ExpGeneric is NodeData
-  let lhs: Node
+  let lhs: NodeWith[Expression]
   let args: NodeWith[TypeArgs]
 
-  new val create(lhs': Node, args': NodeWith[TypeArgs]) =>
+  new val create(lhs': NodeWith[Expression], args': NodeWith[TypeArgs]) =>
     lhs = lhs'
     args = args'
 

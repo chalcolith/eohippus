@@ -118,10 +118,10 @@ class ExpressionBuilder
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
       recover val
-        let call_arg_named = NamedRule("Exp_CallArg_Named", None)
+        let call_arg_named = NamedRule("Exp_CallArg_Named", None)           // x
         let call_args = NamedRule("Exp_CallArgs", None)                     // x
-        let call_args_named = NamedRule("Exp_CallArgs_Named", None)
-        let call_args_pos = NamedRule("Exp_CallArgs_Pos", None)
+        let call_args_named = NamedRule("Exp_CallArgs_Named", None)         // x
+        let call_args_pos = NamedRule("Exp_CallArgs_Pos", None)             // x
         let exp_array = NamedRule("Exp_Array", None)
         let exp_assignment = NamedRule("Exp_Assignment", None)              // x
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
@@ -132,10 +132,10 @@ class ExpressionBuilder
         let exp_elsif = NamedRule("Exp_Elsif", None)                        // x
         let exp_ffi = NamedRule("Exp_Ffi", None)
         let exp_for = NamedRule("Exp_For", None)
-        let exp_hash = NamedRule("Exp_Hash", None)
+        let exp_hash = NamedRule("Exp_Hash", None)                          // x
         let exp_if = NamedRule("Exp_If", None)                              // x
         let exp_ifdef = NamedRule("Exp_IfDef", None)                        // x
-        let exp_iftype = NamedRule("Exp_IfType", None)
+        let exp_iftype = NamedRule("Exp_IfType", None)                      // x
         let exp_infix = NamedRule("Exp_Infix", None)                        // x
         let exp_item = NamedRule("Exp_Item", None)                          // x
         let exp_jump = NamedRule("Exp_Jump", None)                          // x
@@ -158,7 +158,7 @@ class ExpressionBuilder
         let type_arrow = NamedRule("Type_Arrow", None)                      // x
         let type_atom = NamedRule("Type_Atom", None)                        // x
         let type_infix = NamedRule("Type_Infix", None)                      // x
-        let type_lambda = NamedRule("Type_Lambda", None)
+        let type_lambda = NamedRule("Type_Lambda", None)                    // x
         let type_nominal = NamedRule("Type_Nominal", None)                  // x
         let type_param = NamedRule("Type_Param", None)                      // x
         let type_params = NamedRule("Type_Params", None)                    // x
@@ -397,18 +397,20 @@ class ExpressionBuilder
         // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
         //         object / '__loc' / 'this' / literal / (~keyword identifier)
         exp_atom.set_body(
-          Disj(
-            [ exp_tuple
-              exp_parens
-              exp_array
-              exp_ffi
-              exp_bare_lambda
-              exp_lambda
-              exp_object
-              kwd_loc
-              kwd_this
-              literal
-              Conj([ not_kwd; id ]) ]))
+          Bind(body,
+            Disj(
+              [ exp_tuple
+                exp_parens
+                exp_array
+                exp_ffi
+                exp_bare_lambda
+                exp_lambda
+                exp_object
+                kwd_loc
+                kwd_this
+                literal
+                Conj([ not_kwd; id ]) ])),
+          _ExpActions~_atom(body))
 
         // type_args <= '[' type_arg (',' type_arg)* ']'
         type_args.set_body(

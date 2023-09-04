@@ -1,14 +1,14 @@
 use json = "../json"
 
 class val ExpOperation is NodeData
-  let lhs: (Node | None)
+  let lhs: (NodeWith[TypeType] | NodeWith[Expression] | None)
   let op: (NodeWith[Keyword] | NodeWith[Token])
-  let rhs: Node
+  let rhs: (NodeWith[TypeType] | NodeWith[Expression])
 
   new val create(
-    lhs': (Node | None),
+    lhs': (NodeWith[TypeType] | NodeWith[Expression] | None),
     op': (NodeWith[Keyword] | NodeWith[Token]),
-    rhs': Node)
+    rhs': (NodeWith[TypeType] | NodeWith[Expression]))
   =>
     lhs = lhs'
     op = op'

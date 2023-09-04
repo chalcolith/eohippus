@@ -110,10 +110,10 @@ class SrcFileBuilder
       recover val
         let errs = Array[ast.NodeWith[ast.ErrorSection]]
         ( errs,
-          _Build.values_with_errors[ast.Trivia](b, t1, errs),
-          _Build.values_with_errors[ast.DocString](b, ds, errs),
-          _Build.values_with_errors[ast.Using](b, us, errs),
-          _Build.values_with_errors[ast.TypeDef](b, td, errs) )
+          _Build.values_and_errors[ast.Trivia](b, t1, errs),
+          _Build.values_and_errors[ast.DocString](b, ds, errs),
+          _Build.values_and_errors[ast.Using](b, us, errs),
+          _Build.values_and_errors[ast.TypeDef](b, td, errs) )
       end
 
     let value = ast.NodeWith[ast.SrcFile](

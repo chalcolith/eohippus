@@ -7,23 +7,26 @@ primitive _Build
   fun info(success: Success): ast.SrcInfo =>
     ast.SrcInfo(success.data.locator, success.start, success.next)
 
-  fun result(b: Bindings, v: Variable): Success? =>
+  fun result(b: Bindings, v: Variable): Success ? =>
     b(v)?._1
 
-  fun value(b: Bindings, v: Variable): ast.Node? =>
+  fun value(b: Bindings, v: Variable): ast.Node ? =>
     b(v)?._2(0)?
 
-  fun value_or_none[N: ast.NodeData val = ast.NodeData](
+  fun value_or_none(b: Bindings, v: Variable): (ast.Node | None) =>
+    try b(v)?._2(0)? end
+
+  fun value_with[N: ast.NodeData val](b: Bindings, v: Variable)
+    : ast.NodeWith[N] ?
+  =>
+    b(v)?._2(0)? as ast.NodeWith[N]
+
+  fun value_with_or_none[N: ast.NodeData val](
     b: Bindings,
     v: Variable)
     : (ast.NodeWith[N] | None)
   =>
-    try
-      match b(v)?._2(0)?
-      | let node: ast.NodeWith[N] =>
-        node
-      end
-    end
+    try b(v)?._2(0)? as ast.NodeWith[N] end
 
   fun values(b: Bindings, v: Variable) : ast.NodeSeq =>
     try
@@ -32,7 +35,7 @@ primitive _Build
       []
     end
 
-  fun values_with[N: ast.NodeData val = ast.NodeData](b: Bindings, v: Variable)
+  fun values_with[N: ast.NodeData val](b: Bindings, v: Variable)
     : ast.NodeSeqWith[N]
   =>
     try
@@ -42,22 +45,17 @@ primitive _Build
       []
     end
 
-  fun nodes_with[N: ast.NodeData val = ast.NodeData](c: ast.NodeSeq)
+  fun nodes_with[N: ast.NodeData val](c: ast.NodeSeq)
     : ast.NodeSeqWith[N]
   =>
     recover val
       Array[ast.NodeWith[N]](c.size()) .> concat(
         Iter[ast.Node](c.values())
           .filter_map[ast.NodeWith[N]](
-            {(n) =>
-              match n
-              | let node: ast.NodeWith[N] =>
-                node
-              end
-            }))
+            {(n) => try n as ast.NodeWith[N] end }))
     end
 
-  fun values_with_errors[N: ast.NodeData val = ast.NodeData](
+  fun values_and_errors[N: ast.NodeData val](
     b: Bindings,
     v: Variable,
     e: Array[ast.NodeWith[ast.ErrorSection]] ref)

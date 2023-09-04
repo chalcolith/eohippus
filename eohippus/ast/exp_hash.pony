@@ -1,9 +1,9 @@
 use json = "../json"
 
 class val ExpHash is NodeData
-  let rhs: Node
+  let rhs: NodeWith[Expression]
 
-  new val create(rhs': Node) =>
+  new val create(rhs': NodeWith[Expression]) =>
     rhs = rhs'
 
   fun name(): String => "ExpHash"

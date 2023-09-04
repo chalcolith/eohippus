@@ -1,10 +1,10 @@
 use json = "../json"
 
 class val ExpCall is NodeData
-  let lhs: Node
+  let lhs: NodeWith[Expression]
   let args: NodeWith[CallArgs]
 
-  new val create(lhs': Node, args': NodeWith[CallArgs]) =>
+  new val create(lhs': NodeWith[Expression], args': NodeWith[CallArgs]) =>
     lhs = lhs'
     args = args'
 

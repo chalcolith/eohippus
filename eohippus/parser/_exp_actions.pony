@@ -36,23 +36,10 @@ primitive _ExpActions
     let body' = _Build.values(b, body)
     let body_size = body'.size()
 
-    let exps =
-      recover val
-        Array[ast.Node](body_size) .> concat(
-          Iter[ast.Node](body'.values())
-            .filter(
-              {(n) =>
-                match n
-                | let _: ast.NodeWith[ast.Token] =>
-                  false
-                else
-                  true
-                end
-              }))
-      end
+    let expressions = _Build.values_with[ast.Expression](b, body)
 
-    let value = ast.NodeWith[ast.ExpSequence](
-      _Build.info(r), c, ast.ExpSequence(exps)
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpSequence(expressions)
       where annotation' = ann')
     (value, b)
 
@@ -67,7 +54,7 @@ primitive _ExpActions
   =>
     let lhs' =
       try
-        _Build.value(b, lhs)?
+        _Build.value_with[ast.Expression](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Binop/LHS")
       end
@@ -80,12 +67,12 @@ primitive _ExpActions
       end
     let rhs' =
       try
-        _Build.value(b, rhs)?
+        _Build.value_with[ast.Expression](b, rhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Binop/RHS")
       end
 
-    let value = ast.NodeWith[ast.ExpOperation](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpOperation(lhs', op', rhs'))
     (value, b)
 
@@ -103,9 +90,9 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
       end
-    let rhs' = try _Build.value(b, rhs)? end
+    let rhs' = _Build.value_with_or_none[ast.Expression](b, rhs)
 
-    let value = ast.NodeWith[ast.ExpJump](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpJump(keyword', rhs'))
     (value, b)
 
@@ -131,9 +118,9 @@ primitive _ExpActions
           .> push(firstif')
           .> append(elseifs')
       end
-    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
+    let else_block' = _Build.value_with_or_none[ast.Expression](b, else_block)
 
-    let value = ast.NodeWith[ast.ExpIf](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpIf(ast.IfExp, conditions, else_block'))
     (value, b)
 
@@ -147,13 +134,13 @@ primitive _ExpActions
   =>
     let if_true' =
       try
-        _Build.value(b, if_true)?
+        _Build.value_with[ast.Expression](b, if_true)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfCond/Condition")
       end
     let then_block' =
       try
-        _Build.value(b, then_block)?
+        _Build.value_with[ast.Expression](b, then_block)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfCond/TrueSeq")
       end
@@ -173,7 +160,7 @@ primitive _ExpActions
   =>
     let firstif' =
       try
-        _Build.value(b, firstif)? as ast.NodeWith[ast.IfCondition]
+        _Build.value_with[ast.IfCondition](b, firstif)?
       else
         return _Build.bind_error(r, c, b, "Expression/If/Firstif")
       end
@@ -184,9 +171,9 @@ primitive _ExpActions
           .> push(firstif')
           .> append(elseifs')
       end
-    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
+    let else_block' = _Build.value_with_or_none[ast.Expression](b, else_block)
 
-    let value = ast.NodeWith[ast.ExpIf](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpIf(ast.IfDef, conditions, else_block'))
     (value, b)
 
@@ -201,7 +188,7 @@ primitive _ExpActions
   =>
     let firstif' =
       try
-        _Build.value(b, firstif)? as ast.NodeWith[ast.IfCondition]
+        _Build.value_with[ast.IfCondition](b, firstif)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfType/Firstif")
       end
@@ -212,9 +199,9 @@ primitive _ExpActions
           .> push(firstif')
           .> append(elseifs')
       end
-    let else_block' = _Build.value_or_none[ast.ExpSequence](b, else_block)
+    let else_block' = _Build.value_with_or_none[ast.Expression](b, else_block)
 
-    let value = ast.NodeWith[ast.ExpIf](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpIf(ast.IfType, conditions, else_block'))
     (value, b)
 
@@ -232,32 +219,32 @@ primitive _ExpActions
     let cond_children = _Build.values(b, if_true)
     let lhs' =
       try
-        _Build.value(b, lhs)?
+        _Build.value_with[ast.TypeType](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfTypeCond/LHS")
       end
     let op' =
       try
-        _Build.value(b, op)? as ast.NodeWith[ast.Token]
+        _Build.value_with[ast.Token](b, op)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Op")
       end
     let rhs' =
       try
-        _Build.value(b, rhs)?
+        _Build.value_with[ast.TypeType](b, rhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfTypeCond/RHS")
       end
     let then_block' =
       try
-        _Build.value(b, then_block)?
+        _Build.value_with[ast.Expression](b, then_block)?
       else
         return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Then")
       end
 
     let cond_info = ast.SrcInfo(
       r.data.locator, lhs'.src_info().start, rhs'.src_info().next)
-    let cond = ast.NodeWith[ast.ExpOperation](
+    let cond = ast.NodeWith[ast.Expression](
       cond_info, cond_children, ast.ExpOperation(lhs', op', rhs'))
 
     let value = ast.NodeWith[ast.IfCondition](
@@ -281,7 +268,7 @@ primitive _ExpActions
       end
     let rhs' =
       try
-        _Build.value(b, rhs)?
+        _Build.value_with[ast.Expression](b, rhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Prefix/RHS")
       end
@@ -299,7 +286,7 @@ primitive _ExpActions
   =>
     let rhs' =
       try
-        _Build.value(b, rhs)?
+        _Build.value_with[ast.Expression](b, rhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
       end
@@ -318,18 +305,18 @@ primitive _ExpActions
   =>
     let lhs' =
       try
-        _Build.value(b, lhs)?
+        _Build.value_with[ast.Expression](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/LHS")
       end
     let args' =
       try
-        _Build.value(b, args)? as ast.NodeWith[ast.TypeArgs]
+        _Build.value_with[ast.TypeArgs](b, args)?
       else
         return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/TypeArgs")
       end
 
-    let value = ast.NodeWith[ast.ExpGeneric](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpGeneric(lhs', args'))
     (value, b)
 
@@ -343,7 +330,7 @@ primitive _ExpActions
   =>
     let lhs' =
       try
-        _Build.value(b, lhs)?
+        _Build.value_with[ast.Expression](b, lhs)?
       else
         return _Build.bind_error(r, c, b, "Expression/Postfix/Call/LHS")
       end
@@ -354,7 +341,7 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/PostFix/Call/CallArgs")
       end
 
-    let value = ast.NodeWith[ast.ExpCall](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpCall(lhs', args'))
     (value, b)
 
@@ -371,4 +358,22 @@ primitive _ExpActions
 
     let value = ast.NodeWith[ast.CallArgs](
       _Build.info(r), c, ast.CallArgs(pos', named'))
+    (value, b)
+
+  fun tag _atom(
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let body' =
+      try
+        _Build.value(b, body)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Atom/Body")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpAtom(body'))
     (value, b)

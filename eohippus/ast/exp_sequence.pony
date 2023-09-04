@@ -3,10 +3,20 @@ use "itertools"
 use json = "../json"
 use types = "../types"
 
-class val ExpSequence is NodeData
-  let expressions: NodeSeq
+type Expression is
+  ( ExpSequence
+  | ExpOperation
+  | ExpJump
+  | ExpIf
+  | ExpGeneric
+  | ExpCall
+  | ExpAtom
+  | ExpHash )
 
-  new create(expressions': NodeSeq) =>
+class val ExpSequence is NodeData
+  let expressions: NodeSeqWith[Expression]
+
+  new val create(expressions': NodeSeqWith[Expression]) =>
     expressions = expressions'
 
   fun name(): String => "ExpSequence"
