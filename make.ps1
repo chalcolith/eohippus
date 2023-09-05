@@ -17,7 +17,11 @@ Param(
 
   [Parameter(HelpMessage="Directory to install to.")]
   [string]
-  $Destdir = "build/install"
+  $Destdir = "build/install",
+
+  [Parameter(HelpMessage="Force a build even if sources haven't changed.")]
+  [switch]
+  $Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -90,7 +94,7 @@ function BuildTarget
 
   :buildFiles foreach ($file in (Get-ChildItem -Path $srcDir -Include "*.pony" -Recurse))
   {
-    if ($binaryTimestamp -lt $file.LastWriteTimeUtc)
+    if ($Force -or ($binaryTimestamp -lt $file.LastWriteTimeUtc))
     {
       Write-Host "corral run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$srcDir`""
       $output = (corral run -- ponyc $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$srcDir")
@@ -118,7 +122,7 @@ function BuildTest
 
   :testFiles foreach ($file in (Get-ChildItem -Path $srcDir -Include "*.pony" -Recurse))
   {
-    if ($testTimestamp -lt $file.LastWriteTimeUtc)
+    if ($Force -or ($testTimestamp -lt $file.LastWriteTimeUtc))
     {
       $testDir = Join-Path -Path $srcDir -ChildPath $testPath
       Write-Host "corral run -- ponyc --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$testDir`""

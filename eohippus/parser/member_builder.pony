@@ -58,7 +58,7 @@ class MemberBuilder
   =>
     let s' =
       try
-        _Build.value_with[ast.Literal](b, s)?
+        _Build.value_with[ast.Literal](b, s, r)?
       else
         return _Build.bind_error(r, c, b, "DocString/LiteralString")
       end

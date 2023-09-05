@@ -78,11 +78,11 @@ class TypedefBuilder
   =>
     let id': ast.NodeWith[ast.Identifier] =
       try
-        _Build.value(b, id)? as ast.NodeWith[ast.Identifier]
+        _Build.value_with[ast.Identifier](b, id, r)?
       else
         return _Build.bind_error(r, c, b, "Identifier")
       end
-    let ds' = _Build.values_with[ast.DocString](b, ds)
+    let ds' = _Build.values_with[ast.DocString](b, ds, r)
 
     let value = ast.NodeWith[ast.TypeDefPrimitive](
       _Build.info(r), c, ast.TypeDefPrimitive(id')

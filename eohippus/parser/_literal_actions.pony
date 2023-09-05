@@ -12,6 +12,7 @@ primitive _LiteralActions
     let string = src_info.literal_source()
     let true_str = ast.Keywords.kwd_true()
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
+
     let value = ast.NodeWith[ast.Literal](
       src_info, c, ast.LiteralBool(is_true))
     (value, b)
@@ -27,9 +28,9 @@ primitive _LiteralActions
     : ((ast.Node | None), Bindings)
   =>
     let kind =
-      if b.contains(hex) then
+      if try _Build.result(b, hex, r)? end isnt None then
         ast.HexadecimalInteger
-      elseif b.contains(bin) then
+      elseif try _Build.result(b, bin, r)? end isnt None then
         ast.BinaryInteger
       else
         ast.DecimalInteger
@@ -67,9 +68,9 @@ primitive _LiteralActions
     let src_info = _Build.info(r)
     let str = src_info.literal_source(p)
 
-    let int_result' = try _Build.result(b, int_part)? end
-    let frac_result' = try _Build.result(b, frac_part)? end
-    let exp_result' = try _Build.result(b, exponent)? end
+    let int_result' = try _Build.result(b, int_part, r)? end
+    let frac_result' = try _Build.result(b, frac_part, r)? end
+    let exp_result' = try _Build.result(b, exponent, r)? end
 
     if (int_result' isnt None) and
        (frac_result' is None) and
@@ -100,7 +101,7 @@ primitive _LiteralActions
   =>
     let br =
       try
-        _Build.result(b, bod)?
+        _Build.result(b, bod, r)?
       else
         r
       end
@@ -108,9 +109,9 @@ primitive _LiteralActions
     var num: U32 = 0
     let str = recover val String .> concat(br.start.values(br.next)) end
 
-    if b.contains(esc) then
+    if try _Build.result(b, esc, r)? end isnt None then
       (_char_esc(r, br, c, p), b)
-    elseif b.contains(uni) then
+    elseif try _Build.result(b, uni, r)? end isnt None then
       (_char_uni(r, br, c, p), b)
     else
       for ch in br.start.values(br.next) do
@@ -229,12 +230,11 @@ primitive _LiteralActions
     : ((ast.Node | None), Bindings)
   =>
     let kind =
-      if b.contains(tri) then
+      if try _Build.result(b, tri, r)? end isnt None then
         ast.StringTripleQuote
       else
         ast.StringLiteral
       end
-    // var first_token = true
 
     // assemble the string (with first indent if triple)
     let indented =

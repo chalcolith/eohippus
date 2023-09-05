@@ -23,15 +23,15 @@ class val TypeArrow is NodeData
     end
 
 class val TypeAtom is NodeData
-  let child: Node
+  let body: Node
 
-  new val create(child': Node) =>
-    child = child'
+  new val create(body': Node) =>
+    body = body'
 
   fun name(): String => "TypeAtom"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("child", child.get_json()))
+    props.push(("body", body.get_json()))
 
 class val TypeTuple is NodeData
   let types: NodeSeqWith[TypeType]
@@ -64,47 +64,4 @@ class val TypeInfix is NodeData
     end
     if types.size() > 0 then
       props.push(("types", Nodes.get_json(types)))
-    end
-
-class val TypeNominal is NodeData
-  let lhs: NodeWith[Identifier]
-  let rhs: (NodeWith[Identifier] | None)
-  let params: (NodeWith[TypeParams] | None)
-  let cap: (NodeWith[Keyword] | None)
-  let eph: (NodeWith[Token] | None)
-
-  new val create(
-    lhs': NodeWith[Identifier],
-    rhs': (NodeWith[Identifier] | None),
-    params': (NodeWith[TypeParams] | None),
-    cap': (NodeWith[Keyword] | None),
-    eph': (NodeWith[Token] | None))
-  =>
-    lhs = lhs'
-    rhs = rhs'
-    params = params'
-    cap = cap'
-    eph = eph'
-
-  fun name(): String => "TypeNominal"
-
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("lhs", lhs.get_json()))
-    match rhs
-    | let rhs': NodeWith[Identifier] =>
-      props.push(("rhs", rhs'.get_json()))
-    end
-    match params
-    | let params': NodeWith[TypeParams] =>
-      if params'.data().params.size() > 0 then
-        props.push(("params", params'.get_json()))
-      end
-    end
-    match cap
-    | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
-    end
-    match eph
-    | let eph': NodeWith[Token] =>
-      props.push(("eph", eph'.get_json()))
     end

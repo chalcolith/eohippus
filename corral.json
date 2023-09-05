@@ -2,8 +2,8 @@
   "info": {
     "name": "eohippus",
     "description": "Pony Language Tools",
-    "homepage": "https://github.com/kulibali/eohippus",
-    "documentation_url": "https://kulibali.github.io/eohippus/eohippus--index/",
+    "homepage": "https://github.com/chalcolith/eohippus",
+    "documentation_url": "https://chalcolith.github.io/eohippus/eohippus--index/",
     "license": "MIT",
     "version": "0.0.0"
   },
@@ -13,7 +13,7 @@
   "deps": [
     {
       "locator": "../kiuatan",
-      "version": "1.2.2"
+      "version": "1.3.0"
     }
   ]
 }

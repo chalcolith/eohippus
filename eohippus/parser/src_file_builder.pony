@@ -110,10 +110,10 @@ class SrcFileBuilder
       recover val
         let errs = Array[ast.NodeWith[ast.ErrorSection]]
         ( errs,
-          _Build.values_and_errors[ast.Trivia](b, t1, errs),
-          _Build.values_and_errors[ast.DocString](b, ds, errs),
-          _Build.values_and_errors[ast.Using](b, us, errs),
-          _Build.values_and_errors[ast.TypeDef](b, td, errs) )
+          _Build.values_and_errors[ast.Trivia](b, t1, r, errs),
+          _Build.values_and_errors[ast.DocString](b, ds, r, errs),
+          _Build.values_and_errors[ast.Using](b, us, r, errs),
+          _Build.values_and_errors[ast.TypeDef](b, td, r, errs) )
       end
 
     let value = ast.NodeWith[ast.SrcFile](
@@ -189,24 +189,17 @@ class SrcFileBuilder
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let id' = _Build.value_with_or_none[ast.Identifier](b, id)
+    let id' = _Build.value_with_or_none[ast.Identifier](b, id, r)
 
     let pt' =
       try
-        _Build.value_with[ast.Literal](b, pt)?
+        _Build.value_with[ast.Literal](b, pt, r)?
       else
         return _Build.bind_error(r, c, b, "UsingPony/LiteralString")
       end
 
-    let def_true =
-      match try b(fl)?._1 end
-      | let _: Success =>
-        false
-      else
-        true
-      end
-
-    let df' = _Build.value_with_or_none[ast.Identifier](b, df)
+    let def_true = try _Build.result(b, fl, r)? end is None
+    let df' = _Build.value_with_or_none[ast.Identifier](b, df, r)
 
     let value = ast.NodeWith[ast.Using](
       _Build.info(r), c, ast.UsingPony(id', pt', def_true, df'))

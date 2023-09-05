@@ -7,39 +7,46 @@ primitive _Build
   fun info(success: Success): ast.SrcInfo =>
     ast.SrcInfo(success.data.locator, success.start, success.next)
 
-  fun result(b: Bindings, v: Variable): Success ? =>
-    b(v)?._1
+  fun result(b: Bindings, v: Variable, r: Success): Success ? =>
+    b.result(v, r)?
 
-  fun value(b: Bindings, v: Variable): ast.Node ? =>
-    b(v)?._2(0)?
+  fun value(b: Bindings, v: Variable, r: Success): ast.Node ? =>
+    b.values(v, r)?(0)?
 
-  fun value_or_none(b: Bindings, v: Variable): (ast.Node | None) =>
-    try b(v)?._2(0)? end
+  fun value_or_none(b: Bindings, v: Variable, r: Success): (ast.Node | None) =>
+    try b.values(v, r)?(0)? end
 
-  fun value_with[N: ast.NodeData val](b: Bindings, v: Variable)
+  fun value_with[N: ast.NodeData val](b: Bindings, v: Variable, r: Success)
     : ast.NodeWith[N] ?
   =>
-    b(v)?._2(0)? as ast.NodeWith[N]
+    b.values(v, r)?(0)? as ast.NodeWith[N]
 
   fun value_with_or_none[N: ast.NodeData val](
     b: Bindings,
-    v: Variable)
+    v: Variable,
+    r: Success)
     : (ast.NodeWith[N] | None)
   =>
-    try b(v)?._2(0)? as ast.NodeWith[N] end
+    try b.values(v, r)?(0)? as ast.NodeWith[N] end
 
-  fun values(b: Bindings, v: Variable) : ast.NodeSeq =>
+  fun values(b: Bindings, v: Variable, r: Success) : ast.NodeSeq =>
     try
-      b(v)?._2
+      b.values(v, r)?
     else
       []
     end
 
-  fun values_with[N: ast.NodeData val](b: Bindings, v: Variable)
+  fun values_with[N: ast.NodeData val](b: Bindings, v: Variable, r: Success)
     : ast.NodeSeqWith[N]
   =>
     try
-      let vs = b(v)?._2
+      let vs = b.values(v, r)?
+
+      for n in vs.values() do
+        let str = n.get_json().string()
+        str.clear()
+      end
+
       nodes_with[N](vs)
     else
       []
@@ -58,12 +65,13 @@ primitive _Build
   fun values_and_errors[N: ast.NodeData val](
     b: Bindings,
     v: Variable,
+    r: Success,
     e: Array[ast.NodeWith[ast.ErrorSection]] ref)
     : ast.NodeSeqWith[N]
   =>
     let rvals: Array[ast.NodeWith[N]] trn = Array[ast.NodeWith[N]]()
     try
-      let vvals = b(v)?._2
+      let vvals = b.values(v, r)?
       for vval in vvals.values() do
         match vval
         | let node: ast.NodeWith[N] =>
@@ -86,7 +94,9 @@ primitive _Build
     let p = Variable("p")
     Conj(
       [ body; Bind(p, Ques(post)) ],
-      {(r, c, b) => action(r, c, b, _Build.values_with[T](b, p)) })
+      {(r, c, b) =>
+        action(r, c, b, _Build.values_with[T](b, p, r))
+      })
 
   fun bind_error(r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)
