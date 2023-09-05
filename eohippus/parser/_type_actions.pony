@@ -36,12 +36,7 @@ primitive _TypeActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let name' =
-      try
-        _Build.value_with[ast.Identifier](b, name, r)?
-      else
-        return _Build.bind_error(r, c, b, "Type/Param/Name")
-      end
+    let name' = _Build.value_with_or_none[ast.Identifier](b, name, r)
     let ctype' = _Build.value_with_or_none[ast.TypeType](b, ctype, r)
     let tinit' = _Build.value_with_or_none[ast.TypeType](b, tinit, r)
 
@@ -131,6 +126,12 @@ primitive _TypeActions
   =>
     let types' = _Build.values_with[ast.TypeType](b, types, r)
     let op' = _Build.value_with_or_none[ast.Token](b, op, r)
+
+    if types'.size() == 1 then
+      try
+        return (types'(0)?, b)
+      end
+    end
 
     let value = ast.NodeWith[ast.TypeType](
       _Build.info(r), c, ast.TypeInfix(types', op'))

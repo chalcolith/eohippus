@@ -151,13 +151,19 @@ class TypeBuilder
         let param_type_constraint = Variable("param_type_constraint")
         let param_type_initializer = Variable("param_type_initializer")
         type_param.set_body(
-          Conj(
-            [ Bind(param_name, id)
-              Ques(Conj([ colon; Bind(param_type_constraint, type_arrow) ]))
-              Ques(Conj([ equals; Bind(param_type_initializer, type_arrow) ]))
+          Disj(
+            [ Conj(
+                [ Bind(param_type_constraint, type_arrow)
+                  Neg(Disj([ colon; equals ])) ])
+              Conj(
+                [ Bind(param_name, id)
+                  Ques(Conj(
+                    [ colon; Bind(param_type_constraint, type_arrow) ]))
+                  Ques(Conj(
+                    [ equals; Bind(param_type_initializer, type_arrow) ])) ])
             ]),
-            _TypeActions~_type_param(
-              param_name, param_type_constraint, param_type_initializer))
+          _TypeActions~_type_param(
+            param_name, param_type_constraint, param_type_initializer))
 
         // type <= atom_type (arrow type)?
         let arrow_lhs = Variable("arrow_lhs")
@@ -188,8 +194,8 @@ class TypeBuilder
         type_tuple.set_body(
           Conj(
             [ oparen
-              type_infix
-              Plus(Conj([ comma; type_infix ]))
+              type_arrow
+              Plus(Conj([ comma; type_arrow ]))
               cparen ]),
             _TypeActions~_type_tuple())
 
@@ -201,11 +207,11 @@ class TypeBuilder
             [ Bind(infix_types,
                 Conj(
                   [ type_arrow
-                    Star(Conj([ Bind(infix_op, amp); type_arrow ])) ]))
+                    Plus(Conj([ Bind(infix_op, amp); type_arrow ])) ]))
               Bind(infix_types,
                 Conj(
                   [ type_arrow
-                    Star(Conj([ Bind(infix_op, bar); type_arrow ])) ])) ],
+                    Plus(Conj([ Bind(infix_op, bar); type_arrow ])) ])) ],
             _TypeActions~_type_infix(infix_types, infix_op)))
 
         // nominal_type <= identifier ('.' identifier)? type_params

@@ -14,12 +14,12 @@ class val TypeParams is NodeData
     end
 
 class val TypeParam is NodeData
-  let identifier: NodeWith[Identifier]
+  let identifier: (NodeWith[Identifier] | None)
   let constraint: (NodeWith[TypeType] | None)
   let initializer: (NodeWith[TypeType] | None)
 
   new create(
-    identifier': NodeWith[Identifier],
+    identifier': (NodeWith[Identifier] | None),
     constraint': (NodeWith[TypeType] | None),
     initializer': (NodeWith[TypeType] | None))
   =>
@@ -30,7 +30,10 @@ class val TypeParam is NodeData
   fun name(): String => "TypeParam"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("identifier", identifier.get_json()))
+    match identifier
+    | let identifier': NodeWith[Identifier] =>
+      props.push(("identifier", identifier'.get_json()))
+    end
     match constraint
     | let constraint': NodeWith[TypeType] =>
       props.push(("constraint", constraint'.get_json()))
