@@ -21,6 +21,7 @@ class KeywordBuilder
 
     _kwd_strings = [
       ast.Keywords.kwd_addressof()
+      ast.Keywords.kwd_and()
       ast.Keywords.kwd_as()
       ast.Keywords.kwd_box()
       ast.Keywords.kwd_break()
@@ -41,9 +42,11 @@ class KeywordBuilder
       ast.Keywords.kwd_if()
       ast.Keywords.kwd_ifdef()
       ast.Keywords.kwd_iftype()
+      ast.Keywords.kwd_is()
       ast.Keywords.kwd_iso()
       ast.Keywords.kwd_loc()
       ast.Keywords.kwd_not()
+      ast.Keywords.kwd_or()
       ast.Keywords.kwd_primitive()
       ast.Keywords.kwd_ref()
       ast.Keywords.kwd_return()
@@ -55,6 +58,7 @@ class KeywordBuilder
       ast.Keywords.kwd_use()
       ast.Keywords.kwd_val()
       ast.Keywords.kwd_where()
+      ast.Keywords.kwd_xor()
     ]
 
     let t = _trivia.trivia()

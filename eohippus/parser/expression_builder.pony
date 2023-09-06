@@ -96,6 +96,7 @@ class ExpressionBuilder
     let kwd_if = _keyword(ast.Keywords.kwd_if())
     let kwd_ifdef = _keyword(ast.Keywords.kwd_ifdef())
     let kwd_iftype = _keyword(ast.Keywords.kwd_iftype())
+    let kwd_is = _keyword(ast.Keywords.kwd_is())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
     let kwd_return = _keyword(ast.Keywords.kwd_return())
     let kwd_then = _keyword(ast.Keywords.kwd_then())
@@ -154,41 +155,14 @@ class ExpressionBuilder
         let exp_while = NamedRule("Exp_While", None)
         let exp_with = NamedRule("Exp_With", None)
 
-        let ann = Variable("ann")
-        let args = Variable("args")
-        let body = Variable("body")
-        let cap = Variable("cap")
-        let condition = Variable("condition")
-        let else_block = Variable("else_block")
-        let elseifs = Variable("elseifs")
-        let eph = Variable("eph")
-        let firstif = Variable("firstif")
-        let if_true = Variable("if_true")
-        let keyword = Variable("keyword")
-        let lhs = Variable("lhs")
-        let name = Variable("name")
-        let named = Variable("named")
-        let op = Variable("op")
-        let params = Variable("params")
-        let partial = Variable("partial")
-        let pos = Variable("pos")
-        let ptypes = Variable("ptypes")
-        let rcap = Variable("rcap")
-        let reph = Variable("reph")
-        let rhs = Variable("rhs")
-        let rtype = Variable("rtype")
-        let then_block = Variable("then_block")
-        let targ = Variable("targ")
-        let tinit = Variable("tinit")
-        let tparams = Variable("tparams")
-        let ttype = Variable("ttype")
-
         // seq <= annotation? item (';'? item)*
+        let seq_ann = Variable("seq_ann")
+        let seq_body = Variable("seq_body")
         exp_seq.set_body(
           Conj(
-            [ Bind(ann, Ques(annotation()))
+            [ Bind(seq_ann, Ques(annotation()))
               Bind(
-                body,
+                seq_body,
                 Conj(
                   [ exp_item
                     Star(
@@ -197,7 +171,7 @@ class ExpressionBuilder
                           exp_item ]))
                   ]))
             ],
-            _ExpActions~_seq(ann, body)))
+            _ExpActions~_seq(seq_ann, seq_body)))
 
         // item <= assignment / jump / infix
         exp_item.set_body(
@@ -207,44 +181,59 @@ class ExpressionBuilder
               exp_infix ]))
 
         // assignment <= (infix '=' assignment) / infix
+        let ass_lhs = Variable("ass_lhs")
+        let ass_op = Variable("ass_op")
+        let ass_rhs = Variable("ass_rhs")
         exp_assignment.set_body(
           Disj(
             [ Conj(
-                [ Bind(lhs, exp_infix)
-                  Bind(op, equals)
-                  Bind(rhs, exp_assignment) ],
-                _ExpActions~_binop(lhs, op, rhs))
+                [ Bind(ass_lhs, exp_infix)
+                  Bind(ass_op, equals)
+                  Bind(ass_rhs, exp_assignment) ],
+                _ExpActions~_binop(ass_lhs, ass_op, ass_rhs))
             exp_infix ]))
 
-        // jump <= (('return' / 'break') (assignment / infix)?) /
+        // jump <= ('return' / 'break') assignment? /
         //         'continue' /
         //         'error' /
         //         'compile_intrinsic' /
         //         'compile_error'
+        let jump_keyword = Variable("jump_keyword")
+        let jump_rhs = Variable("jump_rhs")
         exp_jump.set_body(
           Disj(
             [ Conj(
-                [ Disj([ Bind(keyword, kwd_return); Bind(keyword, kwd_break) ])
-                  Ques(Bind(rhs, Disj([ exp_assignment; exp_infix ]))) ])
-              Bind(keyword, kwd_continue)
-              Bind(keyword, kwd_error)
-              Bind(keyword, kwd_compile_intrinsic)
-              Bind(keyword, kwd_compile_error) ],
-            _ExpActions~_jump(keyword, rhs)))
+                [ Disj(
+                    [ Bind(jump_keyword, kwd_return)
+                      Bind(jump_keyword, kwd_break) ])
+                  Ques(Bind(jump_rhs, exp_assignment)) ])
+              Bind(jump_keyword, kwd_continue)
+              Bind(jump_keyword, kwd_error)
+              Bind(jump_keyword, kwd_compile_intrinsic)
+              Bind(jump_keyword, kwd_compile_error) ],
+            _ExpActions~_jump(jump_keyword, jump_rhs)))
 
         // infix <= (term binary_op infix) / (term 'as' type) / term
+        let infix_lhs = Variable("infix_lhs")
+        let infix_op = Variable("infix_op")
+        let infix_rhs = Variable("infix_rhs")
         exp_infix.set_body(
           Disj(
             [ Disj(
                 [ Conj(
-                    [ Bind(lhs, exp_term)
-                      Bind(op, binary_op)
-                      Bind(rhs, exp_infix) ])
+                    [ Bind(infix_lhs, exp_term)
+                      Bind(infix_op, kwd_as)
+                      Bind(infix_rhs, type_arrow) ])
                   Conj(
-                    [ Bind(lhs, exp_term)
-                      Bind(op, kwd_as)
-                      Bind(rhs, type_arrow) ]) ],
-                _ExpActions~_binop(lhs, op, rhs))
+                    [ Bind(infix_lhs, exp_term)
+                      Bind(infix_op, kwd_is)
+                      Bind(infix_rhs, exp_infix) ])
+                  Conj(
+                    [ Bind(infix_lhs, exp_term)
+                      Bind(infix_op, binary_op)
+                      Bind(infix_rhs, exp_infix) ])
+                ],
+                _ExpActions~_binop(infix_lhs, infix_op, infix_rhs))
               exp_term ]))
 
         // term <= if / ifdef / iftype / match / while / repeate / for / with /
@@ -254,25 +243,29 @@ class ExpressionBuilder
             [ exp_if
               exp_ifdef
               exp_iftype
-              exp_match
-              exp_while
-              exp_repeat
-              exp_for
-              exp_with
-              exp_try
-              exp_recover
-              exp_consume
-              exp_decl
+              //exp_match
+              //exp_while
+              //exp_repeat
+              //exp_for
+              //exp_with
+              //exp_try
+              //exp_recover
+              //exp_consume
+              //exp_decl
               exp_prefix
-              exp_hash ]))
+              //exp_hash
+            ]))
 
         // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
+        let if_firstif = Variable("if_firstif")
+        let if_elseifs = Variable("if_elseifs")
+        let if_else_block = Variable("if_else_block")
         exp_if.set_body(
           Conj(
             [ kwd_if
-              Bind(firstif, exp_cond)
+              Bind(if_firstif, exp_cond)
               Bind(
-                elseifs,
+                if_elseifs,
                 Star(
                   Conj(
                     [ kwd_elseif
@@ -280,25 +273,30 @@ class ExpressionBuilder
               Ques(
                 Conj(
                   [ kwd_else
-                    Bind(else_block, exp_seq) ]))
+                    Bind(if_else_block, exp_seq) ]))
               kwd_end ],
-            _ExpActions~_if(firstif, elseifs, else_block)))
+            _ExpActions~_if(if_firstif, if_elseifs, if_else_block)))
 
         // cond <= seq 'then' seq
+        let cond_if_true = Variable("cond_if_true")
+        let cond_then_block = Variable("cond_then_block")
         exp_cond.set_body(
           Conj(
-            [ Bind(if_true, exp_seq)
+            [ Bind(cond_if_true, exp_seq)
               kwd_then
-              Bind(then_block, exp_seq) ],
-            _ExpActions~_ifcond(if_true, then_block)))
+              Bind(cond_then_block, exp_seq) ],
+            _ExpActions~_ifcond(cond_if_true, cond_then_block)))
 
         // ifdef <= 'ifdef' cond ('elseif' cond)* ('else' seq)? 'end'
+        let ifdef_firstif = Variable("ifdef_firstif")
+        let ifdef_elseifs = Variable("ifdef_elseifs")
+        let ifdef_else_block = Variable("ifdef_else_block")
         exp_ifdef.set_body(
           Conj(
             [ kwd_ifdef
-              Bind(firstif, exp_cond)
+              Bind(ifdef_firstif, exp_cond)
               Bind(
-                elseifs,
+                ifdef_elseifs,
                 Star(
                   Conj(
                     [ kwd_elseif
@@ -306,88 +304,114 @@ class ExpressionBuilder
               Ques(
                 Conj(
                   [ kwd_else
-                    Bind(else_block, exp_seq) ]))
+                    Bind(ifdef_else_block, exp_seq) ]))
               kwd_end ],
-            _ExpActions~_ifdef(firstif, elseifs, else_block)))
+            _ExpActions~_ifdef(ifdef_firstif, ifdef_elseifs, ifdef_else_block)))
 
         // iftype <= 'iftype' type '<:' type 'then' seq ('elseif' type '<:' type)*
         //           ('else' seq)? 'end'
+        let iftype_firstif = Variable("iftype_firstif")
+        let iftype_if_true = Variable("iftype_if_true")
+        let iftype_lhs = Variable("iftype_lhs")
+        let iftype_op = Variable("iftype_op")
+        let iftype_rhs = Variable("iftype_rhs")
+        let iftype_then_block = Variable("iftype_then_block")
+        let iftype_elseifs = Variable("iftype_elseifs")
+        let iftype_else_block = Variable("iftype_else_block")
         exp_iftype.set_body(
           Conj(
             [ kwd_iftype
               Bind(
-                firstif,
+                iftype_firstif,
                 Conj(
-                  [ Bind(if_true,
+                  [ Bind(iftype_if_true,
                       Conj(
-                        [ Bind(lhs, type_arrow)
-                          Bind(op, subtype)
-                          Bind(rhs, type_arrow) ]))
+                        [ Bind(iftype_lhs, type_arrow)
+                          Bind(iftype_op, subtype)
+                          Bind(iftype_rhs, type_arrow) ]))
                     kwd_then
-                    Bind(then_block, exp_seq) ],
-                  _ExpActions~_iftype_cond(if_true, lhs, op, rhs, then_block)))
+                    Bind(iftype_then_block, exp_seq) ],
+                  _ExpActions~_iftype_cond(
+                    iftype_if_true,
+                    iftype_lhs,
+                    iftype_op,
+                    iftype_rhs,
+                    iftype_then_block)))
               Bind(
-                elseifs,
+                iftype_elseifs,
                 Star(
                   Conj(
                     [ kwd_elseif
-                      Bind(if_true,
+                      Bind(iftype_if_true,
                         Conj(
-                          [ Bind(lhs, type_arrow)
-                            Bind(op, subtype)
-                            Bind(rhs, type_arrow) ]))
+                          [ Bind(iftype_lhs, type_arrow)
+                            Bind(iftype_op, subtype)
+                            Bind(iftype_rhs, type_arrow) ]))
                       kwd_then
-                      Bind(then_block, exp_seq) ],
+                      Bind(iftype_then_block, exp_seq) ],
                     _ExpActions~_iftype_cond(
-                      if_true, lhs, op, rhs, then_block))))
+                      iftype_if_true,
+                      iftype_lhs,
+                      iftype_op,
+                      iftype_rhs,
+                      iftype_then_block))))
               Ques(
                 Conj(
                   [ kwd_else
-                    Bind(else_block, exp_seq) ]))
+                    Bind(iftype_else_block, exp_seq) ]))
               kwd_end ],
-            _ExpActions~_iftype(firstif, elseifs, else_block)))
+            _ExpActions~_iftype(
+              iftype_firstif, iftype_elseifs, iftype_else_block)))
 
         // prefix <= (prefix_op prefix) / postfix
+        let prefix_opv = Variable("prefix_opv")
+        let prefix_rhs = Variable("prefix_rhs")
         exp_prefix.set_body(
           Disj(
             [ Conj(
-                [ Bind(op, prefix_op)
-                  Bind(rhs, exp_prefix) ],
-                _ExpActions~_prefix(op, rhs))
+                [ Bind(prefix_opv, prefix_op)
+                  Bind(prefix_rhs, exp_prefix) ],
+                _ExpActions~_prefix(prefix_opv, prefix_rhs))
               exp_postfix ]))
 
         // exp_hash <= '#' exp_postfix
+        let hash_rhs = Variable("hash_rhs")
         exp_hash.set_body(
           Conj(
             [ hash
-              Bind(rhs, exp_postfix) ]),
-            _ExpActions~_hash(rhs))
+              Bind(hash_rhs, exp_postfix) ]),
+            _ExpActions~_hash(hash_rhs))
 
         // postfix <= (postfix postfix_op identifier) /
         //            (postfix type_args) /
         //            (postfix call_args) /
         //            atom
+        let postfix_lhs = Variable("postfix_lhs")
+        let postfix_opv = Variable("postfix_opv")
+        let postfix_rhs = Variable("postfix_rhs")
+        let postfix_args = Variable("postfix_type_args")
         exp_postfix.set_body(
           Disj(
             [ Conj(
-                [ Bind(lhs, exp_postfix)
-                  Bind(op, postfix_op)
-                  Bind(rhs, id) ],
-                _ExpActions~_binop(lhs, op, rhs))
+                [ Bind(postfix_lhs, exp_postfix)
+                  Bind(postfix_opv, postfix_op)
+                  Bind(postfix_rhs, id) ],
+                _ExpActions~_binop(postfix_lhs, postfix_opv, postfix_rhs))
               Conj(
-                [ Bind(lhs, exp_postfix)
-                  Bind(args, type_args) ],
-                _ExpActions~_postfix_type_args(lhs, args))
+                [ Bind(postfix_lhs, exp_postfix)
+                  Bind(postfix_args, type_args) ],
+                _ExpActions~_postfix_type_args(postfix_lhs, postfix_args))
               Conj(
-                [ Bind(lhs, exp_postfix)
-                  Bind(args, call_args) ],
-                _ExpActions~_postfix_call_args(lhs, args))
+                [ Bind(postfix_lhs, exp_postfix)
+                  Bind(postfix_args, call_args) ],
+                _ExpActions~_postfix_call_args(postfix_lhs, postfix_args))
               exp_atom ]))
 
         // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
         //         object / '__loc' / 'this' / literal / (~keyword identifier)
+        let atom_body = Variable("atom_body")
         exp_atom.set_body(
-          Bind(body,
+          Bind(atom_body,
             Disj(
               [ exp_tuple
                 exp_parens
@@ -400,16 +424,18 @@ class ExpressionBuilder
                 kwd_this
                 literal
                 Conj([ not_kwd; id ]) ])),
-          _ExpActions~_atom(body))
+          _ExpActions~_atom(atom_body))
 
         // call_args <= '(' call_args_pos? call_args_named? ')'
+        let call_args_posv = Variable("call_args_posv")
+        let call_args_namedv = Variable("call_args_named")
         call_args.set_body(
           Conj(
             [ oparen
-              Ques(Bind(pos, call_args_pos))
-              Ques(Bind(named, call_args_named))
+              Ques(Bind(call_args_posv, call_args_pos))
+              Ques(Bind(call_args_namedv, call_args_named))
               cparen ]),
-            _ExpActions~_call_args(pos, named))
+            _ExpActions~_call_args(call_args_posv, call_args_namedv))
 
         // call_args_pos <= exp_seq (',' exp_seq)*
         call_args_pos.set_body(
@@ -432,12 +458,19 @@ class ExpressionBuilder
                     call_arg_named ])) ]))
 
         // call_arg_named <= identifier '=' exp_seq
+        let call_arg_named_name = Variable("call_arg_named_name")
+        let call_arg_named_op = Variable("call_arg_named_op")
+        let call_arg_named_rhs = Variable("call_arg_named_rhs")
         call_arg_named.set_body(
           Conj(
-            [ Bind(name, id)
-              Bind(op, equals)
-              Bind(rhs, exp_seq) ]),
-            _ExpActions~_binop(name, op, rhs))
+            [ Bind(call_arg_named_name, id)
+              Bind(call_arg_named_op, equals)
+              Bind(call_arg_named_rhs, exp_seq) ]),
+            _ExpActions~_binop(
+              call_arg_named_name, call_arg_named_op, call_arg_named_rhs))
+
+        // tuple <= '(' seq (',' seq)+ ')'
+
 
         (exp_seq, exp_item)
       end

@@ -20,7 +20,7 @@ class Builder
     trivia = TriviaBuilder(_context)
     token = TokenBuilder(_context, trivia)
     keyword = KeywordBuilder(_context, trivia)
-    operator = OperatorBuilder(token, keyword)
+    operator = OperatorBuilder(trivia, token, keyword)
     literal = LiteralBuilder(_context, trivia, token, keyword)
     type_type = TypeBuilder(_context, token, keyword)
     expression = ExpressionBuilder(_context, trivia, token, keyword,

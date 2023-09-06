@@ -55,7 +55,10 @@ primitive _ExpActions
       end
     let rhs' =
       try
-        _Build.value_with[ast.Expression](b, rhs, r)?
+        _Build.value(b, rhs, r)? as
+          ( ast.NodeWith[ast.TypeType]
+          | ast.NodeWith[ast.Expression]
+          | ast.NodeWith[ast.Identifier] )
       else
         return _Build.bind_error(r, c, b, "Expression/Binop/RHS")
       end

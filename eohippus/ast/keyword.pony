@@ -2,6 +2,7 @@ use json = "../json"
 
 primitive Keywords
   fun kwd_addressof(): String => "addressof"
+  fun kwd_and(): String => "and"
   fun kwd_as(): String => "as"
   fun kwd_box(): String => "box"
   fun kwd_break(): String => "break"
@@ -22,9 +23,11 @@ primitive Keywords
   fun kwd_if(): String => "if"
   fun kwd_ifdef(): String => "ifdef"
   fun kwd_iftype(): String => "iftype"
+  fun kwd_is(): String => "is"
   fun kwd_iso(): String => "iso"
   fun kwd_loc(): String => "__loc"
   fun kwd_not(): String => "not"
+  fun kwd_or(): String => "or"
   fun kwd_primitive(): String => "primitive"
   fun kwd_ref(): String => "ref"
   fun kwd_return(): String => "return"
@@ -36,6 +39,7 @@ primitive Keywords
   fun kwd_use(): String => "use"
   fun kwd_val(): String => "val"
   fun kwd_where(): String => "where"
+  fun kwd_xor(): String => "xor"
 
 class val Keyword is NodeData
   let string: String

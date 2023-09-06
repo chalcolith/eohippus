@@ -9,9 +9,14 @@ primitive _TestParserExpression
   fun apply(test: PonyTest) =>
     test(_TestParserExpressionIdentifier)
     test(_TestParserExpressionItem)
+    test(_TestParserExpressionAssignment)
     test(_TestParserExpressionIf)
     test(_TestParserExpressionIfDef)
     test(_TestParserExpressionSequence)
+    test(_TestParserExpressionJump)
+    test(_TestParserExpressionInfix)
+    test(_TestParserExpressionPrefix)
+    test(_TestParserExpressionPostfix)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -91,6 +96,143 @@ class iso _TestParserExpressionSequence is UnitTest
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, "foo; 1; true", expected1)])
+
+class iso _TestParserExpressionAssignment is UnitTest
+  fun name(): String => "parser/expression/Assignment"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let expected =
+      """
+        {
+          "name": "ExpOperation",
+          "op": { "name": "Token", "string": "=" },
+          "lhs": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "foo" }
+          },
+          "rhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "LiteralInteger",
+              "value": 123
+            }
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, "foo = 123", expected)])
+
+class iso _TestParserExpressionJump is UnitTest
+  fun name(): String => "parser/expression/Jump"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source1 = "return 3.14"
+    let expected1 =
+      """
+        {
+          "name": "ExpJump",
+          "keyword": {
+            "name": "Keyword",
+            "string": "return"
+          },
+          "rhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "LiteralFloat",
+              "value": 3.14
+            }
+          }
+        }
+      """
+
+    let source2 = "error"
+    let expected2 =
+      """
+        {
+          "name": "ExpJump",
+          "keyword": {
+            "name": "Keyword",
+            "string": "error"
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source1, expected1)
+        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+
+class iso _TestParserExpressionInfix is UnitTest
+  fun name(): String => "parser/expression/Infix"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source1 = "a as C"
+    let expected1 =
+      """
+        {
+          "name": "ExpOperation",
+          "lhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "Identifier",
+              "string": "a"
+            }
+          },
+          "op": {
+            "name": "Keyword",
+            "string": "as"
+          },
+          "rhs": {
+            "name": "TypeNominal",
+            "rhs": {
+              "name": "Identifier",
+              "string": "C"
+            }
+          }
+        }
+      """
+
+    let source2 = "a * b"
+    let expected2 =
+      """
+        {
+          "name": "ExpOperation",
+          "lhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "Identifier",
+              "string": "a"
+            }
+          },
+          "op": {
+            "name": "Token",
+            "string": "*"
+          },
+          "rhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "Identifier",
+              "string": "b"
+            }
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source1, expected1)
+        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
 
 class iso _TestParserExpressionIf is UnitTest
   fun name(): String => "parser/expression/If"
@@ -235,3 +377,86 @@ class iso _TestParserExpressionIfDef is UnitTest
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionPrefix is UnitTest
+  fun name(): String => "parser/expression/Prefix"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "not true"
+    let expected =
+      """
+        {
+          "name": "ExpOperation",
+          "op": {
+            "name": "Keyword",
+            "string": "not"
+          },
+          "rhs": {
+            "name": "ExpAtom",
+            "body": {
+              "name": "LiteralBool",
+              "value": true
+            }
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionPostfix is UnitTest
+  fun name(): String => "parser/expression/Postfix"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source1 = "a.b"
+    let expected1 =
+      """
+        {
+          "name": "ExpOperation",
+          "lhs": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
+          },
+          "op": {
+            "name": "Token",
+            "string": "."
+          },
+          "rhs": {
+            "name": "Identifier",
+            "string": "b"
+          }
+        }
+      """
+
+    let source2 = "a[T]"
+    let expected2 =
+      """
+        {
+          "name": "ExpGeneric",
+          "lhs": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
+          },
+          "type_args": {
+            "name": "TypeArgs",
+            "types": [
+              {
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "T" }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source1, expected1)
+        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
