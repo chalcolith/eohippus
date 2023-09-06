@@ -261,7 +261,7 @@ class TypeBuilder
                 Star(Conj([comma; type_arrow]))
               ])))
             cparen
-            Bind(lambda_return_type, Ques(Conj([colon; type_arrow])))
+            Ques(Conj([colon; Bind(lambda_return_type, type_arrow)]))
             Bind(lambda_partial, Ques(ques))
             ccurly
             Bind(lambda_ref_cap, Ques(Disj([kwd_cap; kwd_gencap])))

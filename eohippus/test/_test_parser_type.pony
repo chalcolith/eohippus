@@ -11,6 +11,7 @@ primitive _TestParserType
     test(_TestParserTypeAtom)
     test(_TestParserTypeInfix)
     test(_TestParserTypeNominal)
+    test(_TestParserTypeLambda)
 
 class iso _TestParserTypeArrow is UnitTest
   fun name(): String => "parser/type/TypeArrow"
@@ -175,6 +176,64 @@ class iso _TestParserTypeNominal is UnitTest
             },
           "cap": { "name": "Keyword", "string": "iso" },
           "eph": { "name": "Token", "string": "^" }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserTypeLambda is UnitTest
+  fun name(): String => "parser/type/Lambda"
+  fun exclusion_group(): String => "parser/type"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.type_type.arrow()
+
+    let source = "@{ref foo[A,B](USize,Bool):F32?} trn!"
+    let expected =
+      """
+        {
+          "name": "TypeLambda",
+          "bare": true,
+          "cap": { "name": "Keyword", "string": "ref" },
+          "identifier": { "name": "Identifier", "string": "foo" },
+          "type_params": {
+            "name": "TypeParams",
+            "params": [
+              {
+                "name": "TypeParam",
+                "constraint": {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "A" }
+                }
+              },
+              {
+                "name": "TypeParam",
+                "constraint": {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "B" }
+                }
+              }
+            ]
+          },
+          "param_types": [
+            {
+              "name": "TypeNominal",
+              "rhs": { "name": "Identifier", "string": "USize" }
+            },
+            {
+              "name": "TypeNominal",
+              "rhs": { "name": "Identifier", "string": "Bool" }
+            }
+          ],
+          "return_type": {
+            "name": "TypeNominal",
+            "rhs": { "name": "Identifier", "string": "F32" }
+          },
+          "partial": true,
+          "rcap": { "name": "Keyword", "string": "trn" },
+          "reph": { "name": "Token", "string": "!" }
         }
       """
 

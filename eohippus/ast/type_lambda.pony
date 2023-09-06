@@ -37,8 +37,8 @@ class val TypeLambda is NodeData
   fun name(): String => "TypeLambda"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("bare", bare.string()))
-    props.push(("partial", partial.string()))
+    props.push(("bare", bare))
+    props.push(("partial", partial))
     match cap
     | let cap': Node =>
       props.push(("cap", cap'.get_json()))

@@ -194,7 +194,7 @@ primitive _TypeActions
     let rcap' = _Build.value_with_or_none[ast.Keyword](b, rcap, r)
     let reph' = _Build.value_with_or_none[ast.Token](b, reph, r)
 
-    let value = ast.NodeWith[ast.TypeLambda](
+    let value = ast.NodeWith[ast.TypeType](
       _Build.info(r),
       c,
       ast.TypeLambda(
