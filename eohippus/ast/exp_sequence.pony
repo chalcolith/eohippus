@@ -1,20 +1,6 @@
 use "itertools"
 
 use json = "../json"
-use types = "../types"
-
-type Expression is
-  ( ExpSequence
-  | ExpOperation
-  | ExpJump
-  | ExpIf
-  | ExpGeneric
-  | ExpCall
-  | ExpAtom
-  | ExpHash
-  | ExpTuple
-  | ExpRecover
-  | ExpTry )
 
 class val ExpSequence is NodeData
   let expressions: NodeSeqWith[Expression]

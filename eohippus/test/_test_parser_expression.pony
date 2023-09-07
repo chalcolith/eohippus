@@ -21,6 +21,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionParens)
     test(_TestParserExpressionRecover)
     test(_TestParserExpressionTry)
+    test(_TestParserExpressionArray)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -684,3 +685,61 @@ class iso _TestParserExpressionTry is UnitTest
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionArray is UnitTest
+  fun name(): String => "parser/expression/Array"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source1 = "[ as USize: 1; 2 ]"
+    let expected1 =
+      """
+        {
+          "name": "ExpArray",
+          "type": {
+            "name": "TypeNominal",
+            "rhs": { "name": "Identifier", "string": "USize" }
+          },
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralInteger", "value": 1 }
+              },
+              {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralInteger", "value": 2 }
+              }
+            ]
+          }
+        }
+      """
+
+    let source2 = "[ a\n\tb ]"
+    let expected2 =
+      """
+        {
+          "name": "ExpArray",
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "a" }
+              },
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "b" }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source1, expected1)
+        _Assert.test_match(h, rule, setup.data, source2, expected2) ])

@@ -435,3 +435,23 @@ primitive _ExpActions
     let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpTuple(seqs'))
     (value, b)
+
+  fun tag _array(
+    array_type: Variable,
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let array_type' = _Build.value_with_or_none[ast.TypeType](b, array_type, r)
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Array/Body")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpArray(array_type', body'))
+    (value, b)

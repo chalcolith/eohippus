@@ -76,6 +76,7 @@ class ExpressionBuilder
     let bar = _token(ast.Tokens.bar())
     let binary_op = _operator.binary_op()
     let ccurly = _token(ast.Tokens.close_curly())
+    let colon = _token(ast.Tokens.colon())
     let comma = _token(ast.Tokens.comma())
     let cparen = _token(ast.Tokens.close_paren())
     let csquare = _token(ast.Tokens.close_square())
@@ -445,7 +446,7 @@ class ExpressionBuilder
             Disj(
               [ exp_tuple
                 exp_parens
-                //exp_array
+                exp_array
                 //exp_ffi
                 //exp_lambda
                 //exp_object
@@ -520,6 +521,21 @@ class ExpressionBuilder
             [ oparen
               Bind(parens_body, exp_seq) ]),
           _ExpActions~_atom(parens_body))
+
+        // array <= '[' ('as' type_arrow ':') exp_seq ']'
+        let array_type = Variable("array_type")
+        let array_body = Variable("array_body")
+        exp_array.set_body(
+          Conj(
+            [ osquare
+              Ques(
+                Conj(
+                  [ kwd_as
+                    Bind(array_type, type_arrow)
+                    colon ]))
+              Bind(array_body, exp_seq)
+              csquare ]),
+          _ExpActions~_array(array_type, array_body))
 
         //
         (exp_seq, exp_item)
