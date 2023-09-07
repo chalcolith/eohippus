@@ -2,12 +2,12 @@
 use json = "../json"
 
 class val CallArgs is NodeData
-  let pos: NodeSeqWith[ExpSequence]
-  let named: NodeSeqWith[ExpOperation]
+  let pos: NodeSeqWith[Expression]
+  let named: NodeSeqWith[Expression]
 
   new val create(
-    pos': NodeSeqWith[ExpSequence],
-    named': NodeSeqWith[ExpOperation])
+    pos': NodeSeqWith[Expression],
+    named': NodeSeqWith[Expression])
   =>
     pos = pos'
     named = named'

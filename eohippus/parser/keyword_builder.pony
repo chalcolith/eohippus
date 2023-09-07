@@ -56,6 +56,7 @@ class KeywordBuilder
       ast.Keywords.kwd_this()
       ast.Keywords.kwd_trn()
       ast.Keywords.kwd_true()
+      ast.Keywords.kwd_try()
       ast.Keywords.kwd_use()
       ast.Keywords.kwd_val()
       ast.Keywords.kwd_where()

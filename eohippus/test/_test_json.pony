@@ -37,8 +37,8 @@ class iso _TestJsonSubsumes is UnitTest
             ("b", "bravo") ])
       end
 
-    h.assert_true(json.Subsumes(a, b), "a should subsume b")
-    h.assert_false(json.Subsumes(a, d), "a should not subsume d")
+    h.assert_true(json.Subsumes(a, b)._1, "a should subsume b")
+    h.assert_false(json.Subsumes(a, d)._1, "a should not subsume d")
 
     let one =
       recover val
@@ -48,7 +48,7 @@ class iso _TestJsonSubsumes is UnitTest
       recover val
         json.Object([ ("value", I128(456)); ("name", "LiteralFloat") ])
       end
-    h.assert_true(json.Subsumes(one, two))
+    h.assert_true(json.Subsumes(one, two)._1)
 
   class iso _TestJsonParse is UnitTest
     fun name(): String => "json/Parse"
@@ -57,12 +57,14 @@ class iso _TestJsonSubsumes is UnitTest
     fun _test(h: TestHelper, source: String, expected: json.Item) =>
       match json.Parse(source)
       | let item: json.Item =>
+        (var res, var err) = json.Subsumes(item, expected)
         h.assert_true(
-          json.Subsumes(item, expected),
-          item.string() + " does not subsume " + expected.string())
+          res,
+          item.string() + " does not subsume " + expected.string() + ": " + err)
+        (res, err) = json.Subsumes(expected, item)
         h.assert_true(
-          json.Subsumes(expected, item),
-          expected.string() + " does not subsume " + item.string())
+          res,
+          expected.string() + " does not subsume " + item.string() + ": " + err)
       | let err: json.ParseError =>
         h.fail(
           "Parse failed: " + err.message + " at index " + err.index.string())

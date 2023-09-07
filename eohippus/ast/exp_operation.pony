@@ -1,18 +1,29 @@
 use json = "../json"
 
 class val ExpOperation is NodeData
-  let lhs: (NodeWith[TypeType] | NodeWith[Expression] | None)
+  let lhs:
+    ( NodeWith[TypeType]
+    | NodeWith[Expression]
+    | NodeWith[Identifier]
+    | None)
   let op: (NodeWith[Keyword] | NodeWith[Token])
   let rhs: (NodeWith[TypeType] | NodeWith[Expression] | NodeWith[Identifier])
+  let partial: Bool
 
   new val create(
-    lhs': (NodeWith[TypeType] | NodeWith[Expression] | None),
+    lhs':
+      ( NodeWith[TypeType]
+      | NodeWith[Expression]
+      | NodeWith[Identifier]
+      | None),
     op': (NodeWith[Keyword] | NodeWith[Token]),
-    rhs': (NodeWith[TypeType] | NodeWith[Expression] | NodeWith[Identifier]))
+    rhs': (NodeWith[TypeType] | NodeWith[Expression] | NodeWith[Identifier]),
+    partial': Bool = false)
   =>
     lhs = lhs'
     op = op'
     rhs = rhs'
+    partial = partial'
 
   fun name(): String => "ExpOperation"
 
@@ -23,3 +34,6 @@ class val ExpOperation is NodeData
     end
     props.push(("op", op.get_json()))
     props.push(("rhs", rhs.get_json()))
+    if partial then
+      props.push(("partial", partial))
+    end

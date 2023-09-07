@@ -35,6 +35,7 @@ primitive _ExpActions
     lhs: Variable,
     op: Variable,
     rhs: Variable,
+    partial: (Variable | None),
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -42,9 +43,10 @@ primitive _ExpActions
   =>
     let lhs' =
       try
-        _Build.value_with[ast.Expression](b, lhs, r)?
-      else
-        return _Build.bind_error(r, c, b, "Expression/Binop/LHS")
+        _Build.value(b, lhs, r)? as
+          ( ast.NodeWith[ast.TypeType]
+          | ast.NodeWith[ast.Expression]
+          | ast.NodeWith[ast.Identifier] )
       end
     let op' =
       try
@@ -62,9 +64,10 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/Binop/RHS")
       end
+    let partial' = b.contains(partial)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpOperation(lhs', op', rhs'))
+      _Build.info(r), c, ast.ExpOperation(lhs', op', rhs', partial'))
     (value, b)
 
   fun tag _jump(
@@ -245,6 +248,27 @@ primitive _ExpActions
       _Build.info(r), c, ast.IfCondition(cond, then_block'))
     (value, b)
 
+  fun tag _try(
+    body: Variable,
+    else_block: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Try/Body")
+      end
+    let else_block' = _Build.value_with_or_none[ast.Expression](
+      b, else_block, r)
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpTry(body', else_block'))
+    (value, b)
+
   fun tag _recover(
     cap: Variable,
     body: Variable,
@@ -337,6 +361,7 @@ primitive _ExpActions
   fun tag _postfix_call_args(
     lhs: Variable,
     args: Variable,
+    partial: Variable,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -354,9 +379,10 @@ primitive _ExpActions
       else
         return _Build.bind_error(r, c, b, "Expression/PostFix/Call/CallArgs")
       end
+    let partial' = b.contains(partial)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpCall(lhs', args'))
+      _Build.info(r), c, ast.ExpCall(lhs', args', partial'))
     (value, b)
 
   fun tag _call_args(
@@ -367,8 +393,8 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let pos' = _Build.values_with[ast.ExpSequence](b, pos, r)
-    let named' = _Build.values_with[ast.ExpOperation](b, named, r)
+    let pos' = _Build.values_with[ast.Expression](b, pos, r)
+    let named' = _Build.values_with[ast.Expression](b, named, r)
 
     let value = ast.NodeWith[ast.CallArgs](
       _Build.info(r), c, ast.CallArgs(pos', named'))

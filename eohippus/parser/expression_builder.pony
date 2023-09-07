@@ -103,6 +103,7 @@ class ExpressionBuilder
     let kwd_return = _keyword(ast.Keywords.kwd_return())
     let kwd_then = _keyword(ast.Keywords.kwd_then())
     let kwd_this = _keyword(ast.Keywords.kwd_this())
+    let kwd_try = _keyword(ast.Keywords.kwd_try())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
     let literal = _literal.literal()
     let not_kwd = _keyword.not_kwd()
@@ -147,11 +148,11 @@ class ExpressionBuilder
         let exp_parens = NamedRule("Exp_Parens", None)                      // x
         let exp_postfix = NamedRule("Exp_Postfix", None)                    // x
         let exp_prefix = NamedRule("Exp_Prefix", None)                      // x
-        let exp_recover = NamedRule("Exp_Recover", None)
+        let exp_recover = NamedRule("Exp_Recover", None)                    // x
         let exp_repeat = NamedRule("Exp_Repeat", None)
         let exp_seq = NamedRule("Exp_Sequence", None)                       // x
         let exp_term = NamedRule("Exp_Term", None)                          // x
-        let exp_try = NamedRule("Exp_Try", None)
+        let exp_try = NamedRule("Exp_Try", None)                            // x
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)
         let exp_with = NamedRule("Exp_With", None)
@@ -191,7 +192,7 @@ class ExpressionBuilder
                 [ Bind(ass_lhs, exp_infix)
                   Bind(ass_op, equals)
                   Bind(ass_rhs, exp_assignment) ],
-                _ExpActions~_binop(ass_lhs, ass_op, ass_rhs))
+                _ExpActions~_binop(ass_lhs, ass_op, ass_rhs, None))
             exp_infix ]))
 
         // jump <= ('return' / 'break') assignment? /
@@ -217,6 +218,7 @@ class ExpressionBuilder
         // infix <= (term binary_op infix) / (term 'as' type) / term
         let infix_lhs = Variable("infix_lhs")
         let infix_op = Variable("infix_op")
+        let infix_partial = Variable("infix_partial")
         let infix_rhs = Variable("infix_rhs")
         exp_infix.set_body(
           Disj(
@@ -232,9 +234,11 @@ class ExpressionBuilder
                   Conj(
                     [ Bind(infix_lhs, exp_term)
                       Bind(infix_op, binary_op)
+                      Ques(Bind(infix_partial, ques))
                       Bind(infix_rhs, exp_infix) ])
                 ],
-                _ExpActions~_binop(infix_lhs, infix_op, infix_rhs))
+                _ExpActions~_binop(
+                  infix_lhs, infix_op, infix_rhs, infix_partial))
               exp_term ]))
 
         // term <= if / ifdef / iftype / match / while / repeate / for / with /
@@ -249,7 +253,7 @@ class ExpressionBuilder
               //exp_repeat
               //exp_for
               //exp_with
-              //exp_try
+              exp_try
               exp_recover
               //exp_consume
               //exp_decl
@@ -364,6 +368,17 @@ class ExpressionBuilder
             _ExpActions~_iftype(
               iftype_firstif, iftype_elseifs, iftype_else_block)))
 
+        // try <= 'try' seq ('else' seq)? 'end'
+        let try_body = Variable("try_body")
+        let try_else_block = Variable("try_else_block")
+        exp_try.set_body(
+          Conj(
+            [ kwd_try
+              Bind(try_body, exp_seq)
+              Ques(Conj([ kwd_else; Bind(try_else_block, exp_seq) ]))
+              kwd_end ]),
+          _ExpActions~_try(try_body, try_else_block))
+
         // recover <= 'recover' cap? seq 'end'
         let recover_cap = Variable("recover_cap")
         let recover_body = Variable("recover_body")
@@ -402,21 +417,24 @@ class ExpressionBuilder
         let postfix_opv = Variable("postfix_opv")
         let postfix_rhs = Variable("postfix_rhs")
         let postfix_args = Variable("postfix_type_args")
+        let postfix_partial = Variable("postfix_partial")
         exp_postfix.set_body(
           Disj(
             [ Conj(
                 [ Bind(postfix_lhs, exp_postfix)
                   Bind(postfix_opv, postfix_op)
                   Bind(postfix_rhs, id) ],
-                _ExpActions~_binop(postfix_lhs, postfix_opv, postfix_rhs))
+                _ExpActions~_binop(postfix_lhs, postfix_opv, postfix_rhs, None))
               Conj(
                 [ Bind(postfix_lhs, exp_postfix)
                   Bind(postfix_args, type_args) ],
                 _ExpActions~_postfix_type_args(postfix_lhs, postfix_args))
               Conj(
                 [ Bind(postfix_lhs, exp_postfix)
-                  Bind(postfix_args, call_args) ],
-                _ExpActions~_postfix_call_args(postfix_lhs, postfix_args))
+                  Bind(postfix_args, call_args)
+                  Ques(Bind(postfix_partial, ques)) ],
+                _ExpActions~_postfix_call_args(
+                  postfix_lhs, postfix_args, postfix_partial))
               exp_atom ]))
 
         // atom <= tuple / parens / array / ffi / bare_lambda / lambda /
@@ -446,7 +464,7 @@ class ExpressionBuilder
               Ques(Bind(call_args_posv, call_args_pos))
               Ques(Bind(call_args_namedv, call_args_named))
               cparen ]),
-            _ExpActions~_call_args(call_args_posv, call_args_namedv))
+          _ExpActions~_call_args(call_args_posv, call_args_namedv))
 
         // call_args_pos <= exp_seq (',' exp_seq)*
         call_args_pos.set_body(
@@ -469,16 +487,16 @@ class ExpressionBuilder
                     call_arg_named ])) ]))
 
         // call_arg_named <= identifier '=' exp_seq
-        let call_arg_named_name = Variable("call_arg_named_name")
-        let call_arg_named_op = Variable("call_arg_named_op")
-        let call_arg_named_rhs = Variable("call_arg_named_rhs")
+        let call_arg_name = Variable("call_arg_named_name")
+        let call_arg_op = Variable("call_arg_named_op")
+        let call_arg_rhs = Variable("call_arg_named_rhs")
         call_arg_named.set_body(
           Conj(
-            [ Bind(call_arg_named_name, id)
-              Bind(call_arg_named_op, equals)
-              Bind(call_arg_named_rhs, exp_seq) ]),
-            _ExpActions~_binop(
-              call_arg_named_name, call_arg_named_op, call_arg_named_rhs))
+            [ Bind(call_arg_name, id)
+              Bind(call_arg_op, equals)
+              Bind(call_arg_rhs, exp_seq) ]),
+          _ExpActions~_binop(
+             call_arg_name, call_arg_op, call_arg_rhs, None))
 
         // tuple <= '(' seq (',' seq)+ ')'
         let tuple_seqs = Variable("tuple_seqs")

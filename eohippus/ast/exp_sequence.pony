@@ -13,7 +13,8 @@ type Expression is
   | ExpAtom
   | ExpHash
   | ExpTuple
-  | ExpRecover )
+  | ExpRecover
+  | ExpTry )
 
 class val ExpSequence is NodeData
   let expressions: NodeSeqWith[Expression]

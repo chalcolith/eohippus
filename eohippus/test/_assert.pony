@@ -60,11 +60,12 @@ primitive _Assert
                           + v.size().string())
                       test_succeeded = false
                     else
-                      let subsumes = json.Subsumes(expected_json, actual_json)
+                      (let res, let err) =
+                        json.Subsumes(expected_json, actual_json)
                       test_succeeded = h.assert_true(
-                        subsumes,
+                        res,
                         "Expected '" + expected_json.string() + "'; actual '"
-                          + actual_json.string() + "'")
+                          + actual_json.string() + "': " + err)
                     end
                   | let parse_error: json.ParseError =>
                     h.fail(

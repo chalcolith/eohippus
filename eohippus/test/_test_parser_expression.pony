@@ -20,6 +20,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionTuple)
     test(_TestParserExpressionParens)
     test(_TestParserExpressionRecover)
+    test(_TestParserExpressionTry)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -207,7 +208,7 @@ class iso _TestParserExpressionInfix is UnitTest
         }
       """
 
-    let source2 = "a * b"
+    let source2 = "a *? b"
     let expected2 =
       """
         {
@@ -229,7 +230,8 @@ class iso _TestParserExpressionInfix is UnitTest
               "name": "Identifier",
               "string": "b"
             }
-          }
+          },
+          "partial": true
         }
       """
 
@@ -460,9 +462,79 @@ class iso _TestParserExpressionPostfix is UnitTest
         }
       """
 
+    let source3 = "a(3.14, b where c = true, d = \"z\")?"
+    let expected3 =
+      """
+        {
+          "name": "ExpCall",
+          "lhs": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
+          },
+          "partial": true,
+          "args": {
+            "name": "CallArgs",
+            "positional": [
+              {
+                "name": "ExpSequence",
+                "expressions": [
+                  {
+                    "name": "ExpAtom",
+                    "body": { "name": "LiteralFloat", "value": 3.14 }
+                  }
+                ]
+              },
+              {
+                "name": "ExpSequence",
+                "expressions": [
+                  {
+                    "name": "ExpAtom",
+                    "body": { "name": "Identifier", "string": "b" }
+                  }
+                ]
+              }
+            ],
+            "named": [
+              {
+                "name": "ExpOperation",
+                "lhs": { "name": "Identifier", "string": "c" },
+                "op": { "name": "Token", "string": "=" },
+                "rhs": {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": { "name": "LiteralBool", "value": true }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "ExpOperation",
+                "lhs": { "name": "Identifier", "string": "d" },
+                "op": { "name": "Token", "string": "=" },
+                "rhs": {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": {
+                        "name": "LiteralString",
+                        "value": "z"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      """
+
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
-        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+        _Assert.test_match(h, rule, setup.data, source2, expected2)
+        _Assert.test_match(h, rule, setup.data, source3, expected3) ])
 
 class iso _TestParserExpressionTuple is UnitTest
   fun name(): String => "parser/expression/Tuple"
@@ -564,6 +636,43 @@ class iso _TestParserExpressionRecover is UnitTest
                 "name": "ExpAtom",
                 "body": { "name": "Identifier", "string": "a" }
               },
+              {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralInteger", "value": 123 }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionTry is UnitTest
+  fun name(): String => "parser/expression/Try"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "try a else 123 end"
+    let expected =
+      """
+        {
+          "name": "ExpTry",
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "a" }
+              }
+            ]
+          },
+          "else_block": {
+            "name": "ExpSequence",
+            "expressions": [
               {
                 "name": "ExpAtom",
                 "body": { "name": "LiteralInteger", "value": 123 }

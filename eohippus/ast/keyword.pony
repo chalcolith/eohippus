@@ -37,6 +37,7 @@ primitive Keywords
   fun kwd_this(): String => "this"
   fun kwd_trn(): String => "trn"
   fun kwd_true(): String => "true"
+  fun kwd_try(): String => "try"
   fun kwd_use(): String => "use"
   fun kwd_val(): String => "val"
   fun kwd_where(): String => "where"
