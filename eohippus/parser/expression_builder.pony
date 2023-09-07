@@ -86,6 +86,7 @@ class ExpressionBuilder
     let kwd = _keyword.kwd()
     let kwd_as = _keyword(ast.Keywords.kwd_as())
     let kwd_break = _keyword(ast.Keywords.kwd_break())
+    let kwd_cap = _keyword.cap()
     let kwd_compile_error = _keyword(ast.Keywords.kwd_compile_error())
     let kwd_compile_intrinsic = _keyword(ast.Keywords.kwd_compile_intrinsic())
     let kwd_continue = _keyword(ast.Keywords.kwd_continue())
@@ -98,6 +99,7 @@ class ExpressionBuilder
     let kwd_iftype = _keyword(ast.Keywords.kwd_iftype())
     let kwd_is = _keyword(ast.Keywords.kwd_is())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
+    let kwd_recover = _keyword(ast.Keywords.kwd_recover())
     let kwd_return = _keyword(ast.Keywords.kwd_return())
     let kwd_then = _keyword(ast.Keywords.kwd_then())
     let kwd_this = _keyword(ast.Keywords.kwd_this())
@@ -126,7 +128,6 @@ class ExpressionBuilder
         let exp_array = NamedRule("Exp_Array", None)
         let exp_assignment = NamedRule("Exp_Assignment", None)              // x
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
-        let exp_bare_lambda = NamedRule("Exp_BareLambda", None)
         let exp_cond = NamedRule("Exp_IfCondition", None)                   // x
         let exp_consume = NamedRule("Exp_Consume", None)
         let exp_decl = NamedRule("Exp_Declaration", None)
@@ -143,7 +144,7 @@ class ExpressionBuilder
         let exp_lambda = NamedRule("Exp_Lambda", None)
         let exp_match = NamedRule("Exp_Match", None)
         let exp_object = NamedRule("Exp_Object", None)
-        let exp_parens = NamedRule("Exp_Parenthesized", None)
+        let exp_parens = NamedRule("Exp_Parens", None)                      // x
         let exp_postfix = NamedRule("Exp_Postfix", None)                    // x
         let exp_prefix = NamedRule("Exp_Prefix", None)                      // x
         let exp_recover = NamedRule("Exp_Recover", None)
@@ -151,7 +152,7 @@ class ExpressionBuilder
         let exp_seq = NamedRule("Exp_Sequence", None)                       // x
         let exp_term = NamedRule("Exp_Term", None)                          // x
         let exp_try = NamedRule("Exp_Try", None)
-        let exp_tuple = NamedRule("Exp_Tuple", None)
+        let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)
         let exp_with = NamedRule("Exp_With", None)
 
@@ -249,7 +250,7 @@ class ExpressionBuilder
               //exp_for
               //exp_with
               //exp_try
-              //exp_recover
+              exp_recover
               //exp_consume
               //exp_decl
               exp_prefix
@@ -363,6 +364,17 @@ class ExpressionBuilder
             _ExpActions~_iftype(
               iftype_firstif, iftype_elseifs, iftype_else_block)))
 
+        // recover <= 'recover' cap? seq 'end'
+        let recover_cap = Variable("recover_cap")
+        let recover_body = Variable("recover_body")
+        exp_recover.set_body(
+          Conj(
+            [ kwd_recover
+              Ques(Bind(recover_cap, kwd_cap))
+              Bind(recover_body, exp_seq)
+              kwd_end ]),
+          _ExpActions~_recover(recover_cap, recover_body))
+
         // prefix <= (prefix_op prefix) / postfix
         let prefix_opv = Variable("prefix_opv")
         let prefix_rhs = Variable("prefix_rhs")
@@ -415,11 +427,10 @@ class ExpressionBuilder
             Disj(
               [ exp_tuple
                 exp_parens
-                exp_array
-                exp_ffi
-                exp_bare_lambda
-                exp_lambda
-                exp_object
+                //exp_array
+                //exp_ffi
+                //exp_lambda
+                //exp_object
                 kwd_loc
                 kwd_this
                 literal
@@ -470,8 +481,29 @@ class ExpressionBuilder
               call_arg_named_name, call_arg_named_op, call_arg_named_rhs))
 
         // tuple <= '(' seq (',' seq)+ ')'
+        let tuple_seqs = Variable("tuple_seqs")
+        exp_tuple.set_body(
+          Bind(
+            tuple_seqs,
+            Conj(
+              [ oparen
+                exp_seq
+                Plus(
+                  Conj(
+                    [ comma
+                      exp_seq ]))
+                cparen ])),
+          _ExpActions~_tuple(tuple_seqs))
 
+        // parens <= '(' seq ')'
+        let parens_body = Variable("parens_body")
+        exp_parens.set_body(
+          Conj(
+            [ oparen
+              Bind(parens_body, exp_seq) ]),
+          _ExpActions~_atom(parens_body))
 
+        //
         (exp_seq, exp_item)
       end
     _exp_seq = exp_seq'

@@ -49,6 +49,7 @@ class KeywordBuilder
       ast.Keywords.kwd_or()
       ast.Keywords.kwd_primitive()
       ast.Keywords.kwd_ref()
+      ast.Keywords.kwd_recover()
       ast.Keywords.kwd_return()
       ast.Keywords.kwd_tag()
       ast.Keywords.kwd_then()

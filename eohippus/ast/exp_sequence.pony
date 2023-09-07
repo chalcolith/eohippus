@@ -11,7 +11,9 @@ type Expression is
   | ExpGeneric
   | ExpCall
   | ExpAtom
-  | ExpHash )
+  | ExpHash
+  | ExpTuple
+  | ExpRecover )
 
 class val ExpSequence is NodeData
   let expressions: NodeSeqWith[Expression]

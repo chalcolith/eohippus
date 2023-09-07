@@ -245,6 +245,26 @@ primitive _ExpActions
       _Build.info(r), c, ast.IfCondition(cond, then_block'))
     (value, b)
 
+  fun tag _recover(
+    cap: Variable,
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Recover/Body")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpRecover(cap', body'))
+    (value, b)
+
   fun tag _prefix(
     op: Variable,
     rhs: Variable,
@@ -368,6 +388,24 @@ primitive _ExpActions
         return _Build.bind_error(r, c, b, "Expression/Atom/Body")
       end
 
+    match body'
+    | let exp: ast.NodeWith[ast.Expression] =>
+      (exp, b)
+    else
+      let value = ast.NodeWith[ast.Expression](
+        _Build.info(r), c, ast.ExpAtom(body'))
+      (value, b)
+    end
+
+  fun tag _tuple(
+    seqs: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let seqs' = _Build.values_with[ast.Expression](b, seqs, r)
+
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpAtom(body'))
+      _Build.info(r), c, ast.ExpTuple(seqs'))
     (value, b)

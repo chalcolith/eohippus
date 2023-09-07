@@ -30,6 +30,7 @@ primitive Keywords
   fun kwd_or(): String => "or"
   fun kwd_primitive(): String => "primitive"
   fun kwd_ref(): String => "ref"
+  fun kwd_recover(): String => "recover"
   fun kwd_return(): String => "return"
   fun kwd_tag(): String => "tag"
   fun kwd_then(): String => "then"

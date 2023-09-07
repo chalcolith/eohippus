@@ -17,6 +17,9 @@ primitive _TestParserExpression
     test(_TestParserExpressionInfix)
     test(_TestParserExpressionPrefix)
     test(_TestParserExpressionPostfix)
+    test(_TestParserExpressionTuple)
+    test(_TestParserExpressionParens)
+    test(_TestParserExpressionRecover)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -460,3 +463,115 @@ class iso _TestParserExpressionPostfix is UnitTest
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
         _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+
+class iso _TestParserExpressionTuple is UnitTest
+  fun name(): String => "parser/expression/Tuple"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "(a, 1, this)"
+    let expected =
+      """
+        {
+          "name": "ExpTuple",
+          "sequences": [
+            {
+              "name": "ExpSequence",
+              "expressions": [
+                {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "a" }
+                }
+              ]
+            },
+            {
+              "name": "ExpSequence",
+              "expressions": [
+                {
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralInteger", "value": 1 }
+                }
+              ]
+            },
+            {
+              "name": "ExpSequence",
+              "expressions": [
+                {
+                  "name": "ExpAtom",
+                  "body": { "name": "Keyword", "string": "this" }
+                }
+              ]
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionParens is UnitTest
+  fun name(): String => "parser/expression/Parens"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "(1.23)"
+    let expected =
+      """
+        {
+          "name": "ExpSequence",
+          "expressions": [
+            {
+              "name": "ExpAtom",
+              "body": {
+                "name": "LiteralFloat",
+                "value": 1.23
+              }
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionRecover is UnitTest
+  fun name(): String => "parser/expression/Recover"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "recover trn a; 123 end"
+    let expected =
+      """
+        {
+          "name": "ExpRecover",
+          "cap": {
+            "name": "Keyword",
+            "string": "trn"
+          },
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "a" }
+              },
+              {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralInteger", "value": 123 }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
