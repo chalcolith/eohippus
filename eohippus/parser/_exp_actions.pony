@@ -289,6 +289,26 @@ primitive _ExpActions
       _Build.info(r), c, ast.ExpRecover(cap', body'))
     (value, b)
 
+  fun tag _consume(
+    cap: Variable,
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Consume/Body")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpConsume(cap', body'))
+    (value, b)
+
   fun tag _prefix(
     op: Variable,
     rhs: Variable,

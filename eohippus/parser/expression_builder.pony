@@ -90,6 +90,7 @@ class ExpressionBuilder
     let kwd_cap = _keyword.cap()
     let kwd_compile_error = _keyword(ast.Keywords.kwd_compile_error())
     let kwd_compile_intrinsic = _keyword(ast.Keywords.kwd_compile_intrinsic())
+    let kwd_consume = _keyword(ast.Keywords.kwd_consume())
     let kwd_continue = _keyword(ast.Keywords.kwd_continue())
     let kwd_else = _keyword(ast.Keywords.kwd_else())
     let kwd_elseif = _keyword(ast.Keywords.kwd_elseif())
@@ -127,7 +128,7 @@ class ExpressionBuilder
         let call_args = NamedRule("Exp_CallArgs", None)                     // x
         let call_args_named = NamedRule("Exp_CallArgs_Named", None)         // x
         let call_args_pos = NamedRule("Exp_CallArgs_Pos", None)             // x
-        let exp_array = NamedRule("Exp_Array", None)
+        let exp_array = NamedRule("Exp_Array", None)                        // x
         let exp_assignment = NamedRule("Exp_Assignment", None)              // x
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
         let exp_cond = NamedRule("Exp_IfCondition", None)                   // x
@@ -256,7 +257,7 @@ class ExpressionBuilder
               //exp_with
               exp_try
               exp_recover
-              //exp_consume
+              exp_consume
               //exp_decl
               exp_prefix
               //exp_hash
@@ -390,6 +391,16 @@ class ExpressionBuilder
               Bind(recover_body, exp_seq)
               kwd_end ]),
           _ExpActions~_recover(recover_cap, recover_body))
+
+        // consume <= 'consume' cap? term
+        let consume_cap = Variable("consume_cap")
+        let consume_body = Variable("consume_body")
+        exp_consume.set_body(
+          Conj(
+            [ kwd_consume
+              Ques(Bind(consume_cap, kwd_cap))
+              Bind(consume_body, exp_term) ]),
+          _ExpActions~_consume(consume_cap, consume_body))
 
         // prefix <= (prefix_op prefix) / postfix
         let prefix_opv = Variable("prefix_opv")

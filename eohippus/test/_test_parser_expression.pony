@@ -22,6 +22,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionRecover)
     test(_TestParserExpressionTry)
     test(_TestParserExpressionArray)
+    test(_TestParserExpressionConsume)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -743,3 +744,40 @@ class iso _TestParserExpressionArray is UnitTest
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
         _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+
+class iso _TestParserExpressionConsume is UnitTest
+  fun name(): String => "parser/expression/Consume"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "consume iso (a + 4)"
+    let expected =
+      """
+        {
+          "name": "ExpConsume",
+          "cap": { "name": "Keyword", "string": "iso" },
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpOperation",
+                "op": { "name": "Token", "string": "+" },
+                "lhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "a" }
+                },
+                "rhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralInteger", "value": 4 }
+                }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])

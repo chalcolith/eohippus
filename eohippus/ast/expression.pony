@@ -10,4 +10,5 @@ type Expression is
   | ExpTuple
   | ExpRecover
   | ExpTry
-  | ExpArray )
+  | ExpArray
+  | ExpConsume )

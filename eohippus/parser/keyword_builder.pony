@@ -27,6 +27,7 @@ class KeywordBuilder
       ast.Keywords.kwd_break()
       ast.Keywords.kwd_compile_error()
       ast.Keywords.kwd_compile_intrinsic()
+      ast.Keywords.kwd_consume()
       ast.Keywords.kwd_continue()
       ast.Keywords.kwd_digestof()
       ast.Keywords.kwd_else()

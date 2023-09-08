@@ -8,6 +8,7 @@ primitive Keywords
   fun kwd_break(): String => "break"
   fun kwd_compile_error(): String => "compile_error"
   fun kwd_compile_intrinsic(): String => "compile_intrinsic"
+  fun kwd_consume(): String => "consume"
   fun kwd_continue(): String => "continue"
   fun kwd_digestof(): String => "digestof"
   fun kwd_else(): String => "else"
