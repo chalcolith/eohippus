@@ -24,6 +24,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionArray)
     test(_TestParserExpressionConsume)
     test(_TestParserExpressionWhile)
+    test(_TestParserExpressionRepeat)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -850,6 +851,52 @@ class iso _TestParserExpressionWhile is UnitTest
                 },
                 "op": { "name": "Token", "string": "." },
                 "rhs": { "name": "Identifier", "string": "b" }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionRepeat is UnitTest
+  fun name(): String => "parser/expression/Repeat"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "repeat a until b else c end"
+    let expected =
+      """
+        {
+          "name": "ExpRepeat",
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "a" }
+              }
+            ]
+          },
+          "condition": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "b" }
+              }
+            ]
+          },
+          "else_block": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body" : { "name": "Identifier", "string": "c" }
               }
             ]
           }

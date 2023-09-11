@@ -103,10 +103,12 @@ class ExpressionBuilder
     let kwd_is = _keyword(ast.Keywords.kwd_is())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
     let kwd_recover = _keyword(ast.Keywords.kwd_recover())
+    let kwd_repeat = _keyword(ast.Keywords.kwd_repeat())
     let kwd_return = _keyword(ast.Keywords.kwd_return())
     let kwd_then = _keyword(ast.Keywords.kwd_then())
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let kwd_try = _keyword(ast.Keywords.kwd_try())
+    let kwd_until = _keyword(ast.Keywords.kwd_until())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
     let kwd_while = _keyword(ast.Keywords.kwd_while())
     let literal = _literal.literal()
@@ -153,7 +155,7 @@ class ExpressionBuilder
         let exp_postfix = NamedRule("Exp_Postfix", None)                    // x
         let exp_prefix = NamedRule("Exp_Prefix", None)                      // x
         let exp_recover = NamedRule("Exp_Recover", None)                    // x
-        let exp_repeat = NamedRule("Exp_Repeat", None)
+        let exp_repeat = NamedRule("Exp_Repeat", None)                      // x
         let exp_seq = NamedRule("Exp_Sequence", None)                       // x
         let exp_term = NamedRule("Exp_Term", None)                          // x
         let exp_try = NamedRule("Exp_Try", None)                            // x
@@ -254,7 +256,7 @@ class ExpressionBuilder
               exp_iftype
               //exp_match
               exp_while
-              //exp_repeat
+              exp_repeat
               //exp_for
               //exp_with
               exp_try
@@ -372,7 +374,7 @@ class ExpressionBuilder
             _ExpActions~_iftype(
               iftype_firstif, iftype_elseifs, iftype_else_block)))
 
-        // while <= 'while' seq 'do' seq ('else' seq) 'end'
+        // while <= 'while' seq 'do' seq ('else' seq)? 'end'
         let while_cond = Variable("while_cond")
         let while_body = Variable("while_body")
         let while_else_block = Variable("while_else_block")
@@ -385,6 +387,20 @@ class ExpressionBuilder
               Ques(Conj([ kwd_else; Bind(while_else_block, exp_seq) ]))
               kwd_end ]),
           _ExpActions~_while(while_cond, while_body, while_else_block))
+
+        // repeat <= 'repeat' seq 'until' seq ('else' seq)? 'end'
+        let repeat_body = Variable("repeat_body")
+        let repeat_cond = Variable("repeat_cond")
+        let repeat_else_block = Variable("repeat_else_block")
+        exp_repeat.set_body(
+          Conj(
+            [ kwd_repeat
+              Bind(repeat_body, exp_seq)
+              kwd_until
+              Bind(repeat_cond, exp_seq)
+              Ques(Conj([ kwd_else; Bind(repeat_else_block, exp_seq) ]))
+              kwd_end ]),
+          _ExpActions~_repeat(repeat_body, repeat_cond, repeat_else_block))
 
         // try <= 'try' seq ('else' seq)? 'end'
         let try_body = Variable("try_body")

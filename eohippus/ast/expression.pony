@@ -12,4 +12,5 @@ type Expression is
   | ExpTry
   | ExpArray
   | ExpConsume
-  | ExpWhile )
+  | ExpWhile
+  | ExpRepeat )
