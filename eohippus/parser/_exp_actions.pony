@@ -248,6 +248,34 @@ primitive _ExpActions
       _Build.info(r), c, ast.IfCondition(cond, then_block'))
     (value, b)
 
+  fun tag _while(
+    condition: Variable,
+    body: Variable,
+    else_block: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let condition' =
+      try
+        _Build.value_with[ast.Expression](b, condition, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/While/Condition")
+      end
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/While/Body")
+      end
+    let else_block' = _Build.value_with_or_none[ast.Expression](
+      b, else_block, r)
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpWhile(condition', body', else_block'))
+    (value, b)
+
   fun tag _try(
     body: Variable,
     else_block: Variable,

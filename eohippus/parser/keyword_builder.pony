@@ -30,6 +30,7 @@ class KeywordBuilder
       ast.Keywords.kwd_consume()
       ast.Keywords.kwd_continue()
       ast.Keywords.kwd_digestof()
+      ast.Keywords.kwd_do()
       ast.Keywords.kwd_else()
       ast.Keywords.kwd_elseif()
       ast.Keywords.kwd_end()
@@ -61,6 +62,7 @@ class KeywordBuilder
       ast.Keywords.kwd_use()
       ast.Keywords.kwd_val()
       ast.Keywords.kwd_where()
+      ast.Keywords.kwd_while()
       ast.Keywords.kwd_xor()
     ]
 

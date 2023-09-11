@@ -11,4 +11,5 @@ type Expression is
   | ExpRecover
   | ExpTry
   | ExpArray
-  | ExpConsume )
+  | ExpConsume
+  | ExpWhile )

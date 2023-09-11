@@ -92,6 +92,7 @@ class ExpressionBuilder
     let kwd_compile_intrinsic = _keyword(ast.Keywords.kwd_compile_intrinsic())
     let kwd_consume = _keyword(ast.Keywords.kwd_consume())
     let kwd_continue = _keyword(ast.Keywords.kwd_continue())
+    let kwd_do = _keyword(ast.Keywords.kwd_do())
     let kwd_else = _keyword(ast.Keywords.kwd_else())
     let kwd_elseif = _keyword(ast.Keywords.kwd_elseif())
     let kwd_end = _keyword(ast.Keywords.kwd_end())
@@ -107,6 +108,7 @@ class ExpressionBuilder
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let kwd_try = _keyword(ast.Keywords.kwd_try())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
+    let kwd_while = _keyword(ast.Keywords.kwd_while())
     let literal = _literal.literal()
     let not_kwd = _keyword.not_kwd()
     let ocurly = _token(ast.Tokens.open_curly())
@@ -132,7 +134,7 @@ class ExpressionBuilder
         let exp_assignment = NamedRule("Exp_Assignment", None)              // x
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
         let exp_cond = NamedRule("Exp_IfCondition", None)                   // x
-        let exp_consume = NamedRule("Exp_Consume", None)
+        let exp_consume = NamedRule("Exp_Consume", None)                    // x
         let exp_decl = NamedRule("Exp_Declaration", None)
         let exp_elsif = NamedRule("Exp_Elsif", None)                        // x
         let exp_ffi = NamedRule("Exp_Ffi", None)
@@ -156,7 +158,7 @@ class ExpressionBuilder
         let exp_term = NamedRule("Exp_Term", None)                          // x
         let exp_try = NamedRule("Exp_Try", None)                            // x
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
-        let exp_while = NamedRule("Exp_While", None)
+        let exp_while = NamedRule("Exp_While", None)                        // x
         let exp_with = NamedRule("Exp_With", None)
 
         // seq <= annotation? item (';'? item)*
@@ -251,7 +253,7 @@ class ExpressionBuilder
               exp_ifdef
               exp_iftype
               //exp_match
-              //exp_while
+              exp_while
               //exp_repeat
               //exp_for
               //exp_with
@@ -369,6 +371,20 @@ class ExpressionBuilder
               kwd_end ],
             _ExpActions~_iftype(
               iftype_firstif, iftype_elseifs, iftype_else_block)))
+
+        // while <= 'while' seq 'do' seq ('else' seq) 'end'
+        let while_cond = Variable("while_cond")
+        let while_body = Variable("while_body")
+        let while_else_block = Variable("while_else_block")
+        exp_while.set_body(
+          Conj(
+            [ kwd_while
+              Bind(while_cond, exp_seq)
+              kwd_do
+              Bind(while_body, exp_seq)
+              Ques(Conj([ kwd_else; Bind(while_else_block, exp_seq) ]))
+              kwd_end ]),
+          _ExpActions~_while(while_cond, while_body, while_else_block))
 
         // try <= 'try' seq ('else' seq)? 'end'
         let try_body = Variable("try_body")

@@ -23,6 +23,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionTry)
     test(_TestParserExpressionArray)
     test(_TestParserExpressionConsume)
+    test(_TestParserExpressionWhile)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -773,6 +774,82 @@ class iso _TestParserExpressionConsume is UnitTest
                   "name": "ExpAtom",
                   "body": { "name": "LiteralInteger", "value": 4 }
                 }
+              }
+            ]
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionWhile is UnitTest
+  fun name(): String => "parser/expression/While"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "while 1 == 2 do f(a) else g.b end"
+    let expected =
+      """
+        {
+          "name": "ExpWhile",
+          "condition": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpOperation",
+                "lhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralInteger", "value": 1 }
+                },
+                "op": { "name": "Token", "string": "==" },
+                "rhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralInteger", "value": 2 }
+                }
+              }
+            ]
+          },
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpCall",
+                "lhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "f" }
+                },
+                "args": {
+                  "name": "CallArgs",
+                  "positional": [
+                    {
+                      "name": "ExpSequence",
+                      "expressions": [
+                        {
+                          "name": "ExpAtom",
+                          "body": { "name": "Identifier", "string": "a" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "else_block": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpOperation",
+                "lhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "g" }
+                },
+                "op": { "name": "Token", "string": "." },
+                "rhs": { "name": "Identifier", "string": "b" }
               }
             ]
           }

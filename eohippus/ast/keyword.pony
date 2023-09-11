@@ -11,6 +11,7 @@ primitive Keywords
   fun kwd_consume(): String => "consume"
   fun kwd_continue(): String => "continue"
   fun kwd_digestof(): String => "digestof"
+  fun kwd_do(): String => "do"
   fun kwd_else(): String => "else"
   fun kwd_elseif(): String => "elseif"
   fun kwd_end(): String => "end"
@@ -42,6 +43,7 @@ primitive Keywords
   fun kwd_use(): String => "use"
   fun kwd_val(): String => "val"
   fun kwd_where(): String => "where"
+  fun kwd_while(): String => "while"
   fun kwd_xor(): String => "xor"
 
 class val Keyword is NodeData
