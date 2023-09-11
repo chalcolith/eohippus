@@ -13,4 +13,5 @@ type Expression is
   | ExpArray
   | ExpConsume
   | ExpWhile
-  | ExpRepeat )
+  | ExpRepeat
+  | ExpFor )

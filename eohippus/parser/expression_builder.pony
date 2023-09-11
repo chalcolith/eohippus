@@ -97,9 +97,11 @@ class ExpressionBuilder
     let kwd_elseif = _keyword(ast.Keywords.kwd_elseif())
     let kwd_end = _keyword(ast.Keywords.kwd_end())
     let kwd_error = _keyword(ast.Keywords.kwd_error())
+    let kwd_for = _keyword(ast.Keywords.kwd_for())
     let kwd_if = _keyword(ast.Keywords.kwd_if())
     let kwd_ifdef = _keyword(ast.Keywords.kwd_ifdef())
     let kwd_iftype = _keyword(ast.Keywords.kwd_iftype())
+    let kwd_in = _keyword(ast.Keywords.kwd_in())
     let kwd_is = _keyword(ast.Keywords.kwd_is())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
     let kwd_recover = _keyword(ast.Keywords.kwd_recover())
@@ -140,7 +142,7 @@ class ExpressionBuilder
         let exp_decl = NamedRule("Exp_Declaration", None)
         let exp_elsif = NamedRule("Exp_Elsif", None)                        // x
         let exp_ffi = NamedRule("Exp_Ffi", None)
-        let exp_for = NamedRule("Exp_For", None)
+        let exp_for = NamedRule("Exp_For", None)                            // x
         let exp_hash = NamedRule("Exp_Hash", None)                          // x
         let exp_if = NamedRule("Exp_If", None)                              // x
         let exp_ifdef = NamedRule("Exp_IfDef", None)                        // x
@@ -257,7 +259,7 @@ class ExpressionBuilder
               //exp_match
               exp_while
               exp_repeat
-              //exp_for
+              exp_for
               //exp_with
               exp_try
               exp_recover
@@ -401,6 +403,28 @@ class ExpressionBuilder
               Ques(Conj([ kwd_else; Bind(repeat_else_block, exp_seq) ]))
               kwd_end ]),
           _ExpActions~_repeat(repeat_body, repeat_cond, repeat_else_block))
+
+        // for <= 'for' (id | '(' id (',' id)* ')') 'in' seq ('else' seq)? 'end'
+        let for_ids = Variable("for_ids")
+        let for_body = Variable("for_body")
+        let for_else_block = Variable("for_else_block")
+        exp_for.set_body(
+          Conj(
+            [ kwd_for
+              Bind(
+                for_ids,
+                Disj(
+                  [ id
+                    Conj(
+                      [ oparen
+                        id
+                        Star(Conj([ comma; id ]))
+                        cparen ]) ]))
+              kwd_in
+              Bind(for_body, exp_seq)
+              Ques(Conj([ kwd_else; Bind(for_else_block, exp_seq)]))
+              kwd_end ]),
+          _ExpActions~_for(for_ids, for_body, for_else_block))
 
         // try <= 'try' seq ('else' seq)? 'end'
         let try_body = Variable("try_body")
