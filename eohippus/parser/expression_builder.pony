@@ -96,6 +96,7 @@ class ExpressionBuilder
     let kwd_do = _keyword(ast.Keywords.kwd_do())
     let kwd_else = _keyword(ast.Keywords.kwd_else())
     let kwd_elseif = _keyword(ast.Keywords.kwd_elseif())
+    let kwd_embed = _keyword(ast.Keywords.kwd_embed())
     let kwd_end = _keyword(ast.Keywords.kwd_end())
     let kwd_error = _keyword(ast.Keywords.kwd_error())
     let kwd_for = _keyword(ast.Keywords.kwd_for())
@@ -104,6 +105,7 @@ class ExpressionBuilder
     let kwd_iftype = _keyword(ast.Keywords.kwd_iftype())
     let kwd_in = _keyword(ast.Keywords.kwd_in())
     let kwd_is = _keyword(ast.Keywords.kwd_is())
+    let kwd_let = _keyword(ast.Keywords.kwd_let())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
     let kwd_match = _keyword(ast.Keywords.kwd_match())
     let kwd_recover = _keyword(ast.Keywords.kwd_recover())
@@ -113,6 +115,7 @@ class ExpressionBuilder
     let kwd_this = _keyword(ast.Keywords.kwd_this())
     let kwd_try = _keyword(ast.Keywords.kwd_try())
     let kwd_until = _keyword(ast.Keywords.kwd_until())
+    let kwd_var = _keyword(ast.Keywords.kwd_var())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
     let kwd_while = _keyword(ast.Keywords.kwd_while())
     let literal = _literal.literal()
@@ -267,7 +270,7 @@ class ExpressionBuilder
               exp_try
               exp_recover
               exp_consume
-              //exp_decl
+              exp_decl
               exp_prefix
               //exp_hash
             ]))
@@ -487,6 +490,20 @@ class ExpressionBuilder
               Ques(Bind(consume_cap, kwd_cap))
               Bind(consume_body, exp_term) ]),
           _ExpActions~_consume(consume_cap, consume_body))
+
+        // decl <= ('var' | 'let' | 'embed') id (':' type_type)?
+        let decl_kind = Variable("decl_kind")
+        let decl_identifier = Variable("decl_identifier")
+        let decl_type = Variable("decl_type")
+        exp_decl.set_body(
+          Conj(
+            [ Bind(decl_kind, Disj([ kwd_var; kwd_let; kwd_embed ]))
+              Bind(decl_identifier, id)
+              Ques(
+                Conj(
+                  [ colon
+                    Bind(decl_type, type_arrow) ])) ]),
+          _ExpActions~_decl(decl_kind, decl_identifier, decl_type))
 
         // prefix <= (prefix_op prefix) / postfix
         let prefix_opv = Variable("prefix_opv")

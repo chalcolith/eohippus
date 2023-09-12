@@ -27,6 +27,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionRepeat)
     test(_TestParserExpressionFor)
     test(_TestParserExpressionMatch)
+    test(_TestParserExpressionDecl)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -1036,3 +1037,49 @@ class iso _TestParserExpressionFor is UnitTest
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+  class iso _TestParserExpressionDecl is UnitTest
+    fun name(): String => "parser/expression/Decl"
+    fun exclusion_group(): String => "parser/expression"
+
+    fun apply(h: TestHelper) =>
+      let setup = _TestSetup(name())
+      let rule = setup.builder.expression.item()
+
+      let source1 = "let n: F32"
+      let expected1 =
+        """
+          {
+            "name": "ExpDecl",
+            "identifier": { "name": "Identifier", "string": "n" },
+            "decl_type": {
+              "name": "TypeNominal",
+              "rhs": { "name": "Identifier", "string": "F32" }
+            }
+          }
+        """
+
+      let source2 = "let n: F32 = 3.14"
+      let expected2 =
+        """
+          {
+            "name": "ExpOperation",
+            "lhs": {
+              "name": "ExpDecl",
+              "identifier": { "name": "Identifier", "string": "n" },
+              "decl_type": {
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "F32" }
+              }
+            },
+            "op": { "name": "Token", "string": "=" },
+            "rhs": {
+              "name": "ExpAtom",
+              "body": { "name": "LiteralFloat", "value": 3.14 }
+            }
+          }
+        """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source1, expected1)
+        _Assert.test_match(h, rule, setup.data, source2, expected2) ])

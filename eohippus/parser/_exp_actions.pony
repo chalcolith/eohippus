@@ -438,6 +438,33 @@ primitive _ExpActions
       _Build.info(r), c, ast.ExpConsume(cap', body'))
     (value, b)
 
+  fun tag _decl(
+    kind: Variable,
+    identifier: Variable,
+    decl_type: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let kind' =
+      try
+        _Build.value_with[ast.Keyword](b, kind, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Decl/Kind")
+      end
+    let identifier' =
+      try
+        _Build.value_with[ast.Identifier](b, identifier, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/Decl/Identifier")
+      end
+    let decl_type' = _Build.value_with_or_none[ast.TypeType](b, decl_type, r)
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpDecl(kind', identifier', decl_type'))
+    (value, b)
+
   fun tag _prefix(
     op: Variable,
     rhs: Variable,
