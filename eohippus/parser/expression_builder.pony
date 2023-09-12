@@ -118,6 +118,7 @@ class ExpressionBuilder
     let kwd_var = _keyword(ast.Keywords.kwd_var())
     let kwd_where = _keyword(ast.Keywords.kwd_where())
     let kwd_while = _keyword(ast.Keywords.kwd_while())
+    let kwd_with = _keyword(ast.Keywords.kwd_with())
     let literal = _literal.literal()
     let not_kwd = _keyword.not_kwd()
     let ocurly = _token(ast.Tokens.open_curly())
@@ -144,7 +145,7 @@ class ExpressionBuilder
         let exp_atom = NamedRule("Exp_Atom", None)                          // x
         let exp_cond = NamedRule("Exp_IfCondition", None)                   // x
         let exp_consume = NamedRule("Exp_Consume", None)                    // x
-        let exp_decl = NamedRule("Exp_Declaration", None)
+        let exp_decl = NamedRule("Exp_Declaration", None)                   // x
         let exp_elsif = NamedRule("Exp_Elsif", None)                        // x
         let exp_ffi = NamedRule("Exp_Ffi", None)
         let exp_for = NamedRule("Exp_For", None)                            // x
@@ -168,8 +169,10 @@ class ExpressionBuilder
         let exp_try = NamedRule("Exp_Try", None)                            // x
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)                        // x
-        let exp_with = NamedRule("Exp_With", None)
+        let exp_with = NamedRule("Exp_With", None)                          // x
+        let id_seq = NamedRule("Id_Sequence", None)
         let match_case = NamedRule("Match_Case", None)                      // x
+        let with_elem = NamedRule("With_Element", None)                     // x
 
         // seq <= annotation? item (';'? item)*
         let seq_ann = Variable("seq_ann")
@@ -266,13 +269,13 @@ class ExpressionBuilder
               exp_while
               exp_repeat
               exp_for
-              //exp_with
+              exp_with
               exp_try
               exp_recover
               exp_consume
               exp_decl
               exp_prefix
-              //exp_hash
+              exp_hash
             ]))
 
         // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
@@ -437,7 +440,7 @@ class ExpressionBuilder
               kwd_end ]),
           _ExpActions~_repeat(repeat_body, repeat_cond, repeat_else_block))
 
-        // for <= 'for' (id | '(' id (',' id)* ')') 'in' seq ('else' seq)? 'end'
+        // for <= 'for' (id / '(' id (',' id)* ')') 'in' seq ('else' seq)? 'end'
         let for_ids = Variable("for_ids")
         let for_body = Variable("for_body")
         let for_else_block = Variable("for_else_block")
@@ -458,6 +461,34 @@ class ExpressionBuilder
               Ques(Conj([ kwd_else; Bind(for_else_block, exp_seq)]))
               kwd_end ]),
           _ExpActions~_for(for_ids, for_body, for_else_block))
+
+        // with <= 'with' with_elem (',' with_elem)*
+        //         'do' seq ('else' seq)? 'end'
+        let with_elems = Variable("with_elems")
+        let with_body = Variable("with_body")
+        exp_with.set_body(
+          Conj(
+            [ kwd_with
+              Bind(with_elems,
+                Conj([ with_elem; Star(Conj([ comma; with_elem ])) ]))
+              kwd_do
+              Bind(with_body, exp_seq)
+              kwd_end ]),
+          _ExpActions~_with(with_elems, with_body))
+
+        // with_elem <= (id / ('(' id (',' id)*)) '=' seq
+        let with_elem_ids = Variable("with_elem_ids")
+        let with_elem_body = Variable("with_elem_body")
+        with_elem.set_body(
+          Conj(
+            [ Bind(with_elem_ids,
+                Disj(
+                  [ id
+                    Conj(
+                      [ oparen; id; Star(Conj([ comma; id ])); cparen ]) ]))
+              equals
+              Bind(with_elem_body, exp_seq) ]),
+          _ExpActions~_with_elem(with_elem_ids, with_elem_body))
 
         // try <= 'try' seq ('else' seq)? 'end'
         let try_body = Variable("try_body")
@@ -491,7 +522,7 @@ class ExpressionBuilder
               Bind(consume_body, exp_term) ]),
           _ExpActions~_consume(consume_cap, consume_body))
 
-        // decl <= ('var' | 'let' | 'embed') id (':' type_type)?
+        // decl <= ('var' / 'let' / 'embed') id (':' type_type)?
         let decl_kind = Variable("decl_kind")
         let decl_identifier = Variable("decl_identifier")
         let decl_type = Variable("decl_type")

@@ -52,6 +52,7 @@ primitive Keywords
   fun kwd_var(): String => "var"
   fun kwd_where(): String => "where"
   fun kwd_while(): String => "while"
+  fun kwd_with(): String => "with"
   fun kwd_xor(): String => "xor"
 
 class val Keyword is NodeData

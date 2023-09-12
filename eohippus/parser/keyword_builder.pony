@@ -71,6 +71,7 @@ class KeywordBuilder
       ast.Keywords.kwd_var()
       ast.Keywords.kwd_where()
       ast.Keywords.kwd_while()
+      ast.Keywords.kwd_with()
       ast.Keywords.kwd_xor()
     ]
 

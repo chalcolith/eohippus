@@ -16,4 +16,5 @@ type Expression is
   | ExpRepeat
   | ExpFor
   | ExpMatch
-  | ExpDecl )
+  | ExpDecl
+  | ExpWith )

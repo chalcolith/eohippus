@@ -377,6 +377,46 @@ primitive _ExpActions
       _Build.info(r), c, ast.ExpFor(ids', body', else_block'))
     (value, b)
 
+  fun tag _with(
+    elems: Variable,
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let elems' = _Build.values_with[ast.WithElement](b, elems, r)
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/With/Body")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r), c, ast.ExpWith(elems', body'))
+    (value, b)
+
+  fun tag _with_elem(
+    ids: Variable,
+    body: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let ids' = _Build.values_with[ast.Identifier](b, ids, r)
+    let body' =
+      try
+        _Build.value_with[ast.Expression](b, body, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/WithElem/Body")
+      end
+
+    let value = ast.NodeWith[ast.WithElement](
+      _Build.info(r), c, ast.WithElement(ids', body'))
+    (value, b)
+
   fun tag _try(
     body: Variable,
     else_block: Variable,
