@@ -30,6 +30,7 @@ primitive Keywords
   fun kwd_is(): String => "is"
   fun kwd_iso(): String => "iso"
   fun kwd_loc(): String => "__loc"
+  fun kwd_match(): String => "match"
   fun kwd_not(): String => "not"
   fun kwd_or(): String => "or"
   fun kwd_primitive(): String => "primitive"

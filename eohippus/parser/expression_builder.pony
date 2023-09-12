@@ -82,6 +82,7 @@ class ExpressionBuilder
     let csquare = _token(ast.Tokens.close_square())
     let dot = _token(ast.Tokens.dot())
     let equals = _token(ast.Tokens.equals())
+    let equal_arrow = _token(ast.Tokens.equal_arrow())
     let hash = _token(ast.Tokens.hash())
     let id = _token.identifier()
     let kwd = _keyword.kwd()
@@ -104,6 +105,7 @@ class ExpressionBuilder
     let kwd_in = _keyword(ast.Keywords.kwd_in())
     let kwd_is = _keyword(ast.Keywords.kwd_is())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
+    let kwd_match = _keyword(ast.Keywords.kwd_match())
     let kwd_recover = _keyword(ast.Keywords.kwd_recover())
     let kwd_repeat = _keyword(ast.Keywords.kwd_repeat())
     let kwd_return = _keyword(ast.Keywords.kwd_return())
@@ -151,7 +153,7 @@ class ExpressionBuilder
         let exp_item = NamedRule("Exp_Item", None)                          // x
         let exp_jump = NamedRule("Exp_Jump", None)                          // x
         let exp_lambda = NamedRule("Exp_Lambda", None)
-        let exp_match = NamedRule("Exp_Match", None)
+        let exp_match = NamedRule("Exp_Match", None)                        // x
         let exp_object = NamedRule("Exp_Object", None)
         let exp_parens = NamedRule("Exp_Parens", None)                      // x
         let exp_postfix = NamedRule("Exp_Postfix", None)                    // x
@@ -164,6 +166,7 @@ class ExpressionBuilder
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)                        // x
         let exp_with = NamedRule("Exp_With", None)
+        let match_case = NamedRule("Match_Case", None)                      // x
 
         // seq <= annotation? item (';'? item)*
         let seq_ann = Variable("seq_ann")
@@ -256,7 +259,7 @@ class ExpressionBuilder
             [ exp_if
               exp_ifdef
               exp_iftype
-              //exp_match
+              exp_match
               exp_while
               exp_repeat
               exp_for
@@ -375,6 +378,33 @@ class ExpressionBuilder
               kwd_end ],
             _ExpActions~_iftype(
               iftype_firstif, iftype_elseifs, iftype_else_block)))
+
+        // match <= 'match' match_case+ ('else' exp_seq)? 'end'
+        let match_exp = Variable("match_exp")
+        let match_cases = Variable("match_cases")
+        let match_else_block = Variable("match_else_block")
+        exp_match.set_body(
+          Conj(
+            [ kwd_match
+              Bind(match_exp, exp_seq)
+              Bind(match_cases, Plus(match_case))
+              Ques(Conj([ kwd_else; Bind(match_else_block, exp_seq) ]))
+              kwd_end ]),
+          _ExpActions~_match(match_exp, match_cases, match_else_block))
+
+        // match_case <= '|' exp_item ('if' exp_seq)? '=>' exp_seq
+        let match_case_pattern = Variable("match_case_pattern")
+        let match_case_condition = Variable("match_case_condition")
+        let match_case_body = Variable("match_case_body")
+        match_case.set_body(
+          Conj(
+            [ bar
+              Bind(match_case_pattern, Disj([ exp_decl; exp_atom ]))
+              Ques(Conj([ kwd_if; Bind(match_case_condition, exp_seq) ]))
+              equal_arrow
+              Bind(match_case_body, exp_seq) ]),
+          _ExpActions~_match_case(
+            match_case_pattern, match_case_condition, match_case_body))
 
         // while <= 'while' seq 'do' seq ('else' seq)? 'end'
         let while_cond = Variable("while_cond")

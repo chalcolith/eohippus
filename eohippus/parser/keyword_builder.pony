@@ -49,6 +49,7 @@ class KeywordBuilder
       ast.Keywords.kwd_is()
       ast.Keywords.kwd_iso()
       ast.Keywords.kwd_loc()
+      ast.Keywords.kwd_match()
       ast.Keywords.kwd_not()
       ast.Keywords.kwd_or()
       ast.Keywords.kwd_primitive()

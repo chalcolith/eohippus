@@ -64,6 +64,7 @@ class TokenBuilder
     _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
     _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
     _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
+    _add_rule("Token_Equal_Arrow", ast.Tokens.equal_arrow(), t, _tokens)
     _add_rule("Token_Equal_Equal", ast.Tokens.equal_equal(), t, _tokens)
     _add_rule("Token_Equal_Equal_Tilde", ast.Tokens.equal_equal_tilde(), t,
       _tokens)

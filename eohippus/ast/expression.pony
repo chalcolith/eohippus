@@ -14,4 +14,5 @@ type Expression is
   | ExpConsume
   | ExpWhile
   | ExpRepeat
-  | ExpFor )
+  | ExpFor
+  | ExpMatch )

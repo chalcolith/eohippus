@@ -19,6 +19,7 @@ primitive Tokens
   fun dot(): String => "."
   fun double_quote(): String => "\""
   fun equals(): String => "="
+  fun equal_arrow(): String => "=>"
   fun equal_equal(): String => "=="
   fun equal_equal_tilde(): String => "==~"
   fun greater(): String => ">"

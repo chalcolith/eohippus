@@ -26,6 +26,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionWhile)
     test(_TestParserExpressionRepeat)
     test(_TestParserExpressionFor)
+    test(_TestParserExpressionMatch)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -944,6 +945,94 @@ class iso _TestParserExpressionFor is UnitTest
           }
         }
       """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+  class iso _TestParserExpressionMatch is UnitTest
+    fun name(): String => "parser/expression/Match"
+    fun exclusion_group(): String => "parser/expression"
+
+    fun apply(h: TestHelper) =>
+      let setup = _TestSetup(name())
+      let rule = setup.builder.expression.item()
+
+      let source =
+        """
+          match a
+          | b if c => d
+          | 2 => true
+          else
+            g
+          end
+        """
+      let expected =
+        """
+          {
+            "name": "ExpMatch",
+            "expression": {
+              "name": "ExpSequence",
+              "expressions": [
+                {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "a" }
+                }
+              ]
+            },
+            "cases": [
+              {
+                "name": "MatchCase",
+                "pattern": {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "b" }
+                },
+                "condition": {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": { "name": "Identifier", "string": "c" }
+                    }
+                  ]
+                },
+                "body": {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": { "name": "Identifier", "string": "d" }
+                    }
+                  ]
+                }
+              },
+              {
+                "name": "MatchCase",
+                "pattern": {
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralInteger", "value": 2 }
+                },
+                "body": {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": { "name": "LiteralBool", "value": true }
+                    }
+                  ]
+                }
+              }
+            ],
+            "else_block": {
+              "name": "ExpSequence",
+              "expressions": [
+                {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "g" }
+                }
+              ]
+            }
+          }
+        """
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
