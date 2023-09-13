@@ -923,10 +923,13 @@ class iso _TestParserExpressionFor is UnitTest
       """
         {
           "name": "ExpFor",
-          "ids": [
-            { "name": "Identifier", "string": "a" },
-            { "name": "Identifier", "string": "b" }
-          ],
+          "pattern": {
+            "name": "TuplePattern",
+            "ids": [
+              { "name": "Identifier", "string": "a" },
+              { "name": "Identifier", "string": "b" }
+            ]
+          },
           "body": {
             "name": "ExpSequence",
             "expressions": [
@@ -1101,10 +1104,13 @@ class iso _TestParserExpressionFor is UnitTest
             "elements": [
               {
                 "name": "WithElement",
-                "ids": [
-                  { "name": "Identifier", "string": "a" },
-                  { "name": "Identifier", "string": "b" }
-                ],
+                "pattern": {
+                  "name": "TuplePattern",
+                  "ids": [
+                    { "name": "Identifier", "string": "a" },
+                    { "name": "Identifier", "string": "b" }
+                  ]
+                },
                 "body": {
                   "name": "ExpSequence",
                   "expressions": [
@@ -1117,9 +1123,12 @@ class iso _TestParserExpressionFor is UnitTest
               },
               {
                 "name": "WithElement",
-                "ids": [
-                  { "name": "Identifier", "string": "d" }
-                ],
+                "pattern": {
+                  "name": "TuplePattern",
+                  "ids": [
+                    { "name": "Identifier", "string": "d" }
+                  ]
+                },
                 "body": {
                   "name": "ExpSequence",
                   "expressions": [

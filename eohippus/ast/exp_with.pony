@@ -20,17 +20,18 @@ class val ExpWith is NodeData
     props.push(("body", body.get_json()))
 
 class val WithElement is NodeData
-  let ids: NodeSeqWith[Identifier]
+  let pattern: NodeWith[TuplePattern]
   let body: NodeWith[Expression]
 
-  new val create(ids': NodeSeqWith[Identifier], body': NodeWith[Expression]) =>
-    ids = ids'
+  new val create(
+    pattern': NodeWith[TuplePattern],
+    body': NodeWith[Expression])
+  =>
+    pattern = pattern'
     body = body'
 
   fun name(): String => "WithElement"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
-    if ids.size() > 0 then
-      props.push(("ids", Nodes.get_json(ids)))
-    end
+    props.push(("pattern", pattern.get_json()))
     props.push(("body", body.get_json()))

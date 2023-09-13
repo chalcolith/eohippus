@@ -170,8 +170,8 @@ class ExpressionBuilder
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)                        // x
         let exp_with = NamedRule("Exp_With", None)                          // x
-        let id_seq = NamedRule("Id_Sequence", None)
         let match_case = NamedRule("Match_Case", None)                      // x
+        let tuple_pattern = NamedRule("Tuple_Pattern", None)                // x
         let with_elem = NamedRule("With_Element", None)                     // x
 
         // seq <= annotation? item (';'? item)*
@@ -447,20 +447,23 @@ class ExpressionBuilder
         exp_for.set_body(
           Conj(
             [ kwd_for
-              Bind(
-                for_ids,
-                Disj(
-                  [ id
-                    Conj(
-                      [ oparen
-                        id
-                        Star(Conj([ comma; id ]))
-                        cparen ]) ]))
+              Bind(for_ids, tuple_pattern)
               kwd_in
               Bind(for_body, exp_seq)
               Ques(Conj([ kwd_else; Bind(for_else_block, exp_seq)]))
               kwd_end ]),
           _ExpActions~_for(for_ids, for_body, for_else_block))
+
+        // tuple_pattern <= id / '(' tuple_pattern (',' tuple_pattern)* ')'
+        tuple_pattern.set_body(
+          Disj(
+            [ id
+              Conj(
+                [ oparen
+                  tuple_pattern
+                  Star(Conj([ comma; tuple_pattern ]))
+                  cparen ]) ]),
+          _ExpActions~_tuple_pattern())
 
         // with <= 'with' with_elem (',' with_elem)*
         //         'do' seq ('else' seq)? 'end'
@@ -477,18 +480,14 @@ class ExpressionBuilder
           _ExpActions~_with(with_elems, with_body))
 
         // with_elem <= (id / ('(' id (',' id)*)) '=' seq
-        let with_elem_ids = Variable("with_elem_ids")
+        let with_elem_pattern = Variable("with_elem_pattern")
         let with_elem_body = Variable("with_elem_body")
         with_elem.set_body(
           Conj(
-            [ Bind(with_elem_ids,
-                Disj(
-                  [ id
-                    Conj(
-                      [ oparen; id; Star(Conj([ comma; id ])); cparen ]) ]))
+            [ Bind(with_elem_pattern, tuple_pattern)
               equals
               Bind(with_elem_body, exp_seq) ]),
-          _ExpActions~_with_elem(with_elem_ids, with_elem_body))
+          _ExpActions~_with_elem(with_elem_pattern, with_elem_body))
 
         // try <= 'try' seq ('else' seq)? 'end'
         let try_body = Variable("try_body")

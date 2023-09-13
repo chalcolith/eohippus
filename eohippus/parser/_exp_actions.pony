@@ -363,7 +363,12 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ids' = _Build.values_with[ast.Identifier](b, ids, r)
+    let ids' =
+      try
+        _Build.value_with[ast.TuplePattern](b, ids, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/For/Ids")
+      end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
@@ -375,6 +380,40 @@ primitive _ExpActions
 
     let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpFor(ids', body', else_block'))
+    (value, b)
+
+  fun tag _tuple_pattern(
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let ids =
+      recover val
+        Array[(ast.NodeWith[ast.Identifier] | ast.NodeWith[ast.TuplePattern])]
+          .> concat(
+            Iter[ast.Node](c.values())
+              .filter_map[
+                (ast.NodeWith[ast.Identifier]
+                  | ast.NodeWith[ast.TuplePattern])](
+                    {(n) =>
+                      match n
+                      | let idn: ast.NodeWith[ast.Identifier] =>
+                        idn
+                      | let tp: ast.NodeWith[ast.TuplePattern] =>
+                        try
+                          if tp.data().ids.size() == 1 then
+                            tp.data().ids(0)?
+                          else
+                            tp
+                          end
+                        end
+                      end
+                    }))
+      end
+
+    let value = ast.NodeWith[ast.TuplePattern](
+      _Build.info(r), c, ast.TuplePattern(ids))
     (value, b)
 
   fun tag _with(
@@ -398,14 +437,19 @@ primitive _ExpActions
     (value, b)
 
   fun tag _with_elem(
-    ids: Variable,
+    pattern: Variable,
     body: Variable,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ids' = _Build.values_with[ast.Identifier](b, ids, r)
+    let pattern' =
+      try
+        _Build.value_with[ast.TuplePattern](b, pattern, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/WithElem/Pattern")
+      end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
@@ -414,7 +458,7 @@ primitive _ExpActions
       end
 
     let value = ast.NodeWith[ast.WithElement](
-      _Build.info(r), c, ast.WithElement(ids', body'))
+      _Build.info(r), c, ast.WithElement(pattern', body'))
     (value, b)
 
   fun tag _try(
