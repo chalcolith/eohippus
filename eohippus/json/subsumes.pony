@@ -76,7 +76,9 @@ primitive Subsumes
   fun _float_subsumes(a_float: F64, b: Item, p: String): (Bool, String) =>
     match b
     | let b_float: F64 =>
-      if (a_float - b_float).abs() <= 0.000001 then
+      (let a_fr, let a_exp) = a_float.frexp()
+      (let b_fr, let b_exp) = b_float.frexp()
+      if (a_exp == b_exp) and ((b_fr - a_fr).abs() < 0.00000000000001) then
         return (true, "")
       else
         return

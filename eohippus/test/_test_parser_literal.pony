@@ -236,13 +236,13 @@ class iso _TestParserLiteralChar is UnitTest
 
     _Assert.test_all(
       h,
-      [ //_Assert.test_match(h, rule, setup.data, "'A'", expected_1)
-        //_Assert.test_match(h, rule, setup.data, "'\\n'", expected_2)
-        //_Assert.test_match(h, rule, setup.data, "'\\x41'", expected_3)
-        //_Assert.test_match(h, rule, setup.data, "'ABCD'", expected_4)
+      [ _Assert.test_match(h, rule, setup.data, "'A'", expected_1)
+        _Assert.test_match(h, rule, setup.data, "'\\n'", expected_2)
+        _Assert.test_match(h, rule, setup.data, "'\\x41'", expected_3)
+        _Assert.test_match(h, rule, setup.data, "'ABCD'", expected_4)
         _Assert.test_match(h, rule, setup.data, "'\\uFFFD'", expected_5)
-        //_Assert.test_match(h, rule, setup.data, "''", None)
-        //_Assert.test_match(h, rule, setup.data, " ", None)
+        _Assert.test_match(h, rule, setup.data, "''", None)
+        _Assert.test_match(h, rule, setup.data, " ", None)
       ])
 
 class iso _TestParserLiteralStringRegular is UnitTest
