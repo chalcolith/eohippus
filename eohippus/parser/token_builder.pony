@@ -137,7 +137,8 @@ class TokenBuilder
               let value = ast.NodeWith[ast.Token](
                 _Build.info(r), c, ast.Token(string)
                 where post_trivia' = p)
-              (value, b) }))
+              (value, b) })
+          where memoize_failures' = false)
       end
     m.insert(str, rule)
 

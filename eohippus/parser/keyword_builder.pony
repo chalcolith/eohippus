@@ -105,7 +105,8 @@ class KeywordBuilder
               let value = ast.NodeWith[ast.Keyword](
                 _Build.info(r), c, ast.Keyword(str)
                 where post_trivia' = p)
-              (value, b) }))
+              (value, b) })
+          where memoize_failures' = false)
       end
     m.insert(str, rule)
 

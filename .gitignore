@@ -2,8 +2,10 @@ _corral/
 _repos/
 build/
 .vscode/
+.vs/
 version.pony
 lock.json
+CppProperties.json
 *.exe
 *.ilk
 *.pdb
