@@ -26,6 +26,14 @@ primitive _ExpActions
     let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
     let expressions = _Build.values_with[ast.Expression](b, body, r)
 
+    if expressions.size() == 1 then
+      try
+        let value = ast.NodeWith[ast.Expression].with_annotation(
+          expressions(0)?, ann')
+        return (value, b)
+      end
+    end
+
     let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpSequence(expressions)
       where annotation' = ann')

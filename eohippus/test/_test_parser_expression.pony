@@ -265,53 +265,28 @@ class iso _TestParserExpressionIf is UnitTest
           "conditions": [
             {
               "if_true": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "LiteralBool", "value": true }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "LiteralBool", "value": true }
               },
               "then_block": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "foo" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "foo" }
               }
             },
             {
               "if_true": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "LiteralBool", "value": false }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "LiteralBool", "value": false }
               },
               "then_block": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "bar" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "bar" }
               }
             }
           ],
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "baz" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "baz" }
           }
         }
       """
@@ -337,53 +312,28 @@ class iso _TestParserExpressionIfDef is UnitTest
           "conditions": [
             {
               "if_true": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "windows" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "windows" }
               },
               "then_block": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "foo" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "foo" }
               }
             },
             {
               "if_true": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "unix" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "unix" }
               },
               "then_block": {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "bar" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "bar" }
               }
             }
           ],
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "baz" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "baz" }
           }
         }
       """
@@ -485,22 +435,12 @@ class iso _TestParserExpressionPostfix is UnitTest
             "name": "CallArgs",
             "positional": [
               {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "LiteralFloat", "value": 3.14 }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "LiteralFloat", "value": 3.14 }
               },
               {
-                "name": "ExpSequence",
-                "expressions": [
-                  {
-                    "name": "ExpAtom",
-                    "body": { "name": "Identifier", "string": "b" }
-                  }
-                ]
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "b" }
               }
             ],
             "named": [
@@ -509,13 +449,8 @@ class iso _TestParserExpressionPostfix is UnitTest
                 "lhs": { "name": "Identifier", "string": "c" },
                 "op": { "name": "Token", "string": "=" },
                 "rhs": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "LiteralBool", "value": true }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralBool", "value": true }
                 }
               },
               {
@@ -523,16 +458,11 @@ class iso _TestParserExpressionPostfix is UnitTest
                 "lhs": { "name": "Identifier", "string": "d" },
                 "op": { "name": "Token", "string": "=" },
                 "rhs": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": {
-                        "name": "LiteralString",
-                        "value": "z"
-                      }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": {
+                    "name": "LiteralString",
+                    "value": "z"
+                  }
                 }
               }
             ]
@@ -560,31 +490,16 @@ class iso _TestParserExpressionTuple is UnitTest
           "name": "ExpTuple",
           "sequences": [
             {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "a" }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "a" }
             },
             {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralInteger", "value": 1 }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "LiteralInteger", "value": 1 }
             },
             {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Keyword", "string": "this" }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "Keyword", "string": "this" }
             }
           ]
         }
@@ -605,16 +520,11 @@ class iso _TestParserExpressionParens is UnitTest
     let expected =
       """
         {
-          "name": "ExpSequence",
-          "expressions": [
-            {
-              "name": "ExpAtom",
-              "body": {
-                "name": "LiteralFloat",
-                "value": 1.23
-              }
-            }
-          ]
+          "name": "ExpAtom",
+          "body": {
+            "name": "LiteralFloat",
+            "value": 1.23
+          }
         }
       """
 
@@ -671,22 +581,12 @@ class iso _TestParserExpressionTry is UnitTest
         {
           "name": "ExpTry",
           "body": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "a" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
           },
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "LiteralInteger", "value": 123 }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "LiteralInteger", "value": 123 }
           }
         }
       """
@@ -767,21 +667,16 @@ class iso _TestParserExpressionConsume is UnitTest
           "name": "ExpConsume",
           "cap": { "name": "Keyword", "string": "iso" },
           "body": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpOperation",
-                "op": { "name": "Token", "string": "+" },
-                "lhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "a" }
-                },
-                "rhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralInteger", "value": 4 }
-                }
-              }
-            ]
+            "name": "ExpOperation",
+            "op": { "name": "Token", "string": "+" },
+            "lhs": {
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "a" }
+            },
+            "rhs": {
+              "name": "ExpAtom",
+              "body": { "name": "LiteralInteger", "value": 4 }
+            }
           }
         }
       """
@@ -803,61 +698,41 @@ class iso _TestParserExpressionWhile is UnitTest
         {
           "name": "ExpWhile",
           "condition": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpOperation",
-                "lhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralInteger", "value": 1 }
-                },
-                "op": { "name": "Token", "string": "==" },
-                "rhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralInteger", "value": 2 }
-                }
-              }
-            ]
+            "name": "ExpOperation",
+            "lhs": {
+              "name": "ExpAtom",
+              "body": { "name": "LiteralInteger", "value": 1 }
+            },
+            "op": { "name": "Token", "string": "==" },
+            "rhs": {
+              "name": "ExpAtom",
+              "body": { "name": "LiteralInteger", "value": 2 }
+            }
           },
           "body": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpCall",
-                "lhs": {
+            "name": "ExpCall",
+            "lhs": {
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "f" }
+            },
+            "args": {
+              "name": "CallArgs",
+              "positional": [
+                {
                   "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "f" }
-                },
-                "args": {
-                  "name": "CallArgs",
-                  "positional": [
-                    {
-                      "name": "ExpSequence",
-                      "expressions": [
-                        {
-                          "name": "ExpAtom",
-                          "body": { "name": "Identifier", "string": "a" }
-                        }
-                      ]
-                    }
-                  ]
+                  "body": { "name": "Identifier", "string": "a" }
                 }
-              }
-            ]
+              ]
+            }
           },
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpOperation",
-                "lhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "g" }
-                },
-                "op": { "name": "Token", "string": "." },
-                "rhs": { "name": "Identifier", "string": "b" }
-              }
-            ]
+            "name": "ExpOperation",
+            "lhs": {
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "g" }
+            },
+            "op": { "name": "Token", "string": "." },
+            "rhs": { "name": "Identifier", "string": "b" }
           }
         }
       """
@@ -879,31 +754,16 @@ class iso _TestParserExpressionRepeat is UnitTest
         {
           "name": "ExpRepeat",
           "body": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "a" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
           },
           "condition": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "b" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "b" }
           },
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body" : { "name": "Identifier", "string": "c" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body" : { "name": "Identifier", "string": "c" }
           }
         }
       """
@@ -932,22 +792,12 @@ class iso _TestParserExpressionFor is UnitTest
             ]
           },
           "body": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "c" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "c" }
           },
           "else_block": {
-            "name": "ExpSequence",
-            "expressions": [
-              {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "d" }
-              }
-            ]
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "d" }
           }
         }
       """
@@ -977,13 +827,8 @@ class iso _TestParserExpressionFor is UnitTest
           {
             "name": "ExpMatch",
             "expression": {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "a" }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "a" }
             },
             "cases": [
               {
@@ -993,22 +838,12 @@ class iso _TestParserExpressionFor is UnitTest
                   "body": { "name": "Identifier", "string": "b" }
                 },
                 "condition": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "Identifier", "string": "c" }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "c" }
                 },
                 "body": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "Identifier", "string": "d" }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "d" }
                 }
               },
               {
@@ -1018,24 +853,14 @@ class iso _TestParserExpressionFor is UnitTest
                   "body": { "name": "LiteralInteger", "value": 2 }
                 },
                 "body": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "LiteralBool", "value": true }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "LiteralBool", "value": true }
                 }
               }
             ],
             "else_block": {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "g" }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "g" }
             }
           }
         """
@@ -1113,13 +938,8 @@ class iso _TestParserExpressionFor is UnitTest
                   ]
                 },
                 "body": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "Identifier", "string": "c" }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "c" }
                 }
               },
               {
@@ -1131,24 +951,14 @@ class iso _TestParserExpressionFor is UnitTest
                   ]
                 },
                 "body": {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "Identifier", "string": "e" }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "e" }
                 }
               }
             ],
             "body": {
-              "name": "ExpSequence",
-              "expressions": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "f" }
-                }
-              ]
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "f" }
             }
           }
         """
@@ -1183,13 +993,8 @@ class iso _TestParserExpressionFor is UnitTest
               "name": "CallArgs",
               "positional": [
                 {
-                  "name": "ExpSequence",
-                  "expressions": [
-                    {
-                      "name": "ExpAtom",
-                      "body": { "name": "Identifier", "string": "b" }
-                    }
-                  ]
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "b" }
                 }
               ]
             },

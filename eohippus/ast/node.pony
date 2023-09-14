@@ -96,6 +96,20 @@ class val NodeWith[D: NodeData val] is Node
       end
     _ast_type = ast_type'
 
+  new val with_annotation(
+    orig: NodeWith[D],
+    ann: (NodeWith[Annotation] | None))
+  =>
+    _src_info = orig._src_info
+    _children = orig._children
+    _data = orig._data
+    _annotation = ann
+    _doc_strings = orig._doc_strings
+    _pre_trivia = orig._pre_trivia
+    _post_trivia = orig._post_trivia
+    _error_sections = orig._error_sections
+    _ast_type = orig._ast_type
+
   fun src_info(): SrcInfo => _src_info
 
   fun children(): NodeSeq => _children
