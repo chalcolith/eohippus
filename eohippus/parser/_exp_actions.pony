@@ -715,3 +715,35 @@ primitive _ExpActions
     let value = ast.NodeWith[ast.Expression](
       _Build.info(r), c, ast.ExpArray(array_type', body'))
     (value, b)
+
+  fun tag _ffi(
+    identifier: Variable,
+    type_args: Variable,
+    call_args: Variable,
+    partial: Variable,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let identifier' =
+      try
+        _Build.value(b, identifier, r)? as
+          (ast.NodeWith[ast.Identifier] | ast.NodeWith[ast.LiteralString])
+      else
+        return _Build.bind_error(r, c, b, "Expression/FFI/Identifier")
+      end
+    let type_args' = _Build.value_with_or_none[ast.TypeArgs](b, type_args, r)
+    let call_args' =
+      try
+        _Build.value_with[ast.CallArgs](b, call_args, r)?
+      else
+        return _Build.bind_error(r, c, b, "Expression/FFI/CallArgs")
+      end
+    let partial' = b.contains(partial)
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(r),
+      c,
+      ast.ExpFfi(identifier', type_args', call_args', partial'))
+    (value, b)

@@ -73,6 +73,7 @@ class ExpressionBuilder
   fun ref _build_seq(): (NamedRule, NamedRule) =>
     let amp = _token(ast.Tokens.amp())
     let arrow = _token(ast.Tokens.arrow())
+    let at = _token(ast.Tokens.at())
     let bar = _token(ast.Tokens.bar())
     let binary_op = _operator.binary_op()
     let ccurly = _token(ast.Tokens.close_curly())
@@ -120,6 +121,7 @@ class ExpressionBuilder
     let kwd_while = _keyword(ast.Keywords.kwd_while())
     let kwd_with = _keyword(ast.Keywords.kwd_with())
     let literal = _literal.literal()
+    let literal_string = _literal.string()
     let not_kwd = _keyword.not_kwd()
     let ocurly = _token(ast.Tokens.open_curly())
     let oparen = _token(ast.Tokens.open_paren())
@@ -147,7 +149,7 @@ class ExpressionBuilder
         let exp_consume = NamedRule("Exp_Consume", None)                    // x
         let exp_decl = NamedRule("Exp_Declaration", None)                   // x
         let exp_elsif = NamedRule("Exp_Elsif", None)                        // x
-        let exp_ffi = NamedRule("Exp_Ffi", None)
+        let exp_ffi = NamedRule("Exp_Ffi", None)                            // x
         let exp_for = NamedRule("Exp_For", None)                            // x
         let exp_hash = NamedRule("Exp_Hash", None)                          // x
         let exp_if = NamedRule("Exp_If", None)                              // x
@@ -591,8 +593,8 @@ class ExpressionBuilder
               [ exp_tuple
                 exp_parens
                 exp_array
-                //exp_ffi
                 //exp_lambda
+                exp_ffi
                 //exp_object
                 kwd_loc
                 kwd_this
@@ -680,6 +682,21 @@ class ExpressionBuilder
               Bind(array_body, exp_seq)
               csquare ]),
           _ExpActions~_array(array_type, array_body))
+
+        // ffi <= '@' (id / string) type_args? call_args '?'?
+        let ffi_identifier = Variable("ffi_identifier")
+        let ffi_type_args = Variable("ffi_type_args")
+        let ffi_call_args = Variable("ffi_call_args")
+        let ffi_partial = Variable("ffi_partial")
+        exp_ffi.set_body(
+          Conj(
+            [ at
+              Bind(ffi_identifier, Disj([ id; literal_string ]))
+              Ques(Bind(ffi_type_args, type_args))
+              Bind(ffi_call_args, call_args)
+              Bind(ffi_partial, ques) ]),
+          _ExpActions~_ffi(
+            ffi_identifier, ffi_type_args, ffi_call_args, ffi_partial))
 
         //
         (exp_seq, exp_item)

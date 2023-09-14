@@ -29,6 +29,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionMatch)
     test(_TestParserExpressionDecl)
     test(_TestParserExpressionWith)
+    test(_TestParserExpressionFfi)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -1149,6 +1150,50 @@ class iso _TestParserExpressionFor is UnitTest
                 }
               ]
             }
+          }
+        """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+  class iso _TestParserExpressionFfi is UnitTest
+    fun name(): String => "parser/expression/Ffi"
+    fun exclusion_group(): String => "parser/expression"
+
+    fun apply(h: TestHelper) =>
+      let setup = _TestSetup(name())
+      let rule = setup.builder.expression.item()
+
+      let source = "@a[T](b)?"
+      let expected =
+        """
+          {
+            "name": "ExpFfi",
+            "identifier": { "name": "Identifier", "string": "a" },
+            "type_args": {
+              "name": "TypeArgs",
+              "types": [
+                {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "T" }
+                }
+              ]
+            },
+            "call_args": {
+              "name": "CallArgs",
+              "positional": [
+                {
+                  "name": "ExpSequence",
+                  "expressions": [
+                    {
+                      "name": "ExpAtom",
+                      "body": { "name": "Identifier", "string": "b" }
+                    }
+                  ]
+                }
+              ]
+            },
+            "partial": true
           }
         """
 
