@@ -134,6 +134,7 @@ class ExpressionBuilder
     let trivia = _trivia.trivia()
     let type_args = _type_type.args()
     let type_arrow = _type_type.arrow()
+    let type_params = _type_type.params()
 
     // we need to build these in one go since they are mutually recursive
     (let exp_seq', let exp_item') =
@@ -158,7 +159,7 @@ class ExpressionBuilder
         let exp_infix = NamedRule("Exp_Infix", None)                        // x
         let exp_item = NamedRule("Exp_Item", None)                          // x
         let exp_jump = NamedRule("Exp_Jump", None)                          // x
-        let exp_lambda = NamedRule("Exp_Lambda", None)
+        let exp_lambda = NamedRule("Exp_Lambda", None)                      // x
         let exp_match = NamedRule("Exp_Match", None)                        // x
         let exp_object = NamedRule("Exp_Object", None)
         let exp_parens = NamedRule("Exp_Parens", None)                      // x
@@ -172,6 +173,8 @@ class ExpressionBuilder
         let exp_tuple = NamedRule("Exp_Tuple", None)                        // x
         let exp_while = NamedRule("Exp_While", None)                        // x
         let exp_with = NamedRule("Exp_With", None)                          // x
+        let fun_params = NamedRule("Fun_Params", None)                      // x
+        let fun_param = NamedRule("Fun_Param", None)                        // x
         let match_case = NamedRule("Match_Case", None)                      // x
         let tuple_pattern = NamedRule("Tuple_Pattern", None)                // x
         let with_elem = NamedRule("With_Element", None)                     // x
@@ -593,7 +596,7 @@ class ExpressionBuilder
               [ exp_tuple
                 exp_parens
                 exp_array
-                //exp_lambda
+                exp_lambda
                 exp_ffi
                 //exp_object
                 kwd_loc
@@ -667,6 +670,81 @@ class ExpressionBuilder
             [ oparen
               Bind(parens_body, exp_seq) ]),
           _ExpActions~_atom(parens_body))
+
+        // lambda
+        let lambda_bare = Variable("lambda_bare")
+        let lambda_ann = Variable("lambda_ann")
+        let lambda_this_cap = Variable("lambda_this_cap")
+        let lambda_id = Variable("lambda_id")
+        let lambda_type_params = Variable("lambda_type_params")
+        let lambda_params = Variable("lambda_params")
+        let lambda_captures = Variable("lambda_captures")
+        let lambda_ret_type = Variable("lambda_ret_type")
+        let lambda_partial = Variable("lambda_partial")
+        let lambda_body = Variable("lambda_body")
+        let lambda_ref_cap = Variable("lambda_ref_cap")
+        exp_lambda.set_body(
+          Conj(
+            [ Ques(Bind(lambda_bare, at))
+              ocurly
+              Ques(Bind(lambda_ann, annotation()))
+              Ques(Bind(lambda_this_cap, kwd_cap))
+              Ques(Bind(lambda_id, id))
+              Ques(Bind(lambda_type_params, type_params))
+              oparen
+              Bind(lambda_params, fun_params)
+              cparen
+              Ques(
+                Conj(
+                  [ oparen
+                    Bind(lambda_captures, fun_params)
+                    cparen ]))
+              Ques(
+                Conj(
+                  [ colon
+                    Bind(lambda_ret_type, type_arrow) ]))
+              Ques(Bind(lambda_partial, ques))
+              equal_arrow
+              Bind(lambda_body, exp_seq)
+              ccurly
+              Ques(Bind(lambda_ref_cap, kwd_cap)) ]),
+          _ExpActions~_lambda(
+            lambda_bare,
+            lambda_ann,
+            lambda_this_cap,
+            lambda_id,
+            lambda_type_params,
+            lambda_params,
+            lambda_captures,
+            lambda_ret_type,
+            lambda_partial,
+            lambda_body,
+            lambda_ref_cap))
+
+        // fun_params <= (fun_param (',' fun_param)*)
+        let fun_params_params = Variable("fun_params_params")
+        fun_params.set_body(
+          Ques(
+            Bind(
+              fun_params_params,
+              Conj(
+                [ fun_param
+                  Star(Conj([ comma; fun_param ])) ]))),
+          _ExpActions~_fun_params(fun_params_params))
+
+        // fun_param <= id (':' type_arrow)? ('=' exp_infix)?
+        let fun_param_id = Variable("fun_param_id")
+        let fun_param_constraint = Variable("fun_param_constraint")
+        let fun_param_init = Variable("fun_param_init")
+        fun_param.set_body(
+          Conj(
+            [ Bind(fun_param_id, id)
+              Ques(Conj([ colon; Bind(fun_param_constraint, type_arrow) ]))
+              Ques(Conj([ equals; Bind(fun_param_init, exp_infix)])) ]),
+          _ExpActions~_fun_param(
+            fun_param_id,
+            fun_param_constraint,
+            fun_param_init))
 
         // array <= '[' ('as' type_arrow ':') exp_seq ']'
         let array_type = Variable("array_type")

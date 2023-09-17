@@ -13,6 +13,7 @@ class TypeBuilder
   var _type_nominal: (NamedRule | None) = None
   var _type_lambda: (NamedRule | None) = None
   var _type_args: (NamedRule | None) = None
+  var _type_params: (NamedRule | None) = None
 
   new create(context: Context, token: TokenBuilder, keyword: KeywordBuilder) =>
     _context = context
@@ -75,8 +76,17 @@ class TypeBuilder
       _build_type()._7
     end
 
+  fun ref params(): NamedRule =>
+    match _type_params
+    | let r: NamedRule =>
+      r
+    else
+      _build_type()._8
+    end
+
   fun ref _build_type()
     : ( NamedRule,
+        NamedRule,
         NamedRule,
         NamedRule,
         NamedRule,
@@ -112,7 +122,8 @@ class TypeBuilder
       let type_infix',
       let type_nominal',
       let type_lambda',
-      let type_args' ) =
+      let type_args',
+      let type_params' ) =
       recover val
         let type_args = NamedRule("Type_Args", None)                        // x
         let type_arrow = NamedRule("Type_Arrow", None)                      // x
@@ -284,7 +295,8 @@ class TypeBuilder
           type_infix,
           type_nominal,
           type_lambda,
-          type_args )
+          type_args,
+          type_params )
       end
 
     _type_arrow = type_arrow'
@@ -294,6 +306,7 @@ class TypeBuilder
     _type_nominal = type_nominal'
     _type_lambda = type_lambda'
     _type_args = type_args'
+    _type_params = type_params'
 
     ( type_arrow',
       type_atom',
@@ -301,4 +314,5 @@ class TypeBuilder
       type_infix',
       type_nominal',
       type_lambda',
-      type_args' )
+      type_args',
+      type_params' )

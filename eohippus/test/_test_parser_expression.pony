@@ -30,6 +30,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionDecl)
     test(_TestParserExpressionWith)
     test(_TestParserExpressionFfi)
+    test(_TestParserExpressionLambda)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -805,202 +806,298 @@ class iso _TestParserExpressionFor is UnitTest
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-  class iso _TestParserExpressionMatch is UnitTest
-    fun name(): String => "parser/expression/Match"
-    fun exclusion_group(): String => "parser/expression"
+class iso _TestParserExpressionMatch is UnitTest
+  fun name(): String => "parser/expression/Match"
+  fun exclusion_group(): String => "parser/expression"
 
-    fun apply(h: TestHelper) =>
-      let setup = _TestSetup(name())
-      let rule = setup.builder.expression.item()
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
 
-      let source =
-        """
-          match a
-          | b if c => d
-          | 2 => true
-          else
-            g
-          end
-        """
-      let expected =
-        """
-          {
-            "name": "ExpMatch",
-            "expression": {
-              "name": "ExpAtom",
-              "body": { "name": "Identifier", "string": "a" }
-            },
-            "cases": [
-              {
-                "name": "MatchCase",
-                "pattern": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "b" }
-                },
-                "condition": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "c" }
-                },
-                "body": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "d" }
-                }
+    let source =
+      """
+        match a
+        | b if c => d
+        | 2 => true
+        else
+          g
+        end
+      """
+    let expected =
+      """
+        {
+          "name": "ExpMatch",
+          "expression": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "a" }
+          },
+          "cases": [
+            {
+              "name": "MatchCase",
+              "pattern": {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "b" }
               },
-              {
-                "name": "MatchCase",
-                "pattern": {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralInteger", "value": 2 }
-                },
-                "body": {
-                  "name": "ExpAtom",
-                  "body": { "name": "LiteralBool", "value": true }
-                }
+              "condition": {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "c" }
+              },
+              "body": {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "d" }
               }
-            ],
-            "else_block": {
-              "name": "ExpAtom",
-              "body": { "name": "Identifier", "string": "g" }
+            },
+            {
+              "name": "MatchCase",
+              "pattern": {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralInteger", "value": 2 }
+              },
+              "body": {
+                "name": "ExpAtom",
+                "body": { "name": "LiteralBool", "value": true }
+              }
             }
+          ],
+          "else_block": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "g" }
           }
-        """
+        }
+      """
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-  class iso _TestParserExpressionDecl is UnitTest
-    fun name(): String => "parser/expression/Decl"
-    fun exclusion_group(): String => "parser/expression"
+class iso _TestParserExpressionDecl is UnitTest
+  fun name(): String => "parser/expression/Decl"
+  fun exclusion_group(): String => "parser/expression"
 
-    fun apply(h: TestHelper) =>
-      let setup = _TestSetup(name())
-      let rule = setup.builder.expression.item()
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
 
-      let source1 = "let n: F32"
-      let expected1 =
-        """
-          {
+    let source1 = "let n: F32"
+    let expected1 =
+      """
+        {
+          "name": "ExpDecl",
+          "identifier": { "name": "Identifier", "string": "n" },
+          "decl_type": {
+            "name": "TypeNominal",
+            "rhs": { "name": "Identifier", "string": "F32" }
+          }
+        }
+      """
+
+    let source2 = "let n: F32 = 3.14"
+    let expected2 =
+      """
+        {
+          "name": "ExpOperation",
+          "lhs": {
             "name": "ExpDecl",
             "identifier": { "name": "Identifier", "string": "n" },
             "decl_type": {
               "name": "TypeNominal",
               "rhs": { "name": "Identifier", "string": "F32" }
             }
+          },
+          "op": { "name": "Token", "string": "=" },
+          "rhs": {
+            "name": "ExpAtom",
+            "body": { "name": "LiteralFloat", "value": 3.14 }
           }
-        """
-
-      let source2 = "let n: F32 = 3.14"
-      let expected2 =
-        """
-          {
-            "name": "ExpOperation",
-            "lhs": {
-              "name": "ExpDecl",
-              "identifier": { "name": "Identifier", "string": "n" },
-              "decl_type": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "F32" }
-              }
-            },
-            "op": { "name": "Token", "string": "=" },
-            "rhs": {
-              "name": "ExpAtom",
-              "body": { "name": "LiteralFloat", "value": 3.14 }
-            }
-          }
-        """
+        }
+      """
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
         _Assert.test_match(h, rule, setup.data, source2, expected2) ])
 
-  class iso _TestParserExpressionWith is UnitTest
-    fun name(): String => "parser/expression/With"
-    fun exclusion_group(): String => "parser/expression"
+class iso _TestParserExpressionWith is UnitTest
+  fun name(): String => "parser/expression/With"
+  fun exclusion_group(): String => "parser/expression"
 
-    fun apply(h: TestHelper) =>
-      let setup = _TestSetup(name())
-      let rule = setup.builder.expression.item()
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
 
-      let source = "with (a, b) = c, d = e do f end"
-      let expected =
-        """
-          {
-            "name": "ExpWith",
-            "elements": [
+    let source = "with (a, b) = c, d = e do f end"
+    let expected =
+      """
+        {
+          "name": "ExpWith",
+          "elements": [
+            {
+              "name": "WithElement",
+              "pattern": {
+                "name": "TuplePattern",
+                "ids": [
+                  { "name": "Identifier", "string": "a" },
+                  { "name": "Identifier", "string": "b" }
+                ]
+              },
+              "body": {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "c" }
+              }
+            },
+            {
+              "name": "WithElement",
+              "pattern": {
+                "name": "TuplePattern",
+                "ids": [
+                  { "name": "Identifier", "string": "d" }
+                ]
+              },
+              "body": {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "e" }
+              }
+            }
+          ],
+          "body": {
+            "name": "ExpAtom",
+            "body": { "name": "Identifier", "string": "f" }
+          }
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionFfi is UnitTest
+  fun name(): String => "parser/expression/Ffi"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    let source = "@a[T](b)?"
+    let expected =
+      """
+        {
+          "name": "ExpFfi",
+          "identifier": { "name": "Identifier", "string": "a" },
+          "type_args": {
+            "name": "TypeArgs",
+            "types": [
               {
-                "name": "WithElement",
-                "pattern": {
-                  "name": "TuplePattern",
-                  "ids": [
-                    { "name": "Identifier", "string": "a" },
-                    { "name": "Identifier", "string": "b" }
-                  ]
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "T" }
+              }
+            ]
+          },
+          "call_args": {
+            "name": "CallArgs",
+            "positional": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "b" }
+              }
+            ]
+          },
+          "partial": true
+        }
+      """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserExpressionLambda is UnitTest
+  fun name(): String => "parser/expression/Lambda"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item()
+
+    //            0                15   20   25   30   35   40   45
+    let source = "@{ \\z\\ iso a[T](b:U=c,d:V)(e,f):W? => g; h } trn"
+    let expected =
+      """
+        {
+          "name": "ExpLambda",
+          "bare": true,
+          "annotation": {
+            "name": "Annotation",
+            "identifiers": [ { "name": "Identifier", "string": "z" } ]
+          },
+          "this_cap": { "name": "Keyword", "string": "iso" },
+          "identifier": { "name": "Identifier", "string": "a" },
+          "type_params": {
+            "name": "TypeParams",
+            "params": [
+              {
+                "name": "TypeParam",
+                "constraint": {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "T" }
+                }
+              }
+            ],
+          },
+          "params": {
+            "name": "FunParams",
+            "params": [
+              {
+                "name": "FunParam",
+                "identifier": { "name": "Identifier", "string": "b" },
+                "constraint": {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "U" }
                 },
-                "body": {
+                "initializer": {
                   "name": "ExpAtom",
                   "body": { "name": "Identifier", "string": "c" }
                 }
               },
               {
-                "name": "WithElement",
-                "pattern": {
-                  "name": "TuplePattern",
-                  "ids": [
-                    { "name": "Identifier", "string": "d" }
-                  ]
-                },
-                "body": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "e" }
+                "name": "FunParam",
+                "identifier": { "name": "Identifier", "string": "d" },
+                "constraint": {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "V" }
                 }
               }
-            ],
-            "body": {
-              "name": "ExpAtom",
-              "body": { "name": "Identifier", "string": "f" }
-            }
-          }
-        """
-
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
-
-  class iso _TestParserExpressionFfi is UnitTest
-    fun name(): String => "parser/expression/Ffi"
-    fun exclusion_group(): String => "parser/expression"
-
-    fun apply(h: TestHelper) =>
-      let setup = _TestSetup(name())
-      let rule = setup.builder.expression.item()
-
-      let source = "@a[T](b)?"
-      let expected =
-        """
-          {
-            "name": "ExpFfi",
-            "identifier": { "name": "Identifier", "string": "a" },
-            "type_args": {
-              "name": "TypeArgs",
-              "types": [
-                {
-                  "name": "TypeNominal",
-                  "rhs": { "name": "Identifier", "string": "T" }
-                }
-              ]
-            },
-            "call_args": {
-              "name": "CallArgs",
-              "positional": [
-                {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "b" }
-                }
-              ]
-            },
-            "partial": true
-          }
-        """
+            ]
+          },
+          "captures": {
+            "name": "FunParams",
+            "params": [
+              {
+                "name": "FunParam",
+                "identifier": { "name": "Identifier", "string": "e" }
+              },
+              {
+                "name": "FunParam",
+                "identifier": { "name": "Identifier", "string": "f" }
+              }
+            ]
+          },
+          "ret_type": {
+            "name": "TypeNominal",
+            "rhs": { "name": "Identifier", "string": "W"}
+          },
+          "partial": true,
+          "body": {
+            "name": "ExpSequence",
+            "expressions": [
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "g" }
+              },
+              {
+                "name": "ExpAtom",
+                "body": { "name": "Identifier", "string": "h" }
+              }
+            ]
+          },
+          "ref_cap": { "name": "Keyword", "string": "trn" }
+        }
+      """
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])

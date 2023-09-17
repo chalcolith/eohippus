@@ -131,6 +131,10 @@ class val NodeWith[D: NodeData val] is Node
   fun get_json(): json.Item val =>
     recover
       let props = [ as (String, json.Item): ("name", _data.name()) ]
+      match _annotation
+      | let annotation': NodeWith[Annotation] =>
+        props.push(("annotation", annotation'.get_json()))
+      end
       _data.add_json_props(props)
       if _error_sections.size() > 0 then
         props.push(("error_sections", Nodes.get_json(_error_sections)))
