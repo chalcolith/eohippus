@@ -71,6 +71,7 @@ class TypedefBuilder
   fun tag _typedef_primitive_action(
     id: Variable,
     ds: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -80,11 +81,11 @@ class TypedefBuilder
       try
         _Build.value_with[ast.Identifier](b, id, r)?
       else
-        return _Build.bind_error(r, c, b, "Identifier")
+        return _Build.bind_error(d, r, c, b, "Identifier")
       end
     let ds' = _Build.values_with[ast.DocString](b, ds, r)
 
     let value = ast.NodeWith[ast.TypeDefPrimitive](
-      _Build.info(r), c, ast.TypeDefPrimitive(id')
+      _Build.info(d, r), c, ast.TypeDefPrimitive(id')
       where doc_strings' = ds')
     (value, b)

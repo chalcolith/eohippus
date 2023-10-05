@@ -101,9 +101,9 @@ class KeywordBuilder
                   Neg(Single(_Letters.with_underscore())) ])
             end,
             t,
-            {(r, c, b, p) =>
+            {(d, r, c, b, p) =>
               let value = ast.NodeWith[ast.Keyword](
-                _Build.info(r), c, ast.Keyword(str)
+                _Build.info(d, r), c, ast.Keyword(str)
                 where post_trivia' = p)
               (value, b) })
           where memoize_failures' = false)
@@ -146,8 +146,8 @@ class KeywordBuilder
                 Bind(str, Disj(literals))
               end,
               trivia,
-              {(r, c, b, p) =>
-                let src_info = _Build.info(r)
+              {(d, r, c, b, p) =>
+                let src_info = _Build.info(d, r)
                 let next =
                   try
                     p(0)?.src_info().start

@@ -336,20 +336,20 @@ class LiteralBuilder
     recover val
       Conj(
         [ char_unicode() ],
-        {(r, c, b) => (_LiteralActions._char_uni(r, r, c, []), b) })
+        {(d, r, c, b) => (_LiteralActions._char_uni(d, r, r, c, []), b) })
     end
 
   fun ref _string_char_esc(): RuleNode =>
     recover val
       Conj(
         [ char_escape() ],
-        {(r, c, b) => (_LiteralActions._char_esc(r, r, c, []), b) })
+        {(d, r, c, b) => (_LiteralActions._char_esc(d, r, r, c, []), b) })
     end
 
   fun ref _string_char(): RuleNode =>
     recover val
       Single(
         "",
-        {(r, c, b) =>
-          (ast.NodeWith[ast.Span](_Build.info(r), c, ast.Span), b) })
+        {(d, r, c, b) =>
+          (ast.NodeWith[ast.Span](_Build.info(d, r), c, ast.Span), b) })
     end

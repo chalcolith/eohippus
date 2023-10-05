@@ -118,7 +118,7 @@ class OperatorBuilder
                   ])
               end,
               trivia,
-              {(r,c,b,p) =>
+              {(d, r, c, b, p) =>
                 let kwd_and = ast.Keywords.kwd_and()
                 let kwd_or = ast.Keywords.kwd_or()
                 let kwd_xor = ast.Keywords.kwd_xor()
@@ -134,12 +134,12 @@ class OperatorBuilder
 
                 if (str == kwd_and) or (str == kwd_or) or (str == kwd_xor) then
                   let value = ast.NodeWith[ast.Keyword](
-                    _Build.info(r), c, ast.Keyword(str)
+                    _Build.info(d, r), c, ast.Keyword(str)
                     where post_trivia' = p)
                   (value, b)
                 else
                   let value = ast.NodeWith[ast.Token](
-                    _Build.info(r), c, ast.Token(str)
+                    _Build.info(d, r), c, ast.Token(str)
                     where post_trivia' = p)
                   (value, b)
                 end

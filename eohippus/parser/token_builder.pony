@@ -123,7 +123,7 @@ class TokenBuilder
           _Build.with_post[ast.Trivia](
             Literal(str),
             trivia,
-            {(r, c, b, p) =>
+            {(d, r, c, b, p) =>
               let next =
                 try
                   p(0)?.src_info().start
@@ -135,7 +135,7 @@ class TokenBuilder
                   String .> concat(r.start.values(next))
                 end
               let value = ast.NodeWith[ast.Token](
-                _Build.info(r), c, ast.Token(string)
+                _Build.info(d, r), c, ast.Token(string)
                 where post_trivia' = p)
               (value, b) })
           where memoize_failures' = false)
@@ -173,7 +173,7 @@ class TokenBuilder
                         Star(Single(id_chars)) ]) ])
               end,
               trivia,
-              {(r, c, b, p) =>
+              {(d, r, c, b, p) =>
                 let next =
                   try
                     p(0)?.src_info().start
@@ -185,7 +185,7 @@ class TokenBuilder
                     String .> concat(r.start.values(next))
                   end
                 let value = ast.NodeWith[ast.Identifier](
-                  _Build.info(r), c, ast.Identifier(string)
+                  _Build.info(d, r), c, ast.Identifier(string)
                   where post_trivia' = p)
                 (value, b) }))
         end

@@ -25,9 +25,9 @@ class MemberBuilder
           [ Neg(Disj([ Disj(allowed); eof ]))
             Plus(Conj([ Neg(Disj([ dol; eof ])); Single() ]))
             Disj([ dol; eof ]) ],
-          {(r, c, b) =>
+          {(d, r, c, b) =>
             let value = ast.NodeWith[ast.ErrorSection](
-              _Build.info(r), c, ast.ErrorSection(message))
+              _Build.info(d, r), c, ast.ErrorSection(message))
             (value, b) }))
     end
 
@@ -51,6 +51,7 @@ class MemberBuilder
 
   fun tag _doc_string_action(
     s: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -60,9 +61,9 @@ class MemberBuilder
       try
         _Build.value_with[ast.Literal](b, s, r)?
       else
-        return _Build.bind_error(r, c, b, "DocString/LiteralString")
+        return _Build.bind_error(d, r, c, b, "DocString/LiteralString")
       end
 
     let value = ast.NodeWith[ast.DocString](
-      _Build.info(r), c, ast.DocString(s'))
+      _Build.info(d, r), c, ast.DocString(s'))
     (value, b)

@@ -66,9 +66,9 @@ class TriviaBuilder
                     Single()
                   ]))
                 Look(Disj([ eol(); eof() ])) ]),
-            {(r, c, b) =>
+            {(d, r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.LineCommentTrivia))
+                _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia))
               (value, b) })
         end
       _comment_line = comment_line'
@@ -90,9 +90,9 @@ class TriviaBuilder
                     [ Neg(Literal("*/"))
                       Single() ]))
                 Literal("*/") ]),
-            {(r, c, b) =>
+            {(d, r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.NestedCommentTrivia))
+                _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia))
               (value, b) })
         end
       _comment_nested = comment_nested'
@@ -107,9 +107,9 @@ class TriviaBuilder
         recover val
           NamedRule("WS",
             Plus(Single(" \t")),
-            {(r, c, b) =>
+            {(d, r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.WhiteSpaceTrivia))
+                _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia))
               (value, b) })
         end
       _ws = ws'
@@ -128,9 +128,9 @@ class TriviaBuilder
               Literal("\n")
               Literal("\r")
             ]),
-            {(r, c, b) =>
+            {(d, r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.EndOfLineTrivia))
+                _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia))
               (value, b) })
         end
       _eol = eol'
@@ -163,9 +163,9 @@ class TriviaBuilder
         recover val
           NamedRule("EOF",
             Neg(Single),
-            {(r, c, b) =>
+            {(d, r, c, b) =>
               let value = ast.NodeWith[ast.Trivia](
-                _Build.info(r), c, ast.Trivia(ast.EndOfFileTrivia))
+                _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia))
               (value, b) })
         end
       _eof = eof'

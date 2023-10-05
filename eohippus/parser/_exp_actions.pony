@@ -4,6 +4,7 @@ use ast = "../ast"
 
 primitive _ExpActions
   fun tag _annotation(
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -12,12 +13,13 @@ primitive _ExpActions
     let ids = _Build.nodes_with[ast.Identifier](c)
 
     let value = ast.NodeWith[ast.Annotation](
-      _Build.info(r), c, ast.Annotation(ids))
+      _Build.info(d, r), c, ast.Annotation(ids))
     (value, b)
 
   fun tag _seq(
     ann: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -35,7 +37,7 @@ primitive _ExpActions
     end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpSequence(expressions)
+      _Build.info(d, r), c, ast.ExpSequence(expressions)
       where annotation' = ann')
     (value, b)
 
@@ -44,6 +46,7 @@ primitive _ExpActions
     op: Variable,
     rhs: Variable,
     partial: (Variable | None),
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -61,7 +64,7 @@ primitive _ExpActions
         _Build.value(b, op, r)? as
           (ast.NodeWith[ast.Keyword] | ast.NodeWith[ast.Token])
       else
-        return _Build.bind_error(r, c, b, "Expression/Binop/Op")
+        return _Build.bind_error(d, r, c, b, "Expression/Binop/Op")
       end
     let rhs' =
       try
@@ -70,12 +73,12 @@ primitive _ExpActions
           | ast.NodeWith[ast.Expression]
           | ast.NodeWith[ast.Identifier] )
       else
-        return _Build.bind_error(r, c, b, "Expression/Binop/RHS")
+        return _Build.bind_error(d, r, c, b, "Expression/Binop/RHS")
       end
     let partial' = b.contains(partial)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpOperation(lhs', op', rhs', partial'))
+      _Build.info(d, r), c, ast.ExpOperation(lhs', op', rhs', partial'))
     (value, b)
 
   fun tag _lambda(
@@ -90,6 +93,7 @@ primitive _ExpActions
     partial: Variable,
     body: Variable,
     ref_cap: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -107,7 +111,7 @@ primitive _ExpActions
       try
         _Build.value_with[ast.FunParams](b, params, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Lambda/Params")
+        return _Build.bind_error(d, r, c, b, "Expression/Lambda/Params")
       end
     let captures' = _Build.value_with_or_none[ast.FunParams](b, captures, r)
     let ret_type' = _Build.value_with_or_none[ast.TypeType](b, ret_type, r)
@@ -116,12 +120,12 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Lambda/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Lambda/Body")
       end
     let ref_cap' = _Build.value_with_or_none[ast.Keyword](b, ref_cap, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpLambda(
+      _Build.info(d, r), c, ast.ExpLambda(
         bare',
         this_cap',
         identifier',
@@ -137,6 +141,7 @@ primitive _ExpActions
 
   fun tag _fun_params(
     params: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -145,13 +150,14 @@ primitive _ExpActions
     let params' = _Build.values_with[ast.FunParam](b, params, r)
 
     let value = ast.NodeWith[ast.FunParams](
-      _Build.info(r), c, ast.FunParams(params'))
+      _Build.info(d, r), c, ast.FunParams(params'))
     (value, b)
 
   fun tag _fun_param(
     identifier: Variable,
     constraint: Variable,
     initializer: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -161,19 +167,20 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Identifier](b, identifier, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/FunParam/Identifier")
+        return _Build.bind_error(d, r, c, b, "Expression/FunParam/Identifier")
       end
     let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
     let initializer' =
       _Build.value_with_or_none[ast.Expression](b, initializer, r)
 
     let value = ast.NodeWith[ast.FunParam](
-      _Build.info(r), c, ast.FunParam(identifier', constraint', initializer'))
+      _Build.info(d, r), c, ast.FunParam(identifier', constraint', initializer'))
     (value, b)
 
   fun tag _jump(
     keyword: Variable,
     rhs: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -183,18 +190,19 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Keyword](b, keyword, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Jump/Keyword")
+        return _Build.bind_error(d, r, c, b, "Expression/Jump/Keyword")
       end
     let rhs' = _Build.value_with_or_none[ast.Expression](b, rhs, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpJump(keyword', rhs'))
+      _Build.info(d, r), c, ast.ExpJump(keyword', rhs'))
     (value, b)
 
   fun tag _if(
     firstif: Variable,
     elseifs: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -204,7 +212,7 @@ primitive _ExpActions
       try
         _Build.value_with[ast.IfCondition](b, firstif, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/If/FirstIf")
+        return _Build.bind_error(d, r, c, b, "Expression/If/FirstIf")
       end
     let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs, r)
     let conditions =
@@ -217,12 +225,13 @@ primitive _ExpActions
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpIf(ast.IfExp, conditions, else_block'))
+      _Build.info(d, r), c, ast.ExpIf(ast.IfExp, conditions, else_block'))
     (value, b)
 
   fun tag _ifcond(
     if_true: Variable,
     then_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -232,23 +241,24 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, if_true, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfCond/Condition")
+        return _Build.bind_error(d, r, c, b, "Expression/IfCond/Condition")
       end
     let then_block' =
       try
         _Build.value_with[ast.Expression](b, then_block, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfCond/TrueSeq")
+        return _Build.bind_error(d, r, c, b, "Expression/IfCond/TrueSeq")
       end
 
     let value = ast.NodeWith[ast.IfCondition](
-      _Build.info(r), c, ast.IfCondition(if_true', then_block'))
+      _Build.info(d, r), c, ast.IfCondition(if_true', then_block'))
     (value, b)
 
   fun tag _ifdef(
     firstif: Variable,
     elseifs: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -258,7 +268,7 @@ primitive _ExpActions
       try
         _Build.value_with[ast.IfCondition](b, firstif, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/If/Firstif")
+        return _Build.bind_error(d, r, c, b, "Expression/If/Firstif")
       end
     let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs, r)
     let conditions =
@@ -271,13 +281,14 @@ primitive _ExpActions
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpIf(ast.IfDef, conditions, else_block'))
+      _Build.info(d, r), c, ast.ExpIf(ast.IfDef, conditions, else_block'))
     (value, b)
 
   fun tag _iftype(
     firstif: Variable,
     elseifs: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -287,7 +298,7 @@ primitive _ExpActions
       try
         _Build.value_with[ast.IfCondition](b, firstif, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfType/Firstif")
+        return _Build.bind_error(d, r, c, b, "Expression/IfType/Firstif")
       end
     let elseifs' = _Build.values_with[ast.IfCondition](b, elseifs, r)
     let conditions =
@@ -300,7 +311,7 @@ primitive _ExpActions
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpIf(ast.IfType, conditions, else_block'))
+      _Build.info(d, r), c, ast.ExpIf(ast.IfType, conditions, else_block'))
     (value, b)
 
   fun tag _iftype_cond(
@@ -309,6 +320,7 @@ primitive _ExpActions
     op: Variable,
     rhs: Variable,
     then_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -319,40 +331,41 @@ primitive _ExpActions
       try
         _Build.value_with[ast.TypeType](b, lhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/LHS")
+        return _Build.bind_error(d, r, c, b, "Expression/IfTypeCond/LHS")
       end
     let op' =
       try
         _Build.value_with[ast.Token](b, op, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Op")
+        return _Build.bind_error(d, r, c, b, "Expression/IfTypeCond/Op")
       end
     let rhs' =
       try
         _Build.value_with[ast.TypeType](b, rhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/RHS")
+        return _Build.bind_error(d, r, c, b, "Expression/IfTypeCond/RHS")
       end
     let then_block' =
       try
         _Build.value_with[ast.Expression](b, then_block, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/IfTypeCond/Then")
+        return _Build.bind_error(d, r, c, b, "Expression/IfTypeCond/Then")
       end
 
     let cond_info = ast.SrcInfo(
-      r.data.locator, lhs'.src_info().start, rhs'.src_info().next)
+      d.locator, lhs'.src_info().start, rhs'.src_info().next)
     let cond = ast.NodeWith[ast.Expression](
       cond_info, cond_children, ast.ExpOperation(lhs', op', rhs'))
 
     let value = ast.NodeWith[ast.IfCondition](
-      _Build.info(r), c, ast.IfCondition(cond, then_block'))
+      _Build.info(d, r), c, ast.IfCondition(cond, then_block'))
     (value, b)
 
   fun tag _match(
     exp: Variable,
     cases: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -362,20 +375,21 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, exp, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Match/Exp")
+        return _Build.bind_error(d, r, c, b, "Expression/Match/Exp")
       end
     let cases' = _Build.values_with[ast.MatchCase](b, cases, r)
     let else_block' =
       _Build.value_with_or_none[ast.Expression](b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpMatch(exp', cases', else_block'))
+      _Build.info(d, r), c, ast.ExpMatch(exp', cases', else_block'))
     (value, b)
 
   fun tag _match_case(
     pattern: Variable,
     condition: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -385,24 +399,25 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, pattern, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/MatchCase/Pattern")
+        return _Build.bind_error(d, r, c, b, "Expression/MatchCase/Pattern")
       end
     let condition' = _Build.value_with_or_none[ast.Expression](b, condition, r)
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/MatchCase/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/MatchCase/Body")
       end
 
     let value = ast.NodeWith[ast.MatchCase](
-      _Build.info(r), c, ast.MatchCase(pattern', condition', body'))
+      _Build.info(d, r), c, ast.MatchCase(pattern', condition', body'))
     (value, b)
 
   fun tag _while(
     condition: Variable,
     body: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -412,25 +427,26 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, condition, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/While/Condition")
+        return _Build.bind_error(d, r, c, b, "Expression/While/Condition")
       end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/While/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/While/Body")
       end
     let else_block' = _Build.value_with_or_none[ast.Expression](
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpWhile(condition', body', else_block'))
+      _Build.info(d, r), c, ast.ExpWhile(condition', body', else_block'))
     (value, b)
 
   fun tag _repeat(
     body: Variable,
     condition: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -440,25 +456,26 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Repeat/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Repeat/Body")
       end
     let condition' =
       try
         _Build.value_with[ast.Expression](b, condition, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Repeat/Condition")
+        return _Build.bind_error(d, r, c, b, "Expression/Repeat/Condition")
       end
     let else_block' = _Build.value_with_or_none[ast.Expression](
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpRepeat(body', condition', else_block'))
+      _Build.info(d, r), c, ast.ExpRepeat(body', condition', else_block'))
     (value, b)
 
   fun tag _for(
     ids: Variable,
     body: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -468,22 +485,23 @@ primitive _ExpActions
       try
         _Build.value_with[ast.TuplePattern](b, ids, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/For/Ids")
+        return _Build.bind_error(d, r, c, b, "Expression/For/Ids")
       end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/For/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/For/Body")
       end
     let else_block' = _Build.value_with_or_none[ast.Expression](
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpFor(ids', body', else_block'))
+      _Build.info(d, r), c, ast.ExpFor(ids', body', else_block'))
     (value, b)
 
   fun tag _tuple_pattern(
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -514,12 +532,13 @@ primitive _ExpActions
       end
 
     let value = ast.NodeWith[ast.TuplePattern](
-      _Build.info(r), c, ast.TuplePattern(ids))
+      _Build.info(d, r), c, ast.TuplePattern(ids))
     (value, b)
 
   fun tag _with(
     elems: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -530,16 +549,17 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/With/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/With/Body")
       end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpWith(elems', body'))
+      _Build.info(d, r), c, ast.ExpWith(elems', body'))
     (value, b)
 
   fun tag _with_elem(
     pattern: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -549,22 +569,23 @@ primitive _ExpActions
       try
         _Build.value_with[ast.TuplePattern](b, pattern, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/WithElem/Pattern")
+        return _Build.bind_error(d, r, c, b, "Expression/WithElem/Pattern")
       end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/WithElem/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/WithElem/Body")
       end
 
     let value = ast.NodeWith[ast.WithElement](
-      _Build.info(r), c, ast.WithElement(pattern', body'))
+      _Build.info(d, r), c, ast.WithElement(pattern', body'))
     (value, b)
 
   fun tag _try(
     body: Variable,
     else_block: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -574,18 +595,19 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Try/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Try/Body")
       end
     let else_block' = _Build.value_with_or_none[ast.Expression](
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpTry(body', else_block'))
+      _Build.info(d, r), c, ast.ExpTry(body', else_block'))
     (value, b)
 
   fun tag _recover(
     cap: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -596,16 +618,17 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Recover/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Recover/Body")
       end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpRecover(cap', body'))
+      _Build.info(d, r), c, ast.ExpRecover(cap', body'))
     (value, b)
 
   fun tag _consume(
     cap: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -616,17 +639,18 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Consume/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Consume/Body")
       end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpConsume(cap', body'))
+      _Build.info(d, r), c, ast.ExpConsume(cap', body'))
     (value, b)
 
   fun tag _decl(
     kind: Variable,
     identifier: Variable,
     decl_type: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -636,23 +660,24 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Keyword](b, kind, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Decl/Kind")
+        return _Build.bind_error(d, r, c, b, "Expression/Decl/Kind")
       end
     let identifier' =
       try
         _Build.value_with[ast.Identifier](b, identifier, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Decl/Identifier")
+        return _Build.bind_error(d, r, c, b, "Expression/Decl/Identifier")
       end
     let decl_type' = _Build.value_with_or_none[ast.TypeType](b, decl_type, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpDecl(kind', identifier', decl_type'))
+      _Build.info(d, r), c, ast.ExpDecl(kind', identifier', decl_type'))
     (value, b)
 
   fun tag _prefix(
     op: Variable,
     rhs: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -663,21 +688,22 @@ primitive _ExpActions
         _Build.value(b, op, r)? as
           (ast.NodeWith[ast.Keyword] | ast.NodeWith[ast.Token])
       else
-        return _Build.bind_error(r, c, b, "Expression/Prefix/Op")
+        return _Build.bind_error(d, r, c, b, "Expression/Prefix/Op")
       end
     let rhs' =
       try
         _Build.value_with[ast.Expression](b, rhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Prefix/RHS")
+        return _Build.bind_error(d, r, c, b, "Expression/Prefix/RHS")
       end
 
     let value = ast.NodeWith[ast.ExpOperation](
-      _Build.info(r), c, ast.ExpOperation(None, op', rhs'))
+      _Build.info(d, r), c, ast.ExpOperation(None, op', rhs'))
     (value, b)
 
   fun tag _hash(
     rhs: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -687,16 +713,17 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, rhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Hash/RHS")
+        return _Build.bind_error(d, r, c, b, "Expression/Hash/RHS")
       end
 
     let value = ast.NodeWith[ast.ExpHash](
-      _Build.info(r), c, ast.ExpHash(rhs'))
+      _Build.info(d, r), c, ast.ExpHash(rhs'))
     (value, b)
 
   fun tag _postfix_type_args(
     lhs: Variable,
     args: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -706,23 +733,24 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, lhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/LHS")
+        return _Build.bind_error(d, r, c, b, "Expression/Postfix/Generic/LHS")
       end
     let args' =
       try
         _Build.value_with[ast.TypeArgs](b, args, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Generic/TypeArgs")
+        return _Build.bind_error(d, r, c, b, "Expression/Postfix/Generic/TypeArgs")
       end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpGeneric(lhs', args'))
+      _Build.info(d, r), c, ast.ExpGeneric(lhs', args'))
     (value, b)
 
   fun tag _postfix_call_args(
     lhs: Variable,
     args: Variable,
     partial: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -732,23 +760,24 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, lhs, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Postfix/Call/LHS")
+        return _Build.bind_error(d, r, c, b, "Expression/Postfix/Call/LHS")
       end
     let args' =
       try
         _Build.value_with[ast.CallArgs](b, args, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/PostFix/Call/CallArgs")
+        return _Build.bind_error(d, r, c, b, "Expression/PostFix/Call/CallArgs")
       end
     let partial' = b.contains(partial)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpCall(lhs', args', partial'))
+      _Build.info(d, r), c, ast.ExpCall(lhs', args', partial'))
     (value, b)
 
   fun tag _call_args(
     pos: Variable,
     named: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -758,11 +787,12 @@ primitive _ExpActions
     let named' = _Build.values_with[ast.Expression](b, named, r)
 
     let value = ast.NodeWith[ast.CallArgs](
-      _Build.info(r), c, ast.CallArgs(pos', named'))
+      _Build.info(d, r), c, ast.CallArgs(pos', named'))
     (value, b)
 
   fun tag _atom(
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -772,7 +802,7 @@ primitive _ExpActions
       try
         _Build.value(b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Atom/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Atom/Body")
       end
 
     match body'
@@ -780,12 +810,13 @@ primitive _ExpActions
       (exp, b)
     else
       let value = ast.NodeWith[ast.Expression](
-        _Build.info(r), c, ast.ExpAtom(body'))
+        _Build.info(d, r), c, ast.ExpAtom(body'))
       (value, b)
     end
 
   fun tag _tuple(
     seqs: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -794,12 +825,13 @@ primitive _ExpActions
     let seqs' = _Build.values_with[ast.Expression](b, seqs, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpTuple(seqs'))
+      _Build.info(d, r), c, ast.ExpTuple(seqs'))
     (value, b)
 
   fun tag _array(
     array_type: Variable,
     body: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -810,11 +842,11 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, body, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/Array/Body")
+        return _Build.bind_error(d, r, c, b, "Expression/Array/Body")
       end
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r), c, ast.ExpArray(array_type', body'))
+      _Build.info(d, r), c, ast.ExpArray(array_type', body'))
     (value, b)
 
   fun tag _ffi(
@@ -822,6 +854,7 @@ primitive _ExpActions
     type_args: Variable,
     call_args: Variable,
     partial: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -832,19 +865,19 @@ primitive _ExpActions
         _Build.value(b, identifier, r)? as
           (ast.NodeWith[ast.Identifier] | ast.NodeWith[ast.LiteralString])
       else
-        return _Build.bind_error(r, c, b, "Expression/FFI/Identifier")
+        return _Build.bind_error(d, r, c, b, "Expression/FFI/Identifier")
       end
     let type_args' = _Build.value_with_or_none[ast.TypeArgs](b, type_args, r)
     let call_args' =
       try
         _Build.value_with[ast.CallArgs](b, call_args, r)?
       else
-        return _Build.bind_error(r, c, b, "Expression/FFI/CallArgs")
+        return _Build.bind_error(d, r, c, b, "Expression/FFI/CallArgs")
       end
     let partial' = b.contains(partial)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(r),
+      _Build.info(d, r),
       c,
       ast.ExpFfi(identifier', type_args', call_args', partial'))
     (value, b)

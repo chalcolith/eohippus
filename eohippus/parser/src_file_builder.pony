@@ -96,6 +96,7 @@ class SrcFileBuilder
     ds: Variable,
     us: Variable,
     td: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -117,7 +118,7 @@ class SrcFileBuilder
       end
 
     let value = ast.NodeWith[ast.SrcFile](
-      _Build.info(r), c, ast.SrcFile(r.data.locator, us', td')
+      _Build.info(d, r), c, ast.SrcFile(d.locator, us', td')
       where pre_trivia' = t1', doc_strings' = ds', error_sections' = es')
     (value, b)
 
@@ -184,6 +185,7 @@ class SrcFileBuilder
     pt: Variable,
     fl: Variable,
     df: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
@@ -195,12 +197,12 @@ class SrcFileBuilder
       try
         _Build.value_with[ast.Literal](b, pt, r)?
       else
-        return _Build.bind_error(r, c, b, "UsingPony/LiteralString")
+        return _Build.bind_error(d, r, c, b, "UsingPony/LiteralString")
       end
 
     let def_true = try _Build.result(b, fl, r)? end is None
     let df' = _Build.value_with_or_none[ast.Identifier](b, df, r)
 
     let value = ast.NodeWith[ast.Using](
-      _Build.info(r), c, ast.UsingPony(id', pt', def_true, df'))
+      _Build.info(d, r), c, ast.UsingPony(id', pt', def_true, df'))
     (value, b)

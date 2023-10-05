@@ -4,8 +4,8 @@ use ast = "../ast"
 use ".."
 
 primitive _Build
-  fun info(success: Success): ast.SrcInfo =>
-    ast.SrcInfo(success.data.locator, success.start, success.next)
+  fun info(data: Data, success: Success): ast.SrcInfo =>
+    ast.SrcInfo(data.locator, success.start, success.next)
 
   fun result(b: Bindings, v: Variable, r: Success): Success ? =>
     b.result(v, r)?
@@ -87,21 +87,21 @@ primitive _Build
     body: RuleNode,
     post: RuleNode,
     action:
-      {(Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[T])
+      {(Data, Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[T])
         : ((ast.Node | None), Bindings)} val)
     : RuleNode ref
   =>
     let p = Variable("p")
     Conj(
       [ body; Bind(p, Ques(post)) ],
-      {(r, c, b) =>
-        action(r, c, b, _Build.values_with[T](b, p, r))
+      {(d, r, c, b) =>
+        action(d, r, c, b, _Build.values_with[T](b, p, r))
       })
 
-  fun bind_error(r: Success, c: ast.NodeSeq, b: Bindings,
+  fun bind_error(d: Data, r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)
   =>
     let message' = ErrorMsg.internal_ast_node_not_bound(message)
     let value' = ast.NodeWith[ast.ErrorSection](
-      _Build.info(r), c, ast.ErrorSection(message'))
+      _Build.info(d, r), c, ast.ErrorSection(message'))
     (value', b)

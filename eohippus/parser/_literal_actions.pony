@@ -3,12 +3,13 @@ use ast = "../ast"
 
 primitive _LiteralActions
   fun tag _bool(
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let src_info = _Build.info(r)
+    let src_info = _Build.info(d, r)
     let string = src_info.literal_source()
     let true_str = ast.Keywords.kwd_true()
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
@@ -21,6 +22,7 @@ primitive _LiteralActions
     hex: Variable,
     bin: Variable,
     dec: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings,
@@ -35,7 +37,7 @@ primitive _LiteralActions
       else
         ast.DecimalInteger
       end
-    let src_info = _Build.info(r)
+    let src_info = _Build.info(d, r)
     var str = src_info.literal_source(p)
     let base: U8 =
       match kind
@@ -59,13 +61,14 @@ primitive _LiteralActions
     frac_part: Variable,
     exp_sign: Variable,
     exponent: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings,
     p: ast.NodeSeqWith[ast.Trivia])
     : ((ast.Node | None), Bindings)
   =>
-    let src_info = _Build.info(r)
+    let src_info = _Build.info(d, r)
     let str = src_info.literal_source(p)
 
     let int_result' = try _Build.result(b, int_part, r)? end
@@ -93,6 +96,7 @@ primitive _LiteralActions
     bod: Variable,
     uni: Variable,
     esc: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings,
@@ -110,9 +114,9 @@ primitive _LiteralActions
     let str = recover val String .> concat(br.start.values(br.next)) end
 
     if try _Build.result(b, esc, r)? end isnt None then
-      (_char_esc(r, br, c, p), b)
+      (_char_esc(d, r, br, c, p), b)
     elseif try _Build.result(b, uni, r)? end isnt None then
-      (_char_uni(r, br, c, p), b)
+      (_char_uni(d, r, br, c, p), b)
     else
       for ch in br.start.values(br.next) do
         if (ch and 0b11111000) == 0b11110000 then
@@ -128,12 +132,13 @@ primitive _LiteralActions
         end
       end
       let value = ast.NodeWith[ast.Literal](
-        _Build.info(r), c, ast.LiteralChar(num, ast.CharLiteral)
+        _Build.info(d, r), c, ast.LiteralChar(num, ast.CharLiteral)
         where post_trivia' = p)
       (value, b)
     end
 
   fun tag _char_esc(
+    data: Data,
     outer: Success,
     body: Success,
     c: ast.NodeSeq,
@@ -196,10 +201,11 @@ primitive _LiteralActions
     end
 
     ast.NodeWith[ast.Literal](
-      _Build.info(outer), c, ast.LiteralChar(num, ast.CharEscaped)
+      _Build.info(data, outer), c, ast.LiteralChar(num, ast.CharEscaped)
       where post_trivia' = p)
 
   fun tag _char_uni(
+    data: Data,
     outer: Success,
     body: Success,
     c: ast.NodeSeq,
@@ -218,11 +224,12 @@ primitive _LiteralActions
     end
 
     ast.NodeWith[ast.Literal](
-      _Build.info(outer), c, ast.LiteralChar(num, ast.CharUnicode)
+      _Build.info(data, outer), c, ast.LiteralChar(num, ast.CharUnicode)
       where post_trivia' = p)
 
   fun tag _string(
     tri: Variable,
+    d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings,
@@ -303,7 +310,7 @@ primitive _LiteralActions
       end
 
     let value = ast.NodeWith[ast.Literal](
-      _Build.info(r), c, ast.LiteralString(outdented, kind)
+      _Build.info(d, r), c, ast.LiteralString(outdented, kind)
       where post_trivia' = p)
     (value, b)
 
