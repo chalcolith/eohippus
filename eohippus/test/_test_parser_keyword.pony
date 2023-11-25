@@ -11,7 +11,7 @@ class iso _TestParserSingleKeyword is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.keyword("then")
+    let rule = recover val setup.builder.keyword("then") end
 
     let expected =
       """
@@ -31,7 +31,7 @@ class iso _TestParserNotKeyword is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.keyword.not_kwd()
+    let rule = setup.builder.keyword.not_kwd
 
     _Assert.test_all(
       h,

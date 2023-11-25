@@ -19,7 +19,7 @@ class iso _TestParserTypeArrow is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.type_type.arrow()
+    let rule = setup.builder.type_type.arrow
 
     let source = "this->N"
     let expected =
@@ -52,7 +52,7 @@ class iso _TestParserTypeAtom is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.type_type.atom()
+    let rule = setup.builder.type_type.atom
 
     let source1 = "this"
     let expected1 =
@@ -101,7 +101,7 @@ class iso _TestParserTypeInfix is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.type_type.atom()
+    let rule = setup.builder.type_type.atom
 
     let source = "(a & (b | c))"
     let expected =
@@ -150,7 +150,7 @@ class iso _TestParserTypeNominal is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.type_type.nominal()
+    let rule = setup.builder.type_type.nominal
 
     let source = "p.t[N] iso^"
     let expected =
@@ -188,7 +188,7 @@ class iso _TestParserTypeLambda is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.type_type.arrow()
+    let rule = setup.builder.type_type.arrow
 
     let source = "@{ref foo[A,B](USize,Bool):F32?} trn!"
     let expected =

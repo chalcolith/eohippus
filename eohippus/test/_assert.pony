@@ -28,7 +28,7 @@ primitive _Assert
 
   fun test_match(
     h: TestHelper,
-    rule: parser.NamedRule,
+    rule: parser.NamedRule val,
     data: parser.Data,
     source: String,
     expected: (String | None))
@@ -98,7 +98,7 @@ primitive _Assert
 
   fun test_with(
     h: TestHelper,
-    rule: parser.NamedRule,
+    rule: parser.NamedRule val,
     data: parser.Data,
     source: String,
     assertion: {(parser.Success, ast.NodeSeq): (Bool, String)} val)

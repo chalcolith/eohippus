@@ -36,159 +36,134 @@ class TokenBuilder
   let _trivia: TriviaBuilder
 
   let _tokens: Map[String, NamedRule]
-  var _identifier: (NamedRule | None) = None
+  let identifier: NamedRule = NamedRule("an identifier")
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
     _trivia = trivia
-
     _tokens = Map[String, NamedRule]
+    _build_identifier()
 
-    let t = _trivia.trivia()
-    _add_rule("Token_Amp", ast.Tokens.amp(), t, _tokens)
-    _add_rule("Token_Arrow", ast.Tokens.arrow(), t, _tokens)
-    _add_rule("Token_At", ast.Tokens.at(), t, _tokens)
-    _add_rule("Token_Backslash", ast.Tokens.backslash(), t, _tokens)
-    _add_rule("Token_Bang", ast.Tokens.bang(), t, _tokens)
-    _add_rule("Token_Bang_Equal", ast.Tokens.bang_equal(), t, _tokens)
-    _add_rule("Token_Bang_Equal_Tilde", ast.Tokens.bang_equal_tilde(), t,
-      _tokens)
-    _add_rule("Token_Bar", ast.Tokens.bar(), t, _tokens)
-    _add_rule("Token_Chain", ast.Tokens.chain(), t, _tokens)
-    _add_rule("Token_Close_Curly", ast.Tokens.close_curly(), t, _tokens)
-    _add_rule("Token_Close_Paren", ast.Tokens.close_paren(), t, _tokens)
-    _add_rule("Token_Close_Square", ast.Tokens.close_square(), t, _tokens)
-    _add_rule("Token_Colon", ast.Tokens.colon(), t, _tokens)
-    _add_rule("Token_Comma", ast.Tokens.comma(), t, _tokens)
-    _add_rule("Token_Decimal_Point", ast.Tokens.decimal_point(), t, _tokens)
-    _add_rule("Token_Dot", ast.Tokens.dot(), t, _tokens)
-    _add_rule("Token_Double_Quote", ast.Tokens.double_quote(), t, _tokens)
-    _add_rule("Token_Equals", ast.Tokens.equals(), t, _tokens)
-    _add_rule("Token_Equal_Arrow", ast.Tokens.equal_arrow(), t, _tokens)
-    _add_rule("Token_Equal_Equal", ast.Tokens.equal_equal(), t, _tokens)
-    _add_rule("Token_Equal_Equal_Tilde", ast.Tokens.equal_equal_tilde(), t,
-      _tokens)
-    _add_rule("Token_Greater", ast.Tokens.greater(), t, _tokens)
-    _add_rule("Token_Greater_Equal", ast.Tokens.greater_equal(), t, _tokens)
-    _add_rule("Token_Greater_Equal_Tilde", ast.Tokens.greater_equal_tilde(), t,
-      _tokens)
-    _add_rule("Token_Greater_Tilde", ast.Tokens.greater_tilde(), t, _tokens)
-    _add_rule("Token_Hash", ast.Tokens.hash(), t, _tokens)
-    _add_rule("Token_Hat", ast.Tokens.hat(), t, _tokens)
-    _add_rule("Token_Less", ast.Tokens.less(), t, _tokens)
-    _add_rule("Token_Less_Equal", ast.Tokens.less_equal(), t, _tokens)
-    _add_rule("Token_Less_Equal_Tilde", ast.Tokens.less_equal_tilde(), t,
-      _tokens)
-    _add_rule("Token_Less_Tilde", ast.Tokens.less_tilde(), t, _tokens)
-    _add_rule("Token_Minus", ast.Tokens.minus(), t, _tokens)
-    _add_rule("Token_Minus_Tilde", ast.Tokens.minus_tilde(), t, _tokens)
-    _add_rule("Token_Open_Curly", ast.Tokens.open_curly(), t, _tokens)
-    _add_rule("Token_Open_Paren", ast.Tokens.open_paren(), t, _tokens)
-    _add_rule("Token_Open_Square", ast.Tokens.open_square(), t, _tokens)
-    _add_rule("Token_Percent", ast.Tokens.percent(), t, _tokens)
-    _add_rule("Token_Percent_Percent", ast.Tokens.percent_percent(), t, _tokens)
-    _add_rule("Token_Percent_Percent_Tilde", ast.Tokens.percent_percent_tilde(),
-      t, _tokens)
-    _add_rule("Token_Percent_Tilde", ast.Tokens.percent_tilde(), t, _tokens)
-    _add_rule("Token_Plus", ast.Tokens.plus(), t, _tokens)
-    _add_rule("Token_Plus_Tilde", ast.Tokens.plus_tilde(), t, _tokens)
-    _add_rule("Token_Ques", ast.Tokens.ques(), t, _tokens)
-    _add_rule("Token_Semicolon", ast.Tokens.semicolon(), t, _tokens)
-    _add_rule("Token_Shift_Left", ast.Tokens.shift_left(), t, _tokens)
-    _add_rule("Token_Shift_Left_Tilde", ast.Tokens.shift_left_tilde(), t,
-      _tokens)
-    _add_rule("Token_Shift_Right", ast.Tokens.shift_right(), t, _tokens)
-    _add_rule("Token_Shift_Right_Tilde", ast.Tokens.shift_right_tilde(), t,
-      _tokens)
-    _add_rule("Token_Single_Quote", ast.Tokens.single_quote(), t, _tokens)
-    _add_rule("Token_Slash", ast.Tokens.slash(), t, _tokens)
-    _add_rule("Token_Slash_Tilde", ast.Tokens.slash_tilde(), t, _tokens)
-    _add_rule("Token_Star", ast.Tokens.star(), t, _tokens)
-    _add_rule("Token_Star_Tilde", ast.Tokens.star_tilde(), t, _tokens)
-    _add_rule("Token_Subtype", ast.Tokens.subtype(), t, _tokens)
-    _add_rule("Token_Tilde", ast.Tokens.tilde(), t, _tokens)
-    _add_rule("Token_Triple_Double_Quote", ast.Tokens.triple_double_quote(), t,
-      _tokens)
-    _add_rule("Token_Underscore", ast.Tokens.underscore(), t, _tokens)
+    let t = _trivia.trivia
+    _add_rule(ast.Tokens.amp(), t, _tokens)
+    _add_rule(ast.Tokens.arrow(), t, _tokens)
+    _add_rule(ast.Tokens.at(), t, _tokens)
+    _add_rule(ast.Tokens.backslash(), t, _tokens)
+    _add_rule(ast.Tokens.bang(), t, _tokens)
+    _add_rule(ast.Tokens.bang_equal(), t, _tokens)
+    _add_rule(ast.Tokens.bang_equal_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.bar(), t, _tokens)
+    _add_rule(ast.Tokens.chain(), t, _tokens)
+    _add_rule(ast.Tokens.close_curly(), t, _tokens)
+    _add_rule(ast.Tokens.close_paren(), t, _tokens)
+    _add_rule(ast.Tokens.close_square(), t, _tokens)
+    _add_rule(ast.Tokens.colon(), t, _tokens)
+    _add_rule(ast.Tokens.comma(), t, _tokens)
+    _add_rule(ast.Tokens.decimal_point(), t, _tokens)
+    _add_rule(ast.Tokens.dot(), t, _tokens)
+    _add_rule(ast.Tokens.double_quote(), t, _tokens)
+    _add_rule(ast.Tokens.equals(), t, _tokens)
+    _add_rule(ast.Tokens.equal_arrow(), t, _tokens)
+    _add_rule(ast.Tokens.equal_equal(), t, _tokens)
+    _add_rule(ast.Tokens.equal_equal_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.greater(), t, _tokens)
+    _add_rule(ast.Tokens.greater_equal(), t, _tokens)
+    _add_rule(ast.Tokens.greater_equal_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.greater_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.hash(), t, _tokens)
+    _add_rule(ast.Tokens.hat(), t, _tokens)
+    _add_rule(ast.Tokens.less(), t, _tokens)
+    _add_rule(ast.Tokens.less_equal(), t, _tokens)
+    _add_rule(ast.Tokens.less_equal_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.less_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.minus(), t, _tokens)
+    _add_rule(ast.Tokens.minus_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.open_curly(), t, _tokens)
+    _add_rule(ast.Tokens.open_paren(), t, _tokens)
+    _add_rule(ast.Tokens.open_square(), t, _tokens)
+    _add_rule(ast.Tokens.percent(), t, _tokens)
+    _add_rule(ast.Tokens.percent_percent(), t, _tokens)
+    _add_rule(ast.Tokens.percent_percent_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.percent_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.plus(), t, _tokens)
+    _add_rule(ast.Tokens.plus_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.ques(), t, _tokens)
+    _add_rule(ast.Tokens.semicolon(), t, _tokens)
+    _add_rule(ast.Tokens.shift_left(), t, _tokens)
+    _add_rule(ast.Tokens.shift_left_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.shift_right(), t, _tokens)
+    _add_rule(ast.Tokens.shift_right_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.single_quote(), t, _tokens)
+    _add_rule(ast.Tokens.slash(), t, _tokens)
+    _add_rule(ast.Tokens.slash_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.star(), t, _tokens)
+    _add_rule(ast.Tokens.star_tilde(), t, _tokens)
+    _add_rule(ast.Tokens.subtype(), t, _tokens)
+    _add_rule(ast.Tokens.tilde(), t, _tokens)
+    _add_rule(ast.Tokens.triple_double_quote(), t, _tokens)
+    _add_rule(ast.Tokens.underscore(), t, _tokens)
 
   fun tag _add_rule(
-    name: String,
     str: String,
     trivia: NamedRule,
     m: Map[String, NamedRule])
   =>
     let rule =
-      recover val
-        NamedRule(name,
-          _Build.with_post[ast.Trivia](
-            Literal(str),
-            trivia,
-            {(d, r, c, b, p) =>
-              let next =
-                try
-                  p(0)?.src_info().start
-                else
-                  r.next
-                end
-              let string =
-                recover val
-                  String .> concat(r.start.values(next))
-                end
-              let value = ast.NodeWith[ast.Token](
-                _Build.info(d, r), c, ast.Token(string)
-                where post_trivia' = p)
-              (value, b) })
-          where memoize_failures' = false)
-      end
+      NamedRule(
+        "a '" + StringUtil.escape(str) + "' token",
+        _Build.with_post[ast.Trivia](
+          Literal(str),
+          trivia,
+          {(d, r, c, b, p) =>
+            let next =
+              try
+                p(0)?.src_info().start
+              else
+                r.next
+              end
+            let string =
+              recover val
+                String .> concat(r.start.values(next))
+              end
+            let value = ast.NodeWith[ast.Token](
+              _Build.info(d, r), c, ast.Token(string)
+              where post_trivia' = p)
+            (value, b) })
+        where memoize_failures' = false)
     m.insert(str, rule)
 
-  fun apply(str: String): NamedRule =>
+  fun apply(str: String): NamedRule box =>
     try
       _tokens(str)?
     else
       let msg = recover val "INVALID TOKEN '" + StringUtil.escape(str) + "'" end
-      recover val
-        NamedRule(msg, Error(msg))
-      end
+      NamedRule(msg, Error(msg))
     end
 
-  fun ref identifier(): NamedRule =>
-    match _identifier
-    | let r: NamedRule => r
-    else
-      let trivia = _trivia.trivia()
-      let id_chars: String = _Letters.with_underscore() + _Digits() + "'"
-
-      let identifier' =
-        recover val
-          NamedRule("Identifier",
-            _Build.with_post[ast.Trivia](
-              recover
-                Disj(
-                  [ Conj(
-                      [ Single(ast.Tokens.underscore())
-                        Star(Single(id_chars)) ])
-                    Conj(
-                      [ Single(_Letters())
-                        Star(Single(id_chars)) ]) ])
-              end,
-              trivia,
-              {(d, r, c, b, p) =>
-                let next =
-                  try
-                    p(0)?.src_info().start
-                  else
-                    r.next
-                  end
-                let string =
-                  recover val
-                    String .> concat(r.start.values(next))
-                  end
-                let value = ast.NodeWith[ast.Identifier](
-                  _Build.info(d, r), c, ast.Identifier(string)
-                  where post_trivia' = p)
-                (value, b) }))
-        end
-      _identifier = identifier'
-      identifier'
-    end
+  fun ref _build_identifier() =>
+    let id_chars: String = _Letters.with_underscore() + _Digits() + "'"
+    identifier.set_body(
+      _Build.with_post[ast.Trivia](
+        Disj(
+          [ Conj(
+              [ Single(ast.Tokens.underscore())
+                Star(Single(id_chars)) ])
+            Conj(
+              [ Single(_Letters())
+                Star(Single(id_chars)) ]) ]),
+        _trivia.trivia,
+        {(d, r, c, b, p) =>
+          let next =
+            try
+              p(0)?.src_info().start
+            else
+              r.next
+            end
+          let string =
+            recover val
+              String .> concat(r.start.values(next))
+            end
+          let value = ast.NodeWith[ast.Identifier](
+            _Build.info(d, r), c, ast.Identifier(string)
+            where post_trivia' = p)
+          (value, b) }))

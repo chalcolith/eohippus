@@ -9,11 +9,11 @@ class KeywordBuilder
   let _context: Context
   let _trivia: TriviaBuilder
 
-  let _keywords: Map[String, NamedRule] val
-  var _kwd: (NamedRule | None) = None
-  var _not_kwd: (NamedRule | None) = None
-  var _cap: (NamedRule | None) = None
-  var _gencap: (NamedRule | None) = None
+  let _keywords: Map[String, NamedRule]
+  let kwd: NamedRule = NamedRule("a keyword")
+  let not_kwd: NamedRule = NamedRule("something other than a keyword")
+  let cap: NamedRule = NamedRule("a reference capability")
+  let gencap: NamedRule = NamedRule("a generic capability")
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context
@@ -75,15 +75,16 @@ class KeywordBuilder
       ast.Keywords.kwd_xor()
     ]
 
-    let t = _trivia.trivia()
-    _keywords =
-      recover val
-        let k = Map[String, NamedRule]
-        for str in _kwd_strings.values() do
-          _add_rule("Keyword_" + str, str, t, k)
-        end
-        k
-      end
+    let t = _trivia.trivia
+    _keywords = Map[String, NamedRule]
+    for str in _kwd_strings.values() do
+      _add_rule("Keyword_" + str, str, t, _keywords)
+    end
+
+    _build_kwd()
+    _build_not_kwd()
+    _build_cap()
+    _build_gencap()
 
   fun tag _add_rule(
     name: String,
@@ -92,141 +93,90 @@ class KeywordBuilder
     m: Map[String, NamedRule])
   =>
     let rule =
-      recover val
-        NamedRule(name,
-          _Build.with_post[ast.Trivia](
-            recover
-              Conj(
-                [ Literal(str)
-                  Neg(Single(_Letters.with_underscore())) ])
-            end,
-            t,
-            {(d, r, c, b, p) =>
-              let value = ast.NodeWith[ast.Keyword](
-                _Build.info(d, r), c, ast.Keyword(str)
-                where post_trivia' = p)
-              (value, b) })
-          where memoize_failures' = false)
-      end
+      NamedRule(name,
+        _Build.with_post[ast.Trivia](
+          Conj(
+            [ Literal(str)
+              Neg(Single(_Letters.with_underscore())) ]),
+          t,
+          {(d, r, c, b, p) =>
+            let value = ast.NodeWith[ast.Keyword](
+              _Build.info(d, r), c, ast.Keyword(str)
+              where post_trivia' = p)
+            (value, b) })
+        where memoize_failures' = false)
     m.insert(str, rule)
 
-  fun apply(str: String): NamedRule =>
+  fun apply(str: String): NamedRule box =>
     try
       _keywords(str)?
     else
       let msg =
         recover val "INVALID KEYWORD '" + StringUtil.escape(str) + "'" end
-      recover val
-        NamedRule(msg, Error(msg))
-      end
+      NamedRule(msg, Error(msg))
     end
 
-  fun ref kwd(): NamedRule =>
-    match _kwd
-    | let r: NamedRule => r
-    else
-      let trivia = _trivia.trivia()
-      let kwd' =
-        recover val
-          let literals =
-            recover val
-              let literals' = Array[Literal](_kwd_strings.size())
-              for str in _kwd_strings.values() do
-                literals'.push(Literal(str))
-              end
-              literals'
+  fun ref _build_kwd() =>
+    let literals = Array[Literal box](_kwd_strings.size())
+    for str in _kwd_strings.values() do
+      literals.push(Literal(str))
+    end
+
+    let str = Variable("str")
+    kwd.set_body(
+      _Build.with_post[ast.Trivia](
+        Bind(str, Disj(literals)),
+        _trivia.trivia,
+        {(d, r, c, b, p) =>
+          let src_info = _Build.info(d, r)
+          let next =
+            try
+              p(0)?.src_info().start
+            else
+              src_info.next
             end
+          let string =
+            recover val
+              String .> concat(src_info.start.values(next))
+            end
+          let value = ast.NodeWith[ast.Keyword](
+            src_info, c, ast.Keyword(string)
+            where post_trivia' = p)
+          (value, b) }))
 
-          let str = Variable("str")
+  fun ref _build_not_kwd() =>
+    not_kwd.set_body(Neg(kwd))
 
-          NamedRule(
-            "Keyword",
-            _Build.with_post[ast.Trivia](
-              recover val
-                Bind(str, Disj(literals))
-              end,
-              trivia,
-              {(d, r, c, b, p) =>
-                let src_info = _Build.info(d, r)
-                let next =
-                  try
-                    p(0)?.src_info().start
-                  else
-                    src_info.next
-                  end
-                let string =
-                  recover val
-                    String .> concat(src_info.start.values(next))
-                  end
-                let value = ast.NodeWith[ast.Keyword](
-                  src_info, c, ast.Keyword(string)
-                  where post_trivia' = p)
-                (value, b) }))
-        end
-      _kwd = kwd'
-      kwd'
-    end
+  fun ref _build_cap() =>
+    let kwd_iso = this(ast.Keywords.kwd_iso())
+    let kwd_trn = this(ast.Keywords.kwd_trn())
+    let kwd_ref = this(ast.Keywords.kwd_ref())
+    let kwd_val = this(ast.Keywords.kwd_val())
+    let kwd_box = this(ast.Keywords.kwd_box())
+    let kwd_tag = this(ast.Keywords.kwd_tag())
 
-  fun ref not_kwd(): NamedRule =>
-    match _not_kwd
-    | let r: NamedRule => r
-    else
-      let not_kwd' =
-        recover val
-          NamedRule("NotKeyword", Neg(kwd()))
-        end
-      _not_kwd = not_kwd'
-      not_kwd'
-    end
+    cap.set_body(
+      Disj([
+        kwd_iso
+        kwd_trn
+        kwd_ref
+        kwd_val
+        kwd_box
+        kwd_tag
+      ]))
 
-  fun ref cap(): NamedRule =>
-    match _cap
-    | let r: NamedRule => r
-    else
-      let kwd_iso = this(ast.Keywords.kwd_iso())
-      let kwd_trn = this(ast.Keywords.kwd_trn())
-      let kwd_ref = this(ast.Keywords.kwd_ref())
-      let kwd_val = this(ast.Keywords.kwd_val())
-      let kwd_box = this(ast.Keywords.kwd_box())
-      let kwd_tag = this(ast.Keywords.kwd_tag())
+  fun ref _build_gencap() =>
+    let kwd_read = this(ast.Keywords.kwd_hash_read())
+    let kwd_send = this(ast.Keywords.kwd_hash_send())
+    let kwd_share = this(ast.Keywords.kwd_hash_share())
+    let kwd_alias = this(ast.Keywords.kwd_hash_alias())
+    let kwd_any = this(ast.Keywords.kwd_hash_any())
 
-      let cap' =
-        recover val
-          NamedRule("Keyword_Cap",
-            Disj([
-              kwd_iso
-              kwd_trn
-              kwd_ref
-              kwd_val
-              kwd_box
-              kwd_tag
-            ]))
-        end
-      _cap = cap'
-      cap'
-    end
-
-  fun ref gencap(): NamedRule =>
-    match _gencap
-    | let r: NamedRule => r
-    else
-      let kwd_read = this(ast.Keywords.kwd_hash_read())
-      let kwd_send = this(ast.Keywords.kwd_hash_send())
-      let kwd_share = this(ast.Keywords.kwd_hash_share())
-      let kwd_alias = this(ast.Keywords.kwd_hash_alias())
-      let kwd_any = this(ast.Keywords.kwd_hash_any())
-
-      let gencap' =
-        recover val
-          NamedRule("Keyword_Gencap",
-            Disj([
-              kwd_read
-              kwd_send
-              kwd_share
-              kwd_alias
-              kwd_any
-            ]))
-        end
-      _gencap = gencap'
-      gencap'
-    end
+    gencap.set_body(
+      Disj(
+        [ kwd_read
+          kwd_send
+          kwd_share
+          kwd_alias
+          kwd_any
+        ]))

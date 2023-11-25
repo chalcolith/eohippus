@@ -15,7 +15,7 @@ class iso _TestParserTypedefPrimitiveSimple is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.typedef.typedef_primitive()
+    let rule = setup.builder.typedef.typedef_primitive
 
     let source = "primitive FooBar\n\"\"\"docs\"\"\"  "
     let expected =
