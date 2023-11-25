@@ -23,7 +23,7 @@ class iso _TestParserLiteralBool is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.bool()
+    let rule = setup.builder.literal.bool
 
     let expected_true =
       """
@@ -55,7 +55,7 @@ class iso _TestParserLiteralIntegerDec is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.integer()
+    let rule = setup.builder.literal.integer
 
     let expected =
       """
@@ -97,7 +97,7 @@ class iso _TestParserLiteralIntegerHex is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.integer()
+    let rule = setup.builder.literal.integer
 
     let expected =
       """
@@ -118,7 +118,7 @@ class iso _TestParserLiteralIntegerBin is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.integer()
+    let rule = setup.builder.literal.integer
 
     let expected =
       """
@@ -139,7 +139,7 @@ class iso _TestParserLiteralFloat is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.float()
+    let rule = setup.builder.literal.float
 
     let expected_1 =
       """
@@ -187,7 +187,7 @@ class iso _TestParserLiteralChar is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.char()
+    let rule = setup.builder.literal.char
 
     let expected_1 =
       """
@@ -251,7 +251,7 @@ class iso _TestParserLiteralStringRegular is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.string()
+    let rule = setup.builder.literal.string
 
     let expected_1 =
       """
@@ -294,7 +294,7 @@ class iso _TestParserLiteralStringTriple is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.literal.string()
+    let rule = setup.builder.literal.string
 
     let expected =
       """

@@ -38,7 +38,7 @@ class iso _TestParserExpressionIdentifier is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.token.identifier()
+    let rule = setup.builder.token.identifier
 
     let expected = """ { "name": "Identifier", "string": "a1_'" } """
 
@@ -54,7 +54,7 @@ class iso _TestParserExpressionItem is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let expected_id =
       """
@@ -74,7 +74,7 @@ class iso _TestParserExpressionSequence is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.seq()
+    let rule = setup.builder.expression.seq
 
     let expected1 =
       """
@@ -117,7 +117,7 @@ class iso _TestParserExpressionAssignment is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let expected =
       """
@@ -147,7 +147,7 @@ class iso _TestParserExpressionJump is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source1 = "return 3.14"
     let expected1 =
@@ -190,7 +190,7 @@ class iso _TestParserExpressionInfix is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source1 = "a as C"
     let expected1 =
@@ -255,7 +255,7 @@ class iso _TestParserExpressionIf is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "if true then foo elseif false then bar else baz end"
     let expected =
@@ -302,7 +302,7 @@ class iso _TestParserExpressionIfDef is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "ifdef windows then foo elseif unix then bar else baz end"
     let expected =
@@ -349,7 +349,7 @@ class iso _TestParserExpressionPrefix is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "not true"
     let expected =
@@ -379,7 +379,7 @@ class iso _TestParserExpressionPostfix is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source1 = "a.b"
     let expected1 =
@@ -482,7 +482,7 @@ class iso _TestParserExpressionTuple is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "(a, 1, this)"
     let expected =
@@ -515,7 +515,7 @@ class iso _TestParserExpressionParens is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "(1.23)"
     let expected =
@@ -538,7 +538,7 @@ class iso _TestParserExpressionRecover is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "recover trn a; 123 end"
     let expected =
@@ -574,7 +574,7 @@ class iso _TestParserExpressionTry is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "try a else 123 end"
     let expected =
@@ -601,7 +601,7 @@ class iso _TestParserExpressionArray is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source1 = "[ as USize: 1; 2 ]"
     let expected1 =
@@ -659,7 +659,7 @@ class iso _TestParserExpressionConsume is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "consume iso (a + 4)"
     let expected =
@@ -691,7 +691,7 @@ class iso _TestParserExpressionWhile is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "while 1 == 2 do f(a) else g.b end"
     let expected =
@@ -747,7 +747,7 @@ class iso _TestParserExpressionRepeat is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "repeat a until b else c end"
     let expected =
@@ -778,7 +778,7 @@ class iso _TestParserExpressionFor is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "for (a, b) in c else d end"
     let expected =
@@ -812,7 +812,7 @@ class iso _TestParserExpressionMatch is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source =
       """
@@ -875,7 +875,7 @@ class iso _TestParserExpressionDecl is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source1 = "let n: F32"
     let expected1 =
@@ -921,7 +921,7 @@ class iso _TestParserExpressionWith is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "with (a, b) = c, d = e do f end"
     let expected =
@@ -973,7 +973,7 @@ class iso _TestParserExpressionFfi is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     let source = "@a[T](b)?"
     let expected =
@@ -1012,7 +1012,7 @@ class iso _TestParserExpressionLambda is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.expression.item()
+    let rule = setup.builder.expression.item
 
     //            0                15   20   25   30   35   40   45
     let source = "@{ \\z\\ iso a[T](b:U=c,d:V)(e,f):W? => g; h } trn"

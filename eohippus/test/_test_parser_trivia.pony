@@ -19,7 +19,7 @@ class iso _TestParserTriviaEOF is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia.eof()
+    let rule = setup.builder.trivia.eof
 
     let expected =
       """
@@ -40,7 +40,7 @@ class iso _TestParserTriviaEOL is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia.eol()
+    let rule = setup.builder.trivia.eol
 
     let expected =
       """
@@ -63,7 +63,7 @@ class _TestParserTriviaWS is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia.ws()
+    let rule = setup.builder.trivia.ws
 
     let expected =
       """
@@ -85,7 +85,7 @@ class _TestParserTriviaComment is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia.comment()
+    let rule = setup.builder.trivia.comment
 
     let expected_1 =
       """
@@ -117,7 +117,7 @@ class iso _TestParserTriviaTrivia is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.trivia.trivia()
+    let rule = setup.builder.trivia.trivia
 
     let assert_all_trivia =
       {(r: parser.Success, v: ast.NodeSeq): (Bool, String) =>

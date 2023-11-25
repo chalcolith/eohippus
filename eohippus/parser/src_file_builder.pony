@@ -11,11 +11,10 @@ class SrcFileBuilder
   var _member: MemberBuilder
   var _typedef: TypedefBuilder
 
-  var _src_file: (NamedRule | None) = None
-
-  var _using: (NamedRule | None) = None
-  var _using_pony: (NamedRule | None) = None
-  var _using_ffi: (NamedRule | None) = None
+  let src_file: NamedRule = NamedRule("a Pony source file")
+  let using: NamedRule = NamedRule("a using declaration")
+  let using_pony: NamedRule = NamedRule("a Pony package using declaration")
+  let using_ffi: NamedRule = NamedRule("an FFI using declaration")
 
   new create(trivia: TriviaBuilder, token: TokenBuilder,
     keyword: KeywordBuilder, literal: LiteralBuilder,
@@ -30,66 +29,61 @@ class SrcFileBuilder
     _member = member
     _typedef = typedef
 
-  fun ref err_sec(allowed: ReadSeq[NamedRule] val, message: String): RuleNode =>
+    _build_src_file()
+    _build_using()
+    _build_using_pony()
+    // TODO: _build_using_ffi()
+
+  fun ref err_sec(allowed: ReadSeq[NamedRule], message: String): RuleNode =>
     _member.error_section(allowed, message)
 
-  fun ref src_file(): NamedRule =>
-    match _src_file
-    | let r: NamedRule => r
-    else
-      let t1 = Variable("t1")
-      let ds = Variable("ds")
-      let us = Variable("us")
-      let td = Variable("td")
+  fun ref _build_src_file() =>
+    let t1 = Variable("t1")
+    let ds = Variable("ds")
+    let us = Variable("us")
+    let td = Variable("td")
 
-      let trivia = _trivia.trivia()
-      let doc_string = _member.doc_string()
-      let typedef = _typedef.typedef()
-      let eol = _trivia.eol()
-      let eof = _trivia.eof()
+    src_file.set_body(
+      Conj(
+        [ // pre-trivia
+          Bind(t1, Ques(_trivia.trivia))
 
-      let src_file' =
-        recover val
-          NamedRule("SrcFile",
-            Conj([
-              // pre-trivia
-              Bind(t1, Ques(trivia))
-
-              // zero or more docstrings
-              Bind(ds, Star(
-                Disj([
-                  doc_string
-                  err_sec([doc_string; using(); typedef],
+          // zero or more docstrings
+          Bind(
+            ds,
+            Star(
+              Disj(
+                [ _member.doc_string
+                  err_sec(
+                    [ _member.doc_string; using; _typedef.typedef ],
                     ErrorMsg.src_file_expected_docstring_using_or_typedef())
-                ])
-              ))
+                ])))
 
-              // zero or more usings
-              Bind(us, Star(
-                Disj([
-                  using()
-                  err_sec([using(); typedef],
-                    ErrorMsg.src_file_expected_using_or_typedef())
-                ])
-              ))
+          // zero or more usings
+          Bind(
+            us,
+            Star(
+            Disj(
+              [ using
+                err_sec(
+                  [ using; _typedef.typedef ],
+                  ErrorMsg.src_file_expected_using_or_typedef())
+              ])))
 
-              // zero or more type definitions
-              Bind(td, Star(
-                Disj([
-                  typedef
-                  err_sec([typedef],
-                    ErrorMsg.src_file_expected_typedef())
-                ])
-              ))
+          // zero or more type definitions
+          Bind(
+            td,
+            Star(
+              Disj(
+                [ _typedef.typedef
+                  err_sec(
+                    [ _typedef.typedef ], ErrorMsg.src_file_expected_typedef())
+                ])))
 
-              //
-              eof
-            ]),
-            this~_src_file_action(t1, ds, us, td))
-        end
-      _src_file = src_file'
-      src_file'
-    end
+          //
+          _trivia.eof
+        ]),
+        recover this~_src_file_action(t1, ds, us, td) end)
 
   fun tag _src_file_action(
     t1: Variable,
@@ -122,63 +116,36 @@ class SrcFileBuilder
       where pre_trivia' = t1', doc_strings' = ds', error_sections' = es')
     (value, b)
 
-  fun ref using(): NamedRule =>
-    match _using
-    | let r: NamedRule => r
-    else
-      let using' =
-        recover val
-          NamedRule("Using",
-            Disj([
-              using_pony()
-            ]))
-        end
-      _using = using'
-      using'
-    end
+  fun ref _build_using() =>
+    using.set_body(
+      Disj(
+        [ using_pony
+          // using_ffi
+        ]))
 
-  fun ref using_pony(): NamedRule =>
-    match _using_pony
-    | let r: NamedRule => r
-    else
-      let identifier = _token.identifier()
-      let string = _literal.string()
-      let equals = _token(ast.Tokens.equals())
-      let kwd_use = _keyword(ast.Keywords.kwd_use())
-      let kwd_if = _keyword(ast.Keywords.kwd_if())
-      let kwd_not = _keyword(ast.Keywords.kwd_not())
+  fun ref _build_using_pony() =>
+    let id = Variable("id")
+    let pt = Variable("pt")
+    let fl = Variable("fl")
+    let df = Variable("df")
 
-      let id = Variable("id")
-      let pt = Variable("pt")
-      let fl = Variable("fl")
-      let df = Variable("df")
-
-      let using_pony' =
-        recover val
-          NamedRule("UsingPony",
-            Conj([
-              kwd_use
-              Ques(
-                Conj([
-                  Bind(id, identifier)
-                  equals
-                ]))
-              Bind(pt, string)
-              Ques(
-                Conj([
-                  kwd_if
-                  Ques(
-                    Conj([
-                      Bind(fl, kwd_not)
-                    ]))
-                  Bind(df, identifier)
-                ]))
-            ]),
-            this~_using_pony_action(id, pt, fl, df))
-        end
-      _using_pony = using_pony'
-      using_pony'
-    end
+    using_pony.set_body(
+      Conj(
+        [ _keyword(ast.Keywords.kwd_use())
+          Ques(
+            Conj(
+              [ Bind(id, _token.identifier)
+                _token(ast.Tokens.equals())
+              ]))
+          Bind(pt, _literal.string)
+          Ques(
+            Conj(
+              [ _keyword(ast.Keywords.kwd_if())
+                Ques(Bind(fl, _keyword(ast.Keywords.kwd_not())))
+                Bind(df, _token.identifier)
+              ]))
+        ]),
+        recover this~_using_pony_action(id, pt, fl, df) end)
 
   fun tag _using_pony_action(
     id: Variable,

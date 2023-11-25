@@ -5,49 +5,36 @@ class MemberBuilder
   let _trivia: TriviaBuilder
   let _literal: LiteralBuilder
 
-  var _doc_string: (NamedRule | None) = None
+  let doc_string: NamedRule = NamedRule("a doc string")
 
   new create(trivia: TriviaBuilder, literal: LiteralBuilder) =>
     _trivia = trivia
     _literal = literal
 
-  fun ref error_section(
-    allowed: ReadSeq[NamedRule] val,
-    message: String)
+    _build_doc_string()
+
+  fun error_section(allowed: ReadSeq[NamedRule], message: String)
     : RuleNode
   =>
-    let dol = _trivia.dol()
-    let eof = _trivia.eof()
+    let dol = _trivia.dol
+    let eof = _trivia.eof
 
-    recover val
-      NamedRule("Error_Section",
-        Conj(
-          [ Neg(Disj([ Disj(allowed); eof ]))
-            Plus(Conj([ Neg(Disj([ dol; eof ])); Single() ]))
-            Disj([ dol; eof ]) ],
-          {(d, r, c, b) =>
-            let value = ast.NodeWith[ast.ErrorSection](
-              _Build.info(d, r), c, ast.ErrorSection(message))
-            (value, b) }))
-    end
+    NamedRule(
+      "Error_Section",
+      Conj(
+        [ Neg(Disj([ Disj(allowed); eof ]))
+          Plus(Conj([ Neg(Disj([ dol; eof ])); Single() ]))
+          Disj([ dol; eof ]) ],
+        {(d, r, c, b) =>
+          let value = ast.NodeWith[ast.ErrorSection](
+            _Build.info(d, r), c, ast.ErrorSection(message))
+          (value, b) }))
 
-  fun ref doc_string(): NamedRule =>
-    match _doc_string
-    | let r: NamedRule => r
-    else
-      let literal_string = _literal.string()
-
-      let s = Variable("s")
-      let doc_string' =
-        recover val
-          NamedRule(
-            "DocString",
-            Bind(s, literal_string),
-            this~_doc_string_action(s))
-        end
-      _doc_string = doc_string'
-      doc_string'
-    end
+  fun ref _build_doc_string() =>
+    let s = Variable("s")
+    doc_string.set_body(
+      Bind(s, _literal.string),
+      recover this~_doc_string_action(s) end)
 
   fun tag _doc_string_action(
     s: Variable,

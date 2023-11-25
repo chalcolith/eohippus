@@ -5,169 +5,82 @@ use ast = "../ast"
 class TriviaBuilder
   let _context: Context
 
-  var _trivia: (NamedRule | None) = None
-  var _comment: (NamedRule | None) = None
-  var _comment_line: (NamedRule | None) = None
-  var _comment_nested: (NamedRule | None) = None
-  var _ws: (NamedRule | None) = None
-  var _eol: (NamedRule | None) = None
-  var _dol: (NamedRule | None) = None
-  var _eof: (NamedRule | None) = None
+  let trivia: NamedRule = NamedRule("trivia")
+  let comment: NamedRule = NamedRule("a comment")
+  let comment_line: NamedRule = NamedRule("a line comment")
+  let comment_nested: NamedRule = NamedRule("a nested comment")
+  let ws: NamedRule = NamedRule("whitespace")
+  let eol: NamedRule = NamedRule("a line end")
+  let dol: NamedRule = NamedRule("a double end of line")
+  let eof: NamedRule = NamedRule("end of file")
 
   new create(context: Context) =>
     _context = context
+    _build_trivia()
+    _build_comment()
+    _build_comment_line()
+    _build_comment_nested()
+    _build_ws()
+    _build_eol()
+    _build_dol()
+    _build_eof()
 
-  fun ref trivia(min: USize = 0): NamedRule =>
-    match _trivia
-    | let r: NamedRule => r
-    else
-      let trivia' =
-        recover val
-          NamedRule("Trivia" + min.string(),
-            Plus(
-              Disj(
-                [ comment()
-                  ws()
-                  eol() ])))
-        end
-      _trivia = trivia'
-      trivia'
-    end
+  fun ref _build_trivia() =>
+    trivia.set_body(Plus(Disj([ comment; ws; eol ])))
 
-  fun ref comment(): NamedRule =>
-    match _comment
-    | let r: NamedRule => r
-    else
-      let comment' =
-        recover val
-          NamedRule("Comment",
-            Disj([
-              comment_line()
-              comment_nested()
-            ]))
-        end
-      _comment = comment'
-      comment'
-    end
+  fun ref _build_comment() =>
+    comment.set_body(Disj([ comment_line; comment_nested ]))
 
-  fun ref comment_line(): NamedRule =>
-    match _comment_line
-    | let r: NamedRule => r
-    else
-      // '//' (!EOL .)* EOL
-      let comment_line' =
-        recover val
-          NamedRule("Comment_Line",
-            Conj(
-              [ Literal("//")
-                Star(
-                  Conj([
-                    Neg(eol())
-                    Single()
-                  ]))
-                Look(Disj([ eol(); eof() ])) ]),
-            {(d, r, c, b) =>
-              let value = ast.NodeWith[ast.Trivia](
-                _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia))
-              (value, b) })
-        end
-      _comment_line = comment_line'
-      comment_line'
-    end
+  fun ref _build_comment_line() =>
+    // '//' (!EOL .)* EOL
+    comment_line.set_body(
+      Conj(
+        [ Literal("//")
+          Star(Conj([ Neg(eol); Single() ]))
+          Look(Disj([ eol; eof ])) ]),
+      {(d, r, c, b) =>
+        let value = ast.NodeWith[ast.Trivia](
+          _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia))
+        (value, b) })
 
-  fun ref comment_nested(): NamedRule =>
-    match _comment_nested
-    | let r: NamedRule => r
-    else
-      // '/*' (!'*/' .)* '*/'
-      let comment_nested' =
-        recover val
-          NamedRule("Comment_Nested",
-            Conj(
-              [ Literal("/*")
-                Star(
-                  Conj(
-                    [ Neg(Literal("*/"))
-                      Single() ]))
-                Literal("*/") ]),
-            {(d, r, c, b) =>
-              let value = ast.NodeWith[ast.Trivia](
-                _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia))
-              (value, b) })
-        end
-      _comment_nested = comment_nested'
-      comment_nested'
-    end
+  fun ref _build_comment_nested() =>
+    // '/*' (!'*/' .)* '*/'
+    comment_nested.set_body(
+      Conj(
+        [ Literal("/*")
+          Star(Conj([ Neg(Literal("*/")); Single() ]))
+          Literal("*/") ]),
+      {(d, r, c, b) =>
+        let value = ast.NodeWith[ast.Trivia](
+          _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia))
+        (value, b) })
 
-  fun ref ws(): NamedRule =>
-    match _ws
-    | let r: NamedRule => r
-    else
-      let ws' =
-        recover val
-          NamedRule("WS",
-            Plus(Single(" \t")),
-            {(d, r, c, b) =>
-              let value = ast.NodeWith[ast.Trivia](
-                _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia))
-              (value, b) })
-        end
-      _ws = ws'
-      ws'
-    end
+  fun ref _build_ws() =>
+    ws.set_body(
+      Plus(Single(" \t")),
+      {(d, r, c, b) =>
+        let value = ast.NodeWith[ast.Trivia](
+          _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia))
+        (value, b) })
 
-  fun ref eol(): NamedRule =>
-    match _eol
-    | let r: NamedRule => r
-    else
-      let eol' =
-        recover val
-          NamedRule("EOL",
-            Disj([
-              Literal("\r\n")
-              Literal("\n")
-              Literal("\r")
-            ]),
-            {(d, r, c, b) =>
-              let value = ast.NodeWith[ast.Trivia](
-                _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia))
-              (value, b) })
-        end
-      _eol = eol'
-      eol'
-    end
+  fun ref _build_eol() =>
+    eol.set_body(
+      Disj(
+        [ Literal("\r\n")
+          Literal("\n")
+          Literal("\r") ]),
+        {(d, r, c, b) =>
+          let value = ast.NodeWith[ast.Trivia](
+            _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia))
+          (value, b) })
 
-  fun ref dol(): NamedRule =>
-    match _dol
-    | let r: NamedRule => r
-    else
-      let dol' =
-        recover val
-          NamedRule(
-            "DOL",
-            Star(
-              Conj(
-                [ eol()
-                  Ques(ws()) ]),
-              2))
-        end
-      _dol = dol'
-      dol'
-    end
+  fun ref _build_dol() =>
+    dol.set_body(Star(Conj([ eol; Ques(ws) ]), 2))
 
-  fun ref eof(): NamedRule =>
-    match _eof
-    | let r: NamedRule => r
-    else
-      let eof' =
-        recover val
-          NamedRule("EOF",
-            Neg(Single),
-            {(d, r, c, b) =>
-              let value = ast.NodeWith[ast.Trivia](
-                _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia))
-              (value, b) })
-        end
-      _eof = eof'
-      eof'
-    end
+  fun ref _build_eof() =>
+    eof.set_body(
+      Neg(Single),
+      {(d, r, c, b) =>
+        let value = ast.NodeWith[ast.Trivia](
+          _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia))
+        (value, b) })

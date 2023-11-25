@@ -18,7 +18,7 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file.src_file()
+    let rule = setup.builder.src_file.src_file
 
     let expected =
       """
@@ -77,7 +77,7 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file.src_file()
+    let rule = setup.builder.src_file.src_file
 
     let expected =
       """
@@ -161,7 +161,7 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
-    let rule = setup.builder.src_file.src_file()
+    let rule = setup.builder.src_file.src_file
 
     let expected =
       """

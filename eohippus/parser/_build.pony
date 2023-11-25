@@ -84,19 +84,17 @@ primitive _Build
     consume rvals
 
   fun with_post[T: ast.NodeData val](
-    body: RuleNode,
-    post: RuleNode,
+    body: RuleNode box,
+    post: RuleNode box,
     action:
       {(Data, Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[T])
         : ((ast.Node | None), Bindings)} val)
-    : RuleNode ref
+    : RuleNode
   =>
     let p = Variable("p")
     Conj(
       [ body; Bind(p, Ques(post)) ],
-      {(d, r, c, b) =>
-        action(d, r, c, b, _Build.values_with[T](b, p, r))
-      })
+      {(d, r, c, b) => action(d, r, c, b, _Build.values_with[T](b, p, r)) })
 
   fun bind_error(d: Data, r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)
