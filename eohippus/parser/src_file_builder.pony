@@ -8,7 +8,6 @@ class SrcFileBuilder
   let _keyword: KeywordBuilder
   let _literal: LiteralBuilder
   let _expression: ExpressionBuilder
-  var _member: MemberBuilder
   var _typedef: TypedefBuilder
 
   let src_file: NamedRule = NamedRule("a Pony source file")
@@ -16,9 +15,12 @@ class SrcFileBuilder
   let using_pony: NamedRule = NamedRule("a Pony package using declaration")
   let using_ffi: NamedRule = NamedRule("an FFI using declaration")
 
-  new create(trivia: TriviaBuilder, token: TokenBuilder,
-    keyword: KeywordBuilder, literal: LiteralBuilder,
-    expression: ExpressionBuilder, member: MemberBuilder,
+  new create(
+    trivia: TriviaBuilder,
+    token: TokenBuilder,
+    keyword: KeywordBuilder,
+    literal: LiteralBuilder,
+    expression: ExpressionBuilder,
     typedef: TypedefBuilder)
   =>
     _trivia = trivia
@@ -26,7 +28,6 @@ class SrcFileBuilder
     _keyword = keyword
     _literal = literal
     _expression = expression
-    _member = member
     _typedef = typedef
 
     _build_src_file()
@@ -35,7 +36,7 @@ class SrcFileBuilder
     // TODO: _build_using_ffi()
 
   fun ref err_sec(allowed: ReadSeq[NamedRule], message: String): RuleNode =>
-    _member.error_section(allowed, message)
+    _typedef.error_section(allowed, message)
 
   fun ref _build_src_file() =>
     let t1 = Variable("t1")
@@ -53,9 +54,9 @@ class SrcFileBuilder
             ds,
             Star(
               Disj(
-                [ _member.doc_string
+                [ _typedef.doc_string
                   err_sec(
-                    [ _member.doc_string; using; _typedef.typedef ],
+                    [ _typedef.doc_string; using; _typedef.typedef ],
                     ErrorMsg.src_file_expected_docstring_using_or_typedef())
                 ])))
 
@@ -100,7 +101,7 @@ class SrcFileBuilder
       let t1': ast.NodeSeqWith[ast.Trivia],
       let ds': ast.NodeSeqWith[ast.DocString],
       let us': ast.NodeSeqWith[ast.Using],
-      let td': ast.NodeSeqWith[ast.TypeDef] )
+      let td': ast.NodeSeqWith[ast.Typedef] )
     =
       recover val
         let errs = Array[ast.NodeWith[ast.ErrorSection]]
@@ -108,7 +109,7 @@ class SrcFileBuilder
           _Build.values_and_errors[ast.Trivia](b, t1, r, errs),
           _Build.values_and_errors[ast.DocString](b, ds, r, errs),
           _Build.values_and_errors[ast.Using](b, us, r, errs),
-          _Build.values_and_errors[ast.TypeDef](b, td, r, errs) )
+          _Build.values_and_errors[ast.Typedef](b, td, r, errs) )
       end
 
     let value = ast.NodeWith[ast.SrcFile](

@@ -4,12 +4,12 @@ use parser = "../parser"
 class val SrcFile is NodeData
   let locator: parser.Locator
   let usings: NodeSeqWith[Using]
-  let type_defs: NodeSeqWith[TypeDef]
+  let type_defs: NodeSeqWith[Typedef]
 
   new create(
     locator': parser.Locator,
     usings': NodeSeqWith[Using],
-    type_defs': NodeSeqWith[TypeDef])
+    type_defs': NodeSeqWith[Typedef])
   =>
     locator = locator'
     usings = usings'

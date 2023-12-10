@@ -10,7 +10,6 @@ class Builder
   let literal: LiteralBuilder
   let type_type: TypeBuilder
   let expression: ExpressionBuilder
-  let member: MemberBuilder
   let typedef: TypedefBuilder
   let src_file: SrcFileBuilder
 
@@ -23,9 +22,26 @@ class Builder
     operator = OperatorBuilder(trivia, token, keyword)
     literal = LiteralBuilder(_context, trivia, token, keyword)
     type_type = TypeBuilder(_context, token, keyword)
-    expression = ExpressionBuilder(_context, trivia, token, keyword,
-      operator, literal, type_type)
-    member = MemberBuilder(trivia, literal)
-    typedef = TypedefBuilder(trivia, token, keyword, expression, member)
-    src_file = SrcFileBuilder(trivia, token, keyword, literal, expression,
-      member, typedef)
+    let method_params = NamedRule("method parameters")
+    let typedef_members = NamedRule("type definition members")
+    expression = ExpressionBuilder(
+      _context,
+      trivia,
+      token,
+      keyword,
+      operator,
+      literal,
+      type_type,
+      method_params,
+      typedef_members)
+    typedef = TypedefBuilder(
+      trivia,
+      token,
+      keyword,
+      literal,
+      type_type,
+      expression,
+      method_params,
+      typedef_members)
+    src_file = SrcFileBuilder(
+      trivia, token, keyword, literal, expression, typedef)

@@ -1040,10 +1040,10 @@ class iso _TestParserExpressionLambda is UnitTest
             ],
           },
           "params": {
-            "name": "FunParams",
+            "name": "MethodParams",
             "params": [
               {
-                "name": "FunParam",
+                "name": "MethodParam",
                 "identifier": { "name": "Identifier", "string": "b" },
                 "constraint": {
                   "name": "TypeNominal",
@@ -1055,7 +1055,7 @@ class iso _TestParserExpressionLambda is UnitTest
                 }
               },
               {
-                "name": "FunParam",
+                "name": "MethodParam",
                 "identifier": { "name": "Identifier", "string": "d" },
                 "constraint": {
                   "name": "TypeNominal",
@@ -1065,14 +1065,14 @@ class iso _TestParserExpressionLambda is UnitTest
             ]
           },
           "captures": {
-            "name": "FunParams",
+            "name": "MethodParams",
             "params": [
               {
-                "name": "FunParam",
+                "name": "MethodParam",
                 "identifier": { "name": "Identifier", "string": "e" }
               },
               {
-                "name": "FunParam",
+                "name": "MethodParam",
                 "identifier": { "name": "Identifier", "string": "f" }
               }
             ]
@@ -1101,3 +1101,5 @@ class iso _TestParserExpressionLambda is UnitTest
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+// TODO: test Object

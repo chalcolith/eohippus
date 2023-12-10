@@ -1,4 +1,7 @@
 primitive ErrorMsg
+  fun tag internal_ast_node_not_bound(name: String): String =>
+    "internal error: no AST node bound: " + name
+
   fun tag literal_integer_hex_empty(): String =>
     "you must supply some hexadecimal digits here"
 
@@ -20,8 +23,8 @@ primitive ErrorMsg
   fun tag literal_char_unicode_invalid(): String =>
     "invalid unicode escape sequence; must have 4 or 6 hexadecimal characters"
 
-  fun tag internal_ast_node_not_bound(name: String): String =>
-    "internal error: no AST node bound: " + name
+  fun tag exp_object_unterminated(): String =>
+    "unterminated object literal"
 
   fun tag src_file_docstring_multiple(): String =>
     "you cannot have multiple docstrings"

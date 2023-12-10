@@ -1,19 +1,19 @@
 use json = "../json"
 
-class val FunParams is NodeData
-  let params: NodeSeqWith[FunParam]
+class val MethodParams is NodeData
+  let params: NodeSeqWith[MethodParam]
 
-  new val create(params': NodeSeqWith[FunParam]) =>
+  new val create(params': NodeSeqWith[MethodParam]) =>
     params = params'
 
-  fun name(): String => "FunParams"
+  fun name(): String => "MethodParams"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
       props.push(("params", Nodes.get_json(params)))
     end
 
-class val FunParam is NodeData
+class val MethodParam is NodeData
   let identifier: NodeWith[Identifier]
   let constraint: (NodeWith[TypeType] | None)
   let initializer: (NodeWith[Expression] | None)
@@ -27,7 +27,7 @@ class val FunParam is NodeData
     constraint = constraint'
     initializer = initializer'
 
-  fun name(): String => "FunParam"
+  fun name(): String => "MethodParam"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("identifier", identifier.get_json()))

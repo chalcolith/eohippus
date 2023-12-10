@@ -109,11 +109,11 @@ primitive _ExpActions
       _Build.value_with_or_none[ast.TypeParams](b, type_params, r)
     let params' =
       try
-        _Build.value_with[ast.FunParams](b, params, r)?
+        _Build.value_with[ast.MethodParams](b, params, r)?
       else
         return _Build.bind_error(d, r, c, b, "Expression/Lambda/Params")
       end
-    let captures' = _Build.value_with_or_none[ast.FunParams](b, captures, r)
+    let captures' = _Build.value_with_or_none[ast.MethodParams](b, captures, r)
     let ret_type' = _Build.value_with_or_none[ast.TypeType](b, ret_type, r)
     let partial' = b.contains(partial)
     let body' =
@@ -137,44 +137,6 @@ primitive _ExpActions
         body',
         ref_cap')
         where annotation' = annotation')
-    (value, b)
-
-  fun tag _fun_params(
-    params: Variable,
-    d: Data,
-    r: Success,
-    c: ast.NodeSeq,
-    b: Bindings)
-    : ((ast.Node | None), Bindings)
-  =>
-    let params' = _Build.values_with[ast.FunParam](b, params, r)
-
-    let value = ast.NodeWith[ast.FunParams](
-      _Build.info(d, r), c, ast.FunParams(params'))
-    (value, b)
-
-  fun tag _fun_param(
-    identifier: Variable,
-    constraint: Variable,
-    initializer: Variable,
-    d: Data,
-    r: Success,
-    c: ast.NodeSeq,
-    b: Bindings)
-    : ((ast.Node | None), Bindings)
-  =>
-    let identifier' =
-      try
-        _Build.value_with[ast.Identifier](b, identifier, r)?
-      else
-        return _Build.bind_error(d, r, c, b, "Expression/FunParam/Identifier")
-      end
-    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
-    let initializer' =
-      _Build.value_with_or_none[ast.Expression](b, initializer, r)
-
-    let value = ast.NodeWith[ast.FunParam](
-      _Build.info(d, r), c, ast.FunParam(identifier', constraint', initializer'))
     (value, b)
 
   fun tag _jump(
@@ -880,4 +842,30 @@ primitive _ExpActions
       _Build.info(d, r),
       c,
       ast.ExpFfi(identifier', type_args', call_args', partial'))
+    (value, b)
+
+  fun tag _object(
+    ann: Variable,
+    cap: Variable,
+    constraint: Variable,
+    members: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
+    let members' =
+      try
+        _Build.value_with[ast.TypedefMembers](b, members, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Expression/Object/Members")
+      end
+
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(d, r), c, ast.ExpObject(cap', constraint', members')
+      where annotation' = ann')
     (value, b)

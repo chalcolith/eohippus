@@ -19,4 +19,5 @@ type Expression is
   | ExpDecl
   | ExpWith
   | ExpFfi
-  | ExpLambda )
+  | ExpLambda
+  | ExpObject )

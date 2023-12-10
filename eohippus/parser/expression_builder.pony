@@ -1,5 +1,6 @@
 use "itertools"
 
+use ".."
 use ast = "../ast"
 
 class ExpressionBuilder
@@ -14,7 +15,10 @@ class ExpressionBuilder
 
   let annotation: NamedRule = NamedRule("an annotation")
   let item: NamedRule = NamedRule("an expression")
+  let infix: NamedRule = NamedRule("an infix expression")
   let seq: NamedRule = NamedRule("an expression sequence")
+  let _method_params: NamedRule
+  let _typedef_members: NamedRule
 
   new create(
     context: Context,
@@ -23,7 +27,9 @@ class ExpressionBuilder
     keyword: KeywordBuilder,
     operator: OperatorBuilder,
     literal: LiteralBuilder,
-    type_type: TypeBuilder)
+    type_type: TypeBuilder,
+    method_params: NamedRule,
+    typedef_members: NamedRule)
   =>
     _context = context
     _trivia = trivia
@@ -33,6 +39,8 @@ class ExpressionBuilder
     _literal = literal
     _type_type = type_type
 
+    _method_params = method_params
+    _typedef_members = typedef_members
     _build_annotation()
     _build_expression()
 
@@ -66,7 +74,6 @@ class ExpressionBuilder
     let exp_if: NamedRule = NamedRule("an if expression")
     let exp_ifdef: NamedRule = NamedRule("an ifdef expression")
     let exp_iftype: NamedRule = NamedRule("an iftype expression")
-    let exp_infix: NamedRule = NamedRule("an infix expression")
     let exp_jump: NamedRule = NamedRule("a jump expression")
     let exp_lambda: NamedRule = NamedRule("a lambda literal")
     let exp_match: NamedRule = NamedRule("a match expression")
@@ -81,8 +88,6 @@ class ExpressionBuilder
     let exp_tuple: NamedRule = NamedRule("a tuple literal")
     let exp_while: NamedRule = NamedRule("a while loop")
     let exp_with: NamedRule = NamedRule("a with expression")
-    let fun_param: NamedRule = NamedRule("a function parameter")
-    let fun_params: NamedRule = NamedRule("function parameters")
     let match_case: NamedRule = NamedRule("a match case")
     let tuple_pattern: NamedRule = NamedRule("a tuple destructuring pattern")
     let with_elem: NamedRule = NamedRule("a with element")
@@ -125,6 +130,7 @@ class ExpressionBuilder
     let kwd_let = _keyword(ast.Keywords.kwd_let())
     let kwd_loc = _keyword(ast.Keywords.kwd_loc())
     let kwd_match = _keyword(ast.Keywords.kwd_match())
+    let kwd_object = _keyword(ast.Keywords.kwd_object())
     let kwd_recover = _keyword(ast.Keywords.kwd_recover())
     let kwd_repeat = _keyword(ast.Keywords.kwd_repeat())
     let kwd_return = _keyword(ast.Keywords.kwd_return())
@@ -172,7 +178,7 @@ class ExpressionBuilder
       Disj(
         [ exp_assignment
           exp_jump
-          exp_infix ]))
+          infix ]))
 
     // assignment <= (infix '=' assignment) / infix
     let ass_lhs = Variable("ass_lhs")
@@ -181,11 +187,11 @@ class ExpressionBuilder
     exp_assignment.set_body(
       Disj(
         [ Conj(
-            [ Bind(ass_lhs, exp_infix)
+            [ Bind(ass_lhs, infix)
               Bind(ass_op, equals)
               Bind(ass_rhs, exp_assignment) ],
             _ExpActions~_binop(ass_lhs, ass_op, ass_rhs, None))
-        exp_infix ]))
+        infix ]))
 
     // jump <= ('return' / 'break') assignment? /
     //         'continue' /
@@ -212,7 +218,7 @@ class ExpressionBuilder
     let infix_op = Variable("infix_op")
     let infix_partial = Variable("infix_partial")
     let infix_rhs = Variable("infix_rhs")
-    exp_infix.set_body(
+    infix.set_body(
       Disj(
         [ Disj(
             [ Conj(
@@ -222,12 +228,12 @@ class ExpressionBuilder
               Conj(
                 [ Bind(infix_lhs, exp_term)
                   Bind(infix_op, kwd_is)
-                  Bind(infix_rhs, exp_infix) ])
+                  Bind(infix_rhs, infix) ])
               Conj(
                 [ Bind(infix_lhs, exp_term)
                   Bind(infix_op, binary_op)
                   Ques(Bind(infix_partial, ques))
-                  Bind(infix_rhs, exp_infix) ])
+                  Bind(infix_rhs, infix) ])
             ],
             _ExpActions~_binop(
               infix_lhs, infix_op, infix_rhs, infix_partial))
@@ -662,12 +668,12 @@ class ExpressionBuilder
           Ques(Bind(lambda_id, id))
           Ques(Bind(lambda_type_params, type_params))
           oparen
-          Bind(lambda_params, fun_params)
+          Bind(lambda_params, _method_params)
           cparen
           Ques(
             Conj(
               [ oparen
-                Bind(lambda_captures, fun_params)
+                Bind(lambda_captures, _method_params)
                 cparen ]))
           Ques(
             Conj(
@@ -690,31 +696,6 @@ class ExpressionBuilder
         lambda_partial,
         lambda_body,
         lambda_ref_cap))
-
-    // fun_params <= (fun_param (',' fun_param)*)
-    let fun_params_params = Variable("fun_params_params")
-    fun_params.set_body(
-      Ques(
-        Bind(
-          fun_params_params,
-          Conj(
-            [ fun_param
-              Star(Conj([ comma; fun_param ])) ]))),
-      _ExpActions~_fun_params(fun_params_params))
-
-    // fun_param <= id (':' type_arrow)? ('=' exp_infix)?
-    let fun_param_id = Variable("fun_param_id")
-    let fun_param_constraint = Variable("fun_param_constraint")
-    let fun_param_init = Variable("fun_param_init")
-    fun_param.set_body(
-      Conj(
-        [ Bind(fun_param_id, id)
-          Ques(Conj([ colon; Bind(fun_param_constraint, type_arrow) ]))
-          Ques(Conj([ equals; Bind(fun_param_init, exp_infix)])) ]),
-      _ExpActions~_fun_param(
-        fun_param_id,
-        fun_param_constraint,
-        fun_param_init))
 
     // array <= '[' ('as' type_arrow ':') seq ']'
     let array_type = Variable("array_type")
@@ -745,3 +726,21 @@ class ExpressionBuilder
           Bind(ffi_partial, ques) ]),
       _ExpActions~_ffi(
         ffi_identifier, ffi_type_args, ffi_call_args, ffi_partial))
+
+    let obj_ann = Variable("obj_ann")
+    let obj_cap = Variable("obj_cap")
+    let obj_type = Variable("obj_type")
+    let obj_members = Variable("obj_members")
+    exp_object.set_body(
+      Conj(
+        [ kwd_object
+          Ques(Bind(obj_ann, annotation))
+          Ques(Bind(obj_cap, kwd_cap))
+          Ques(Conj([ kwd_is; Bind(obj_type, type_arrow) ]))
+          Bind(obj_members, _typedef_members)
+          Disj(
+            [ kwd_end
+              Error(ErrorMsg.exp_object_unterminated())
+            ])
+        ]),
+      _ExpActions~_object(obj_ann, obj_cap, obj_type, obj_members))

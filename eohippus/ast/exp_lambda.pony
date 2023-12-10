@@ -5,8 +5,8 @@ class val ExpLambda is NodeData
   let this_cap: (NodeWith[Keyword] | None)
   let identifier: (NodeWith[Identifier] | None)
   let type_params: (NodeWith[TypeParams] | None)
-  let params: NodeWith[FunParams]
-  let captures: (NodeWith[FunParams] | None)
+  let params: NodeWith[MethodParams]
+  let captures: (NodeWith[MethodParams] | None)
   let ret_type: (NodeWith[TypeType] | None)
   let partial: Bool
   let body: NodeWith[Expression]
@@ -17,8 +17,8 @@ class val ExpLambda is NodeData
     this_cap': (NodeWith[Keyword] | None),
     identifier': (NodeWith[Identifier] | None),
     type_params': (NodeWith[TypeParams] | None),
-    params': NodeWith[FunParams],
-    captures': (NodeWith[FunParams] | None),
+    params': NodeWith[MethodParams],
+    captures': (NodeWith[MethodParams] | None),
     ret_type': (NodeWith[TypeType] | None),
     partial': Bool,
     body': NodeWith[Expression],
@@ -55,7 +55,7 @@ class val ExpLambda is NodeData
     end
     props.push(("params", params.get_json()))
     match captures
-    | let captures': NodeWith[FunParams] =>
+    | let captures': NodeWith[MethodParams] =>
       props.push(("captures", captures'.get_json()))
     end
     match ret_type
