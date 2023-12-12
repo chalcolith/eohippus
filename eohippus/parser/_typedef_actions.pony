@@ -21,14 +21,13 @@ primitive _TypedefActions
     (value, b)
 
   fun tag _method_params(
-    params: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let params' = _Build.values_with[ast.MethodParam](b, params, r)
+    let params' = _Build.nodes_with[ast.MethodParam](c)
 
     let value = ast.NodeWith[ast.MethodParams](
       _Build.info(d, r), c, ast.MethodParams(params'))
@@ -91,4 +90,52 @@ primitive _TypedefActions
       c,
       ast.TypedefField(kind', identifier', constraint', initializer')
       where doc_strings' = doc_strings')
+    (value, b)
+
+  fun tag _method(
+    kind: Variable,
+    ann: Variable,
+    cap: Variable,
+    raw: Variable,
+    id: Variable,
+    tparams: Variable,
+    params: Variable,
+    rtype: Variable,
+    partial: Variable,
+    doc_string: Variable,
+    body: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let kind' =
+      try
+        _Build.value_with[ast.Keyword](b, kind, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Method/Kind")
+      end
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let raw' = b.contains(raw)
+    let id' =
+      try
+        _Build.value_with[ast.Identifier](b, id, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Method/Id")
+      end
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
+    let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
+    let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype, r)
+    let partial' = b.contains(partial)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
+    let body' = _Build.value_with_or_none[ast.Expression](b, body, r)
+
+    let value = ast.NodeWith[ast.TypedefMethod](
+      _Build.info(d, r),
+      c,
+      ast.TypedefMethod(
+        kind', cap', raw', id', tparams', params', rtype', partial', body')
+      where doc_strings' = doc_strings', annotation' = ann')
     (value, b)

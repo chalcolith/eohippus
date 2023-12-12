@@ -9,7 +9,7 @@ class TypedefBuilder
   let _expression: ExpressionBuilder
 
   let doc_string: NamedRule = NamedRule("a doc string")
-  let method_params: NamedRule
+  let params: NamedRule
   let members: NamedRule
   let field: NamedRule = NamedRule("a field")
   let method: NamedRule = NamedRule("a method")
@@ -32,7 +32,7 @@ class TypedefBuilder
     _literal = literal
     _type_type = type_type
     _expression = expression
-    method_params = method_params'
+    params = method_params'
     members = typedef_members'
 
     _build_doc_string()
@@ -73,15 +73,9 @@ class TypedefBuilder
     let id = _token.identifier
 
     // method_params <= (method_param (',' method_param)*)
-    let method_params_params = Variable("method_params_params")
-    method_params.set_body(
-      Ques(
-        Bind(
-          method_params_params,
-          Conj(
-            [ method_param
-              Star(Conj([ comma; method_param ])) ]))),
-      _TypedefActions~_method_params(method_params_params))
+    params.set_body(
+      Conj([ method_param; Star(Conj([ comma; method_param ])) ]),
+      _TypedefActions~_method_params())
 
     // method_param <= id (':' type_arrow)? ('=' infix)?
     let method_param_id = Variable("method_param_id")
@@ -100,15 +94,22 @@ class TypedefBuilder
         method_param_init))
 
   fun ref _build_typedef_members() =>
+    let at = _token(ast.Tokens.at())
+    let colon = _token(ast.Tokens.colon())
+    let cparen = _token(ast.Tokens.close_paren())
+    let equal_arrow = _token(ast.Tokens.equal_arrow())
+    let equals = _token(ast.Tokens.equals())
+    let kwd_be = _keyword(ast.Keywords.kwd_be())
+    let kwd_embed = _keyword(ast.Keywords.kwd_embed())
+    let kwd_fun = _keyword(ast.Keywords.kwd_fun())
+    let kwd_let = _keyword(ast.Keywords.kwd_let())
+    let kwd_new = _keyword(ast.Keywords.kwd_new())
+    let kwd_var = _keyword(ast.Keywords.kwd_var())
+    let oparen = _token(ast.Tokens.open_paren())
+    let ques = _token(ast.Tokens.ques())
+
     // field <= ('var' / 'let' / 'embed') id ':' type_arrow
     //          ('=' exp_infix)? doc_string?
-
-    let colon = _token(ast.Tokens.colon())
-    let equals = _token(ast.Tokens.equals())
-    let kwd_var = _keyword(ast.Keywords.kwd_var())
-    let kwd_let = _keyword(ast.Keywords.kwd_let())
-    let kwd_embed = _keyword(ast.Keywords.kwd_embed())
-
     let field_kind = Variable("field_kind")
     let field_identifier = Variable("field_identifier")
     let field_type = Variable("field_type")
@@ -128,6 +129,49 @@ class TypedefBuilder
         field_type,
         field_value,
         field_doc_string
+      ))
+
+    // method <= ('fun' / 'be' / 'new') annotation? (cap / '@')? id type_params?
+    //           '(' method_params ')' (':' type_arrow)? '?'? doc_string?
+    //           ('=>' exp_seq)?
+    let method_kind = Variable("method_kind")
+    let method_ann = Variable("method_ann")
+    let method_cap = Variable("method_cap")
+    let method_raw = Variable("method_raw")
+    let method_id = Variable("method_id")
+    let method_tparams = Variable("method_tparams")
+    let method_params = Variable("method_params")
+    let method_rtype = Variable("method_rtype")
+    let method_partial = Variable("method_partial")
+    let method_doc_string = Variable("method_doc_string")
+    let method_body = Variable("method_body")
+    method.set_body(
+      Conj(
+        [ Bind(method_kind, Disj([ kwd_fun; kwd_be; kwd_new ]))
+          Ques(Bind(method_ann, _expression.annotation))
+          Ques(Disj([ Bind(method_cap, _keyword.cap); Bind(method_raw, at) ]))
+          Bind(method_id, _token.identifier)
+          Ques(Bind(method_tparams, _type_type.params))
+          oparen
+          Ques(Bind(method_params, params))
+          cparen
+          Ques(Conj([ colon; Bind(method_rtype, _type_type.arrow) ]))
+          Ques(Bind(method_partial, ques))
+          Ques(Bind(method_doc_string, doc_string))
+          Ques(Conj([ equal_arrow; Bind(method_body, _expression.seq) ]))
+        ]),
+      _TypedefActions~_method(
+        method_kind,
+        method_ann,
+        method_cap,
+        method_raw,
+        method_id,
+        method_tparams,
+        method_params,
+        method_rtype,
+        method_partial,
+        method_doc_string,
+        method_body
       ))
 
     // members

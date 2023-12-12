@@ -8,6 +8,7 @@ class val TypedefMethod is NodeData
   let type_params: (NodeWith[TypeParams] | None)
   let params: (NodeWith[MethodParams] | None)
   let return_type: (NodeWith[TypeType] | None)
+  let partial: Bool
   let body: (NodeWith[Expression] | None)
 
   new val create(
@@ -18,6 +19,7 @@ class val TypedefMethod is NodeData
     type_params': (NodeWith[TypeParams] | None),
     params': (NodeWith[MethodParams] | None),
     return_type': (NodeWith[TypeType] | None),
+    partial': Bool,
     body': (NodeWith[Expression] | None))
   =>
     kind = kind'
@@ -27,6 +29,7 @@ class val TypedefMethod is NodeData
     type_params = type_params'
     params = params'
     return_type = return_type'
+    partial = partial'
     body = body'
 
   fun name(): String => "TypedefMethod"
@@ -56,6 +59,9 @@ class val TypedefMethod is NodeData
     match return_type
     | let return_type': NodeWith[TypeType] =>
       props.push(("return_type", return_type'.get_json()))
+    end
+    if partial then
+      props.push(("partial", partial))
     end
     match body
     | let body': NodeWith[Expression] =>
