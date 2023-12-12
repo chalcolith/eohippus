@@ -9,6 +9,7 @@ primitive _TestParserTypedef
   fun apply(test: PonyTest) =>
     test(_TestParserTypedefField)
     test(_TestParserTypedefMethod)
+    test(_TestParserTypedefMembers)
     test(_TestParserTypedefPrimitiveSimple)
 
 class iso _TestParserTypedefField is UnitTest
@@ -140,6 +141,51 @@ class iso _TestParserTypedefMethod is UnitTest
           {
             "name": "DocString",
             "string": { "name": "LiteralString", "value": "doc" }
+          }
+        ]
+      }
+    """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserTypedefMembers is UnitTest
+  fun name(): String => "parser/typedef/Members"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.members
+
+    let source = """
+      let a: USize
+      fun b() => None
+    """
+
+    let expected = """
+      {
+        "name": "TypedefMembers",
+        "fields": [
+          {
+            "name": "TypedefField",
+            "kind": { "name": "Keyword", "string": "let" },
+            "identifier": { "name": "Identifier", "string": "a" },
+            "type": {
+              "name": "TypeNominal",
+              "rhs": { "name": "Identifier", "string": "USize" }
+            }
+          }
+        ],
+        "methods": [
+          {
+            "name": "TypedefMethod",
+            "kind": { "name": "Keyword", "string": "fun" },
+            "identifier": { "name": "Identifier", "string": "b" },
+            "body": {
+              "name": "ExpAtom",
+              "body": { "name": "Identifier", "string": "None" }
+            }
           }
         ]
       }

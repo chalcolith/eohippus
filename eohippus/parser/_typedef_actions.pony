@@ -139,3 +139,41 @@ primitive _TypedefActions
         kind', cap', raw', id', tparams', params', rtype', partial', body')
       where doc_strings' = doc_strings', annotation' = ann')
     (value, b)
+
+  fun tag _members(
+    fields: Variable,
+    methods: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let fields' = _Build.values_with[ast.TypedefField](b, fields, r)
+    let methods' = _Build.values_with[ast.TypedefMethod](b, methods, r)
+
+    let value = ast.NodeWith[ast.TypedefMembers](
+      _Build.info(d, r), c, ast.TypedefMembers(fields', methods'))
+    (value, b)
+
+  fun tag _primitive(
+    id: Variable,
+    ds: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let id': ast.NodeWith[ast.Identifier] =
+      try
+        _Build.value_with[ast.Identifier](b, id, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Primitive/Identifier")
+      end
+    let ds' = _Build.values_with[ast.DocString](b, ds, r)
+
+    let value = ast.NodeWith[ast.Typedef](
+      _Build.info(d, r), c, ast.TypedefPrimitive(id')
+      where doc_strings' = ds')
+    (value, b)

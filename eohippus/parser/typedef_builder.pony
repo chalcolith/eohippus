@@ -175,15 +175,14 @@ class TypedefBuilder
       ))
 
     // members
-    let fields = Variable("fields")
-    let methods = Variable("methods")
+    let members_fields = Variable("fields")
+    let members_methods = Variable("methods")
     members.set_body(
       Conj(
-        [ ]
-
-
-      )
-    )
+        [ Bind(members_fields, Star(field))
+          Bind(members_methods, Star(method))
+        ]),
+      _TypedefActions~_members(members_fields, members_methods))
 
   fun ref _build_typedef() =>
     typedef.set_body(
@@ -201,26 +200,4 @@ class TypedefBuilder
           Bind(id, _token.identifier)
           Bind(ds, Ques(doc_string))
         ]),
-        recover this~_typedef_primitive_action(id, ds) end)
-
-  fun tag _typedef_primitive_action(
-    id: Variable,
-    ds: Variable,
-    d: Data,
-    r: Success,
-    c: ast.NodeSeq,
-    b: Bindings)
-    : ((ast.Node | None), Bindings)
-  =>
-    let id': ast.NodeWith[ast.Identifier] =
-      try
-        _Build.value_with[ast.Identifier](b, id, r)?
-      else
-        return _Build.bind_error(d, r, c, b, "Identifier")
-      end
-    let ds' = _Build.values_with[ast.DocString](b, ds, r)
-
-    let value = ast.NodeWith[ast.Typedef](
-      _Build.info(d, r), c, ast.TypedefPrimitive(id')
-      where doc_strings' = ds')
-    (value, b)
+      _TypedefActions~_primitive(id, ds))
