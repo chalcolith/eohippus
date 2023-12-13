@@ -10,7 +10,8 @@ primitive _TestParserTypedef
     test(_TestParserTypedefField)
     test(_TestParserTypedefMethod)
     test(_TestParserTypedefMembers)
-    test(_TestParserTypedefPrimitiveSimple)
+    test(_TestParserTypedefPrimitive)
+    test(_TestParserTypedefAlias)
 
 class iso _TestParserTypedefField is UnitTest
   fun name(): String => "parser/typedef/Field"
@@ -195,8 +196,8 @@ class iso _TestParserTypedefMembers is UnitTest
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-class iso _TestParserTypedefPrimitiveSimple is UnitTest
-  fun name(): String => "parser/typedef/Primitive/simple"
+class iso _TestParserTypedefPrimitive is UnitTest
+  fun name(): String => "parser/typedef/Primitive"
   fun exclusion_group(): String => "parser/typedef"
 
   fun apply(h: TestHelper) =>
@@ -236,6 +237,62 @@ class iso _TestParserTypedefPrimitiveSimple is UnitTest
           ]
         }
       """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserTypedefAlias is UnitTest
+  fun name(): String => "parser/typedef/Alias"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.typedef_alias
+
+    let source = "type A[T] is (B | (C & D))"
+    let expected = """
+      {
+        "name": "TypedefAlias",
+        "identifier": { "name": "Identifier", "string": "A" },
+        "type_params": {
+          "name": "TypeParams",
+          "params": [
+            {
+              "name": "TypeParam",
+              "constraint": {
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "T" }
+              }
+            }
+          ]
+        },
+        "type": {
+          "name": "TypeInfix",
+          "op": { "name": "Token", "string": "|" },
+          "types": [
+            {
+              "name": "TypeNominal",
+              "rhs": { "name": "Identifier", "string": "B" }
+            },
+            {
+              "name": "TypeInfix",
+              "op": { "name": "Token", "string": "&" },
+              "types": [
+                {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "C" }
+                },
+                {
+                  "name": "TypeNominal",
+                  "rhs": { "name": "Identifier", "string": "D" }
+                }
+              ]
+            }
+          ]
+        }
+      }
+    """
 
     _Assert.test_all(
       h,

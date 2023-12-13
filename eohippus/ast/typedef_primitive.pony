@@ -1,7 +1,6 @@
 use json = "../json"
-use parser = "../parser"
 
-type Typedef is TypedefPrimitive
+type Typedef is (TypedefPrimitive | TypedefAlias | TypedefClass)
 
 class val TypedefPrimitive is NodeData
   let identifier: NodeWith[Identifier]

@@ -68,6 +68,7 @@ class KeywordBuilder
       ast.Keywords.kwd_trn()
       ast.Keywords.kwd_true()
       ast.Keywords.kwd_try()
+      ast.Keywords.kwd_type()
       ast.Keywords.kwd_until()
       ast.Keywords.kwd_use()
       ast.Keywords.kwd_val()
@@ -115,7 +116,10 @@ class KeywordBuilder
       _keywords(str)?
     else
       let msg =
-        recover val "INVALID KEYWORD '" + StringUtil.escape(str) + "'" end
+        recover val
+          "INVALID KEYWORD '" + StringUtil.escape(str) +
+            "'; add it to the list in KeywordBuilder"
+        end
       NamedRule(msg, Error(msg))
     end
 

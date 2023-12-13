@@ -15,6 +15,8 @@ class TypedefBuilder
   let method: NamedRule = NamedRule("a method")
   let typedef: NamedRule = NamedRule("a type definition")
   let typedef_primitive: NamedRule = NamedRule("a primitive type definition")
+  let typedef_alias: NamedRule = NamedRule("a type alias")
+  let typedef_class: NamedRule = NamedRule("a type definition")
 
   new create(
     trivia: TriviaBuilder,
@@ -40,6 +42,8 @@ class TypedefBuilder
     _build_typedef_members()
     _build_typedef()
     _build_typedef_primitive()
+    _build_typedef_alias()
+    _build_typedef_class()
 
   fun error_section(allowed: ReadSeq[NamedRule], message: String)
     : RuleNode
@@ -179,7 +183,8 @@ class TypedefBuilder
     let members_methods = Variable("methods")
     members.set_body(
       Conj(
-        [ Bind(members_fields, Star(field))
+        [ Look(Disj([ field; method ]))
+          Bind(members_fields, Star(field))
           Bind(members_methods, Star(method))
         ]),
       _TypedefActions~_members(members_fields, members_methods))
@@ -201,3 +206,26 @@ class TypedefBuilder
           Bind(ds, Ques(doc_string))
         ]),
       _TypedefActions~_primitive(id, ds))
+
+  fun ref _build_typedef_alias() =>
+    let kwd_type = _keyword(ast.Keywords.kwd_type())
+    let kwd_is = _keyword(ast.Keywords.kwd_is())
+
+    let alias_id = Variable("alias_id")
+    let alias_tparams = Variable("alias_tparams")
+    let alias_type = Variable("alias_type")
+    let alias_doc_string = Variable("alias_doc_string")
+    typedef_alias.set_body(
+      Conj(
+        [ kwd_type
+          Bind(alias_id, _token.identifier)
+          Ques(Bind(alias_tparams, _type_type.params))
+          kwd_is
+          Bind(alias_type, _type_type.arrow)
+          Ques(Bind(alias_doc_string, doc_string))
+        ]),
+      _TypedefActions~_alias(
+        alias_id, alias_tparams, alias_type, alias_doc_string))
+
+  fun ref _build_typedef_class() =>
+    None // TODO

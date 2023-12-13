@@ -50,6 +50,7 @@ primitive Keywords
   fun kwd_trn(): String => "trn"
   fun kwd_true(): String => "true"
   fun kwd_try(): String => "try"
+  fun kwd_type(): String => "type"
   fun kwd_until(): String => "until"
   fun kwd_use(): String => "use"
   fun kwd_val(): String => "val"

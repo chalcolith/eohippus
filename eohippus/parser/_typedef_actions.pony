@@ -177,3 +177,34 @@ primitive _TypedefActions
       _Build.info(d, r), c, ast.TypedefPrimitive(id')
       where doc_strings' = ds')
     (value, b)
+
+  fun tag _alias(
+    id: Variable,
+    tparams: Variable,
+    type_type: Variable,
+    doc_string: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let id' =
+      try
+        _Build.value_with[ast.Identifier](b, id, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Alias/Identifier")
+      end
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
+    let type_type' =
+      try
+        _Build.value_with[ast.TypeType](b, type_type, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Alias/Type")
+      end
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
+
+    let value = ast.NodeWith[ast.Typedef](
+      _Build.info(d, r), c, ast.TypedefAlias(id', tparams', type_type')
+      where doc_strings' = doc_strings')
+    (value, b)
