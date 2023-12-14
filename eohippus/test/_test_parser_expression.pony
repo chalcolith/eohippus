@@ -31,6 +31,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionWith)
     test(_TestParserExpressionFfi)
     test(_TestParserExpressionLambda)
+    test(_TestParserExpressionObject)
 
 class iso _TestParserExpressionIdentifier is UnitTest
   fun name(): String => "parser/expression/Identifier"
@@ -1102,4 +1103,42 @@ class iso _TestParserExpressionLambda is UnitTest
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-// TODO: test Object
+class iso _TestParserExpressionObject is UnitTest
+  fun name(): String => "parser/expression/Object"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let source = """
+      object is B
+        let c: D
+        fun e(): F => g
+      end
+    """
+    let expected = """
+      {
+        "name": "ExpObject",
+        "constraint": { "rhs": { "string": "B" } },
+        "members": {
+          "fields": [
+            {
+              "identifier": { "string": "c" },
+              "type": { "rhs": { "string": "D" } }
+            }
+          ],
+          "methods": [
+            {
+              "kind": { "string": "fun" },
+              "identifier": { "string": "e" },
+              "return_type": { "rhs": { "string": "F" } },
+              "body": { "body": { "string": "g" } }
+            }
+          ]
+        }
+      }
+    """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])

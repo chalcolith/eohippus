@@ -64,7 +64,7 @@ class ExpressionBuilder
     let call_args: NamedRule = NamedRule("a positional argument")
     let exp_array: NamedRule = NamedRule("an array literal")
     let exp_assignment: NamedRule = NamedRule("an assignment")
-    let exp_atom: NamedRule = NamedRule("a basic expression")
+    let exp_atom: NamedRule = NamedRule("an atomic expression")
     let exp_cond: NamedRule = NamedRule("an if condition")
     let exp_consume: NamedRule = NamedRule("a consume expression")
     let exp_decl: NamedRule = NamedRule("a binding declaration")

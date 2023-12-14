@@ -59,6 +59,7 @@ class KeywordBuilder
       ast.Keywords.kwd_match()
       ast.Keywords.kwd_new()
       ast.Keywords.kwd_not()
+      ast.Keywords.kwd_object()
       ast.Keywords.kwd_or()
       ast.Keywords.kwd_primitive()
       ast.Keywords.kwd_ref()
