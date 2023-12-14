@@ -228,4 +228,51 @@ class TypedefBuilder
         alias_id, alias_tparams, alias_type, alias_doc_string))
 
   fun ref _build_typedef_class() =>
-    None // TODO
+    let at = _token(ast.Tokens.at())
+    let kwd_actor = _keyword(ast.Keywords.kwd_actor())
+    let kwd_class = _keyword(ast.Keywords.kwd_class())
+    let kwd_interface = _keyword(ast.Keywords.kwd_interface())
+    let kwd_is = _keyword(ast.Keywords.kwd_is())
+    let kwd_struct = _keyword(ast.Keywords.kwd_struct())
+    let kwd_trait = _keyword(ast.Keywords.kwd_trait())
+
+    let class_kind = Variable("class_kind")
+    let class_ann = Variable("class_ann")
+    let class_raw = Variable("class_raw")
+    let class_cap = Variable("class_cap")
+    let class_id = Variable("class_id")
+    let class_tparams = Variable("class_tparams")
+    let class_constraint = Variable("class_constraint")
+    let class_doc_string = Variable("class_doc_string")
+    let class_members = Variable("class_members")
+
+    typedef_class.set_body(
+      Conj(
+        [ Bind(
+            class_kind,
+            Disj(
+              [ kwd_interface
+                kwd_trait
+                kwd_struct
+                kwd_class
+                kwd_actor
+              ]))
+          Ques(Bind(class_ann, _expression.annotation))
+          Ques(Bind(class_raw, at))
+          Ques(Bind(class_cap, _keyword.cap))
+          Bind(class_id, _token.identifier)
+          Ques(Bind(class_tparams, _type_type.params))
+          Ques(Bind(class_constraint, Conj([ kwd_is; _type_type.arrow ])))
+          Ques(Bind(class_doc_string, doc_string))
+          Ques(Bind(class_members, members))
+        ]),
+      _TypedefActions~_class(
+        class_kind,
+        class_ann,
+        class_raw,
+        class_cap,
+        class_id,
+        class_tparams,
+        class_constraint,
+        class_doc_string,
+        class_members))

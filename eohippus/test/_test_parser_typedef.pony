@@ -12,6 +12,7 @@ primitive _TestParserTypedef
     test(_TestParserTypedefMembers)
     test(_TestParserTypedefPrimitive)
     test(_TestParserTypedefAlias)
+    test(_TestParserTypedefClass)
 
 class iso _TestParserTypedefField is UnitTest
   fun name(): String => "parser/typedef/Field"
@@ -288,6 +289,99 @@ class iso _TestParserTypedefAlias is UnitTest
                   "rhs": { "name": "Identifier", "string": "D" }
                 }
               ]
+            }
+          ]
+        }
+      }
+    """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserTypedefClass is UnitTest
+  fun name(): String => "parser/typedef/Class"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.typedef_class
+
+    let source = """
+      actor \a\ val Foo[A]
+        let bar: U8
+        new create(qux: U8) => qux + 123
+    """
+    let expected = """
+      {
+        "name": "TypedefClass",
+        "kind": { "name": "Keyword", "string": "actor" },
+        "annotation": {
+          "name": "Annotation",
+          "identifiers": [
+            { "name": "Identifier", "string": "a" }
+          ]
+        },
+        "cap": { "name": "Keyword", "string": "val" },
+        "identifier": { "name": "Identifier", "string": "Foo" },
+        "type_params": {
+          "name": "TypeParams",
+          "params": [
+            {
+              "name": "TypeParam",
+              "constraint": {
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "A" }
+              }
+            }
+          ]
+        },
+        "members": {
+          "name": "TypedefMembers",
+          "fields": [
+            {
+              "name": "TypedefField",
+              "kind": { "name": "Keyword", "string": "let" },
+              "identifier": { "name": "Identifier", "string": "bar" },
+              "type": {
+                "name": "TypeNominal",
+                "rhs": { "name": "Identifier", "string": "U8" }
+              }
+            }
+          ],
+          "methods": [
+            {
+              "name": "TypedefMethod",
+              "kind": { "name": "Keyword", "string": "new" },
+              "identifier": { "name": "Identifier", "string": "create" },
+              "params": {
+                "name": "MethodParams",
+                "params": [
+                  {
+                    "name": "MethodParam",
+                    "identifier": { "name": "Identifier", "string": "qux" },
+                    "constraint": {
+                      "name": "TypeNominal",
+                      "rhs": { "name": "Identifier", "string": "U8" }
+                    }
+                  }
+                ]
+              },
+              "body": {
+                "name": "ExpOperation",
+                "op": { "name": "Token", "string": "+" },
+                "lhs": {
+                  "name": "ExpAtom",
+                  "body": { "name": "Identifier", "string": "qux" }
+                },
+                "rhs": {
+                  "name": "ExpAtom",
+                  "body": {
+                    "name": "LiteralInteger",
+                    "value": 123
+                  }
+                }
+              }
             }
           ]
         }

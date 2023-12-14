@@ -208,3 +208,53 @@ primitive _TypedefActions
       _Build.info(d, r), c, ast.TypedefAlias(id', tparams', type_type')
       where doc_strings' = doc_strings')
     (value, b)
+
+  fun tag _class(
+    kind: Variable,
+    ann: Variable,
+    raw: Variable,
+    cap: Variable,
+    id: Variable,
+    tparams: Variable,
+    constraint: Variable,
+    doc_string: Variable,
+    members: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let kind' =
+      try
+        _Build.value_with[ast.Keyword](b, kind, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Class/Kind")
+      end
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
+    let raw' = b.contains(raw)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let id' =
+      try
+        _Build.value_with[ast.Identifier](b, id, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Typedef/Class/Identifier")
+      end
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
+    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
+    let members' = _Build.value_with_or_none[ast.TypedefMembers](b, members, r)
+
+    let value = ast.NodeWith[ast.Typedef](
+      _Build.info(d, r),
+      c,
+      ast.TypedefClass(
+        kind',
+        raw',
+        cap',
+        id',
+        tparams',
+        constraint',
+        members')
+      where annotation' = ann', doc_strings' = doc_strings')
+    (value, b)
