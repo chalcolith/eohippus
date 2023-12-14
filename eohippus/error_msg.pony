@@ -37,3 +37,9 @@ primitive ErrorMsg
 
   fun tag src_file_expected_typedef(): String =>
     "expected a type definition"
+
+  fun tag src_file_expected_field_or_method(): String =>
+    "expected a field or a method"
+
+  fun tag src_file_expected_method(): String =>
+    "expected a method"

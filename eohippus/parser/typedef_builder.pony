@@ -1,3 +1,4 @@
+use ".."
 use ast = "../ast"
 
 class TypedefBuilder
@@ -45,7 +46,7 @@ class TypedefBuilder
     _build_typedef_alias()
     _build_typedef_class()
 
-  fun error_section(allowed: ReadSeq[NamedRule], message: String)
+  fun error_section(allowed: ReadSeq[NamedRule box], message: String)
     : RuleNode
   =>
     let dol = _trivia.dol
@@ -105,6 +106,7 @@ class TypedefBuilder
     let equals = _token(ast.Tokens.equals())
     let kwd_be = _keyword(ast.Keywords.kwd_be())
     let kwd_embed = _keyword(ast.Keywords.kwd_embed())
+    let kwd_end = _keyword(ast.Keywords.kwd_end())
     let kwd_fun = _keyword(ast.Keywords.kwd_fun())
     let kwd_let = _keyword(ast.Keywords.kwd_let())
     let kwd_new = _keyword(ast.Keywords.kwd_new())
@@ -184,8 +186,24 @@ class TypedefBuilder
     members.set_body(
       Conj(
         [ Look(Disj([ field; method ]))
-          Bind(members_fields, Star(field))
-          Bind(members_methods, Star(method))
+          Bind(
+            members_fields,
+            Star(
+              Disj(
+                [ field
+                  error_section(
+                    [ field; method; kwd_end ],
+                    ErrorMsg.src_file_expected_field_or_method())
+                ])))
+          Bind(
+            members_methods,
+            Star(
+              Disj(
+                [ method
+                  error_section(
+                    [ method; kwd_end ],
+                    ErrorMsg.src_file_expected_method())
+                ])))
         ]),
       _TypedefActions~_members(members_fields, members_methods))
 

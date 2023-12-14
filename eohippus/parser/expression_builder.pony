@@ -41,6 +41,7 @@ class ExpressionBuilder
 
     _method_params = method_params
     _typedef_members = typedef_members
+
     _build_annotation()
     _build_expression()
 
@@ -727,6 +728,7 @@ class ExpressionBuilder
       _ExpActions~_ffi(
         ffi_identifier, ffi_type_args, ffi_call_args, ffi_partial))
 
+    // object <=
     let obj_ann = Variable("obj_ann")
     let obj_cap = Variable("obj_cap")
     let obj_type = Variable("obj_type")
