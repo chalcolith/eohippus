@@ -1,19 +1,19 @@
 {
-  "info": {
-    "name": "eohippus",
-    "description": "Pony Language Tools",
-    "homepage": "https://github.com/chalcolith/eohippus",
-    "documentation_url": "https://chalcolith.github.io/eohippus/eohippus--index/",
-    "license": "MIT",
-    "version": "0.0.0"
-  },
   "packages": [
     "eohippus"
   ],
+  "info": {
+    "description": "Pony Language Tools",
+    "homepage": "https://github.com/chalcolith/eohippus",
+    "license": "MIT",
+    "documentation_url": "https://chalcolith.github.io/eohippus/eohippus--index/",
+    "version": "0.1.0",
+    "name": "eohippus"
+  },
   "deps": [
     {
-      "locator": "../kiuatan",
-      "version": "1.4.0"
+      "locator": "github.com/chalcolith/kiuatan.git",
+      "version": "1.4.1"
     }
   ]
 }
