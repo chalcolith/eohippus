@@ -9,7 +9,8 @@ use ".."
 primitive _TestParserSrcFile
   fun apply(test: PonyTest) =>
     test(_TestParserSrcFileTriviaDocstring)
-    test(_TestParserSrcFileUsingSingle)
+    test(_TestParserSrcFileUsingPony)
+    test(_TestParserSrcFileUsingFfi)
     test(_TestParserSrcFileUsingErrorSection)
 
 class iso _TestParserSrcFileTriviaDocstring is UnitTest
@@ -71,19 +72,21 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
 
-class iso _TestParserSrcFileUsingSingle is UnitTest
-  fun name(): String => "parser/src_file/SrcFile/Using/single"
+class iso _TestParserSrcFileUsingPony is UnitTest
+  fun name(): String => "parser/src_file/Using/Pony"
   fun exclusion_group(): String => "parser/src_file"
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
+    let source = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
+
     let expected =
       """
         {
           "name": "SrcFile",
-          "locator": "parser/src_file/SrcFile/Using/single",
+          "locator": "parser/src_file/Using/Pony",
           "usings": [
             {
               "name": "Using",
@@ -98,7 +101,6 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
                   }
                 ]
               },
-              "def_true": "true",
               "define": {
                 "name": "Identifier",
                 "string": "windows",
@@ -133,7 +135,7 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
                   }
                 ]
               },
-              "def_true": "false",
+              "def_true": false,
               "define": {
                 "name": "Identifier",
                 "string": "osx"
@@ -149,11 +151,51 @@ class iso _TestParserSrcFileUsingSingle is UnitTest
         }
       """
 
-    let source = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserSrcFileUsingFfi is UnitTest
+  fun name(): String => "parser/src_file/Using/FFI"
+  fun exclusion_group(): String => "parser/src_file"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.src_file.src_file
+
+    let source = " use a = @b[None](c: U8) ? "
+    let expected = """
+      {
+        "name": "SrcFile",
+        "usings": [
+          {
+            "identifier": { "string": "a" },
+            "name": { "string": "b" },
+            "type_args": {
+              "types": [
+                {
+                  "rhs": { "string": "None" }
+                }
+              ]
+            },
+            "params": {
+              "params": [
+                {
+                  "identifier": { "string": "c" },
+                  "constraint": { "rhs": { "string": "U8" } }
+                }
+              ]
+            },
+            "partial": true
+          }
+        ]
+      }
+    """
 
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Using/error_section"

@@ -44,4 +44,4 @@ class Builder
       method_params,
       typedef_members)
     src_file = SrcFileBuilder(
-      trivia, token, keyword, literal, expression, typedef)
+      trivia, token, keyword, literal, type_type, expression, typedef)

@@ -9,7 +9,7 @@ class TypedefBuilder
   let _expression: ExpressionBuilder
 
   let doc_string: NamedRule = NamedRule("a doc string")
-  let params: NamedRule
+  let method_params: NamedRule
   let members: NamedRule
   let field: NamedRule = NamedRule("a field")
   let method: NamedRule = NamedRule("a method")
@@ -34,7 +34,7 @@ class TypedefBuilder
     _literal = literal
     _type_type = type_type
     _expression = expression
-    params = method_params'
+    method_params = method_params'
     members = typedef_members'
 
     _build_doc_string()
@@ -77,7 +77,7 @@ class TypedefBuilder
     let id = _token.identifier
 
     // method_params <= (method_param (',' method_param)*)
-    params.set_body(
+    method_params.set_body(
       Conj([ method_param; Star(Conj([ comma; method_param ])) ]),
       _TypedefActions~_method_params())
 
@@ -144,7 +144,7 @@ class TypedefBuilder
     let method_raw = Variable("method_raw")
     let method_id = Variable("method_id")
     let method_tparams = Variable("method_tparams")
-    let method_params = Variable("method_params")
+    let method_mparams = Variable("method_mparams")
     let method_rtype = Variable("method_rtype")
     let method_partial = Variable("method_partial")
     let method_doc_string = Variable("method_doc_string")
@@ -157,7 +157,7 @@ class TypedefBuilder
           Bind(method_id, _token.identifier)
           Ques(Bind(method_tparams, _type_type.params))
           oparen
-          Ques(Bind(method_params, params))
+          Ques(Bind(method_mparams, method_params))
           cparen
           Ques(Conj([ colon; Bind(method_rtype, _type_type.arrow) ]))
           Ques(Bind(method_partial, ques))
@@ -171,7 +171,7 @@ class TypedefBuilder
         method_raw,
         method_id,
         method_tparams,
-        method_params,
+        method_mparams,
         method_rtype,
         method_partial,
         method_doc_string,

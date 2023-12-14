@@ -77,7 +77,7 @@ class ExpressionBuilder
     let exp_jump: NamedRule = NamedRule("a jump expression")
     let exp_lambda: NamedRule = NamedRule("a lambda literal")
     let exp_match: NamedRule = NamedRule("a match expression")
-    let exp_object: NamedRule = NamedRule("an object literal")          // TODO
+    let exp_object: NamedRule = NamedRule("an object literal")
     let exp_parens: NamedRule = NamedRule("a parenthesized expression")
     let exp_postfix: NamedRule = NamedRule("a postfix expression")
     let exp_prefix: NamedRule = NamedRule("a prefix expression")
