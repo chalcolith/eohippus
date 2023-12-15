@@ -211,6 +211,8 @@ class TypedefBuilder
     typedef.set_body(
       Disj(
         [ typedef_primitive
+          typedef_alias
+          typedef_class
         ]))
 
   fun ref _build_typedef_primitive() =>

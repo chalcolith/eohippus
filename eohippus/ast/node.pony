@@ -55,7 +55,19 @@ class val NodeWith[D: NodeData val] is Node
     ast_type': (types.AstType | None) = None)
   =>
     _src_info = src_info'
-    _children = children'
+    _children =
+      recover val
+        Array[Node].>concat(
+          Iter[Node](children'.values())
+            .filter({(n) =>
+              match n
+              | let t: NodeWith[Trivia] =>
+                t.src_info().start < t.src_info().next
+              else
+                true
+              end
+            }))
+      end
     _data = data'
     _annotation = annotation'
     _doc_strings =
@@ -131,6 +143,8 @@ class val NodeWith[D: NodeData val] is Node
   fun get_json(): json.Item val =>
     recover
       let props = [ as (String, json.Item): ("name", _data.name()) ]
+      props.push(("loc_start", _src_info.start.string()))
+      props.push(("loc_next", _src_info.next.string()))
       match _annotation
       | let annotation': NodeWith[Annotation] =>
         props.push(("annotation", annotation'.get_json()))

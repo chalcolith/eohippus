@@ -14,9 +14,11 @@ type TriviaKind is
 
 class val Trivia is NodeData
   let kind: TriviaKind
+  let string: String
 
-  new val create(kind': TriviaKind) =>
+  new val create(kind': TriviaKind, string': String) =>
     kind = kind'
+    string = string'
 
   fun name(): String => "Trivia"
 
@@ -30,3 +32,4 @@ class val Trivia is NodeData
       | EndOfFileTrivia => "EndOfFileTrivia"
       end
     props.push(("kind", kind_str))
+    props.push(("string", string))

@@ -6,7 +6,8 @@ primitive _LiteralActions
     d: Data,
     r: Success,
     c: ast.NodeSeq,
-    b: Bindings)
+    b: Bindings,
+    p: ast.NodeSeqWith[ast.Trivia])
     : ((ast.Node | None), Bindings)
   =>
     let src_info = _Build.info(d, r)
@@ -15,7 +16,7 @@ primitive _LiteralActions
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
 
     let value = ast.NodeWith[ast.Literal](
-      src_info, c, ast.LiteralBool(is_true))
+      src_info, _Build.span_and_post(src_info, c, p), ast.LiteralBool(is_true))
     (value, b)
 
   fun tag _integer(
@@ -52,7 +53,9 @@ primitive _LiteralActions
       end
     let num: U128 = try str.u128(base)? else 0 end
     let value = ast.NodeWith[ast.Literal](
-      src_info, c, ast.LiteralInteger(num, kind)
+      src_info,
+      _Build.span_and_post(src_info, c, p),
+      ast.LiteralInteger(num, kind)
       where post_trivia' = p)
     (value, b)
 
@@ -88,7 +91,7 @@ primitive _LiteralActions
 
     let num: F64 = try str.f64()? else 0.0 end
     let value = ast.NodeWith[ast.Literal](
-      src_info, c, ast.LiteralFloat(num)
+      src_info, _Build.span_and_post(src_info, c, p), ast.LiteralFloat(num)
       where post_trivia' = p)
     (value, b)
 

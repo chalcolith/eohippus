@@ -83,23 +83,23 @@ class OperatorBuilder
           let kwd_or = ast.Keywords.kwd_or()
           let kwd_xor = ast.Keywords.kwd_xor()
 
+          let src_info = _Build.info(d, r)
           let next =
             try
               p(0)?.src_info().start
             else
               r.next
             end
-
           let str = recover val String .> concat(r.start.values(next)) end
 
           if (str == kwd_and) or (str == kwd_or) or (str == kwd_xor) then
             let value = ast.NodeWith[ast.Keyword](
-              _Build.info(d, r), c, ast.Keyword(str)
+              src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
               where post_trivia' = p)
             (value, b)
           else
             let value = ast.NodeWith[ast.Token](
-              _Build.info(d, r), c, ast.Token(str)
+              src_info, _Build.span_and_post(src_info, c, p), ast.Token(str)
               where post_trivia' = p)
             (value, b)
           end

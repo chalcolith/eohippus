@@ -39,8 +39,9 @@ class TriviaBuilder
           Star(Conj([ Neg(eol); Single() ]))
           Look(Disj([ eol; eof ])) ]),
       {(d, r, c, b) =>
+        let str = recover val String .> concat(r.start.values(r.next)) end
         let value = ast.NodeWith[ast.Trivia](
-          _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia))
+          _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia, str))
         (value, b) })
 
   fun ref _build_comment_nested() =>
@@ -51,16 +52,18 @@ class TriviaBuilder
           Star(Conj([ Neg(Literal("*/")); Single() ]))
           Literal("*/") ]),
       {(d, r, c, b) =>
+        let str = recover val String .> concat(r.start.values(r.next)) end
         let value = ast.NodeWith[ast.Trivia](
-          _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia))
+          _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia, str))
         (value, b) })
 
   fun ref _build_ws() =>
     ws.set_body(
       Plus(Single(" \t")),
       {(d, r, c, b) =>
+        let str = recover val String .> concat(r.start.values(r.next)) end
         let value = ast.NodeWith[ast.Trivia](
-          _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia))
+          _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia, str))
         (value, b) })
 
   fun ref _build_eol() =>
@@ -70,8 +73,9 @@ class TriviaBuilder
           Literal("\n")
           Literal("\r") ]),
         {(d, r, c, b) =>
+          let str = recover val String .> concat(r.start.values(r.next)) end
           let value = ast.NodeWith[ast.Trivia](
-            _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia))
+            _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia, str))
           (value, b) })
 
   fun ref _build_dol() =>
@@ -82,5 +86,5 @@ class TriviaBuilder
       Neg(Single),
       {(d, r, c, b) =>
         let value = ast.NodeWith[ast.Trivia](
-          _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia))
+          _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia, ""))
         (value, b) })

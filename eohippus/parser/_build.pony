@@ -94,7 +94,22 @@ primitive _Build
     let p = Variable("p")
     Conj(
       [ body; Bind(p, Ques(post)) ],
-      {(d, r, c, b) => action(d, r, c, b, _Build.values_with[T](b, p, r)) })
+      {(d, r, c, b) =>
+        action(d, r, c, b, _Build.values_with[T](b, p, r))
+      })
+
+  fun span_and_post(si: ast.SrcInfo, c: ast.NodeSeq, p: ast.NodeSeq)
+    : ast.NodeSeq
+  =>
+    let next =
+      try
+        p(0)?.src_info().start
+      else
+        si.next
+      end
+    let span = ast.NodeWith[ast.Span](
+      ast.SrcInfo(si.locator, si.start, next), [], ast.Span)
+    recover val [as ast.Node: span] .> concat(c.values()) end
 
   fun bind_error(d: Data, r: Success, c: ast.NodeSeq, b: Bindings,
     message: String): (ast.Node, Bindings)

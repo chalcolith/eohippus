@@ -58,9 +58,11 @@ class LiteralBuilder
 
   fun ref _build_bool() =>
     bool.set_body(
-      Disj(
-        [ _keyword(ast.Keywords.kwd_false())
-          _keyword(ast.Keywords.kwd_true()) ],
+      _Build.with_post[ast.Trivia](
+        Disj(
+          [ _keyword(ast.Keywords.kwd_false())
+            _keyword(ast.Keywords.kwd_true()) ]),
+        _trivia.trivia,
         _LiteralActions~_bool()))
 
   fun ref _build_integer() =>
@@ -75,8 +77,8 @@ class LiteralBuilder
             Bind(bin, integer_bin)
             Bind(dec, integer_dec)
           ]),
-          _trivia.trivia,
-          _LiteralActions~_integer(hex, bin, dec)))
+        _trivia.trivia,
+        _LiteralActions~_integer(hex, bin, dec)))
 
   fun ref _build_integer_dec() =>
     integer_dec.set_body(

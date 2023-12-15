@@ -110,8 +110,9 @@ class KeywordBuilder
               Neg(Single(_Letters.with_underscore())) ]),
           t,
           {(d, r, c, b, p) =>
+            let src_info = _Build.info(d, r)
             let value = ast.NodeWith[ast.Keyword](
-              _Build.info(d, r), c, ast.Keyword(str)
+              src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
               where post_trivia' = p)
             (value, b) })
         where memoize_failures' = false)
@@ -135,10 +136,9 @@ class KeywordBuilder
       literals.push(Literal(str))
     end
 
-    let str = Variable("str")
     kwd.set_body(
       _Build.with_post[ast.Trivia](
-        Bind(str, Disj(literals)),
+        Disj(literals),
         _trivia.trivia,
         {(d, r, c, b, p) =>
           let src_info = _Build.info(d, r)
@@ -148,12 +148,12 @@ class KeywordBuilder
             else
               src_info.next
             end
-          let string =
+          let str =
             recover val
               String .> concat(src_info.start.values(next))
             end
           let value = ast.NodeWith[ast.Keyword](
-            src_info, c, ast.Keyword(string)
+            src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
             where post_trivia' = p)
           (value, b) }))
 
