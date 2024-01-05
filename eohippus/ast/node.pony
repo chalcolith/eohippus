@@ -3,23 +3,6 @@ use "itertools"
 use json = "../json"
 use types = "../types"
 
-primitive Nodes
-  fun get_json(seq: NodeSeq): json.Sequence val =>
-    recover val
-      json.Sequence.from_iter(
-        Iter[Node](seq.values())
-          .map[json.Item val](
-            {(n): json.Item val => n.get_json()}))
-    end
-
-trait val NodeData
-  fun name(): String
-
-  fun add_json_props(props: Array[(String, json.Item)])
-
-trait val NodeDataWithValue[T: Any val] is NodeData
-  fun value(): T
-
 trait val Node
   fun src_info(): SrcInfo
   fun children(): NodeSeq
@@ -29,7 +12,7 @@ trait val Node
   fun post_trivia(): NodeSeqWith[Trivia]
   fun error_sections(): NodeSeqWith[ErrorSection]
   fun ast_type(): (types.AstType | None)
-  fun get_json(): json.Item val
+  fun get_json(): json.Item
   fun string(): String iso^
 
 class val NodeWith[D: NodeData val] is Node
@@ -140,30 +123,28 @@ class val NodeWith[D: NodeData val] is Node
 
   fun ast_type(): (types.AstType | None) => _ast_type
 
-  fun get_json(): json.Item val =>
-    recover
-      let props = [ as (String, json.Item): ("name", _data.name()) ]
-      props.push(("loc_start", _src_info.start.string()))
-      props.push(("loc_next", _src_info.next.string()))
-      match _annotation
-      | let annotation': NodeWith[Annotation] =>
-        props.push(("annotation", annotation'.get_json()))
-      end
-      _data.add_json_props(props)
-      if _error_sections.size() > 0 then
-        props.push(("error_sections", Nodes.get_json(_error_sections)))
-      end
-      if _pre_trivia.size() > 0 then
-        props.push(("pre_trivia", Nodes.get_json(_pre_trivia)))
-      end
-      if _doc_strings.size() > 0 then
-        props.push(("doc_strings", Nodes.get_json(_doc_strings)))
-      end
-      if _post_trivia.size() > 0 then
-        props.push(("post_trivia", Nodes.get_json(_post_trivia)))
-      end
-      json.Object(props)
+  fun get_json(): json.Item =>
+    let props = [ as (String, json.Item): ("name", _data.name()) ]
+    props.push(("loc_start", _src_info.start.string()))
+    props.push(("loc_next", _src_info.next.string()))
+    match _annotation
+    | let annotation': NodeWith[Annotation] =>
+      props.push(("annotation", annotation'.get_json()))
     end
+    _data.add_json_props(props)
+    if _error_sections.size() > 0 then
+      props.push(("error_sections", Nodes.get_json(_error_sections)))
+    end
+    if _pre_trivia.size() > 0 then
+      props.push(("pre_trivia", Nodes.get_json(_pre_trivia)))
+    end
+    if _doc_strings.size() > 0 then
+      props.push(("doc_strings", Nodes.get_json(_doc_strings)))
+    end
+    if _post_trivia.size() > 0 then
+      props.push(("post_trivia", Nodes.get_json(_post_trivia)))
+    end
+    json.Object(props)
 
   fun string(): String iso^ =>
     this.get_json().string()

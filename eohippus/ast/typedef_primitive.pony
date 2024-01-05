@@ -1,7 +1,5 @@
 use json = "../json"
 
-type Typedef is (TypedefPrimitive | TypedefAlias | TypedefClass)
-
 class val TypedefPrimitive is NodeData
   let identifier: NodeWith[Identifier]
 

@@ -12,42 +12,32 @@ class iso _TestJsonSubsumes is UnitTest
   fun exclusion_group(): String => "json"
 
   fun apply(h: TestHelper) =>
-    let seq =
-      recover val
-        json.Sequence([ "one"; F64(3.14) ])
-      end
+    let seq = json.Sequence([ as json.Item: "one"; F64(3.14) ])
 
-    let a =
-      recover val
-        json.Object(
-          [ ("a", seq)
-            ("b", "bravo") ])
-      end
+    let a = json.Object(
+      [ as (String, json.Item):
+        ("a", seq)
+        ("b", "bravo") ])
 
-    let d =
-      recover val
-        json.Object([ ("d", false) ])
-      end
+    let d = json.Object([ as (String, json.Item): ("d", false) ])
 
-    let b =
-      recover val
-        json.Object(
-          [ ("c", d)
-            ("a", seq)
-            ("b", "bravo") ])
-      end
+    let b = json.Object(
+      [ as (String, json.Item):
+        ("c", d)
+        ("a", seq)
+        ("b", "bravo") ])
 
     h.assert_true(json.Subsumes(a, b)._1, "a should subsume b")
     h.assert_false(json.Subsumes(a, d)._1, "a should not subsume d")
 
-    let one =
-      recover val
-        json.Object([ ("name", "LiteralFloat" ); ("value", I128(456)) ])
-      end
-    let two =
-      recover val
-        json.Object([ ("value", I128(456)); ("name", "LiteralFloat") ])
-      end
+    let one = json.Object(
+      [ as (String, json.Item):
+        ("name", "LiteralFloat" )
+        ("value", I128(456)) ])
+    let two = json.Object(
+      [ as (String, json.Item):
+        ("value", I128(456))
+        ("name", "LiteralFloat") ])
     h.assert_true(json.Subsumes(one, two)._1)
 
   class iso _TestJsonParse is UnitTest
@@ -82,24 +72,19 @@ class iso _TestJsonSubsumes is UnitTest
       _test(h, "\"foo\"", "foo")
       _test(h, "\"foo\tbar\"", "foo\tbar")
       _test(h, "\"foo\\ufffdbar\"", "foo\uFFFDbar")
-      _test(h, "{}", recover val json.Object end)
-      _test(h, "[]", recover val json.Sequence end)
+      _test(h, "{}", json.Object)
+      _test(h, "[]", json.Sequence)
 
-      let exp1 =
-        recover val
-          json.Object([ ("a", I128(123)) ])
-        end
+      let exp1 = json.Object([ as (String, json.Item): ("a", I128(123)) ])
       _test(h, """{ "a": 123 }""", exp1)
 
-      let seq2 = recover val json.Sequence([ I128(1); I128(2); I128(3) ]) end
-      let obj2 = recover val json.Object([ ("d", false) ]) end
-      let exp2 =
-        recover val
-          json.Object(
-            [ ("a", "str")
-              ("b", seq2)
-              ("c", obj2) ])
-        end
+      let seq2 = json.Sequence([ as json.Item: I128(1); I128(2); I128(3) ])
+      let obj2 = json.Object([ as (String, json.Item): ("d", false) ])
+      let exp2 = json.Object(
+        [ as (String, json.Item):
+          ("a", "str")
+          ("b", seq2)
+          ("c", obj2) ])
 
       let source2 =
         """

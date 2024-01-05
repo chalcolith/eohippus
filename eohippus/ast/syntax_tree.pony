@@ -18,8 +18,8 @@ class val SyntaxTree
     let jj = node.get_json()
     let name =
       match jj
-      | let obj: json.Object val =>
-        try obj("name")? as String else "?" end
+      | let obj: json.Object box =>
+        try obj("name")? as String box else "?" end
       | let str: Stringable =>
         str.string()
       end

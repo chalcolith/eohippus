@@ -6,13 +6,15 @@ primitive Subsumes
     match a
     | let a_obj: Object box => _obj_subsumes(a_obj, b, p)
     | let a_seq: Sequence box => _seq_subsumes(a_seq, b, p)
-    | let a_str: String => _str_subsumes(a_str, b, p)
-    | let a_int: I128 => _int_subsumes(a_int, b, p)
-    | let a_float: F64 => _float_subsumes(a_float, b, p)
-    | let a_bool: Bool => _bool_subsumes(a_bool, b, p)
+    | let a_str: String box => _str_subsumes(a_str, b, p)
+    | let a_int: I128 val => _int_subsumes(a_int, b, p)
+    | let a_float: F64 val => _float_subsumes(a_float, b, p)
+    | let a_bool: Bool val => _bool_subsumes(a_bool, b, p)
     end
 
-  fun _obj_subsumes(a_obj: Object box, b: Item, p: String): (Bool, String) =>
+  fun _obj_subsumes(a_obj: Object box, b: Item, p: String)
+    : (Bool, String)
+  =>
     match b
     | let b_obj: Object box =>
       for (key, a_val) in a_obj.pairs() do
@@ -30,7 +32,9 @@ primitive Subsumes
     end
     (false, "rhs at " + p + " is not an object")
 
-  fun _seq_subsumes(a_seq: Sequence box, b: Item, p: String): (Bool, String) =>
+  fun _seq_subsumes(a_seq: Sequence box, b: Item, p: String)
+    : (Bool, String)
+  =>
     match b
     | let b_seq: Sequence box =>
       if b_seq.size() < a_seq.size() then
@@ -51,9 +55,11 @@ primitive Subsumes
     end
     (false, "rhs at " + p + " is not a sequence")
 
-  fun _str_subsumes(a_str: String, b: Item, p: String): (Bool, String) =>
+  fun _str_subsumes(a_str: String box, b: Item, p: String)
+    : (Bool, String)
+  =>
     match b
-    | let b_str: String =>
+    | let b_str: String box =>
       if a_str == b_str then
         return (true, "")
       else
@@ -73,7 +79,9 @@ primitive Subsumes
     end
     (false, "rhs at " + p + " is not an integer")
 
-  fun _float_subsumes(a_float: F64, b: Item, p: String): (Bool, String) =>
+  fun _float_subsumes(a_float: F64, b: Item, p: String)
+    : (Bool, String)
+  =>
     match b
     | let b_float: F64 =>
       (let a_fr, let a_exp) = a_float.frexp()
@@ -87,7 +95,9 @@ primitive Subsumes
     end
     (false, "rhs at " + p + " is not a float")
 
-  fun _bool_subsumes(a_bool: Bool, b: Item, p: String): (Bool, String) =>
+  fun _bool_subsumes(a_bool: Bool, b: Item, p: String)
+    : (Bool, String)
+  =>
     match b
     | let b_bool: Bool =>
       if a_bool == b_bool then
