@@ -6,6 +6,10 @@ class val Annotation is NodeData
   new val create(identifiers': NodeSeqWith[Identifier]) =>
     identifiers = identifiers'
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    Annotation(
+      _child_seq_with[Identifier](identifiers, old_children, new_children)?)
+
   fun name(): String => "Annotation"
 
   fun add_json_props(props: Array[(String, json.Item)]) =>

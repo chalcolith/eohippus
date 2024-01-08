@@ -16,6 +16,12 @@ class val ExpWhile is NodeData
 
   fun name(): String => "ExpWhile"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    ExpWhile(
+      _child_with[Expression](condition, old_children, new_children)?,
+      _child_with[Expression](body, old_children, new_children)?,
+      _child_with_or_none[Expression](else_block, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("condition", condition.get_json()))
     props.push(("body", body.get_json()))

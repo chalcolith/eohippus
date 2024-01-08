@@ -8,6 +8,10 @@ class val MethodParams is NodeData
 
   fun name(): String => "MethodParams"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    MethodParams(
+      _child_seq_with[MethodParam](params, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
       props.push(("params", Nodes.get_json(params)))
@@ -28,6 +32,12 @@ class val MethodParam is NodeData
     initializer = initializer'
 
   fun name(): String => "MethodParam"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    MethodParam(
+      _child_with[Identifier](identifier, old_children, new_children)?,
+      _child_with_or_none[TypeType](constraint, old_children, new_children)?,
+      _child_with_or_none[Expression](initializer, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("identifier", identifier.get_json()))

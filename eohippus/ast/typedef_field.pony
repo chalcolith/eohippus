@@ -19,6 +19,13 @@ class val TypedefField is NodeData
 
   fun name(): String => "TypedefField"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    TypedefField(
+      _child_with[Keyword](kind, old_children, new_children)?,
+      _child_with[Identifier](identifier, old_children, new_children)?,
+      _child_with_or_none[TypeType](type_type, old_children, new_children)?,
+      _child_with_or_none[Expression](value, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("kind", kind.get_json()))
     props.push(("identifier", identifier.get_json()))

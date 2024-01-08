@@ -1,47 +1,107 @@
-use json = "../json"
+use "itertools"
+
 use parser = "../parser"
+use ".."
 
-class val SyntaxTree
-  let root: Node
-  let line_beginnings: Array[parser.Loc]
+class SyntaxTree
+  var _root: Node
+  var _line_beginnings: Array[parser.Loc]
 
-  new val create(root': Node) =>
-    root = root'
-    line_beginnings = Array[parser.Loc]
-    _get_line_beginnings(root', line_beginnings, true)
+  new create(root': Node) =>
+    _root = root'
+    _line_beginnings = Array[parser.Loc]
 
-  fun tag _get_line_beginnings(
+  fun root(): Node => _root
+
+  fun line_beginnings(): Array[parser.Loc] box => _line_beginnings
+
+  fun ref set_line_info() =>
+    let state = _SetLineState(
+      _line_beginnings,
+      _root.src_info().locator,
+      _root.src_info().start.segment(),
+      1,
+      1
+    )
+    _root = _set_line_info(_root, None, state)
+
+  fun ref _set_line_info(
     node: Node,
-    arr: Array[parser.Loc],
-    need_first: Bool)
+    parent: (Node | None),
+    state: _SetLineState)
+    : Node
   =>
-    let jj = node.get_json()
-    let name =
-      match jj
-      | let obj: json.Object box =>
-        try obj("name")? as String box else "?" end
-      | let str: Stringable =>
-        str.string()
-      end
-    let text = jj.string()
+    // reset state if necessary
+    if node.src_info().locator != state.locator then
+      state.locator = node.src_info().locator
+      state.segment = node.src_info().start.segment()
+      state.line = 1
+      state.column = 1
+    elseif node.src_info().start.segment() isnt state.segment then
+      state.segment = node.src_info().start.segment()
+    end
 
-    let src_info = node.src_info()
-    let num_children = node.children().size()
+    // record line and column
+    let line = state.line
+    let column = state.column
 
+    // check for line and column changes
     match node
     | let eol: NodeWith[Trivia] if eol.data().kind is EndOfLineTrivia =>
-      if need_first then
-        arr.push(node.src_info().start)
+      if state.lines.size() == 0 then
+        state.lines.push(node.src_info().start)
       end
-      arr.push(eol.src_info().next)
+      state.lines.push(node.src_info().next)
+
+      state.line = state.line + 1
+      state.column = 1
     else
-      if need_first and (node.children().size() == 0) then
-        arr.push(node.src_info().start)
+      if (state.lines.size() == 0) and (node.children().size() == 0) then
+        state.lines.push(node.src_info().start)
       end
 
-      var i: USize = 0
-      for child in node.children().values() do
-        _get_line_beginnings(child, arr, need_first and (i == 0))
-        i = i + 1
+      if node.children().size() == 0 then
+        state.column = state.column + node.src_info().length()
       end
     end
+
+    // collect children
+    let new_children: Array[Node] trn =
+      Array[Node](node.children().size())
+    for child in node.children().values() do
+      new_children.push(_set_line_info(child, node, state))
+    end
+    let new_src_info = SrcInfo.from(node.src_info()
+      where line' = line, column' = column)
+
+    try
+      node.clone(
+        where
+          src_info' = new_src_info,
+          old_children' = node.children(),
+          new_children' = consume new_children)?
+    else
+      let message = ErrorMsg.internal_ast_pass_clone()
+      NodeWith[ErrorSection](
+        new_src_info, node.children(), ErrorSection(message))
+    end
+
+class _SetLineState
+  let lines: Array[parser.Loc]
+  var locator: parser.Locator
+  var segment: parser.Segment
+  var line: USize
+  var column: USize
+
+  new create(
+    lines': Array[parser.Loc],
+    locator': parser.Locator,
+    segment': parser.Segment,
+    line': USize,
+    column': USize)
+  =>
+    lines = lines'
+    locator = locator'
+    segment = segment'
+    line = line'
+    column = column'

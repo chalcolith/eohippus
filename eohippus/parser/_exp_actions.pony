@@ -30,8 +30,8 @@ primitive _ExpActions
 
     if expressions.size() == 1 then
       try
-        let value = ast.NodeWith[ast.Expression].with_annotation(
-          expressions(0)?, ann')
+        let value = ast.NodeWith[ast.Expression].from(expressions(0)?
+          where annotation' = ann')
         return (value, b)
       end
     end

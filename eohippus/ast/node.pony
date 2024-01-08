@@ -4,6 +4,17 @@ use json = "../json"
 use types = "../types"
 
 trait val Node
+  fun val clone(
+    src_info': (SrcInfo | None) = None,
+    old_children': (NodeSeq | None) = None,
+    new_children': (NodeSeq | None) = None,
+    data': (NodeData | None) = None,
+    annotation': (NodeWith[Annotation] | None) = None,
+    doc_strings': (NodeSeqWith[DocString] | None) = None,
+    pre_trivia': (NodeSeqWith[Trivia] | None) = None,
+    post_trivia': (NodeSeqWith[Trivia] | None) = None,
+    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
+    ast_type': (types.AstType | None) = None): Node ?
   fun src_info(): SrcInfo
   fun children(): NodeSeq
   fun annotation(): (NodeWith[Annotation] | None)
@@ -91,19 +102,98 @@ class val NodeWith[D: NodeData val] is Node
       end
     _ast_type = ast_type'
 
-  new val with_annotation(
+  new val from(
     orig: NodeWith[D],
-    ann: (NodeWith[Annotation] | None))
+    src_info': (SrcInfo | None) = None,
+    children': (NodeSeq | None) = None,
+    data': (NodeData | None) = None,
+    annotation': (NodeWith[Annotation] | None) = None,
+    doc_strings': (NodeSeqWith[DocString] | None) = None,
+    pre_trivia': (NodeSeqWith[Trivia] | None) = None,
+    post_trivia': (NodeSeqWith[Trivia] | None) = None,
+    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
+    ast_type': (types.AstType | None) = None)
   =>
-    _src_info = orig._src_info
-    _children = orig._children
-    _data = orig._data
-    _annotation = ann
-    _doc_strings = orig._doc_strings
-    _pre_trivia = orig._pre_trivia
-    _post_trivia = orig._post_trivia
-    _error_sections = orig._error_sections
-    _ast_type = orig._ast_type
+    _src_info =
+      match src_info'
+      | let si: SrcInfo => si
+      else orig._src_info
+      end
+    _children =
+      match children'
+      | let ch: NodeSeq => ch
+      else orig._children
+      end
+    _data =
+      match data'
+      | let d: D => d
+      else orig._data
+      end
+    _annotation =
+      match annotation'
+      | let an: NodeWith[Annotation] => an
+      else orig._annotation
+      end
+    _doc_strings =
+      match doc_strings'
+      | let ds: NodeSeqWith[DocString] => ds
+      else orig._doc_strings
+      end
+    _pre_trivia =
+      match pre_trivia'
+      | let pt: NodeSeqWith[Trivia] => pt
+      else orig._pre_trivia
+      end
+    _post_trivia =
+      match post_trivia'
+      | let pt: NodeSeqWith[Trivia] => pt
+      else orig._post_trivia
+      end
+    _error_sections =
+      match error_sections'
+      | let es: NodeSeqWith[ErrorSection] => es
+      else orig._error_sections
+      end
+    _ast_type =
+      match ast_type'
+      | let at: types.AstType => at
+      else orig._ast_type
+      end
+
+  fun val clone(
+    src_info': (SrcInfo | None) = None,
+    old_children': (NodeSeq | None) = None,
+    new_children': (NodeSeq | None) = None,
+    data': (NodeData | None) = None,
+    annotation': (NodeWith[Annotation] | None) = None,
+    doc_strings': (NodeSeqWith[DocString] | None) = None,
+    pre_trivia': (NodeSeqWith[Trivia] | None) = None,
+    post_trivia': (NodeSeqWith[Trivia] | None) = None,
+    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
+    ast_type': (types.AstType | None) = None): Node ?
+  =>
+    let data'' =
+      match data'
+      | let d: NodeData =>
+        d as D
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          _data.clone(oc, nc)? as D
+        end
+      end
+
+    NodeWith[D].from(
+      this,
+      src_info',
+      new_children',
+      data'',
+      annotation',
+      doc_strings',
+      pre_trivia',
+      post_trivia',
+      error_sections',
+      ast_type')
 
   fun src_info(): SrcInfo => _src_info
 

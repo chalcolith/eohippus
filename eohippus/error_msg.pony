@@ -2,6 +2,9 @@ primitive ErrorMsg
   fun tag internal_ast_node_not_bound(name: String): String =>
     "internal error: no AST node bound: " + name
 
+  fun tag internal_ast_pass_clone(): String =>
+    "internal error: invalid node_data when cloning"
+
   fun tag literal_integer_hex_empty(): String =>
     "you must supply some hexadecimal digits here"
 

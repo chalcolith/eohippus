@@ -3,10 +3,13 @@ use json = "../json"
 class val TypeParams is NodeData
   let params: NodeSeqWith[TypeParam]
 
-  new create(params': NodeSeqWith[TypeParam]) =>
+  new val create(params': NodeSeqWith[TypeParam]) =>
     params = params'
 
   fun name(): String => "TypeParams"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    TypeParams(_child_seq_with[TypeParam](params, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
@@ -18,7 +21,7 @@ class val TypeParam is NodeData
   let constraint: (NodeWith[TypeType] | None)
   let initializer: (NodeWith[TypeType] | None)
 
-  new create(
+  new val create(
     identifier': (NodeWith[Identifier] | None),
     constraint': (NodeWith[TypeType] | None),
     initializer': (NodeWith[TypeType] | None))
@@ -28,6 +31,12 @@ class val TypeParam is NodeData
     initializer = initializer'
 
   fun name(): String => "TypeParam"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    TypeParam(
+      _child_with_or_none[Identifier](identifier, old_children, new_children)?,
+      _child_with_or_none[TypeType](constraint, old_children, new_children)?,
+      _child_with_or_none[TypeType](initializer, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     match identifier

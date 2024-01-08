@@ -22,6 +22,12 @@ class val ExpIf is NodeData
 
   fun name(): String => "ExpIf"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    ExpIf(
+      kind,
+      _child_seq_with[IfCondition](conditions, old_children, new_children)?,
+      _child_with_or_none[Expression](else_block, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
@@ -48,6 +54,11 @@ class val IfCondition is NodeData
     then_block = then_block'
 
   fun name(): String => "IfCondition"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    IfCondition(
+      _child_with[Expression](if_true, old_children, new_children)?,
+      _child_with[Expression](then_block, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("if_true", if_true.get_json()))

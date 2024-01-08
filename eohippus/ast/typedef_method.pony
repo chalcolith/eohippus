@@ -34,6 +34,18 @@ class val TypedefMethod is NodeData
 
   fun name(): String => "TypedefMethod"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    TypedefMethod(
+      _child_with[Keyword](kind, old_children, new_children)?,
+      _child_with_or_none[Keyword](cap, old_children, new_children)?,
+      raw,
+      _child_with[Identifier](identifier, old_children, new_children)?,
+      _child_with_or_none[TypeParams](type_params, old_children, new_children)?,
+      _child_with_or_none[MethodParams](params, old_children, new_children)?,
+      _child_with_or_none[TypeType](return_type, old_children, new_children)?,
+      partial,
+      _child_with_or_none[Expression](body, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("kind", kind.get_json()))
     match cap

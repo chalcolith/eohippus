@@ -22,6 +22,9 @@ class val Trivia is NodeData
 
   fun name(): String => "Trivia"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+    this
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind

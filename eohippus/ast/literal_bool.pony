@@ -15,6 +15,9 @@ class val LiteralBool is NodeDataWithValue[Bool]
 
   fun name(): String => "LiteralBool"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+    this
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("value", _value))
 

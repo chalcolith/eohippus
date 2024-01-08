@@ -16,18 +16,18 @@ primitive _Build
   fun value_or_none(b: Bindings, v: Variable, r: Success): (ast.Node | None) =>
     try b.values(v, r)?(0)? end
 
-  fun value_with[N: ast.NodeData val](b: Bindings, v: Variable, r: Success)
-    : ast.NodeWith[N] ?
+  fun value_with[D: ast.NodeData val](b: Bindings, v: Variable, r: Success)
+    : ast.NodeWith[D] ?
   =>
-    b.values(v, r)?(0)? as ast.NodeWith[N]
+    b.values(v, r)?(0)? as ast.NodeWith[D]
 
-  fun value_with_or_none[N: ast.NodeData val](
+  fun value_with_or_none[D: ast.NodeData val](
     b: Bindings,
     v: Variable,
     r: Success)
-    : (ast.NodeWith[N] | None)
+    : (ast.NodeWith[D] | None)
   =>
-    try b.values(v, r)?(0)? as ast.NodeWith[N] end
+    try b.values(v, r)?(0)? as ast.NodeWith[D] end
 
   fun values(b: Bindings, v: Variable, r: Success) : ast.NodeSeq =>
     try
@@ -36,8 +36,8 @@ primitive _Build
       []
     end
 
-  fun values_with[N: ast.NodeData val](b: Bindings, v: Variable, r: Success)
-    : ast.NodeSeqWith[N]
+  fun values_with[D: ast.NodeData val](b: Bindings, v: Variable, r: Success)
+    : ast.NodeSeqWith[D]
   =>
     try
       let vs = b.values(v, r)?
@@ -47,34 +47,34 @@ primitive _Build
         str.clear()
       end
 
-      nodes_with[N](vs)
+      nodes_with[D](vs)
     else
       []
     end
 
-  fun nodes_with[N: ast.NodeData val](c: ast.NodeSeq)
-    : ast.NodeSeqWith[N]
+  fun nodes_with[D: ast.NodeData val](c: ast.NodeSeq)
+    : ast.NodeSeqWith[D]
   =>
     recover val
-      Array[ast.NodeWith[N]](c.size()) .> concat(
+      Array[ast.NodeWith[D]](c.size()) .> concat(
         Iter[ast.Node](c.values())
-          .filter_map[ast.NodeWith[N]](
-            {(n) => try n as ast.NodeWith[N] end }))
+          .filter_map[ast.NodeWith[D]](
+            {(n) => try n as ast.NodeWith[D] end }))
     end
 
-  fun values_and_errors[N: ast.NodeData val](
+  fun values_and_errors[D: ast.NodeData val](
     b: Bindings,
     v: Variable,
     r: Success,
     e: Array[ast.NodeWith[ast.ErrorSection]] ref)
-    : ast.NodeSeqWith[N]
+    : ast.NodeSeqWith[D]
   =>
-    let rvals: Array[ast.NodeWith[N]] trn = Array[ast.NodeWith[N]]()
+    let rvals: Array[ast.NodeWith[D]] trn = Array[ast.NodeWith[D]]()
     try
       let vvals = b.values(v, r)?
       for vval in vvals.values() do
         match vval
-        | let node: ast.NodeWith[N] =>
+        | let node: ast.NodeWith[D] =>
           rvals.push(node)
         | let err: ast.NodeWith[ast.ErrorSection] =>
           e.push(err)
@@ -83,11 +83,11 @@ primitive _Build
     end
     consume rvals
 
-  fun with_post[T: ast.NodeData val](
+  fun with_post[D: ast.NodeData val](
     body: RuleNode box,
     post: RuleNode box,
     action:
-      {(Data, Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[T])
+      {(Data, Success, ast.NodeSeq, Bindings, ast.NodeSeqWith[D])
         : ((ast.Node | None), Bindings)} val)
     : RuleNode
   =>
@@ -95,7 +95,7 @@ primitive _Build
     Conj(
       [ body; Bind(p, Ques(post)) ],
       {(d, r, c, b) =>
-        action(d, r, c, b, _Build.values_with[T](b, p, r))
+        action(d, r, c, b, _Build.values_with[D](b, p, r))
       })
 
   fun span_and_post(si: ast.SrcInfo, c: ast.NodeSeq, p: ast.NodeSeq)

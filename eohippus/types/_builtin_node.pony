@@ -12,5 +12,10 @@ class val _BuiltinNode is ast.NodeData
 
   fun name(): String => "_Builtin_" + _name
 
+  fun val clone(old_children: ast.NodeSeq, new_children: ast.NodeSeq)
+    : ast.NodeData
+  =>
+    this
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     None

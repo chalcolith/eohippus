@@ -37,6 +37,19 @@ class val ExpLambda is NodeData
 
   fun name(): String => "ExpLambda"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    ExpLambda(
+      bare,
+      _child_with_or_none[Keyword](this_cap, old_children, new_children)?,
+      _child_with_or_none[Identifier](identifier, old_children, new_children)?,
+      _child_with_or_none[TypeParams](type_params, old_children, new_children)?,
+      _child_with[MethodParams](params, old_children, new_children)?,
+      _child_with_or_none[MethodParams](captures, old_children, new_children)?,
+      _child_with_or_none[TypeType](ret_type, old_children, new_children)?,
+      partial,
+      _child_with[Expression](body, old_children, new_children)?,
+      _child_with_or_none[Keyword](ref_cap, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if bare then
       props.push(("bare", bare))

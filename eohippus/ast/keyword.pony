@@ -73,5 +73,8 @@ class val Keyword is NodeData
 
   fun name(): String => "Keyword"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+    this
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("string", string))

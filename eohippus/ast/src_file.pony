@@ -6,7 +6,7 @@ class val SrcFile is NodeData
   let usings: NodeSeqWith[Using]
   let type_defs: NodeSeqWith[Typedef]
 
-  new create(
+  new val create(
     locator': parser.Locator,
     usings': NodeSeqWith[Using],
     type_defs': NodeSeqWith[Typedef])
@@ -16,6 +16,12 @@ class val SrcFile is NodeData
     type_defs = type_defs'
 
   fun name(): String => "SrcFile"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    SrcFile(
+      locator,
+      _child_seq_with[Using](usings, old_children, new_children)?,
+      _child_seq_with[Typedef](type_defs, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("locator", locator))

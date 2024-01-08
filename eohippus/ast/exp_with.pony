@@ -13,6 +13,11 @@ class val ExpWith is NodeData
 
   fun name(): String => "ExpWith"
 
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    ExpWith(
+      _child_seq_with[WithElement](elements, old_children, new_children)?,
+      _child_with[Expression](body, old_children, new_children)?)
+
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if elements.size() > 0 then
       props.push(("elements", Nodes.get_json(elements)))
@@ -31,6 +36,11 @@ class val WithElement is NodeData
     body = body'
 
   fun name(): String => "WithElement"
+
+  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+    WithElement(
+      _child_with[TuplePattern](pattern, old_children, new_children)?,
+      _child_with[Expression](body, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("pattern", pattern.get_json()))
