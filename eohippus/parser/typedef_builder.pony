@@ -192,7 +192,7 @@ class TypedefBuilder
               Disj(
                 [ field
                   error_section(
-                    [ field; method; kwd_end ],
+                    [ field; method; kwd_end; typedef ],
                     ErrorMsg.src_file_expected_field_or_method())
                 ])))
           Bind(
@@ -201,7 +201,7 @@ class TypedefBuilder
               Disj(
                 [ method
                   error_section(
-                    [ method; kwd_end ],
+                    [ method; kwd_end; typedef ],
                     ErrorMsg.src_file_expected_method())
                 ])))
         ]),
