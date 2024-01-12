@@ -1,5 +1,6 @@
 use "itertools"
 
+use json = "../json"
 use parser = "../parser"
 use ".."
 
@@ -21,8 +22,7 @@ class SyntaxTree
       _root.src_info().locator,
       _root.src_info().start.segment(),
       1,
-      1
-    )
+      1)
     _root = _set_line_info(_root, None, state)
 
   fun ref _set_line_info(
@@ -56,35 +56,41 @@ class SyntaxTree
       state.line = state.line + 1
       state.column = 1
     else
-      if (state.lines.size() == 0) and (node.children().size() == 0) then
-        state.lines.push(node.src_info().start)
-      end
-
       if node.children().size() == 0 then
+        if state.lines.size() == 0 then
+          state.lines.push(node.src_info().start)
+        end
         state.column = state.column + node.src_info().length()
       end
     end
 
     // collect children
-    let new_children: Array[Node] trn =
-      Array[Node](node.children().size())
-    for child in node.children().values() do
-      new_children.push(_set_line_info(child, node, state))
-    end
     let new_src_info = SrcInfo.from(node.src_info()
       where line' = line, column' = column)
 
-    try
-      node.clone(
-        where
-          src_info' = new_src_info,
-          old_children' = node.children(),
-          new_children' = consume new_children)?
-    else
-      let message = ErrorMsg.internal_ast_pass_clone()
-      NodeWith[ErrorSection](
-        new_src_info, node.children(), ErrorSection(message))
-    end
+    let new_node =
+      try
+        if node.children().size() == 0 then
+          node.clone(where src_info' = new_src_info)?
+        else
+          let new_children: Array[Node] trn =
+            Array[Node](node.children().size())
+          for child in node.children().values() do
+            new_children.push(_set_line_info(child, node, state))
+          end
+
+          node.clone(
+            where
+              src_info' = new_src_info,
+              old_children' = node.children(),
+              new_children' = consume new_children)?
+        end
+      else
+        let message = ErrorMsg.internal_ast_pass_clone()
+        NodeWith[ErrorSection](
+          new_src_info, node.children(), ErrorSection(message))
+      end
+    new_node
 
 class _SetLineState
   let lines: Array[parser.Loc]

@@ -30,13 +30,13 @@ class val TypedefClass is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     TypedefClass(
-      _child_with[Keyword](kind, old_children, new_children)?,
+      NodeChild.child_with[Keyword](kind, old_children, new_children)?,
       raw,
-      _child_with_or_none[Keyword](cap, old_children, new_children)?,
-      _child_with[Identifier](identifier, old_children, new_children)?,
-      _child_with_or_none[TypeParams](type_params, old_children, new_children)?,
-      _child_with_or_none[TypeType](constraint, old_children, new_children)?,
-      _child_with_or_none[TypedefMembers](members, old_children, new_children)?)
+      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
+      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
+      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
+      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
+      NodeChild.with_or_none[TypedefMembers](members, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("kind", kind.get_json()))

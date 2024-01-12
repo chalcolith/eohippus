@@ -16,8 +16,8 @@ class val CallArgs is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     CallArgs(
-      _child_seq_with[Expression](pos, old_children, new_children)?,
-      _child_seq_with[Expression](named, old_children, new_children)?)
+      NodeChild.seq_with[Expression](pos, old_children, new_children)?,
+      NodeChild.seq_with[Expression](named, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     if pos.size() > 0 then

@@ -9,7 +9,7 @@ class val TypeTuple is NodeData
   fun name(): String => "TypeTuple"
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeTuple(_child_seq_with[TypeType](types, old_children, new_children)?)
+    TypeTuple(NodeChild.seq_with[TypeType](types, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("types", Nodes.get_json(types)))

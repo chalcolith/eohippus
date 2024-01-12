@@ -18,9 +18,9 @@ class val ExpFor is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     ExpFor(
-      _child_with[TuplePattern](pattern, old_children, new_children)?,
-      _child_with[Expression](body, old_children, new_children)?,
-      _child_with_or_none[Expression](else_block, old_children, new_children)?)
+      NodeChild.child_with[TuplePattern](pattern, old_children, new_children)?,
+      NodeChild.child_with[Expression](body, old_children, new_children)?,
+      NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("pattern", pattern.get_json()))

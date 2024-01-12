@@ -85,8 +85,12 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let st = ast.SyntaxTree(v(0)?)
+            let root = v(0)?
+
+            let st = ast.SyntaxTree(root)
+            let old_json = st.root().get_json().string()
             st.set_line_info()
+            let new_json = st.root().get_json().string()
 
             let src_file = st.root() as ast.NodeWith[ast.SrcFile]
             h.assert_eq[USize](1, src_file.src_info().line, "starting line")
@@ -97,7 +101,8 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
             h.assert_eq[USize](1, a.src_info().line, "A line")
             h.assert_eq[USize](1, a.src_info().column, "A col")
 
-            let m = (a.data() as ast.TypedefClass).members
+            let c = a.data() as ast.TypedefClass
+            let m = c.members
               as ast.NodeWith[ast.TypedefMembers]
             let nc = m.data().methods(0)?
             let nc_id = nc.data().identifier
@@ -109,7 +114,7 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
             h.assert_eq[USize](3, b_id.src_info().line, "B line")
             h.assert_eq[USize](11, b_id.src_info().column, "B col")
           else
-            h.fail("parse tree is the wrong shape")
+            h.fail("error in parse tree")
           end
         | let failure: parser.Failure =>
           h.fail(failure.get_message())

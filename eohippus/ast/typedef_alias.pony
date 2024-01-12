@@ -18,9 +18,9 @@ class val TypedefAlias is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     TypedefAlias(
-      _child_with[Identifier](identifier, old_children, new_children)?,
-      _child_with_or_none[TypeParams](type_params, old_children, new_children)?,
-      _child_with[TypeType](type_type, old_children, new_children)?)
+      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
+      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
+      NodeChild.child_with[TypeType](type_type, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("identifier", identifier.get_json()))

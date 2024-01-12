@@ -15,8 +15,8 @@ class val ExpJump is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     ExpJump(
-      _child_with[Keyword](keyword, old_children, new_children)?,
-      _child_with_or_none[Expression](rhs, old_children, new_children)?)
+      NodeChild.child_with[Keyword](keyword, old_children, new_children)?,
+      NodeChild.with_or_none[Expression](rhs, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("keyword", keyword.get_json()))

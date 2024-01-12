@@ -21,10 +21,10 @@ class val ExpFfi is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     ExpFfi(
-      _child(identifier, old_children, new_children)?
+      NodeChild(identifier, old_children, new_children)?
         as (NodeWith[Identifier] | NodeWith[LiteralString]),
-      _child_with_or_none[TypeArgs](type_args, old_children, new_children)?,
-      _child_with[CallArgs](call_args, old_children, new_children)?,
+      NodeChild.with_or_none[TypeArgs](type_args, old_children, new_children)?,
+      NodeChild.child_with[CallArgs](call_args, old_children, new_children)?,
       partial)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>

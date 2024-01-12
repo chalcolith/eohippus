@@ -8,7 +8,7 @@ class val Annotation is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     Annotation(
-      _child_seq_with[Identifier](identifiers, old_children, new_children)?)
+      NodeChild.seq_with[Identifier](identifiers, old_children, new_children)?)
 
   fun name(): String => "Annotation"
 

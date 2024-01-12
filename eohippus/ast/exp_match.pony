@@ -18,9 +18,9 @@ class val ExpMatch is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     ExpMatch(
-      _child_with[Expression](expression, old_children, new_children)?,
-      _child_seq_with[MatchCase](cases, old_children, new_children)?,
-      _child_with_or_none[Expression](else_block, old_children, new_children)?)
+      NodeChild.child_with[Expression](expression, old_children, new_children)?,
+      NodeChild.seq_with[MatchCase](cases, old_children, new_children)?,
+      NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("expression", expression.get_json()))
@@ -50,9 +50,9 @@ class val MatchCase is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     MatchCase(
-      _child_with[Expression](pattern, old_children, new_children)?,
-      _child_with_or_none[Expression](condition, old_children, new_children)?,
-      _child_with[Expression](body, old_children, new_children)?)
+      NodeChild.child_with[Expression](pattern, old_children, new_children)?,
+      NodeChild.with_or_none[Expression](condition, old_children, new_children)?,
+      NodeChild.child_with[Expression](body, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("pattern", pattern.get_json()))

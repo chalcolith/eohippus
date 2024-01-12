@@ -12,8 +12,8 @@ class val TypeArrow is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     TypeArrow(
-      _child(lhs, old_children, new_children)?,
-      _child_with_or_none[TypeType](rhs, old_children, new_children)?)
+      NodeChild(lhs, old_children, new_children)?,
+      NodeChild.with_or_none[TypeType](rhs, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("lhs", lhs.get_json()))

@@ -9,7 +9,7 @@ class val TypeAtom is NodeData
   fun name(): String => "TypeAtom"
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeAtom(_child(body, old_children, new_children)?)
+    TypeAtom(NodeChild(body, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("body", body.get_json()))

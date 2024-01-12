@@ -39,14 +39,14 @@ class val TypeLambda is NodeData
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     TypeLambda(
       bare,
-      _child_with_or_none[Keyword](cap, old_children, new_children)?,
-      _child_with_or_none[Identifier](identifier, old_children, new_children)?,
-      _child_with_or_none[TypeParams](type_params, old_children, new_children)?,
-      _child_seq_with[TypeType](param_types, old_children, new_children)?,
-      _child_with_or_none[TypeType](return_type, old_children, new_children)?,
+      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
+      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
+      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
+      NodeChild.seq_with[TypeType](param_types, old_children, new_children)?,
+      NodeChild.with_or_none[TypeType](return_type, old_children, new_children)?,
       partial,
-      _child_with_or_none[Keyword](rcap, old_children, new_children)?,
-      _child_with_or_none[Token](reph, old_children, new_children)?)
+      NodeChild.with_or_none[Keyword](rcap, old_children, new_children)?,
+      NodeChild.with_or_none[Token](reph, old_children, new_children)?)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
     props.push(("bare", bare))

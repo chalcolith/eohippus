@@ -15,6 +15,7 @@ trait val Node
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None): Node ?
+  fun name(): String
   fun src_info(): SrcInfo
   fun children(): NodeSeq
   fun annotation(): (NodeWith[Annotation] | None)
@@ -182,18 +183,70 @@ class val NodeWith[D: NodeData val] is Node
           _data.clone(oc, nc)? as D
         end
       end
+    let annotation'' =
+      match annotation'
+      | let a: NodeWith[Annotation] =>
+        a
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          NodeChild.with_or_none[Annotation](_annotation, oc, nc)?
+        end
+      end
+    let doc_strings'' =
+      match doc_strings'
+      | let ds: NodeSeqWith[DocString] =>
+        ds
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          NodeChild.seq_with[DocString](_doc_strings, oc, nc)?
+        end
+      end
+    let pre_trivia'' =
+      match pre_trivia'
+      | let pt: NodeSeqWith[Trivia] =>
+        pt
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          NodeChild.seq_with[Trivia](_pre_trivia, oc, nc)?
+        end
+      end
+    let post_trivia'' =
+      match post_trivia'
+      | let pt: NodeSeqWith[Trivia] =>
+        pt
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          NodeChild.seq_with[Trivia](_post_trivia, oc, nc)?
+        end
+      end
+    let error_sections'' =
+      match error_sections'
+      | let es: NodeSeqWith[ErrorSection] =>
+        es
+      else
+        match (old_children', new_children')
+        | (let oc: NodeSeq, let nc: NodeSeq) =>
+          NodeChild.seq_with[ErrorSection](_error_sections, oc, nc)?
+        end
+      end
 
     NodeWith[D].from(
       this,
       src_info',
       new_children',
       data'',
-      annotation',
-      doc_strings',
-      pre_trivia',
-      post_trivia',
-      error_sections',
+      annotation'',
+      doc_strings'',
+      pre_trivia'',
+      post_trivia'',
+      error_sections'',
       ast_type')
+
+  fun name(): String => _data.name()
 
   fun src_info(): SrcInfo => _src_info
 
@@ -215,6 +268,11 @@ class val NodeWith[D: NodeData val] is Node
 
   fun get_json(): json.Item =>
     let props = [ as (String, json.Item): ("name", _data.name()) ]
+    let si = json.Object(
+      [ as (String, json.Item):
+        ("line", I128.from[USize](_src_info.line))
+        ("column", I128.from[USize](_src_info.column)) ])
+    props.push(("src_info", si))
     props.push(("loc_start", _src_info.start.string()))
     props.push(("loc_next", _src_info.next.string()))
     match _annotation

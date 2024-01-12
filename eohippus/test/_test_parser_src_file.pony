@@ -285,7 +285,15 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
           "type_defs": [
             {
               "name": "TypedefClass",
-              "identifier": { "string": "A" }
+              "identifier": { "string": "A" },
+              "members": {
+                "methods": [
+                  {
+                    "name": "TypedefMethod",
+                    "identifier": { "string": "create" }
+                  }
+                ]
+              }
             },
             {
               "name": "TypedefClass",

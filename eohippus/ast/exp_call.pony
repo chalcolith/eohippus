@@ -17,8 +17,8 @@ class val ExpCall is NodeData
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     ExpCall(
-      _child_with[Expression](lhs, old_children, new_children)?,
-      _child_with[CallArgs](args, old_children, new_children)?,
+      NodeChild.child_with[Expression](lhs, old_children, new_children)?,
+      NodeChild.child_with[CallArgs](args, old_children, new_children)?,
       partial)
 
   fun add_json_props(props: Array[(String, json.Item)]) =>
