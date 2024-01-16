@@ -30,23 +30,22 @@ class iso _TestSyntaxTreeLineBeginnings is UnitTest
             h.assert_eq[USize](1, v.size(), "should have one result value")
           then
             try
-              let root = v(0)?
-              let st = ast.SyntaxTree(root)
-              st.set_line_info()
+              let old_root = v(0)?
+              (_, let line_beginnings) = ast.SyntaxTree.set_line_info(old_root)
 
               succeeded = succeeded and
                 h.assert_eq[USize](
-                  4, st.line_beginnings().size(), "bad # of lines")
+                  4, line_beginnings.size(), "bad # of lines")
 
-              var pos = st.line_beginnings()(0)?.index()
+              var pos = line_beginnings(0)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](0, pos, "wrong pos for line 1")
 
-              pos = st.line_beginnings()(1)?.index()
+              pos = line_beginnings(1)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](8, pos, "wrong pos for line 2")
 
-              pos = st.line_beginnings()(2)?.index()
+              pos = line_beginnings(2)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](20, pos, "wrong pos for line 3")
             else
@@ -85,14 +84,10 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let root = v(0)?
+            let old_root = v(0)?
+            (let new_root, _) = ast.SyntaxTree.set_line_info(old_root)
 
-            let st = ast.SyntaxTree(root)
-            let old_json = st.root().get_json().string()
-            st.set_line_info()
-            let new_json = st.root().get_json().string()
-
-            let src_file = st.root() as ast.NodeWith[ast.SrcFile]
+            let src_file = new_root as ast.NodeWith[ast.SrcFile]
             h.assert_eq[USize](1, src_file.src_info().line, "starting line")
             h.assert_eq[USize](1, src_file.src_info().column, "starting col")
             h.assert_eq[USize](2, src_file.data().type_defs.size(), "# types")
