@@ -1,7 +1,18 @@
 
 primitive Parse
   fun apply(str: String): (Item | ParseError) =>
-    _Parser(str).parse()
+    let parser = Parser
+    for ch in str.values() do
+      match parser.parse_char(ch)
+      | let item: (Item | ParseError) =>
+        return item
+      end
+    end
+    match parser.parse_char(0)
+    | let item: (Item | ParseError) =>
+      return item
+    end
+    ParseError(str.size(), "unknown error")
 
 class ParseError
   let index: USize
@@ -21,6 +32,8 @@ primitive _InEscape
 primitive _InInt
 primitive _InFrac
 primitive _InExp
+primitive _InTrue
+primitive _InFalse
 
 type _ParseState is
   ( _ExpectItem
@@ -32,7 +45,9 @@ type _ParseState is
   | _InEscape
   | _InInt
   | _InFrac
-  | _InExp )
+  | _InExp
+  | _InTrue
+  | _InFalse )
 
 type _TempItem is
   ( Object trn
@@ -54,71 +69,102 @@ type _TrnItem is
   | F64
   | Bool )
 
-class _Parser
+class Parser
   let _ten: F64 = 10.0
-  let _str: String
   let _value_stack: Array[_TempItem] = _value_stack.create()
   var _state: _ParseState = _ExpectItem
   var _index: USize = 0
+  var _depth: ISize = 0
+  var _bool_count: USize = 0
   var _ch: U8 = 0
   var _expect_hex: USize = 0
 
-  new create(str: String) =>
-    _str = str
+  new create() =>
+    None
 
-  fun ref parse(): (Item | ParseError) =>
+  fun ref reset() =>
+    _value_stack.clear()
+    _state = _ExpectItem
+    _index = 0
+    _depth = 0
+    _bool_count = 0
+    _expect_hex = 0
+
+  fun ref parse_char(ch: U8): (Item | ParseError | None) =>
+    _ch = ch
     try
-      let str_size = _str.size()
-      while _index < str_size do
-        _ch = _str(_index)?
-        let possible_error =
-          match _state
-          | _ExpectItem => _handle_expect_item()?
-          | _ExpectName => _handle_expect_name()?
-          | _InInt => _handle_in_int()?
-          | _InFrac => _handle_in_frac()?
-          | _InExp => _handle_in_exp()?
-          | _InString => _handle_in_string(false)?
-          | _InEscape => _handle_in_escape()?
-          | _InName => _handle_in_string(true)?
-          | _ExpectColon => _handle_expect_colon()
-          | _ExpectComma => _handle_expect_comma()?
+      let possible_error =
+        match _state
+        | _ExpectItem =>
+          if _is_ws(ch) and (_depth == 0) then
+            _index = _index + 1
+            return None
           end
-        match possible_error
-        | let pe: ParseError => return pe
+          _handle_expect_item()?
+        | _ExpectName => _handle_expect_name()?
+        | _InInt => _handle_in_int()?
+        | _InFrac => _handle_in_frac()?
+        | _InExp => _handle_in_exp()?
+        | _InString => _handle_in_string(false)?
+        | _InEscape => _handle_in_escape()?
+        | _InName => _handle_in_string(true)?
+        | _InTrue => _handle_in_true()?
+        | _InFalse => _handle_in_false()?
+        | _ExpectColon => _handle_expect_colon()
+        | _ExpectComma => _handle_expect_comma()?
         end
-        _index = _index + 1
+      match possible_error
+      | let pe: ParseError =>
+        return pe
       end
     else
       return ParseError(_index, "internal error")
     end
 
-    try
-      match _value_stack.pop()?
-      | let obj: Object trn => consume obj
-      | let seq: Sequence trn => consume seq
-      | let str: String trn => consume str
-      | let int: I128 => int
-      | let float: F64 => float
-      | let bool: Bool => bool
-      | (let float: F64, let _: F64) => float
-      | (let float: F64, let exp: I32) => _make_exp(float, exp)
-      | (let _: String, let _: None) => ParseError(_index, "unterminated object")
+    if _depth == 0 then
+      try
+        match _value_stack.pop()?
+        | let obj: Object trn =>
+          return consume obj
+        | let seq: Sequence trn =>
+          return consume seq
+        | let str: String trn =>
+          return consume str
+        | let int: I128 =>
+          return int
+        | let float: F64 =>
+          return float
+        | let bool: Bool =>
+          return bool
+        | (let float: F64, let _: F64) =>
+          return float
+        | (let float: F64, let exp: I32) =>
+          return _make_exp(float, exp)
+        | (let _: String, let _: None) =>
+          return ParseError(_index, "unterminated object")
+        else
+          return ParseError(_index, "internal error")
+        end
       else
-        return ParseError(_index, "internal error")
+        return ParseError(_index, "no JSON item was present")
       end
+    elseif _depth < 0 then
+      return ParseError(_index, "undeflow")
     else
-      ParseError(_index, "no JSON item was present")
+      _index = _index + 1
     end
+    None
 
   fun ref _handle_expect_item(): (ParseError | None) ? =>
     if _is_ws(_ch) then
       return None
     elseif _ch == '{' then
       _value_stack.push(recover trn Object end)
+      _depth = _depth + 1
       _state = _ExpectName
     elseif _ch == '[' then
       _value_stack.push(recover trn Sequence end)
+      _depth = _depth + 1
       // state remains _ExpectItem
     elseif _ch == ']' then
       if _value_stack.size() == 0 then
@@ -133,30 +179,28 @@ class _Parser
       end
     elseif _ch == '"' then
       _value_stack.push(recover trn String end)
+      _depth = _depth + 1
       _state = _InString
     elseif _ch == '-' then
       _value_stack.push(I128.min_value())
+      _depth = _depth + 1
       _state = _InInt
     elseif _ch == '+' then
       _value_stack.push(I128.max_value())
+      _depth = _depth + 1
       _state = _InInt
     elseif _is_num(_ch) then
       _value_stack.push(I128.from[U8](_ch - '0'))
+      _depth = _depth + 1
       _state = _InInt
-    elseif
-      _str.compare_sub(
-        "true", 4, ISize.from[USize](_index) where ignore_case = true) == Equal
-    then
-      _add_item(true)?
-      _index = _index + 3
-      _state = _ExpectComma
-    elseif
-      _str.compare_sub(
-        "false", 5, ISize.from[USize](_index) where ignore_case = true) == Equal
-    then
-      _add_item(false)?
-      _index = _index + 4
-      _state = _ExpectComma
+    elseif _ch == 't' then
+      _depth = _depth + 1
+      _bool_count = 1
+      _state = _InTrue
+    elseif _ch == 'f' then
+      _depth = _depth + 1
+      _bool_count = 1
+      _state = _InFalse
     else
       return _invalid_char(_index)
     end
@@ -344,6 +388,53 @@ class _Parser
     end
     None
 
+  fun ref _handle_in_true(): (ParseError | None) ? =>
+    match _bool_count
+    | 1 =>
+      if _ch == 'r' then
+        _bool_count = 2
+        return None
+      end
+    | 2 =>
+      if _ch == 'u' then
+        _bool_count = 3
+        return None
+      end
+    | 3 =>
+      if _ch == 'e' then
+        _add_item(true)?
+        _state = _ExpectComma
+        return None
+      end
+    end
+    ParseError(_index, "invalid character")
+
+  fun ref _handle_in_false(): (ParseError | None) ? =>
+    match _bool_count
+    | 1 =>
+      if _ch == 'a' then
+        _bool_count = 2
+        return None
+      end
+    | 2 =>
+      if _ch == 'l' then
+        _bool_count = 3
+        return None
+      end
+    | 3 =>
+      if _ch == 's' then
+        _bool_count = 4
+        return None
+      end
+    | 4 =>
+      if _ch == 'e' then
+        _add_item(false)?
+        _state = _ExpectComma
+        return None
+      end
+    end
+    ParseError(_index, "invalid character")
+
   fun ref _handle_expect_colon(): (ParseError | None) =>
     if _is_ws(_ch) then
       return None
@@ -391,16 +482,20 @@ class _Parser
         error
       end
     end
+    _depth = _depth - 1
 
   fun _make_exp(float: F64, exp: I32): F64 =>
     float * _ten.powi(exp)
 
   fun _invalid_char(index: USize): ParseError =>
-    ParseError(
-      index, "Invalid character '" + _str.trim(_index, _index + 1) + "'")
+    let message: String trn = String
+    message.append("invalid character '")
+    message.push(_ch)
+    message.append("'")
+    ParseError(index, consume message)
 
   fun _is_num(ch: U8): Bool =>
     (ch >= '0') and (ch <= '9')
 
   fun _is_ws(ch: U8): Bool =>
-    (ch == ' ') or (ch == '\t') or (ch == '\r') or (ch == '\n')
+    (ch == ' ') or (ch == '\t') or (ch == '\r') or (ch == '\n') or (ch == 0)

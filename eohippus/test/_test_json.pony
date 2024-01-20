@@ -101,3 +101,10 @@ class iso _TestJsonSubsumes is UnitTest
           }
         """
       _test(h, source2, exp2)
+
+      let exp3 = json.Object(
+        [ as (String, json.Item):
+          ("name", "Identifier")
+          ("string", "a1_'") ])
+      let source3 = """ { "name": "Identifier", "string": "a1_'" } """
+      _test(h, source3, exp3)
