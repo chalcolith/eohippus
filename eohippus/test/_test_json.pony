@@ -108,3 +108,10 @@ class iso _TestJsonSubsumes is UnitTest
           ("string", "a1_'") ])
       let source3 = """ { "name": "Identifier", "string": "a1_'" } """
       _test(h, source3, exp3)
+
+      let exp4 = json.Object(
+        [ as (String, json.Item):
+          ("foo", json.Null)
+          ("bar", json.Sequence([ as json.Item: "a"; json.Null]))])
+      let source4 = """{ "foo": null, "bar": [ "a", null ]}"""
+      _test(h, source4, exp4)

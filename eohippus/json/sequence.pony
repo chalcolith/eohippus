@@ -54,6 +54,8 @@ class Sequence
           result.append(flt.string())
         | let bool: Bool =>
           result.append(if bool then "true" else "false" end)
+        | let null: Null =>
+          result.append("null")
         end
       end
       if pretty then

@@ -7,9 +7,10 @@ primitive Subsumes
     | let a_obj: Object box => _obj_subsumes(a_obj, b, p)
     | let a_seq: Sequence box => _seq_subsumes(a_seq, b, p)
     | let a_str: String box => _str_subsumes(a_str, b, p)
-    | let a_int: I128 val => _int_subsumes(a_int, b, p)
-    | let a_float: F64 val => _float_subsumes(a_float, b, p)
-    | let a_bool: Bool val => _bool_subsumes(a_bool, b, p)
+    | let a_int: I128 => _int_subsumes(a_int, b, p)
+    | let a_float: F64 => _float_subsumes(a_float, b, p)
+    | let a_bool: Bool => _bool_subsumes(a_bool, b, p)
+    | let a_null: Null => _null_subsumes(a_null, b, p)
     end
 
   fun _obj_subsumes(a_obj: Object box, b: Item, p: String)
@@ -107,3 +108,10 @@ primitive Subsumes
       end
     end
     (false, "rhs at " + p + " is not a bool")
+
+  fun _null_subsumes(a_null: Null, b: Item, p: String) : (Bool, String) =>
+    match b
+    | let b_null: Null =>
+      return (true, "")
+    end
+    (false, "rhs at " + p + " is not null")

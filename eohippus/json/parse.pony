@@ -34,6 +34,7 @@ primitive _InFrac
 primitive _InExp
 primitive _InTrue
 primitive _InFalse
+primitive _InNull
 
 type _ParseState is
   ( _ExpectItem
@@ -47,7 +48,8 @@ type _ParseState is
   | _InFrac
   | _InExp
   | _InTrue
-  | _InFalse )
+  | _InFalse
+  | _InNull )
 
 type _TempItem is
   ( Object trn
@@ -56,6 +58,7 @@ type _TempItem is
   | I128
   | F64
   | Bool
+  | Null
   | U32
   | (String trn, None)
   | (F64, F64) // frac; floating point, next fractional power of 10
@@ -67,7 +70,8 @@ type _TrnItem is
   | String trn
   | I128
   | F64
-  | Bool )
+  | Bool
+  | Null )
 
 class Parser
   let _ten: F64 = 10.0
@@ -110,6 +114,7 @@ class Parser
         | _InName => _handle_in_string(true)?
         | _InTrue => _handle_in_true()?
         | _InFalse => _handle_in_false()?
+        | _InNull => _handle_in_null()?
         | _ExpectColon => _handle_expect_colon()
         | _ExpectComma => _handle_expect_comma()?
         end
@@ -136,6 +141,8 @@ class Parser
           return float
         | let bool: Bool =>
           return bool
+        | let null: Null =>
+          return null
         | (let float: F64, let _: F64) =>
           return float
         | (let float: F64, let exp: I32) =>
@@ -201,6 +208,10 @@ class Parser
       _depth = _depth + 1
       _bool_count = 1
       _state = _InFalse
+    elseif _ch == 'n' then
+      _depth = _depth + 1
+      _bool_count = 1
+      _state = _InNull
     else
       return _invalid_char(_index)
     end
@@ -429,6 +440,27 @@ class Parser
     | 4 =>
       if _ch == 'e' then
         _add_item(false)?
+        _state = _ExpectComma
+        return None
+      end
+    end
+    ParseError(_index, "invalid character")
+
+  fun ref _handle_in_null(): (ParseError | None) ? =>
+    match _bool_count
+    | 1 =>
+      if _ch == 'u' then
+        _bool_count = 2
+        return None
+      end
+    | 2 =>
+      if _ch == 'l' then
+        _bool_count = 3
+        return None
+      end
+    | 3 =>
+      if _ch == 'l' then
+        _add_item(Null)?
         _state = _ExpectComma
         return None
       end
