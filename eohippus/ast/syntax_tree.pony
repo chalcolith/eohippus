@@ -57,8 +57,8 @@ class val _SetLineState
     lines = per.Nil[parser.Loc]
     locator = locator'
     segment = segment'
-    line = 1
-    column = 1
+    line = 0
+    column = 0
 
   new val from(
     orig: _SetLineState,
@@ -125,8 +125,8 @@ class val _SetLineVisitor is Visitor[_SetLineState]
     if node.src_info().locator != state.locator then
       new_locator = node.src_info().locator
       new_segment = node.src_info().start.segment()
-      new_line = 1
-      new_column = 1
+      new_line = 0
+      new_column = 0
     elseif node.src_info().start.segment() isnt state.segment then
       new_segment = node.src_info().start.segment()
     end
@@ -143,7 +143,7 @@ class val _SetLineVisitor is Visitor[_SetLineState]
       end
       new_lines = new_lines.prepend(node.src_info().next)
       new_line = new_line + 1
-      new_column = 1
+      new_column = 0
     else
       if node.children().size() == 0 then
         if new_lines.size() == 0 then
