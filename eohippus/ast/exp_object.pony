@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpObject is NodeData
+  """An object literal."""
+
   let cap: (NodeWith[Keyword] | None)
   let constraint: (NodeWith[TypeType] | None)
   let members: NodeWith[TypedefMembers]

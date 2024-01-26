@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpWith is NodeData
+  """A `with` block."""
+
   let elements: NodeSeqWith[WithElement]
   let body: NodeWith[Expression]
 
@@ -25,6 +27,8 @@ class val ExpWith is NodeData
     props.push(("body", body.get_json()))
 
 class val WithElement is NodeData
+  """An arm of a `with` expression."""
+
   let pattern: NodeWith[TuplePattern]
   let body: NodeWith[Expression]
 

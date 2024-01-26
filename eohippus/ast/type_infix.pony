@@ -1,6 +1,11 @@
 use json = "../json"
 
 class val TypeInfix is NodeData
+  """
+    An algebraic type expression.
+    - `op`: `&` or `|`.
+  """
+
   let types: NodeSeqWith[TypeType]
   let op: (NodeWith[Token] | None)
 

@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val TypedefMethod is NodeData
+  """A method definition."""
+
   let kind: NodeWith[Keyword]
   let cap: (NodeWith[Keyword] | None)
   let raw: Bool

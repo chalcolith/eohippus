@@ -2,6 +2,10 @@ use json = "../json"
 use parser = "../parser"
 
 class val SrcFile is NodeData
+  """
+    A Pony source file.
+  """
+
   let locator: parser.Locator
   let usings: NodeSeqWith[Using]
   let type_defs: NodeSeqWith[Typedef]

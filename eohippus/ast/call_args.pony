@@ -2,6 +2,12 @@
 use json = "../json"
 
 class val CallArgs is NodeData
+  """
+    The arguments (actual parameters) of a method call.
+    - `pos`: positional arguments.
+    - `named`: named arguments (should all be assignment expressions).
+  """
+
   let pos: NodeSeqWith[Expression]
   let named: NodeSeqWith[Expression]
 

@@ -1,6 +1,7 @@
 use json = "../json"
 
 class val TypeTuple is NodeData
+  """A tuple type."""
   let types: NodeSeqWith[TypeType]
 
   new val create(types': NodeSeqWith[TypeType]) =>

@@ -1,6 +1,13 @@
 use json = "../json"
 
 class val ExpCall is NodeData
+  """
+    A method call.
+    - `lhs`: the callee.
+    - `args`: arguments.
+    - `partial`: whether or not the call is partial.
+  """
+
   let lhs: NodeWith[Expression]
   let args: NodeWith[CallArgs]
   let partial: Bool

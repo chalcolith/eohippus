@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpTry is NodeData
+  """A `try` block."""
+
   let body: NodeWith[Expression]
   let else_block: (NodeWith[Expression] | None)
 

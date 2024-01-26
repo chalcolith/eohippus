@@ -1,4 +1,6 @@
 primitive ErrorMsg
+  """The source of truth for error messages."""
+
   fun tag internal_ast_node_not_bound(name: String): String =>
     "internal error: no AST node bound: " + name
 

@@ -2,6 +2,8 @@ use "format"
 
 primitive StringUtil
   fun escape(orig: String box): String iso^ =>
+    """Returns an "escaped" version of a string.""""
+
     let result: String iso = String(orig.size())
     for rune in orig.runes() do
       if rune < ' ' then

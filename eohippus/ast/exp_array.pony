@@ -1,6 +1,11 @@
 use json = "../json"
 
 class val ExpArray is NodeData
+  """
+    An array literal.
+    - `array_type`: the explicit type of the array elements, if any.
+    - `body`: will usually be an `ExpSequence`.
+  """
   let array_type: (NodeWith[TypeType] | None)
   let body: NodeWith[Expression]
 

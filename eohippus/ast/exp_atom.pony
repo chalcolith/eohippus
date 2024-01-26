@@ -2,6 +2,11 @@
 use json = "../json"
 
 class val ExpAtom is NodeData
+  """
+    A simple expression; can contain an identifier, a literal, a parenthesized
+    expression or a control structure.
+  """
+
   let body: Node
 
   new val create(body': Node) =>

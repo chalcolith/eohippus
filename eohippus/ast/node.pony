@@ -4,6 +4,8 @@ use json = "../json"
 use types = "../types"
 
 trait val Node
+  """An AST node."""
+
   fun val clone(
     src_info': (SrcInfo | None) = None,
     old_children': (NodeSeq | None) = None,
@@ -15,19 +17,40 @@ trait val Node
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None): Node ?
+    """
+      Used to clone the node with certain updated properties during AST
+      transformation.
+    """
+
   fun name(): String
+    """An informative identifier for the kind of data the node stores."""
+
   fun src_info(): SrcInfo
+    """Source location information."""
+
   fun children(): NodeSeq
+
   fun annotation(): (NodeWith[Annotation] | None)
+
   fun doc_strings(): NodeSeqWith[DocString]
+
   fun pre_trivia(): NodeSeqWith[Trivia]
+
   fun post_trivia(): NodeSeqWith[Trivia]
+
   fun error_sections(): NodeSeqWith[ErrorSection]
+
   fun ast_type(): (types.AstType | None)
+    """The resolved type of the node."""
+
   fun get_json(): json.Item
+    """Get a JSON representation of the node."""
+
   fun string(): String iso^
 
 class val NodeWith[D: NodeData val] is Node
+  """An AST node with specific semantic data."""
+
   let _src_info: SrcInfo
   let _children: NodeSeq
   let _data: D
@@ -298,4 +321,7 @@ class val NodeWith[D: NodeData val] is Node
     this.get_json().string()
 
 type NodeSeq is ReadSeq[Node] val
+  """A sequence of AST nodes."""
+
 type NodeSeqWith[D: NodeData val] is ReadSeq[NodeWith[D]] val
+  """A sequence of AST nodes with a given node data type."""

@@ -1,6 +1,8 @@
 use json = "../json"
 
 primitive Keywords
+  """The source of truth for the string values of keywords."""
+
   fun kwd_actor(): String => "actor"
   fun kwd_addressof(): String => "addressof"
   fun kwd_and(): String => "and"

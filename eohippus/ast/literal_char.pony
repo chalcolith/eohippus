@@ -7,6 +7,12 @@ primitive CharUnicode
 type CharLiteralKind is (CharLiteral | CharEscaped | CharUnicode)
 
 class val LiteralChar is NodeDataWithValue[U32]
+  """
+    A character literal.
+    - `kind`: either a single character 'x' or a standard escaped character, or
+      a Unicode escaped character.
+  """
+
   let _value: U32
   let kind: CharLiteralKind
 

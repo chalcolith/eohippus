@@ -7,6 +7,11 @@ primitive IfType
 type IfKind is (IfExp | IfDef | IfType)
 
 class val ExpIf is NodeData
+  """
+    An `if` expression.
+    - `kind`: `if`, `ifdef`, or `iftype`.
+  """
+
   let kind: IfKind
   let conditions: NodeSeqWith[IfCondition]
   let else_block: (NodeWith[Expression] | None)
@@ -43,6 +48,10 @@ class val ExpIf is NodeData
     end
 
 class val IfCondition is NodeData
+  """
+    A condition and then-block in an `if` expression (i.e. the initial `if` and
+    `then` block; or subsequent `elseif` and `then` blocks).
+  """
   let if_true: NodeWith[Expression]
   let then_block: NodeWith[Expression]
 

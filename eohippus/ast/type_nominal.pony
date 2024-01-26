@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val TypeNominal is NodeData
+  """A (possibly qualified) named type, with optional type parameters."""
+
   let lhs: (NodeWith[Identifier] | None)
   let rhs: NodeWith[Identifier]
   let params: (NodeWith[TypeParams] | None)

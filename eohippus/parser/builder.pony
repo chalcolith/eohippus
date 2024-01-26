@@ -1,6 +1,10 @@
 use ast = "../ast"
 
 class Builder
+  """
+    Builds a Kiuatan grammar for the Pony language.
+  """
+
   let _context: Context
 
   let trivia: TriviaBuilder

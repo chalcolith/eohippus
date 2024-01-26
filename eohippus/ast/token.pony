@@ -1,6 +1,7 @@
 use json = "../json"
 
 primitive Tokens
+  """The source of truth for non-alphabetic source tokens."""
   fun amp(): String => "&"
   fun arrow(): String => "->"
   fun at(): String => "@"

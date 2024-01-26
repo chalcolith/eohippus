@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val Span is NodeData
+  """A span of source code without further semantic meaning."""
+
   new create() =>
     None
 

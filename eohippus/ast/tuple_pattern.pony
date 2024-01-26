@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val TuplePattern is NodeData
+  """
+    A matching pattern for (possible) tuples.
+  """
+
   let ids: ReadSeq[(NodeWith[Identifier] | NodeWith[TuplePattern])] val
 
   new val create(

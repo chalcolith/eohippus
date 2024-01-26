@@ -2,6 +2,7 @@ use json = "../json"
 
 primitive StringLiteral
 primitive StringTripleQuote
+
 type StringLiteralKind is (StringLiteral | StringTripleQuote)
 
 class val LiteralString is NodeDataWithValue[String]

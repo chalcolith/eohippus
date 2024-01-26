@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val TypedefAlias is NodeData
+  """A type alias."""
+
   let identifier: NodeWith[Identifier]
   let type_params: (NodeWith[TypeParams] | None)
   let type_type: NodeWith[TypeType]

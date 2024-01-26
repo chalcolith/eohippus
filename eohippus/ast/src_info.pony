@@ -8,6 +8,16 @@ primitive Desugared
 type SrcDerivation is (Inherited | Reified | Desugared)
 
 class val SrcInfo is Equatable[SrcInfo]
+  """
+    Source file span information.
+    `locator`: an identifier for a source file or other source of code.
+    `start`: the start location of the span.
+    `next`: the location immediately after the span.
+    `line`: the zero-based line number within the source denoted by the locator.
+    `column`: the zero-based column number within the source.
+    `derived_from`: how this span is derived from original source.
+  """
+
   let locator: parser.Locator
   let start: parser.Loc
   let next: parser.Loc

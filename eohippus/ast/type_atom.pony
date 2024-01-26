@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val TypeAtom is NodeData
+  """A basic type (usually an identifier)."""
+
   let body: Node
 
   new val create(body': Node) =>
