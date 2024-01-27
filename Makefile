@@ -70,9 +70,8 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 $(docs_dir): $(SOURCE_FILES)
-	rm -rf $(docs_dir)
 	$(GET_DEPENDENCIES_WITH)
-	$(PONYC) --docs-public --pass=docs --output build $(SRC_DIR)
+	$(PONYC) --docs-public --pass=expr --output build $(SRC_DIR)
 
 docs: $(docs_dir)
 

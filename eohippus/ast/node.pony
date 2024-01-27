@@ -1,3 +1,11 @@
+"""
+  This package provides an abstract syntax tree for Pony code.
+
+  The AST is built from [NodeWith](/eohippus/eohippus-ast-NodeWith) objects that contain semantic information about their children.
+
+  A Pony source file is represented by a node with [SrcFile](/eohippus/eohippus-ast-SrcFile/) data.
+"""
+
 use "itertools"
 
 use json = "../json"

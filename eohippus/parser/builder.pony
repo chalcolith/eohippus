@@ -1,8 +1,14 @@
+"""
+Implements a [Kiuatan](/kiuatan/kiuatan--index/) PEG packrat grammar for the Pony language.
+
+The grammar is built using the [Builder](/eohippus/eohippus-parser-Builder/) object.
+"""
+
 use ast = "../ast"
 
 class Builder
   """
-    Builds a Kiuatan grammar for the Pony language.
+    Builds a [Kiuatan](/kiuatan/kiuatan--index/) grammar for the Pony language.
   """
 
   let _context: Context
