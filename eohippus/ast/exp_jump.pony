@@ -1,6 +1,12 @@
 use json = "../json"
 
 class val ExpJump is NodeData
+  """
+    A jump.
+    - `keyword`: `return`, `break`, `continue`, `error`, `compile_intrinsic`
+      or `compile_error`.
+  """
+
   let keyword: NodeWith[Keyword]
   let rhs: (NodeWith[Expression] | None)
 

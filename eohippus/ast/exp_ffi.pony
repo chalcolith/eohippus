@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val ExpFfi is NodeData
+  """
+    An FFI call.
+  """
+
   let identifier: (NodeWith[Identifier] | NodeWith[LiteralString])
   let type_args: (NodeWith[TypeArgs] | None)
   let call_args: NodeWith[CallArgs]

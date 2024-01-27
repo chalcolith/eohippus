@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpWhile is NodeData
+  """A `while` loop."""
+
   let condition: NodeWith[Expression]
   let body: NodeWith[Expression]
   let else_block: (NodeWith[Expression] | None)

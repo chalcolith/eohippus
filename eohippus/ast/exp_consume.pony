@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpConsume is NodeData
+  """A consume expression."""
+
   let cap: (NodeWith[Keyword] | None)
   let body: NodeWith[Expression]
 

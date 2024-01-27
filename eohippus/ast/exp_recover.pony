@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpRecover is NodeData
+  """A `recover` block."""
+
   let cap: (NodeWith[Keyword] | None)
   let body: NodeWith[Expression]
 

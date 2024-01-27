@@ -1,6 +1,7 @@
 use json = "../json"
 
 class val ExpMatch is NodeData
+  """A `match` expression."""
   let expression: NodeWith[Expression]
   let cases: NodeSeqWith[MatchCase]
   let else_block: (NodeWith[Expression] | None)
@@ -33,6 +34,7 @@ class val ExpMatch is NodeData
     end
 
 class val MatchCase is NodeData
+  """A case in a `match` expression."""
   let pattern: NodeWith[Expression]
   let condition: (NodeWith[Expression] | None)
   let body: NodeWith[Expression]

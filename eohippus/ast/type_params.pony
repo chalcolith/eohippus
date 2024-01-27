@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val TypeParams is NodeData
+  """Type parameters."""
+
   let params: NodeSeqWith[TypeParam]
 
   new val create(params': NodeSeqWith[TypeParam]) =>

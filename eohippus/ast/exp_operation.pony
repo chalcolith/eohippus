@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpOperation is NodeData
+  """A binary infix operation expression, or a unary prefix operation."""
+
   let lhs:
     ( NodeWith[TypeType]
     | NodeWith[Expression]

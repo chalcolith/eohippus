@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val Annotation is NodeData
+  """Contains a list of identifiers."""
+
   let identifiers: NodeSeqWith[Identifier]
 
   new val create(identifiers': NodeSeqWith[Identifier]) =>

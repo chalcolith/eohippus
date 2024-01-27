@@ -5,6 +5,8 @@ use ".."
 type Using is (UsingPony | UsingFFI)
 
 class val UsingPony is NodeData
+  """A `using` statement referencing a Pony package."""
+
   let identifier: (NodeWith[Identifier] | None)
   let path: NodeWith[Literal]
   let def_true: Bool
@@ -45,6 +47,8 @@ class val UsingPony is NodeData
     end
 
 class val UsingFFI is NodeData
+  """A `using` statement referencing an extern FFI function."""
+
   let identifier: (NodeWith[Identifier] | None)
   let fun_name: (NodeWith[Identifier] | NodeWith[LiteralString])
   let type_args: NodeWith[TypeArgs]

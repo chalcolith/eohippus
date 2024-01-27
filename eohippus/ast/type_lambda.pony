@@ -3,6 +3,8 @@ use "itertools"
 use json = "../json"
 
 class val TypeLambda is NodeData
+  """The type of a lambda function."""
+
   let bare: Bool
   let cap: (NodeWith[Keyword] | None)
   let identifier: (NodeWith[Identifier] | None)

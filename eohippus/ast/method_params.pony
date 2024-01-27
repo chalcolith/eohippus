@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val MethodParams is NodeData
+  """
+    Method parameters (formal parameters).
+  """
+
   let params: NodeSeqWith[MethodParam]
 
   new val create(params': NodeSeqWith[MethodParam]) =>

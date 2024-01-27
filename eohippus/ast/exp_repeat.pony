@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpRepeat is NodeData
+  """A `repeat` expression."""
+
   let body: NodeWith[Expression]
   let condition: NodeWith[Expression]
   let else_block: (NodeWith[Expression] | None)

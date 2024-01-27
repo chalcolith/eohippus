@@ -1,7 +1,16 @@
 primitive NodeChild
+  """
+    Contains utilities for building new child arrays from old nodes when
+    traversing the AST.
+  """
+
   fun apply(old_child: Node, old_children: NodeSeq, new_children: NodeSeq)
     : Node ?
   =>
+    """
+      Finds the appropriate replacement in `new_children` for an `old_child`
+      appearing in `old_children`.
+    """
     var i: USize = 0
     while i < old_children.size() do
       if old_child is old_children(i)? then
@@ -17,6 +26,10 @@ primitive NodeChild
     new_children: NodeSeq)
     : NodeWith[T] ?
   =>
+    """
+      Finds the appropriate replacement in `new_children` for an `old_child`
+      appearing in `old_children`.
+    """
     var i: USize = 0
     while i < old_children.size() do
       if old_child is old_children(i)? then
@@ -32,6 +45,10 @@ primitive NodeChild
     new_children: NodeSeq)
     : (Node | None) ?
   =>
+    """
+      Finds the appropriate replacement (or `None`) in `new_children` for an
+      `old_child` appearing in `old_children`.
+    """
     match old_child
     | let old_child': Node =>
       var i: USize = 0
@@ -50,6 +67,10 @@ primitive NodeChild
     new_children: NodeSeq)
     : (NodeWith[T] | None) ?
   =>
+    """
+      Finds the appropriate replacement (or `None`) in `new_children` for an
+      `old_child` appearing in `old_children`.
+    """
     match old_typed_child
     | let old_typed_child': NodeWith[T] =>
       var i: USize = 0
@@ -68,6 +89,9 @@ primitive NodeChild
     new_children: NodeSeq)
     : NodeSeqWith[T] ?
   =>
+    """
+      Builds a list of new children equivalent to the old children given.
+    """
     if old_typed_children.size() == 0 then
       return old_typed_children
     end

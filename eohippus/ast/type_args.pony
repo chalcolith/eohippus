@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val TypeArgs is NodeData
+  """
+    Type arguments in expressions.
+  """
+
   let types: NodeSeqWith[TypeType]
 
   new val create(types': NodeSeqWith[TypeType]) =>

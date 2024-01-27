@@ -5,6 +5,7 @@ primitive NestedCommentTrivia
 primitive WhiteSpaceTrivia
 primitive EndOfLineTrivia
 primitive EndOfFileTrivia
+
 type TriviaKind is
   ( LineCommentTrivia
   | NestedCommentTrivia
@@ -13,6 +14,8 @@ type TriviaKind is
   | EndOfFileTrivia )
 
 class val Trivia is NodeData
+  """Contains comments and white space."""
+
   let kind: TriviaKind
   let string: String
 

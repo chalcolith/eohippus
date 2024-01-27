@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpLambda is NodeData
+  """A lambda function."""
+
   let bare: Bool
   let this_cap: (NodeWith[Keyword] | None)
   let identifier: (NodeWith[Identifier] | None)

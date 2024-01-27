@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val TypedefMembers is NodeData
+  """
+    The members of a class-like type.
+  """
+
   let fields: NodeSeqWith[TypedefField]
   let methods: NodeSeqWith[TypedefMethod]
 

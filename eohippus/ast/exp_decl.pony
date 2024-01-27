@@ -1,6 +1,13 @@
 use json = "../json"
 
 class val ExpDecl is NodeData
+  """
+    An alias declaration.  Usually the LHS of an assignment expression.
+    - `kind`: `let` or `var`.
+    - `identifier`: the name of the binding.
+    - `decl_type`: the type, if any.
+  """
+
   let kind: NodeWith[Keyword]
   let identifier: NodeWith[Identifier]
   let decl_type: (NodeWith[TypeType] | None)

@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val ExpFor is NodeData
+  """
+    A `for` loop.
+  """
+
   let pattern: NodeWith[TuplePattern]
   let body: NodeWith[Expression]
   let else_block: (NodeWith[Expression] | None)

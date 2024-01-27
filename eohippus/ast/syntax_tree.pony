@@ -6,17 +6,53 @@ use parser = "../parser"
 use ".."
 
 interface val Visitor[State: Any val]
+  """
+    Used to effect transformations of an AST, using `SyntaxTree.traverse()`.
+
+    AST trees are immutable.  We get a transformed tree by traversing the old
+    tree and returning a new one (re-using unmodified nodes as necessary).
+
+    Traversal happens in the following fashion:
+
+    - Get an initial visitor state.
+    - For a node (starting with the root):
+      - Call `visit_pre()`, with the current visitor state; this returns an
+        intermediate state (if some data needs to be saved for later), and the
+        next current visitor state.
+      - Build a list of new node children by calling `traverse()` on each old
+        child, passing the updated current state through each call.
+      - Call `visit_post()` with the intermediate saved state, the old children
+        of the node, and the new children, as well as the last "next" state
+        returned from building the children. `visit_post()` should return the
+        new node and a new current state.
+  """
+
   fun val initial_state(): State
+
   fun val visit_pre(state: State, node: Node): (State, State)
+    """
+      Returns an intermediate state value for use when constructing the new
+      node, as well as a current state value used to pass to traversing the
+      child nodes.
+    """
+
   fun val visit_post(
     pre_state: State,
     post_state: State,
     node: Node,
     new_children: (NodeSeq | None) = None)
     : (State, Node)
+    """
+      Returns a new node constructed from the "pre" state (the intermediate
+      state) that was returned by `visit_pre()`, the "post" state from
+      constructing the new children, and the new children itself.
+    """
 
 primitive SyntaxTree
   fun tag traverse[State: Any val](visitor: Visitor[State], root: Node): Node =>
+    """
+      Traverse an AST and return a transformed tree.
+    """
     _traverse[State](visitor, visitor.initial_state(), root)._2
 
   fun tag _traverse[State: Any val](
@@ -40,6 +76,10 @@ primitive SyntaxTree
     end
 
   fun tag set_line_info(root: Node): (Node, ReadSeq[parser.Loc]) =>
+    """
+      Takes an AST without line and column info, and returns a transformed
+      tree that includes line and column info (obtained by tracking newlines).
+    """
     let visitor = _SetLineVisitor(
       root.src_info().locator, root.src_info().start.segment())
     (let post_state, let result) = _traverse[_SetLineState](

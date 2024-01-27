@@ -3,6 +3,8 @@ use "itertools"
 use json = "../json"
 
 class val ExpSequence is NodeData
+  """A sequence of expressions, possibly separated by semicolons."""
+
   let expressions: NodeSeqWith[Expression]
 
   new val create(expressions': NodeSeqWith[Expression]) =>

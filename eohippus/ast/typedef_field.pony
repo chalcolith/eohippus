@@ -1,6 +1,11 @@
 use json = "../json"
 
 class val TypedefField is NodeData
+  """
+    A field definition.
+    - `kind`: `let`, `var`, or `embed`.
+  """
+
   let kind: NodeWith[Keyword]
   let identifier: NodeWith[Identifier]
   let type_type: (NodeWith[TypeType] | None)

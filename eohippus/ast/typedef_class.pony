@@ -1,6 +1,11 @@
 use json = "../json"
 
 class val TypedefClass is NodeData
+  """
+    A class-like type definition (a `trait`, `interface`, `class`, `struct` or
+    `actor`).
+  """
+
   let kind: NodeWith[Keyword]
   let raw: Bool
   let cap: (NodeWith[Keyword] | None)

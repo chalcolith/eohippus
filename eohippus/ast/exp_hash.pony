@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val ExpHash is NodeData
+  """
+    A compile-time expression.
+  """
+
   let rhs: NodeWith[Expression]
 
   new val create(rhs': NodeWith[Expression]) =>

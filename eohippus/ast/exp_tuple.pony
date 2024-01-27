@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val ExpTuple is NodeData
+  """A tuple expression."""
+
   let sequences: NodeSeqWith[Expression]
 
   new val create(sequences': NodeSeqWith[Expression]) =>

@@ -1,6 +1,10 @@
 use json = "../json"
 
 class val TypeArrow is NodeData
+  """
+    A top-level type (possibly with an arrow).
+  """
+
   let lhs: Node
   let rhs: (NodeWith[TypeType] | None)
 

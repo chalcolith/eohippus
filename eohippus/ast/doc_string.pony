@@ -1,6 +1,8 @@
 use json = "../json"
 
 class val DocString is NodeData
+  """Represents a doc string."""
+
   let string: NodeWith[Literal]
 
   new val create(string': NodeWith[Literal]) =>
