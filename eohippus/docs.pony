@@ -26,7 +26,8 @@ use parser = "parser"
 use types = "types"
 
 class _DocImports
-  let node: ast.NodeWith[ast.Identifier]
-  let item: json.Item
-  let builder: parser.Builder
-  let ast_type: types.AstType
+  // Brings these types into the documentation
+  let node: (ast.NodeWith[ast.Identifier] | None) = None
+  let item: (json.Item | None) = None
+  let builder: (parser.Builder | None) = None
+  let ast_type: (types.AstType | None) = None
