@@ -94,6 +94,20 @@ class Parser
     _bool_count = 0
     _expect_hex = 0
 
+  fun ref parse_seq(
+    seq: ReadSeq[U8],
+    items: Seq[Item],
+    errors: Seq[ParseError])
+  =>
+    for ch in seq.values() do
+      match parse_char(ch)
+      | let item: Item =>
+        items.push(item)
+      | let perr: ParseError =>
+        errors.push(perr)
+      end
+    end
+
   fun ref parse_char(ch: U8): (Item | ParseError | None) =>
     _ch = ch
     try

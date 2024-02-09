@@ -45,19 +45,33 @@ class iso _TestJsonSubsumes is UnitTest
     fun exclusion_group(): String => "json"
 
     fun _test(h: TestHelper, source: String, expected: json.Item) =>
-      match json.Parse(source)
-      | let item: json.Item =>
+      let items = Array[json.Item]
+      let perrs = Array[json.ParseError]
+
+      let parser = json.Parser
+      parser.parse_seq(source, items, perrs)
+      parser.parse_seq([0], items, perrs)
+      try
+        let item = items(0)?
         (var res, var err) = json.Subsumes(item, expected)
         h.assert_true(
           res,
-          item.string() + " does not subsume " + expected.string() + ": " + err)
+          "'" + item.string() + "' does not subsume '" + expected.string() +
+            "': " + err)
         (res, err) = json.Subsumes(expected, item)
         h.assert_true(
           res,
-          expected.string() + " does not subsume " + item.string() + ": " + err)
-      | let err: json.ParseError =>
-        h.fail(
-          "Parse failed: " + err.message + " at index " + err.index.string())
+          "'" + expected.string() + "' does not subsume '" + item.string() +
+            "': " + err)
+      else
+        if perrs.size() > 0 then
+          try
+            let perr = perrs(0)?
+            h.fail(perr.message + " at index " + perr.index.string())
+          end
+        else
+          h.fail("JSON parse failed")
+        end
       end
 
     fun apply(h: TestHelper) =>
