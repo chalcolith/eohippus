@@ -13,16 +13,12 @@ class val SrcInfo is Equatable[SrcInfo]
     `locator`: an identifier for a source file or other source of code.
     `start`: the start location of the span.
     `next`: the location immediately after the span.
-    `line`: the zero-based line number within the source denoted by the locator.
-    `column`: the zero-based column number within the source.
     `derived_from`: how this span is derived from original source.
   """
 
   let locator: parser.Locator
   let start: parser.Loc
   let next: parser.Loc
-  let line: USize
-  let column: USize
 
   let derived_from: ((SrcDerivation, Node) | None)
 
@@ -30,15 +26,11 @@ class val SrcInfo is Equatable[SrcInfo]
     locator': String,
     start': parser.Loc,
     next': parser.Loc,
-    line': USize = 0,
-    column': USize = 0,
     derived_from': ((SrcDerivation, Node)  | None) = None)
   =>
     locator = locator'
     start = start'
     next = next'
-    line = line'
-    column = column'
     derived_from = derived_from'
 
   new val from(
@@ -46,8 +38,6 @@ class val SrcInfo is Equatable[SrcInfo]
     locator': (parser.Locator | None) = None,
     start': (parser.Loc | None) = None,
     next': (parser.Loc | None) = None,
-    line': (USize | None) = None,
-    column': (USize | None) = None,
     derived_from': ((SrcDerivation, Node) | None) = None)
   =>
     locator =
@@ -64,16 +54,6 @@ class val SrcInfo is Equatable[SrcInfo]
       match next'
       | let n: parser.Loc => n
       else orig.next
-      end
-    line =
-      match line'
-      | let l: USize => l
-      else orig.line
-      end
-    column =
-      match column'
-      | let c: USize => c
-      else orig.column
       end
     derived_from =
       match derived_from'

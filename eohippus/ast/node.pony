@@ -299,10 +299,7 @@ class val NodeWith[D: NodeData val] is Node
 
   fun get_json(): json.Item =>
     let props = [ as (String, json.Item): ("name", _data.name()) ]
-    let si = json.Object(
-      [ as (String, json.Item):
-        ("line", I128.from[USize](_src_info.line))
-        ("column", I128.from[USize](_src_info.column)) ])
+    let si = json.Object()
     props.push(("src_info", si))
     props.push(("loc_start", _src_info.start.string()))
     props.push(("loc_next", _src_info.next.string()))
