@@ -10,19 +10,24 @@ primitive SyntaxTree
     """
       Traverse an AST and return a transformed tree.
     """
-    _traverse[State](visitor, root)
+    _traverse[State](visitor, per.Cons[Node](root, per.Nil[Node]))
 
-  fun tag _traverse[State](visitor: Visitor[State], node: Node): Node =>
-    let node_state = visitor.visit_pre(node)
+  fun tag _traverse[State](
+    visitor: Visitor[State],
+    node: Node,
+    path: per.List[Node])
+    : Node
+  =>
+    let node_state = visitor.visit_pre(node, path)
     if node.children().size() == 0 then
-      visitor.visit_post(consume node_state, node)
+      visitor.visit_post(consume node_state, node, path)
     else
       let new_children: Array[Node] trn =
         Array[Node](node.children().size())
       for child in node.children().values() do
-        new_children.push(_traverse[State](visitor, child))
+        new_children.push(_traverse[State](visitor, child, path.prepend(child)))
       end
-      visitor.visit_post(consume node_state, node, consume new_children)
+      visitor.visit_post(consume node_state, node, path, consume new_children)
     end
 
   fun tag set_line_info(root: Node): (Node, ReadSeq[parser.Loc]) =>
@@ -53,7 +58,7 @@ interface Visitor[State]
         of the node, and the new children. `visit_post()` returns the new node.
   """
 
-  fun ref visit_pre(node: Node): State^
+  fun ref visit_pre(node: Node, path: per.List[Node]): State^
     """
       Returns an intermediate state value for use when constructing the new
       node.
@@ -62,6 +67,7 @@ interface Visitor[State]
   fun ref visit_post(
     pre_state: State^,
     node: Node,
+    path: per.List[Node],
     new_children: (NodeSeq | None) = None)
     : Node
     """
@@ -100,7 +106,7 @@ class _SetLineVisitor is Visitor[_SetLineState]
     line = 0
     column = 0
 
-  fun ref visit_pre(node: Node): _SetLineState =>
+  fun ref visit_pre(node: Node, path: per.List[Node]): _SetLineState =>
     let si = node.src_info()
 
     // check for locator or segment changes
@@ -138,6 +144,7 @@ class _SetLineVisitor is Visitor[_SetLineState]
   fun ref visit_post(
     pre_state: _SetLineState,
     node: Node,
+    path: per.List[Node],
     new_children: (NodeSeq | None) = None)
     : Node
   =>
