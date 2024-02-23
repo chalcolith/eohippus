@@ -23,11 +23,14 @@ class val TypeInfix is NodeData
       NodeChild.seq_with[TypeType](types, old_children, new_children)?,
       NodeChild.with_or_none[Token](op, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
     match op
     | let op': NodeWith[Token] =>
-      props.push(("op", op'.get_json()))
+      props.push(("op", op'.get_json(lines_and_columns)))
     end
     if types.size() > 0 then
-      props.push(("types", Nodes.get_json(types)))
+      props.push(("types", Nodes.get_json(types, lines_and_columns)))
     end

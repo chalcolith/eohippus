@@ -274,11 +274,14 @@ primitive _LiteralActions
         if lines.size() > 1 then
           try
             (var start, var next) = lines(0)?
-            let first_line = indented.trim(start, next - 1)
+            let first_line = indented.trim(start, next)
             let fli = Iter[U8](first_line.values())
             // if the first line is all whitespace, then ignore it,
             // and trim prefixes from from subseqent lines
-            if fli.all({(ch) => (ch == ' ') or (ch == '\t') }) then
+            if fli.all(
+              {(ch) =>
+                (ch == ' ') or (ch == '\t') or (ch == '\n') or (ch == '\r') })
+            then
               (start, next) = lines(1)?
               let indent =
                 recover val

@@ -50,33 +50,36 @@ class val TypeLambda is NodeData
       NodeChild.with_or_none[Keyword](rcap, old_children, new_children)?,
       NodeChild.with_or_none[Token](reph, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
     props.push(("bare", bare))
     props.push(("partial", partial))
     match cap
     | let cap': Node =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", cap'.get_json(lines_and_columns)))
     end
     match identifier
     | let identifier': Node =>
-      props.push(("identifier", identifier'.get_json()))
+      props.push(("identifier", identifier'.get_json(lines_and_columns)))
     end
     match type_params
     | let type_params': Node =>
-      props.push(("type_params", type_params'.get_json()))
+      props.push(("type_params", type_params'.get_json(lines_and_columns)))
     end
     if param_types.size() > 0 then
-      props.push(("param_types", Nodes.get_json(param_types)))
+      props.push(("param_types", Nodes.get_json(param_types, lines_and_columns)))
     end
     match return_type
     | let return_type': Node =>
-      props.push(("return_type", return_type'.get_json()))
+      props.push(("return_type", return_type'.get_json(lines_and_columns)))
     end
     match rcap
     | let rcap': Node =>
-      props.push(("rcap", rcap'.get_json()))
+      props.push(("rcap", rcap'.get_json(lines_and_columns)))
     end
     match reph
     | let reph': Node =>
-      props.push(("reph", reph'.get_json()))
+      props.push(("reph", reph'.get_json(lines_and_columns)))
     end

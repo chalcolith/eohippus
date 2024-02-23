@@ -16,5 +16,8 @@ class val TypeArgs is NodeData
     TypeArgs(
       NodeChild.seq_with[TypeType](types, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("types", Nodes.get_json(types)))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("types", Nodes.get_json(types, lines_and_columns)))

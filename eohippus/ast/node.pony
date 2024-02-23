@@ -6,6 +6,7 @@
   A Pony source file is represented by a node with [SrcFile](/eohippus/eohippus-ast-SrcFile/) data.
 """
 
+use "collections"
 use "itertools"
 
 use json = "../json"
@@ -51,7 +52,8 @@ trait val Node
   fun ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
-  fun get_json(): json.Item
+  fun get_json(lines_and_columns: (LineColumnMap | None) = None)
+    : json.Item
     """Get a JSON representation of the node."""
 
   fun string(): String iso^
@@ -88,7 +90,8 @@ class val NodeWith[D: NodeData val] is Node
             .filter({(n) =>
               match n
               | let t: NodeWith[Trivia] =>
-                t.src_info().start < t.src_info().next
+                (t.data().kind is EndOfFileTrivia) or
+                (t.src_info().start < t.src_info().next)
               else
                 true
               end
@@ -108,7 +111,9 @@ class val NodeWith[D: NodeData val] is Node
     _pre_trivia =
       if (pre_trivia'.size() == 0) or
         Iter[NodeWith[Trivia]](pre_trivia'.values())
-          .any({(n) => n.src_info().start < n.src_info().next })
+          .any({(n) =>
+            (n.data().kind is EndOfFileTrivia) or
+            (n.src_info().start < n.src_info().next) })
       then
         pre_trivia'
       else
@@ -117,7 +122,9 @@ class val NodeWith[D: NodeData val] is Node
     _post_trivia =
       if (post_trivia'.size() == 0) or
         Iter[NodeWith[Trivia]](post_trivia'.values())
-          .any({(n) => n.src_info().start < n.src_info().next })
+          .any({(n) =>
+            (n.data().kind is EndOfFileTrivia) or
+            (n.src_info().start < n.src_info().next) })
       then
         post_trivia'
       else
@@ -297,28 +304,41 @@ class val NodeWith[D: NodeData val] is Node
 
   fun ast_type(): (types.AstType | None) => _ast_type
 
-  fun get_json(): json.Item =>
+  fun get_json(lines_and_columns: (LineColumnMap | None) = None)
+    : json.Item
+  =>
     let props = [ as (String, json.Item): ("name", _data.name()) ]
-    let si = json.Object()
-    props.push(("src_info", si))
-    props.push(("loc_start", _src_info.start.string()))
-    props.push(("loc_next", _src_info.next.string()))
+    match lines_and_columns
+    | let lc: LineColumnMap =>
+      try
+        (let line, let column) = lc(this)?
+        let si = json.Object(
+          [ as (String, json.Item):
+            ("line", I128.from[USize](line))
+            ("column", I128.from[USize](column))])
+        props.push(("src_info", si))
+      end
+    end
     match _annotation
     | let annotation': NodeWith[Annotation] =>
-      props.push(("annotation", annotation'.get_json()))
+      props.push(("annotation", annotation'.get_json(lines_and_columns)))
     end
-    _data.add_json_props(props)
+    _data.add_json_props(props, lines_and_columns)
     if _error_sections.size() > 0 then
-      props.push(("error_sections", Nodes.get_json(_error_sections)))
+      props.push(
+        ("error_sections", Nodes.get_json(_error_sections, lines_and_columns)))
     end
     if _pre_trivia.size() > 0 then
-      props.push(("pre_trivia", Nodes.get_json(_pre_trivia)))
+      props.push(
+        ("pre_trivia", Nodes.get_json(_pre_trivia, lines_and_columns)))
     end
     if _doc_strings.size() > 0 then
-      props.push(("doc_strings", Nodes.get_json(_doc_strings)))
+      props.push(
+        ("doc_strings", Nodes.get_json(_doc_strings, lines_and_columns)))
     end
     if _post_trivia.size() > 0 then
-      props.push(("post_trivia", Nodes.get_json(_post_trivia)))
+      props.push(
+        ("post_trivia", Nodes.get_json(_post_trivia, lines_and_columns)))
     end
     json.Object(props)
 

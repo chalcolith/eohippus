@@ -13,6 +13,7 @@ primitive _TestParserSrcFile
     test(_TestParserSrcFileUsingFfi)
     test(_TestParserSrcFileUsingErrorSection)
     test(_TestParserSrcFileTypedefMultiple)
+    test(_TestParserSrcFileTypedefSingle)
 
 class iso _TestParserSrcFileTriviaDocstring is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Trivia+Docstring"
@@ -309,6 +310,42 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
           new create() => None
         interface B
       """
+
+    _Assert.test_all(h,
+      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+
+class iso _TestParserSrcFileTypedefSingle is UnitTest
+  fun name(): String => "parser/src_file/Typedef/Single"
+  fun exclusion_group(): String => "parser/src_file"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.src_file.src_file
+
+    let expected =
+      """
+        {
+          "name": "SrcFile",
+          "type_defs": [
+            {
+              "name": "TypedefClass",
+              "identifier": { "string": "A" },
+              "members": {
+                "methods": [
+                  {
+                    "name": "TypedefMethod",
+                    "identifier": { "string": "create" }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      """
+
+    let source = "class A
+  new create() =>
+    None "
 
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source, expected) ])

@@ -43,25 +43,28 @@ class val TypedefClass is NodeData
       NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
       NodeChild.with_or_none[TypedefMembers](members, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("kind", kind.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("kind", kind.get_json(lines_and_columns)))
     if raw then
       props.push(("raw", raw))
     end
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", cap'.get_json(lines_and_columns)))
     end
-    props.push(("identifier", identifier.get_json()))
+    props.push(("identifier", identifier.get_json(lines_and_columns)))
     match type_params
     | let type_params': NodeWith[TypeParams] =>
-      props.push(("type_params", type_params'.get_json()))
+      props.push(("type_params", type_params'.get_json(lines_and_columns)))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", constraint'.get_json(lines_and_columns)))
     end
     match members
     | let members': NodeWith[TypedefMembers] =>
-      props.push(("members", members'.get_json()))
+      props.push(("members", members'.get_json(lines_and_columns)))
     end

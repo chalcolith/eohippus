@@ -1,4 +1,3 @@
-use "debug"
 use "pony_test"
 
 use ast = "../ast"
@@ -84,29 +83,30 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
         | let success: parser.Success =>
           try
             let st = ast.SyntaxTree(v(0)?)
-            let lc = st.lines_and_columns
 
             let src_file = st.root as ast.NodeWith[ast.SrcFile]
-            h.assert_eq[USize](0, lc(src_file)?._1, "starting line")
-            h.assert_eq[USize](0, lc(src_file)?._2, "starting col")
+            h.assert_eq[USize](
+              0, st.lines_and_columns(src_file)?._1, "starting line")
+            h.assert_eq[USize](
+              0, st.lines_and_columns(src_file)?._2, "starting col")
             h.assert_eq[USize](2, src_file.data().type_defs.size(), "# types")
 
             let a = src_file.data().type_defs(0)?
-            h.assert_eq[USize](0, lc(a)?._1, "A line")
-            h.assert_eq[USize](0, lc(a)?._2, "A col")
+            h.assert_eq[USize](0, st.lines_and_columns(a)?._1, "A line")
+            h.assert_eq[USize](0, st.lines_and_columns(a)?._2, "A col")
 
             let c = a.data() as ast.TypedefClass
             let m = c.members
               as ast.NodeWith[ast.TypedefMembers]
             let nc = m.data().methods(0)?
             let nc_id = nc.data().identifier
-            h.assert_eq[USize](1, lc(nc_id)?._1, "nc line")
-            h.assert_eq[USize](6, lc(nc_id)?._2, "nc col")
+            h.assert_eq[USize](1, st.lines_and_columns(nc_id)?._1, "nc line")
+            h.assert_eq[USize](6, st.lines_and_columns(nc_id)?._2, "nc col")
 
             let b = src_file.data().type_defs(1)?
             let b_id = (b.data() as ast.TypedefClass).identifier
-            h.assert_eq[USize](2, lc(b_id)?._1, "B line")
-            h.assert_eq[USize](10, lc(b_id)?._2, "B col")
+            h.assert_eq[USize](2, st.lines_and_columns(b_id)?._1, "B line")
+            h.assert_eq[USize](10, st.lines_and_columns(b_id)?._2, "B col")
           else
             h.fail("error in parse tree")
           end

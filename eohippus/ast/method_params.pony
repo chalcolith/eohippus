@@ -16,9 +16,12 @@ class val MethodParams is NodeData
     MethodParams(
       NodeChild.seq_with[MethodParam](params, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
     if params.size() > 0 then
-      props.push(("params", Nodes.get_json(params)))
+      props.push(("params", Nodes.get_json(params, lines_and_columns)))
     end
 
 class val MethodParam is NodeData
@@ -43,13 +46,16 @@ class val MethodParam is NodeData
       NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
       NodeChild.with_or_none[Expression](initializer, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("identifier", identifier.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("identifier", identifier.get_json(lines_and_columns)))
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", constraint'.get_json(lines_and_columns)))
     end
     match initializer
     | let initializer': NodeWith[Expression] =>
-      props.push(("initializer", initializer'.get_json()))
+      props.push(("initializer", initializer'.get_json(lines_and_columns)))
     end

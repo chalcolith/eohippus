@@ -71,14 +71,7 @@ primitive _Build
       variable in the scope of the given result.
     """
     try
-      let vs = b.values(v, r)?
-
-      for n in vs.values() do
-        let str = n.get_json().string()
-        str.clear()
-      end
-
-      nodes_with[D](vs)
+      nodes_with[D](b.values(v, r)?)
     else
       []
     end

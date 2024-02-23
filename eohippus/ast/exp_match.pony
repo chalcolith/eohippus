@@ -23,14 +23,17 @@ class val ExpMatch is NodeData
       NodeChild.seq_with[MatchCase](cases, old_children, new_children)?,
       NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("expression", expression.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("expression", expression.get_json(lines_and_columns)))
     if cases.size() > 0 then
-      props.push(("cases", Nodes.get_json(cases)))
+      props.push(("cases", Nodes.get_json(cases, lines_and_columns)))
     end
     match else_block
     | let else_block': NodeWith[Expression] =>
-      props.push(("else_block", else_block'.get_json()))
+      props.push(("else_block", else_block'.get_json(lines_and_columns)))
     end
 
 class val MatchCase is NodeData
@@ -56,10 +59,13 @@ class val MatchCase is NodeData
       NodeChild.with_or_none[Expression](condition, old_children, new_children)?,
       NodeChild.child_with[Expression](body, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("pattern", pattern.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("pattern", pattern.get_json(lines_and_columns)))
     match condition
     | let condition': NodeWith[Expression] =>
-      props.push(("condition", condition'.get_json()))
+      props.push(("condition", condition'.get_json(lines_and_columns)))
     end
-    props.push(("body", body.get_json()))
+    props.push(("body", body.get_json(lines_and_columns)))

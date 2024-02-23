@@ -1,4 +1,5 @@
 use "collections"
+use ".."
 
 primitive Subsumes
   fun apply(a: Item, b: Item, p: String = "/"): (Bool, String) =>
@@ -64,7 +65,10 @@ primitive Subsumes
       if a_str == b_str then
         return (true, "")
       else
-        return (false, "'" + a_str + "' at " + p + " != '" + b_str + "'")
+        return (
+          false,
+          "'" + StringUtil.escape(a_str) + "' at " + p + " != '" +
+            StringUtil.escape(b_str) + "'")
       end
     end
     (false, "rhs at " + p + " is not a string")

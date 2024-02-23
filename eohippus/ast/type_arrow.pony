@@ -19,9 +19,12 @@ class val TypeArrow is NodeData
       NodeChild(lhs, old_children, new_children)?,
       NodeChild.with_or_none[TypeType](rhs, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("lhs", lhs.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("lhs", lhs.get_json(lines_and_columns)))
     match rhs
     | let rhs': NodeWith[TypeType] =>
-      props.push(("rhs", rhs'.get_json()))
+      props.push(("rhs", rhs'.get_json(lines_and_columns)))
     end

@@ -31,7 +31,10 @@ class val TuplePattern is NodeData
     end
     TuplePattern(consume result)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
     if ids.size() > 0 then
-      props.push(("ids", Nodes.get_json(ids)))
+      props.push(("ids", Nodes.get_json(ids, lines_and_columns)))
     end

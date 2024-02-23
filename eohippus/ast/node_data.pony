@@ -8,7 +8,9 @@ trait val NodeData
   fun name(): String
     """An informative identifier for the type of data the AST node holds."""
 
-  fun add_json_props(props: Array[(String, json.Item)])
+  fun add_json_props(
+      props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
     """Add properties to the JSON representation of the AST node."""
 
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ?

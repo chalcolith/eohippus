@@ -31,13 +31,16 @@ class val ExpFfi is NodeData
       NodeChild.child_with[CallArgs](call_args, old_children, new_children)?,
       partial)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("identifier", identifier.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("identifier", identifier.get_json(lines_and_columns)))
     match type_args
     | let type_args': NodeWith[TypeArgs] =>
-      props.push(("type_args", type_args'.get_json()))
+      props.push(("type_args", type_args'.get_json(lines_and_columns)))
     end
-    props.push(("call_args", call_args.get_json()))
+    props.push(("call_args", call_args.get_json(lines_and_columns)))
     if partial then
       props.push(("partial", partial))
     end

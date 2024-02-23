@@ -24,9 +24,12 @@ class val ExpJump is NodeData
       NodeChild.child_with[Keyword](keyword, old_children, new_children)?,
       NodeChild.with_or_none[Expression](rhs, old_children, new_children)?)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("keyword", keyword.get_json()))
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
+    props.push(("keyword", keyword.get_json(lines_and_columns)))
     match rhs
     | let rhs': Node =>
-      props.push(("rhs", rhs'.get_json()))
+      props.push(("rhs", rhs'.get_json(lines_and_columns)))
     end

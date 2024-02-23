@@ -18,7 +18,10 @@ class val LiteralInteger is NodeDataWithValue[U128]
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
     this
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(
+    props: Array[(String, json.Item)],
+    lines_and_columns: (LineColumnMap | None) = None)
+  =>
     let kind_str =
       match kind
       | DecimalInteger => "DecimalInteger"

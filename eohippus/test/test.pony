@@ -14,3 +14,4 @@ actor Main is TestList
     _TestParserType(test)
     _TestParserTypedef(test)
     _TestSyntaxTree(test)
+    _TestLinter(test)
