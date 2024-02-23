@@ -1,8 +1,13 @@
 use ast = "../ast"
 
 trait val Rule
-  fun message(): String "An informative message for issues found by this rule"
+  fun val name(): String
 
-  fun analyze(node: ast.Node, issues: Seq[Issue])
+  fun val message(): String "An informative message for issues found by this rule"
 
-  fun fix(orig: ast.Node, issues: ReadSeq[Issue]): (ast.Node | None)
+  fun val should_apply(config: Config val): Bool
+
+  fun val analyze(tree: ast.SyntaxTree iso, issues: Seq[Issue] iso)
+    : (ast.SyntaxTree iso^, Seq[Issue] iso^)
+
+  fun val fix(orig: ast.Node, issues: ReadSeq[Issue]): (ast.Node | None)

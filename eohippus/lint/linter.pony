@@ -1,49 +1,64 @@
 use "collections"
-use "promises"
+use p = "promises"
 
 use ast = "../ast"
 use rules = "rules"
+
+interface Listener
+  fun apply(tree: ast.SyntaxTree iso, issues: ReadSeq[Issue] iso)
+  fun reject(message: String)
 
 actor Linter
   """
     Provides the ability to lint and fix eoh ASTs.
   """
-  let _config: Config
-  let _rules: Map[String, Rule]
+  let _config: Config val
+  let _rules: Map[String, Rule] val
 
-  new create(config': Config) =>
+  new create(config': Config val) =>
     _config = config'
-    _rules = Map[String, Rule]
-    _rules(ConfigKey.trim_trailing_whitespace()) = rules.TrimTrailingWhitespace
+    _rules =
+      recover val
+        Map[String, Rule]
+          .> update(
+            ConfigKey.trim_trailing_whitespace(), rules.TrimTrailingWhitespace)
+      end
 
-  be analyze(node: ast.Node, issues: Promise[ReadSeq[Issue]]) =>
-    _LiterImpl(this, node, issues).analyze_next()
+  be analyze(
+    tree: ast.SyntaxTree iso,
+    listener: Listener val)
+  =>
+    _LinterImpl(_config, _rules, consume tree, listener)
 
 actor _LinterImpl
-  let _linter: Linter
-  let _node: ast.Node
-  let _promise: Promise[ReadSeq[Issue]]
-  let _iter: Iter[Rule]
-  let _issues: Array[Issue]
+  let _config: Config val
+  let _rules: Iterator[Rule]
+  let _listener: Listener val
 
   new create(
-    linter: Linter,
-    node: ast.Node,
-    promise: Promise[ReadSeq[Issue]])
+    config': Config val,
+    rules': Map[String, Rule] val,
+    tree': ast.SyntaxTree iso,
+    listener': Listener val)
   =>
-    _linter = linter
-    _node = node
-    _promise = promise
-    _iter = _linter._rules.values()
-    _issues = Array[Issue]
+    _config = config'
+    _rules = rules'.values()
+    _listener = listener'
+    _analyze_next(consume tree', Array[Issue])
 
-  be analyze_next() =>
-    if _iter.has_next() then
+  be _analyze_next(tree: ast.SyntaxTree iso, issues: Seq[Issue] iso) =>
+    if _rules.has_next() then
       try
-        let rule = _iter.next()?
-        rule.analyze(_node, _issues)
-        analyze_next()
+        let rule = _rules.next()?
+        var tree': ast.SyntaxTree iso = consume tree
+        var issues': Seq[Issue] iso = consume issues
+        if rule.should_apply(_config) then
+          (tree', issues') = rule.analyze(consume tree', consume issues')
+        end
+        _analyze_next(consume tree', consume issues')
+      else
+        _listener.reject("internal error: overran iterator")
       end
     else
-      _promise(_issues = Array[Issue])
+      _listener(consume tree, consume issues)
     end
