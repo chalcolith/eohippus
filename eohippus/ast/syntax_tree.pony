@@ -8,6 +8,7 @@ use ".."
 
 type LineColumnMap is col.MapIs[Node box, (USize, USize)] val
 type Path is per.List[Node]
+type TraverseError is (Node, String)
 
 class SyntaxTree
   var root: Node val
@@ -22,27 +23,43 @@ class SyntaxTree
       update_line_info()
     end
 
-  fun tag traverse[S](visitor: Visitor[S], node: Node): Node =>
-    _traverse[S](visitor, node, per.Cons[Node](node, per.Nil[Node]))
+  fun tag traverse[S](visitor: Visitor[S], node: Node)
+    : (Node, ReadSeq[TraverseError] val)
+  =>
+    var errors: Array[TraverseError] iso = Array[TraverseError]
+    (let new_node, errors) = _traverse[S](
+      visitor,
+      node,
+      per.Cons[Node](node, per.Nil[Node]),
+      consume errors)
+    (new_node, consume errors)
 
-  fun tag _traverse[S](visitor: Visitor[S], node: Node, path: Path): Node =>
-    let node_state = visitor.visit_pre(node, path)
+  fun tag _traverse[S](
+    visitor: Visitor[S],
+    node: Node,
+    path: Path,
+    errors: Array[TraverseError] iso)
+    : (Node, Array[TraverseError] iso^)
+  =>
+    var errors': Array[TraverseError] iso = consume errors
+    (let node_state, errors') = visitor.visit_pre(node, path, consume errors')
     if node.children().size() == 0 then
-      visitor.visit_post(consume node_state, node, path)
+      (let result, errors') = visitor.visit_post(
+        consume node_state, node, path, consume errors')
+      (result, consume errors')
     else
       var new_children: (Array[Node] trn | None) = None
-
       var i: USize = 0
       while i < node.children().size() do
         try
           let child = node.children()(i)?
-          let new_child: Node =
-            _traverse[S](visitor, child, path.prepend(child))
+          (let new_child, errors') = _traverse[S](
+            visitor, child, path.prepend(child), consume errors')
           match new_children
           | let arr: Array[Node] trn =>
             arr.push(new_child)
           | None =>
-            if new_children isnt child then
+            if new_child isnt child then
               let new_children': Array[Node] trn =
                 Array[Node](node.children().size())
               if i > 0 then
@@ -62,9 +79,13 @@ class SyntaxTree
 
       match new_children
       | let arr: Array[Node] trn =>
-        visitor.visit_post(consume node_state, node, path, consume arr)
+        (let result, errors') = visitor.visit_post(
+            consume node_state, node, path, consume errors', consume arr)
+        (result, consume errors')
       else
-        visitor.visit_post(consume node_state, node, path, node.children())
+        (let result, errors') = visitor.visit_post(
+            consume node_state, node, path, consume errors', node.children())
+        (result, consume errors')
       end
     end
 
@@ -135,38 +156,3 @@ class _UpdateLineState
     segment = segment'
     line = 0
     column = 0
-
-interface Visitor[State]
-  """
-    Used to effect transformations of an AST, using `SyntaxTree.traverse()`.
-
-    AST trees are immutable.  We get a transformed tree by traversing the old
-    tree and returning a new one (re-using unmodified nodes as necessary).
-
-    Traversal happens in the following fashion:
-
-    - For a node (starting with the root):
-      - Call `visit_pre()` on the visitor; this returns an intermediate state
-        (if some data needs to be saved for later).
-      - Build a list of new node children by calling `traverse()` on each old
-        child.
-      - Call `visit_post()` with the intermediate saved state, the old children
-        of the node, and the new children. `visit_post()` returns the new node.
-  """
-
-  fun ref visit_pre(node: Node, path: Path): State^
-    """
-      Returns an intermediate state value for use when constructing the new
-      node.
-    """
-
-  fun ref visit_post(
-    pre_state: State^,
-    node: Node,
-    path: Path,
-    new_children: (NodeSeq | None) = None)
-    : Node
-    """
-      Returns a new node constructed from the "pre" state (the intermediate
-      state) that was returned by `visit_pre()`, and the new children itself.
-    """

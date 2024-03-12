@@ -15,3 +15,17 @@ class val Issue
     rule = rule'
     start = start'
     next = next'
+
+  fun val match_start(node: ast.Node): Bool =>
+    try
+      node is start.head()?
+    else
+      false
+    end
+
+  fun val match_next(node: ast.Node): Bool =>
+    try
+      node is next.head()?
+    else
+      false
+    end

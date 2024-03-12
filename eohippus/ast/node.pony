@@ -52,9 +52,45 @@ trait val Node
   fun ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
+  fun fix_up[T: NodeData val](anciliary: NodeSeqWith[T], new_children: NodeSeq)
+    : (NodeSeqWith[T] | None)
+  =>
+    """
+      Assuming `new_children` is the result of pruning, returns a new anciliary
+      list containing only those anciliary nodes that appear in `new_children`.
+    """
+    var result: (Array[NodeWith[T]] trn | None) = None
+    var i: USize = 0 // current position in anciliary
+    var c: USize = 0 // start position in children
+    while i < anciliary.size() do
+      var j: USize = c
+      while j < new_children.size() do
+        try
+          if anciliary(i)? is new_children(j)? then
+            if result is None then
+              result = recover trn Array[NodeWith[T]] end
+            end
+            match result
+            | let result': Array[NodeWith[T]] trn =>
+              result'.push(anciliary(i)?)
+            end
+            c = j + 1
+            break
+          end
+        end
+        j = j + 1
+      end
+      i = i + 1
+    end
+    consume result
+
   fun get_json(lines_and_columns: (LineColumnMap | None) = None)
     : json.Item
-    """Get a JSON representation of the node."""
+    """Get a semantic JSON representation of the node."""
+
+  fun get_child_json(lines_and_columns: (LineColumnMap | None) = None)
+    : json.Item
+    """Get a JSON representation of the node without semantic properties."""
 
   fun string(): String iso^
 
@@ -284,30 +320,69 @@ class val NodeWith[D: NodeData val] is Node
       error_sections'',
       ast_type')
 
-  fun name(): String => _data.name()
+  fun name(): String =>
+    """The kind of data that is stored in this node."""
+    _data.name()
 
-  fun src_info(): SrcInfo => _src_info
+  fun src_info(): SrcInfo =>
+    """Source file information for this node."""
+    _src_info
 
-  fun children(): NodeSeq => _children
+  fun children(): NodeSeq =>
+    """The complete list of children of this node."""
+    _children
 
-  fun data(): D => _data
+  fun data(): D =>
+    """
+      Semantic data associated with this node.  Node references in `data` must
+      reference nodes in `children`.
+    """
+    _data
 
-  fun doc_strings(): NodeSeqWith[DocString] => _doc_strings
+  fun doc_strings(): NodeSeqWith[DocString] =>
+    """
+      Zero or more doc strings associated with this node.  Must be references
+      to nodes in `children`.
+    """
+    _doc_strings
 
-  fun annotation(): (NodeWith[Annotation] | None) => _annotation
+  fun annotation(): (NodeWith[Annotation] | None) =>
+    """
+      The node's annotation, if any. Must be a reference to a node in
+      `children`.
+    """
+    _annotation
 
-  fun pre_trivia(): NodeSeqWith[Trivia] => _pre_trivia
+  fun pre_trivia(): NodeSeqWith[Trivia] =>
+    """
+      Trivia (whitespace, comments) that appears before the significant content
+      of this node. Likely only appears in `SrcFile`. Must be references to
+      nodes in `children`.
+    """
+    _pre_trivia
 
-  fun post_trivia(): NodeSeqWith[Trivia] => _post_trivia
+  fun post_trivia(): NodeSeqWith[Trivia] =>
+    """
+      Trivia (whitespace, comments) that appears after the significant content
+      of this node. Must be references to nodes in `children`.
+    """
+    _post_trivia
 
-  fun error_sections(): NodeSeqWith[ErrorSection] => _error_sections
+  fun error_sections(): NodeSeqWith[ErrorSection] =>
+    """
+      Any error sections that appear in `children`.
+    """
+    _error_sections
 
-  fun ast_type(): (types.AstType | None) => _ast_type
+  fun ast_type(): (types.AstType | None) =>
+    """The resolved type of this node, if any."""
+    _ast_type
 
   fun get_json(lines_and_columns: (LineColumnMap | None) = None)
     : json.Item
   =>
-    let props = [ as (String, json.Item): ("name", _data.name()) ]
+    """Get a JSON representation of the semantics of this node and its data."""
+    let props = [ as (String, json.Item): ("name", name()) ]
     match lines_and_columns
     | let lc: LineColumnMap =>
       try
@@ -339,6 +414,33 @@ class val NodeWith[D: NodeData val] is Node
     if _post_trivia.size() > 0 then
       props.push(
         ("post_trivia", Nodes.get_json(_post_trivia, lines_and_columns)))
+    end
+    json.Object(props)
+
+  fun get_child_json(lines_and_columns: (LineColumnMap | None) = None)
+    : json.Item
+  =>
+    """
+      Get a JSON representation of this node (without semantic data) and its
+      children.
+    """
+    let props = [ as (String, json.Item): ("name", name()) ]
+    match lines_and_columns
+    | let lc: LineColumnMap =>
+      try
+        (let line, let column) = lc(this)?
+        let si = json.Object(
+          [ as (String, json.Item):
+            ("line", I128.from[USize](line))
+            ("column", I128.from[USize](column))])
+        props.push(("src_info", si))
+      end
+    end
+    if _children.size() > 0 then
+      let child_json = json.Sequence.from_iter(
+        Iter[Node](_children.values()).map[json.Item](
+          {(child) => child.get_child_json(lines_and_columns)}))
+      props.push(("children", child_json))
     end
     json.Object(props)
 
