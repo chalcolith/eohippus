@@ -27,14 +27,11 @@ class val SrcFile is NodeData
       NodeChild.seq_with[Using](usings, old_children, new_children)?,
       NodeChild.seq_with[Typedef](type_defs, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("locator", locator))
     if usings.size() > 0 then
-      props.push(("usings", Nodes.get_json(usings, lines_and_columns)))
+      props.push(("usings", node.child_refs(usings)))
     end
     if type_defs.size() > 0 then
-      props.push(("type_defs", Nodes.get_json(type_defs, lines_and_columns)))
+      props.push(("type_defs", node.child_refs(type_defs)))
     end

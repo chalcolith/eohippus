@@ -56,9 +56,9 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           end
           h.assert_eq[USize](0, issues.size(), "should be 0 unfixed issues")
 
-          h.log("EXPECTED:\n" + expected_json.string())
-          let actual_json = tree.root.get_child_json(tree.lines_and_columns)
-          h.log("ACTUAL:\n" + actual_json.string())
+          //h.log("EXPECTED:\n" + expected_json.string())
+          let actual_json = tree.root.get_json(tree.lines_and_columns)
+          //h.log("ACTUAL:\n" + actual_json.string())
           //let child_json = tree.root.get_child_json(tree.lines_and_columns)
           //h.log("CHILDREN:\n" + child_json.string())
 
@@ -78,7 +78,7 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           issues: ReadSeq[lint.Issue] val,
           errors: ReadSeq[ast.TraverseError] val)
         =>
-          h.log("ORIGINAL:\n" + tree.root.get_child_json().string())
+          //h.log("ORIGINAL:\n" + tree.root.get_json().string())
 
           if not h.assert_eq[USize](4, issues.size(), "should be 4 issues") then
             h.complete(false)

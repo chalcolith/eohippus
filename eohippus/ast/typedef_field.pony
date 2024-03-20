@@ -31,17 +31,14 @@ class val TypedefField is NodeData
       NodeChild.with_or_none[TypeType](type_type, old_children, new_children)?,
       NodeChild.with_or_none[Expression](value, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("kind", kind.get_json(lines_and_columns)))
-    props.push(("identifier", identifier.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
+    props.push(("identifier", node.child_ref(identifier)))
     match type_type
     | let type_type': NodeWith[TypeType] =>
-      props.push(("type", type_type'.get_json(lines_and_columns)))
+      props.push(("type", node.child_ref(type_type')))
     end
     match value
     | let value': NodeWith[Expression] =>
-      props.push(("value", value'.get_json(lines_and_columns)))
+      props.push(("value", node.child_ref(value')))
     end

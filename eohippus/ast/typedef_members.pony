@@ -25,13 +25,10 @@ class val TypedefMembers is NodeData
       f,
       m)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if fields.size() > 0 then
-      props.push(("fields", Nodes.get_json(fields, lines_and_columns)))
+      props.push(("fields", node.child_refs(fields)))
     end
     if methods.size() > 0 then
-      props.push(("methods", Nodes.get_json(methods, lines_and_columns)))
+      props.push(("methods", node.child_refs(methods)))
     end

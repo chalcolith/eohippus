@@ -17,8 +17,5 @@ class val _BuiltinNode is ast.NodeData
   =>
     this
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (ast.LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: ast.Node, props: Array[(String, json.Item)]) =>
     None

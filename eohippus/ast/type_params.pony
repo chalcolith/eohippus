@@ -13,12 +13,9 @@ class val TypeParams is NodeData
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
     TypeParams(NodeChild.seq_with[TypeParam](params, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
-      props.push(("params", Nodes.get_json(params, lines_and_columns)))
+      props.push(("params", node.child_refs(params)))
     end
 
 class val TypeParam is NodeData
@@ -43,19 +40,16 @@ class val TypeParam is NodeData
       NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
       NodeChild.with_or_none[TypeType](initializer, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json(lines_and_columns)))
+      props.push(("identifier", node.child_ref(identifier')))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json(lines_and_columns)))
+      props.push(("constraint", node.child_ref(constraint')))
     end
     match initializer
     | let initializer': NodeWith[TypeType] =>
-      props.push(("initializer", initializer'.get_json(lines_and_columns)))
+      props.push(("initializer", node.child_ref(initializer')))
     end

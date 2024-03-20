@@ -24,13 +24,10 @@ class val ExpWhile is NodeData
       NodeChild.child_with[Expression](body, old_children, new_children)?,
       NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("condition", condition.get_json(lines_and_columns)))
-    props.push(("body", body.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("condition", node.child_ref(condition)))
+    props.push(("body", node.child_ref(body)))
     match else_block
     | let else_block': NodeWith[Expression] =>
-      props.push(("else_block", else_block'.get_json(lines_and_columns)))
+      props.push(("else_block", node.child_ref(else_block')))
     end

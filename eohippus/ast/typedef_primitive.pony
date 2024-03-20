@@ -14,8 +14,5 @@ class val TypedefPrimitive is NodeData
     TypedefPrimitive(
       NodeChild.child_with[Identifier](identifier, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("identifier", identifier.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("identifier", node.child_ref(identifier)))

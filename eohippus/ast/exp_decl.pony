@@ -29,13 +29,10 @@ class val ExpDecl is NodeData
       NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
       NodeChild.with_or_none[TypeType](decl_type, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("kind", kind.get_json(lines_and_columns)))
-    props.push(("identifier", identifier.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
+    props.push(("identifier", node.child_ref(identifier)))
     match decl_type
     | let decl_type': NodeWith[TypeType] =>
-      props.push(("decl_type", decl_type'.get_json(lines_and_columns)))
+      props.push(("decl_type", node.child_ref(decl_type')))
     end

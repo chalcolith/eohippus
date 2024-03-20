@@ -52,39 +52,36 @@ class val ExpLambda is NodeData
       NodeChild.child_with[Expression](body, old_children, new_children)?,
       NodeChild.with_or_none[Keyword](ref_cap, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if bare then
       props.push(("bare", bare))
     end
     match this_cap
     | let this_cap': NodeWith[Keyword] =>
-      props.push(("this_cap", this_cap'.get_json(lines_and_columns)))
+      props.push(("this_cap", node.child_ref(this_cap')))
     end
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json(lines_and_columns)))
+      props.push(("identifier", node.child_ref(identifier')))
     end
     match type_params
     | let type_params': NodeWith[TypeParams] =>
-      props.push(("type_params", type_params'.get_json(lines_and_columns)))
+      props.push(("type_params", node.child_ref(type_params')))
     end
-    props.push(("params", params.get_json(lines_and_columns)))
+    props.push(("params", node.child_ref(params)))
     match captures
     | let captures': NodeWith[MethodParams] =>
-      props.push(("captures", captures'.get_json(lines_and_columns)))
+      props.push(("captures", node.child_ref(captures')))
     end
     match ret_type
     | let ret_type': NodeWith[TypeType] =>
-      props.push(("ret_type", ret_type'.get_json(lines_and_columns)))
+      props.push(("ret_type", node.child_ref(ret_type')))
     end
     if partial then
       props.push(("partial", partial))
     end
-    props.push(("body", body.get_json(lines_and_columns)))
+    props.push(("body", node.child_ref(body)))
     match ref_cap
     | let ref_cap': NodeWith[Keyword] =>
-      props.push(("ref_cap", ref_cap'.get_json(lines_and_columns)))
+      props.push(("ref_cap", node.child_ref(ref_cap')))
     end

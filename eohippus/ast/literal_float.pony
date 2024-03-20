@@ -11,10 +11,7 @@ class val LiteralFloat is NodeDataWithValue[F64]
   fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
     this
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("value", _value))
 
   fun value(): F64 => _value

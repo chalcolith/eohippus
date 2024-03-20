@@ -24,16 +24,13 @@ class val ExpObject is NodeData
       NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
       NodeChild.child_with[TypedefMembers](members, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json(lines_and_columns)))
+      props.push(("cap", node.child_ref(cap')))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json(lines_and_columns)))
+      props.push(("constraint", node.child_ref(constraint')))
     end
-    props.push(("members", members.get_json(lines_and_columns)))
+    props.push(("members", node.child_ref(members)))

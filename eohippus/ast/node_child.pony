@@ -90,10 +90,18 @@ primitive NodeChild
     : NodeSeqWith[T] ?
   =>
     """
-      Builds a list of new children equivalent to the old children given.
+      If we have an old list of typed children (from node data), some of which
+      are found in `old_children`, this method builds a new list of typed
+      children from the equivalents in `new_children`.  `old_children` and
+      `new_children` must have the same number of elements, and each element
+      in `new_children` must be the (possibly updated) equivalent to its
+      corresponding element in `old_children`.
     """
     if old_typed_children.size() == 0 then
       return old_typed_children
+    end
+    if old_children.size() != new_children.size() then
+      error
     end
     let result: Array[NodeWith[T]] trn = Array[NodeWith[T]](
       old_typed_children.size())
@@ -106,6 +114,5 @@ primitive NodeChild
         end
         i = i + 1
       end
-      if i == old_children.size() then error end
     end
     consume result

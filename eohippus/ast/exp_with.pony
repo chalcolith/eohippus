@@ -20,14 +20,11 @@ class val ExpWith is NodeData
       NodeChild.seq_with[WithElement](elements, old_children, new_children)?,
       NodeChild.child_with[Expression](body, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if elements.size() > 0 then
-      props.push(("elements", Nodes.get_json(elements, lines_and_columns)))
+      props.push(("elements", node.child_refs(elements)))
     end
-    props.push(("body", body.get_json(lines_and_columns)))
+    props.push(("body", node.child_ref(body)))
 
 class val WithElement is NodeData
   """An arm of a `with` expression."""
@@ -49,9 +46,6 @@ class val WithElement is NodeData
       NodeChild.child_with[TuplePattern](pattern, old_children, new_children)?,
       NodeChild.child_with[Expression](body, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("pattern", pattern.get_json(lines_and_columns)))
-    props.push(("body", body.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("pattern", node.child_ref(pattern)))
+    props.push(("body", node.child_ref(body)))

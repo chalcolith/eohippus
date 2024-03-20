@@ -28,12 +28,9 @@ class val ExpCall is NodeData
       NodeChild.child_with[CallArgs](args, old_children, new_children)?,
       partial)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("lhs", lhs.get_json(lines_and_columns)))
-    props.push(("args", args.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("lhs", node.child_ref(lhs)))
+    props.push(("args", node.child_ref(args)))
     if partial then
       props.push(("partial", partial))
     end

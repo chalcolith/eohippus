@@ -62,16 +62,13 @@ class val ExpOperation is NodeData
       rhs',
       partial)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match lhs
     | let lhs': Node =>
-      props.push(("lhs", lhs'.get_json(lines_and_columns)))
+      props.push(("lhs", node.child_ref(lhs')))
     end
-    props.push(("op", op.get_json(lines_and_columns)))
-    props.push(("rhs", rhs.get_json(lines_and_columns)))
+    props.push(("op", node.child_ref(op)))
+    props.push(("rhs", node.child_ref(rhs)))
     if partial then
       props.push(("partial", partial))
     end

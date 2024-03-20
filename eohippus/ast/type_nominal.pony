@@ -32,26 +32,23 @@ class val TypeNominal is NodeData
       NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
       NodeChild.with_or_none[Token](eph, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match lhs
     | let lhs': NodeWith[Identifier] =>
-      props.push(("lhs", lhs'.get_json(lines_and_columns)))
+      props.push(("lhs", node.child_ref(lhs')))
     end
-    props.push(("rhs", rhs.get_json(lines_and_columns)))
+    props.push(("rhs", node.child_ref(rhs)))
     match params
     | let params': NodeWith[TypeParams] =>
       if params'.data().params.size() > 0 then
-        props.push(("params", params'.get_json(lines_and_columns)))
+        props.push(("params", node.child_ref(params')))
       end
     end
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json(lines_and_columns)))
+      props.push(("cap", node.child_ref(cap')))
     end
     match eph
     | let eph': NodeWith[Token] =>
-      props.push(("eph", eph'.get_json(lines_and_columns)))
+      props.push(("eph", node.child_ref(eph')))
     end

@@ -32,21 +32,18 @@ class val UsingPony is NodeData
       def_true,
       NodeChild.with_or_none[Identifier](define, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json(lines_and_columns)))
+      props.push(("identifier", node.child_ref(identifier')))
     end
-    props.push(("path", path.get_json(lines_and_columns)))
+    props.push(("path", node.child_ref(path)))
     match define
     | let define': NodeWith[Identifier] =>
       if not def_true then
         props.push(("def_true", def_true))
       end
-      props.push(("define", define'.get_json(lines_and_columns)))
+      props.push(("define", node.child_ref(define')))
     end
 
 class val UsingFFI is NodeData
@@ -90,19 +87,16 @@ class val UsingFFI is NodeData
       def_true,
       NodeChild.with_or_none[Identifier](define, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json(lines_and_columns)))
+      props.push(("identifier", node.child_ref(identifier')))
     end
-    props.push(("name", fun_name.get_json(lines_and_columns)))
-    props.push(("type_args", type_args.get_json(lines_and_columns)))
+    props.push(("name", node.child_ref(fun_name)))
+    props.push(("type_args", node.child_ref(type_args)))
     match params
     | let params': NodeWith[MethodParams] =>
-      props.push(("params", params'.get_json(lines_and_columns)))
+      props.push(("params", node.child_ref(params')))
     end
     if partial then
       props.push(("partial", partial))
@@ -112,5 +106,5 @@ class val UsingFFI is NodeData
       if not def_true then
         props.push(("def_true", def_true))
       end
-      props.push(("define", define'.get_json(lines_and_columns)))
+      props.push(("define", node.child_ref(define')))
     end

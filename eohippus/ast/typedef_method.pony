@@ -48,39 +48,36 @@ class val TypedefMethod is NodeData
       partial,
       NodeChild.with_or_none[Expression](body, old_children, new_children)?)
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("kind", kind.get_json(lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json(lines_and_columns)))
+      props.push(("cap", node.child_ref(cap')))
     end
     if raw then
       props.push(("raw", raw))
     end
-    props.push(("identifier", identifier.get_json(lines_and_columns)))
+    props.push(("identifier", node.child_ref(identifier)))
     match type_params
     | let type_params': NodeWith[TypeParams] =>
       if type_params'.data().params.size() > 0 then
-        props.push(("type_params", type_params'.get_json(lines_and_columns)))
+        props.push(("type_params", node.child_ref(type_params')))
       end
     end
     match params
     | let params': NodeWith[MethodParams] =>
       if params'.data().params.size() > 0 then
-        props.push(("params", params'.get_json(lines_and_columns)))
+        props.push(("params", node.child_ref(params')))
       end
     end
     match return_type
     | let return_type': NodeWith[TypeType] =>
-      props.push(("return_type", return_type'.get_json(lines_and_columns)))
+      props.push(("return_type", node.child_ref(return_type')))
     end
     if partial then
       props.push(("partial", partial))
     end
     match body
     | let body': NodeWith[Expression] =>
-      props.push(("body", body'.get_json(lines_and_columns)))
+      props.push(("body", node.child_ref(body')))
     end

@@ -14,8 +14,5 @@ class val Annotation is NodeData
 
   fun name(): String => "Annotation"
 
-  fun add_json_props(
-    props: Array[(String, json.Item)],
-    lines_and_columns: (LineColumnMap | None) = None)
-  =>
-    props.push(("identifiers", Nodes.get_json(identifiers, lines_and_columns)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("identifiers", node.child_refs(identifiers)))
