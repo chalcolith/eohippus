@@ -64,8 +64,8 @@ primitive _Assert
                         json.Subsumes(expected_json, actual_json)
                       test_succeeded = h.assert_true(
                         res,
-                        "Expected '" + expected_json.string() + "'; actual '"
-                          + actual_json.string() + "': " + err)
+                        "EXPECTED\n" + expected_json.string() + "\n\nACTUAL\n"
+                          + actual_json.string() + "\n: " + err)
                     end
                   | let parse_error: json.ParseError =>
                     h.fail(

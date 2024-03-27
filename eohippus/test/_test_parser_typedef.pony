@@ -205,43 +205,37 @@ class iso _TestParserTypedefPrimitive is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.typedef_primitive
 
-    let source = "primitive FooBar\n\"\"\"docs\"\"\"  "
-    let expected =
+    let src = "primitive FooBar\n\"\"\"docs\"\"\"  "
+    let exp =
       """
         {
           "name": "TypedefPrimitive",
-          "identifier": {
-            "name": "Identifier",
-            "string": "FooBar",
-            "post_trivia": [
-              {
-                "name": "Trivia",
-                "kind": "EndOfLineTrivia"
-              }
-            ]
-          },
-          "doc_strings": [
+          "identifier": 1,
+          "children": [
+            {
+              "name": "Keyword",
+              "string": "primitive"
+            },
+            {
+              "name": "Identifier",
+              "string": "FooBar"
+            },
             {
               "name": "DocString",
-              "string": {
-                "name": "LiteralString",
-                "kind": "StringTripleQuote",
-                "value": "docs",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia"
-                  }
-                ]
-              }
+              "string": 0,
+              "children": [
+                {
+                  "name": "LiteralString",
+                  "kind": "StringTripleQuote",
+                  "value": "docs"
+                }
+              ]
             }
           ]
         }
       """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefAlias is UnitTest
   fun name(): String => "parser/typedef/Alias"
@@ -251,53 +245,121 @@ class iso _TestParserTypedefAlias is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.typedef_alias
 
-    let source = "type A[T] is (B | (C & D))"
-    let expected = """
+    let src = "type A[T] is (B | (C & D))"
+    let exp = """
       {
         "name": "TypedefAlias",
-        "identifier": { "name": "Identifier", "string": "A" },
-        "type_params": {
-          "name": "TypeParams",
-          "params": [
-            {
-              "name": "TypeParam",
-              "constraint": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "T" }
+        "identifier": 1,
+        "type_params": 2,
+        "type": 4,
+        "children": [
+          {
+            "name": "Keyword",
+            "string": "type"
+          },
+          {
+            "name": "Identifier",
+            "string": "A"
+          },
+          {
+            "name": "TypeParams",
+            "params": [
+              1
+            ],
+            "children": [
+              {
+                "name": "Token",
+                "string": "["
+              },
+              {
+                "name": "TypeParam",
+                "constraint": 0,
+                "children": [
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "T"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "]"
               }
-            }
-          ]
-        },
-        "type": {
-          "name": "TypeInfix",
-          "op": { "name": "Token", "string": "|" },
-          "types": [
-            {
-              "name": "TypeNominal",
-              "rhs": { "name": "Identifier", "string": "B" }
-            },
-            {
-              "name": "TypeInfix",
-              "op": { "name": "Token", "string": "&" },
-              "types": [
-                {
-                  "name": "TypeNominal",
-                  "rhs": { "name": "Identifier", "string": "C" }
-                },
-                {
-                  "name": "TypeNominal",
-                  "rhs": { "name": "Identifier", "string": "D" }
-                }
-              ]
-            }
-          ]
-        }
+            ]
+          },
+          {
+            "name": "Keyword",
+            "string": "is"
+          },
+          {
+            "name": "TypeInfix",
+            "op": 1,
+            "types": [
+              0,
+              2
+            ],
+            "children": [
+              {
+                "name": "TypeNominal",
+                "rhs": 0,
+                "children": [
+                  {
+                    "name": "Identifier",
+                    "string": "B"
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "|"
+              },
+              {
+                "name": "TypeInfix",
+                "op": 1,
+                "types": [
+                  0,
+                  2
+                ],
+                "children": [
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "C"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Token",
+                    "string": "&"
+                  },
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "D"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefClass is UnitTest
   fun name(): String => "parser/typedef/Class"
@@ -307,87 +369,144 @@ class iso _TestParserTypedefClass is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.typedef_class
 
-    let source = """
+    let src = """
       actor \a\ val Foo[A]
         let bar: U8
         new create(qux: U8) => qux + 123
     """
-    let expected = """
+    let exp = """
       {
         "name": "TypedefClass",
-        "kind": { "name": "Keyword", "string": "actor" },
-        "annotation": {
-          "name": "Annotation",
-          "identifiers": [
-            { "name": "Identifier", "string": "a" }
-          ]
-        },
-        "cap": { "name": "Keyword", "string": "val" },
-        "identifier": { "name": "Identifier", "string": "Foo" },
-        "type_params": {
-          "name": "TypeParams",
-          "params": [
-            {
-              "name": "TypeParam",
-              "constraint": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "A" }
-              }
-            }
-          ]
-        },
-        "members": {
-          "name": "TypedefMembers",
-          "fields": [
-            {
-              "name": "TypedefField",
-              "kind": { "name": "Keyword", "string": "let" },
-              "identifier": { "name": "Identifier", "string": "bar" },
-              "type": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "U8" }
-              }
-            }
-          ],
-          "methods": [
-            {
-              "name": "TypedefMethod",
-              "kind": { "name": "Keyword", "string": "new" },
-              "identifier": { "name": "Identifier", "string": "create" },
-              "params": {
-                "name": "MethodParams",
-                "params": [
+        "kind": 0,
+        "annotation": 1,
+        "cap": 2,
+        "identifier": 3,
+        "type_params": 4,
+        "members": 5,
+        "children": [
+          { "name": "Keyword", "string": "actor" },
+          {
+            "name": "Annotation",
+            "identifiers": [ 1 ],
+            "children": [
+              { "name": "Token" },
+              { "name": "Identifier", "string": "a" },
+              { "name": "Token" }
+            ]
+          },
+          { "name": "Keyword", "string": "val" },
+          { "name": "Identifier", "string": "Foo" },
+          {
+            "name": "TypeParams",
+            "params": [ 1 ],
+            "children": [
+              { "name": "Token", "string": "[" },
+              {
+                "name": "TypeParam",
+                "constraint": 0,
+                "children": [
                   {
-                    "name": "MethodParam",
-                    "identifier": { "name": "Identifier", "string": "qux" },
-                    "constraint": {
-                      "name": "TypeNominal",
-                      "rhs": { "name": "Identifier", "string": "U8" }
-                    }
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      { "name": "Identifier", "string": "A" }
+                    ]
                   }
                 ]
               },
-              "body": {
-                "name": "ExpOperation",
-                "op": { "name": "Token", "string": "+" },
-                "lhs": {
-                  "name": "ExpAtom",
-                  "body": { "name": "Identifier", "string": "qux" }
-                },
-                "rhs": {
-                  "name": "ExpAtom",
-                  "body": {
-                    "name": "LiteralInteger",
-                    "value": 123
+              { "name": "Token", "string": "]" }
+            ]
+          },
+          {
+            "name": "TypedefMembers",
+            "fields": [ 0 ],
+            "methods": [ 1 ],
+            "children": [
+              {
+                "name": "TypedefField",
+                "kind": 0,
+                "identifier": 1,
+                "type": 3,
+                "children": [
+                  { "name": "Keyword", "string": "let" },
+                  { "name": "Identifier", "string": "bar" },
+                  { "name": "Token", "string": ":" },
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      { "name": "Identifier", "string": "U8" }
+                    ]
                   }
-                }
+                ]
+              },
+              {
+                "name": "TypedefMethod",
+                "kind": 0,
+                "identifier": 1,
+                "params": 3,
+                "body": 6,
+                "children": [
+                  { "name": "Keyword", "string": "new" },
+                  { "name": "Identifier", "string": "create" },
+                  { "name": "Token", "string": "(" },
+                  {
+                    "name": "MethodParams",
+                    "params": [ 0 ],
+                    "children": [
+                      {
+                        "name": "MethodParam",
+                        "identifier": 0,
+                        "constraint": 2,
+                        "children": [
+                          { "name": "Identifier", "string": "qux" },
+                          { "name": "Token", "string": ":" },
+                          {
+                            "name": "TypeNominal",
+                            "rhs": 0,
+                            "children": [
+                              { "name": "Identifier", "string": "U8" }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  { "name": "Token", "string": ")" },
+                  { "name": "Token", "string": "=>" },
+                  {
+                    "name": "ExpOperation",
+                    "lhs": 0,
+                    "op": 1,
+                    "rhs": 2,
+                    "children": [
+                      {
+                        "name": "ExpAtom",
+                        "body": 0,
+                        "children": [
+                          { "name": "Identifier", "string": "qux" },
+                        ]
+                      },
+                      { "name": "Token", "string": "+" },
+                      {
+                        "name": "ExpAtom",
+                        "body": 0,
+                        "children": [
+                          {
+                            "name": "LiteralInteger",
+                            "kind": "DecimalInteger",
+                            "value": 123
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
               }
-            }
-          ]
-        }
+            ]
+          }
+        ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])

@@ -26,5 +26,9 @@ class val CallArgs is NodeData
       NodeChild.seq_with[Expression](named, old_children, new_children)?)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
-    props.push(("positional", node.child_refs(pos)))
-    props.push(("named", node.child_refs(named)))
+    if pos.size() > 0 then
+      props.push(("positional", node.child_refs(pos)))
+    end
+    if named.size() > 0 then
+      props.push(("named", node.child_refs(named)))
+    end
