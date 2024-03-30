@@ -204,20 +204,48 @@ class LiteralBuilder
 
   fun ref _build_string() =>
     let tri = Variable("tri")
+    let reg = Variable("reg")
     string.set_body(
       _Build.with_post[ast.Trivia](
         Disj(
           [ Bind(tri, string_triple)
-            string_regular ]),
+            Bind(reg, string_regular) ]),
         _trivia.trivia,
-        _LiteralActions~_string(tri)))
+        _LiteralActions~_string(tri, reg)))
 
   fun ref _build_string_regular() =>
-    string_regular.set_body(_string_delim(Literal(ast.Tokens.double_quote())))
+    // we don't want to include post trivia
+    string_regular.set_body(
+      _string_delim(
+        Literal(
+          ast.Tokens.double_quote(),
+          {(d, r, c, b) =>
+            let string =
+              recover val
+                String .> concat(r.start.values(r.next))
+              end
+            let span = ast.NodeWith[ast.Span](_Build.info(d, r), [], ast.Span)
+            let value = ast.NodeWith[ast.Token](
+              _Build.info(d, r), [ span ], ast.Token(string))
+            (value, b)
+          })))
 
   fun ref _build_string_triple() =>
+    // we don't want to include post trivia
     string_triple.set_body(
-      _string_delim(Literal(ast.Tokens.triple_double_quote())))
+      _string_delim(
+        Literal(
+          ast.Tokens.triple_double_quote(),
+          {(d, r, c, b) =>
+            let string =
+              recover val
+                String .> concat(r.start.values(r.next))
+              end
+            let span = ast.NodeWith[ast.Span](_Build.info(d, r), [], ast.Span)
+            let value = ast.NodeWith[ast.Token](
+              _Build.info(d, r), [ span ], ast.Token(string))
+            (value, b)
+          })))
 
   fun _string_delim(delim: RuleNode): RuleNode =>
     Conj(

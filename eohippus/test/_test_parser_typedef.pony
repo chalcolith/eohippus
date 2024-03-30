@@ -22,49 +22,84 @@ class iso _TestParserTypedefField is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.field
 
-    let source = "let foo: USize = 123 \"\"\"doc\"\"\""
-    let expected = """
+    let src = "let foo: USize = 123 \"\"\"doc\"\"\""
+    let exp = """
       {
         "name": "TypedefField",
-        "kind": {
-          "name": "Keyword",
-          "string": "let"
-        },
-        "identifier": {
-          "name": "Identifier",
-          "string": "foo"
-        },
-        "type": {
-          "name": "TypeNominal",
-          "rhs": {
-            "name": "Identifier",
-            "string": "USize"
-          }
-        },
-        "value": {
-          "name": "ExpAtom",
-          "body": {
-            "name": "LiteralInteger",
-            "kind": "DecimalInteger",
-            "value": 123
-          }
-        },
+        "kind": 0,
+        "identifier": 1,
+        "type": 3,
+        "value": 5,
         "doc_strings": [
+          6
+        ],
+        "children": [
+          {
+            "name": "Keyword",
+            "string": "let"
+          },
+          {
+            "name": "Identifier",
+            "string": "foo"
+          },
+          {
+            "name": "Token",
+            "string": ":"
+          },
+          {
+            "name": "TypeNominal",
+            "rhs": 0,
+            "children": [
+              {
+                "name": "Identifier",
+                "string": "USize"
+              }
+            ]
+          },
+          {
+            "name": "Token",
+            "string": "="
+          },
+          {
+            "name": "ExpAtom",
+            "body": 0,
+            "children": [
+              {
+                "name": "LiteralInteger",
+                "kind": "DecimalInteger",
+                "value": 123
+              }
+            ]
+          },
           {
             "name": "DocString",
-            "string": {
-              "name": "LiteralString",
-              "kind": "StringTripleQuote",
-              "value": "doc"
-            }
+            "string": 0,
+            "children": [
+              {
+                "name": "LiteralString",
+                "kind": "StringTripleQuote",
+                "value": "doc",
+                "children": [
+                  {
+                    "name": "Token",
+                    "string": "\"\"\""
+                  },
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Token",
+                    "string": "\"\"\""
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefMethod is UnitTest
   fun name(): String => "parser/typedef/Method"
@@ -74,83 +109,222 @@ class iso _TestParserTypedefMethod is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.method
 
-    //            0     5     10   15   20   25   30   35    40    45   50
-    let source = "fun \\ann\\ ref name[A](p: B): USize ? \"doc\" => 1 + 2"
-    let expected = """
+    //         0     5     10   15   20   25   30   35    40    45   50
+    let src = "fun \\ann\\ ref name[A](p: B): USize ? \"doc\" => 1 + 2"
+    let exp = """
       {
         "name": "TypedefMethod",
-        "kind": {
-          "name": "Keyword",
-          "string": "fun"
-        },
-        "cap": {
-          "name": "Keyword",
-          "string": "ref"
-        },
-        "identifier": {
-          "name": "Identifier",
-          "string": "name"
-        },
-        "type_params": {
-          "name": "TypeParams",
-          "params": [
-            {
-              "name": "TypeParam",
-              "constraint": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "A" }
-              }
-            }
-          ]
-        },
-        "params": {
-          "name": "MethodParams",
-          "params": [
-            {
-              "name": "MethodParam",
-              "identifier": { "name": "Identifier", "string": "p" },
-              "constraint": {
-                "name": "TypeNominal",
-                "rhs": { "name": "Identifier", "string": "B" }
-              }
-            }
-          ]
-        },
-        "return_type": {
-          "name": "TypeNominal",
-          "rhs": { "name": "Identifier", "string": "USize" }
-        },
+        "annotation": 1,
+        "kind": 0,
+        "cap": 2,
+        "identifier": 3,
+        "type_params": 4,
+        "params": 6,
+        "return_type": 9,
         "partial": true,
-        "body": {
-          "name": "ExpOperation",
-          "op": { "name": "Token", "string": "+" },
-          "lhs": {
-            "name": "ExpAtom",
-            "body": { "name": "LiteralInteger", "value": 1 }
-          },
-          "rhs": {
-            "name": "ExpAtom",
-            "body": { "name": "LiteralInteger", "value": 2 }
-          }
-        },
-        "annotation": {
-          "name": "Annotation",
-          "identifiers": [
-            { "name": "Identifier", "string": "ann" }
-          ]
-        },
+        "body": 13,
         "doc_strings": [
+          11
+        ],
+        "children": [
+          {
+            "name": "Keyword",
+            "string": "fun"
+          },
+          {
+            "name": "Annotation",
+            "identifiers": [
+              1
+            ],
+            "children": [
+              {
+                "name": "Token",
+                "string": "\\"
+              },
+              {
+                "name": "Identifier",
+                "string": "ann"
+              },
+              {
+                "name": "Token",
+                "string": "\\"
+              }
+            ]
+          },
+          {
+            "name": "Keyword",
+            "string": "ref"
+          },
+          {
+            "name": "Identifier",
+            "string": "name"
+          },
+          {
+            "name": "TypeParams",
+            "params": [
+              1
+            ],
+            "children": [
+              {
+                "name": "Token",
+                "string": "["
+              },
+              {
+                "name": "TypeParam",
+                "constraint": 0,
+                "children": [
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "A"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "]"
+              }
+            ]
+          },
+          {
+            "name": "Token",
+            "string": "("
+          },
+          {
+            "name": "MethodParams",
+            "params": [
+              0
+            ],
+            "children": [
+              {
+                "name": "MethodParam",
+                "identifier": 0,
+                "constraint": 2,
+                "children": [
+                  {
+                    "name": "Identifier",
+                    "string": "p"
+                  },
+                  {
+                    "name": "Token",
+                    "string": ":"
+                  },
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "B"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Token",
+            "string": ")"
+          },
+          {
+            "name": "Token",
+            "string": ":"
+          },
+          {
+            "name": "TypeNominal",
+            "rhs": 0,
+            "children": [
+              {
+                "name": "Identifier",
+                "string": "USize"
+              }
+            ]
+          },
+          {
+            "name": "Token",
+            "string": "?"
+          },
           {
             "name": "DocString",
-            "string": { "name": "LiteralString", "value": "doc" }
+            "string": 0,
+            "children": [
+              {
+                "name": "LiteralString",
+                "kind": "StringLiteral",
+                "value": "doc",
+                "post_trivia": [
+                  3
+                ],
+                "children": [
+                  {
+                    "name": "Token",
+                    "string": "\""
+                  },
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Token",
+                    "string": "\""
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Token",
+            "string": "=>"
+          },
+          {
+            "name": "ExpOperation",
+            "lhs": 0,
+            "op": 1,
+            "rhs": 2,
+            "children": [
+              {
+                "name": "ExpAtom",
+                "body": 0,
+                "children": [
+                  {
+                    "name": "LiteralInteger",
+                    "kind": "DecimalInteger",
+                    "value": 1
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "+"
+              },
+              {
+                "name": "ExpAtom",
+                "body": 0,
+                "children": [
+                  {
+                    "name": "LiteralInteger",
+                    "kind": "DecimalInteger",
+                    "value": 2
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefMembers is UnitTest
   fun name(): String => "parser/typedef/Members"
@@ -160,42 +334,94 @@ class iso _TestParserTypedefMembers is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.members
 
-    let source = """
+    let src = """
       let a: USize
       fun b() => None
     """
 
-    let expected = """
+    let exp = """
       {
         "name": "TypedefMembers",
         "fields": [
-          {
-            "name": "TypedefField",
-            "kind": { "name": "Keyword", "string": "let" },
-            "identifier": { "name": "Identifier", "string": "a" },
-            "type": {
-              "name": "TypeNominal",
-              "rhs": { "name": "Identifier", "string": "USize" }
-            }
-          }
+          0
         ],
         "methods": [
+          1
+        ],
+        "children": [
+          {
+            "name": "TypedefField",
+            "kind": 0,
+            "identifier": 1,
+            "type": 3,
+            "children": [
+              {
+                "name": "Keyword",
+                "string": "let"
+              },
+              {
+                "name": "Identifier",
+                "string": "a"
+              },
+              {
+                "name": "Token",
+                "string": ":"
+              },
+              {
+                "name": "TypeNominal",
+                "rhs": 0,
+                "children": [
+                  {
+                    "name": "Identifier",
+                    "string": "USize"
+                  }
+                ]
+              }
+            ]
+          },
           {
             "name": "TypedefMethod",
-            "kind": { "name": "Keyword", "string": "fun" },
-            "identifier": { "name": "Identifier", "string": "b" },
-            "body": {
-              "name": "ExpAtom",
-              "body": { "name": "Identifier", "string": "None" }
-            }
+            "kind": 0,
+            "identifier": 1,
+            "body": 5,
+            "children": [
+              {
+                "name": "Keyword",
+                "string": "fun"
+              },
+              {
+                "name": "Identifier",
+                "string": "b"
+              },
+              {
+                "name": "Token",
+                "string": "("
+              },
+              {
+                "name": "Token",
+                "string": ")"
+              },
+              {
+                "name": "Token",
+                "string": "=>"
+              },
+              {
+                "name": "ExpAtom",
+                "body": 0,
+                "children": [
+                  {
+                    "name": "Identifier",
+                    "string": "None"
+                  }
+                ]
+              }
+            ]
           }
         ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefPrimitive is UnitTest
   fun name(): String => "parser/typedef/Primitive"

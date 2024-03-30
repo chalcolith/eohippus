@@ -25,6 +25,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionConsume)
     test(_TestParserExpressionWhile)
     test(_TestParserExpressionRepeat)
+    test(_TestParserExpressionTuplePattern)
     test(_TestParserExpressionFor)
     test(_TestParserExpressionMatch)
     test(_TestParserExpressionDecl)
@@ -1117,7 +1118,6 @@ class iso _TestParserExpressionWhile is UnitTest
                   "positional": [
                     1
                   ],
-                  "named": [],
                   "children": [
                     {
                       "name": "Token",
@@ -1250,6 +1250,98 @@ class iso _TestParserExpressionRepeat is UnitTest
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
+class iso _TestParserExpressionTuplePattern is UnitTest
+  fun name(): String => "parser/expression/TuplePattern"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.tuple_pattern
+
+    let src = "(a, (b, c))"
+    let exp =
+      """
+        {
+          "name": "TuplePattern",
+          "elements": [
+            1,
+            3
+          ],
+          "children": [
+            {
+              "name": "Token",
+              "string": "("
+            },
+            {
+              "name": "TuplePattern",
+              "elements": [
+                0
+              ],
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "a"
+                }
+              ]
+            },
+            {
+              "name": "Token",
+              "string": ","
+            },
+            {
+              "name": "TuplePattern",
+              "elements": [
+                1,
+                3
+              ],
+              "children": [
+                {
+                  "name": "Token",
+                  "string": "("
+                },
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "b"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": ","
+                },
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "c"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": ")"
+                }
+              ]
+            },
+            {
+              "name": "Token",
+              "string": ")"
+            }
+          ]
+        }
+      """
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
 class iso _TestParserExpressionFor is UnitTest
   fun name(): String => "parser/expression/For"
   fun exclusion_group(): String => "parser/expression"
@@ -1258,31 +1350,116 @@ class iso _TestParserExpressionFor is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let source = "for (a, b) in c else d end"
-    let expected =
+    let src = "for (a, b) in c do d else e end"
+    let exp =
       """
         {
           "name": "ExpFor",
-          "pattern": {
-            "name": "TuplePattern",
-            "ids": [
-              { "name": "Identifier", "string": "a" },
-              { "name": "Identifier", "string": "b" }
-            ]
-          },
-          "body": {
-            "name": "ExpAtom",
-            "body": { "name": "Identifier", "string": "c" }
-          },
-          "else_block": {
-            "name": "ExpAtom",
-            "body": { "name": "Identifier", "string": "d" }
-          }
+          "pattern": 1,
+          "sequence": 3,
+          "body": 5,
+          "else_block": 7,
+          "children": [
+            {
+              "name": "Keyword",
+              "string": "for"
+            },
+            {
+              "name": "TuplePattern",
+              "elements": [
+                1,
+                3
+              ],
+              "children": [
+                {
+                  "name": "Token",
+                  "string": "("
+                },
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "a"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": ","
+                },
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "b"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": ")"
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "in"
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "c"
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "do"
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "d"
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "else"
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "e"
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "end"
+            }
+          ]
         }
       """
 
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserExpressionMatch is UnitTest
   fun name(): String => "parser/expression/Match"
@@ -1557,49 +1734,147 @@ class iso _TestParserExpressionWith is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let source = "with (a, b) = c, d = e do f end"
-    let expected =
+    let src = "with (a, b) = c, d = e do f end"
+    let exp =
       """
         {
           "name": "ExpWith",
           "elements": [
+            1,
+            3
+          ],
+          "body": 5,
+          "children": [
             {
-              "name": "WithElement",
-              "pattern": {
-                "name": "TuplePattern",
-                "ids": [
-                  { "name": "Identifier", "string": "a" },
-                  { "name": "Identifier", "string": "b" }
-                ]
-              },
-              "body": {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "c" }
-              }
+              "name": "Keyword",
+              "string": "with"
             },
             {
               "name": "WithElement",
-              "pattern": {
-                "name": "TuplePattern",
-                "ids": [
-                  { "name": "Identifier", "string": "d" }
-                ]
-              },
-              "body": {
-                "name": "ExpAtom",
-                "body": { "name": "Identifier", "string": "e" }
-              }
+              "pattern": 0,
+              "body": 2,
+              "children": [
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    1,
+                    3
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "("
+                    },
+                    {
+                      "name": "TuplePattern",
+                      "elements": [
+                        0
+                      ],
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "a"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Token",
+                      "string": ","
+                    },
+                    {
+                      "name": "TuplePattern",
+                      "elements": [
+                        0
+                      ],
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "b"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Token",
+                      "string": ")"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": "="
+                },
+                {
+                  "name": "ExpAtom",
+                  "body": 0,
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "c"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Token",
+              "string": ","
+            },
+            {
+              "name": "WithElement",
+              "pattern": 0,
+              "body": 2,
+              "children": [
+                {
+                  "name": "TuplePattern",
+                  "elements": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "d"
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": "="
+                },
+                {
+                  "name": "ExpAtom",
+                  "body": 0,
+                  "children": [
+                    {
+                      "name": "Identifier",
+                      "string": "e"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "do"
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "f"
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "end"
             }
-          ],
-          "body": {
-            "name": "ExpAtom",
-            "body": { "name": "Identifier", "string": "f" }
-          }
+          ]
         }
       """
 
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserExpressionFfi is UnitTest
   fun name(): String => "parser/expression/Ffi"
@@ -1731,7 +2006,7 @@ class iso _TestParserExpressionLambda is UnitTest
               "children": [
                 {
                   "name": "Token",
-                  "string": "\"
+                  "string": "\\"
                 },
                 {
                   "name": "Identifier",
@@ -1739,7 +2014,7 @@ class iso _TestParserExpressionLambda is UnitTest
                 },
                 {
                   "name": "Token",
-                  "string": "\"
+                  "string": "\\"
                 }
               ]
             },
@@ -1987,34 +2262,136 @@ class iso _TestParserExpressionObject is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let source = """
+    let src = """
       object is B
         let c: D
         fun e(): F => g
       end
     """
-    let expected = """
-      {
-        "name": "ExpObject",
-        "constraint": { "rhs": { "string": "B" } },
-        "members": {
-          "fields": [
+    let exp = """
+        {
+          "name": "ExpObject",
+          "constraint": 2,
+          "members": 3,
+          "children": [
             {
-              "identifier": { "string": "c" },
-              "type": { "rhs": { "string": "D" } }
-            }
-          ],
-          "methods": [
+              "name": "Keyword",
+              "string": "object"
+            },
             {
-              "kind": { "string": "fun" },
-              "identifier": { "string": "e" },
-              "return_type": { "rhs": { "string": "F" } },
-              "body": { "body": { "string": "g" } }
+              "name": "Keyword",
+              "string": "is"
+            },
+            {
+              "name": "TypeNominal",
+              "rhs": 0,
+              "children": [
+                {
+                  "name": "Identifier",
+                  "string": "B"
+                }
+              ]
+            },
+            {
+              "name": "TypedefMembers",
+              "fields": [
+                0
+              ],
+              "methods": [
+                1
+              ],
+              "children": [
+                {
+                  "name": "TypedefField",
+                  "kind": 0,
+                  "identifier": 1,
+                  "type": 3,
+                  "children": [
+                    {
+                      "name": "Keyword",
+                      "string": "let"
+                    },
+                    {
+                      "name": "Identifier",
+                      "string": "c"
+                    },
+                    {
+                      "name": "Token",
+                      "string": ":"
+                    },
+                    {
+                      "name": "TypeNominal",
+                      "rhs": 0,
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "D"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "TypedefMethod",
+                  "kind": 0,
+                  "identifier": 1,
+                  "return_type": 5,
+                  "body": 7,
+                  "children": [
+                    {
+                      "name": "Keyword",
+                      "string": "fun"
+                    },
+                    {
+                      "name": "Identifier",
+                      "string": "e"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "("
+                    },
+                    {
+                      "name": "Token",
+                      "string": ")"
+                    },
+                    {
+                      "name": "Token",
+                      "string": ":"
+                    },
+                    {
+                      "name": "TypeNominal",
+                      "rhs": 0,
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "F"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Token",
+                      "string": "=>"
+                    },
+                    {
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "g"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "end"
             }
           ]
         }
-      }
     """
 
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])

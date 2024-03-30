@@ -92,7 +92,7 @@ class val UsingFFI is NodeData
     | let identifier': NodeWith[Identifier] =>
       props.push(("identifier", node.child_ref(identifier')))
     end
-    props.push(("name", node.child_ref(fun_name)))
+    props.push(("fun_name", node.child_ref(fun_name)))
     props.push(("type_args", node.child_ref(type_args)))
     match params
     | let params': NodeWith[MethodParams] =>
