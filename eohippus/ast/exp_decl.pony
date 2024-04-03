@@ -23,7 +23,7 @@ class val ExpDecl is NodeData
 
   fun name(): String => "ExpDecl"
 
-  fun val clone(updates: ChildUpdateMap): ExpDecl =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpDecl(
       _map_with[Keyword](kind, updates),
       _map_with[Identifier](identifier, updates),

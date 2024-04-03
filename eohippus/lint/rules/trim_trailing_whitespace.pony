@@ -113,7 +113,7 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
   =>
     // Trailing whitespace will all be children of one node, usually
     // post_trivia (except for pre_trivia in SrcFile)
-    let old_children =
+    let existing_children =
       match new_children
       | let nc: ast.NodeSeq =>
         nc
@@ -126,10 +126,10 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     var next_child: USize = 0
     var found = false
     var i: USize = 0
-    while i < old_children.size() do
+    while i < existing_children.size() do
       let child =
         try
-          old_children(i)?
+          existing_children(i)?
         else
           next_child = i
           break
@@ -143,52 +143,53 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
       end
       i = i + 1
     end
+    if found and (next_child <= start_child) then
+      next_child = start_child + 1
+    end
 
     let new_node =
       if found then
         let update_map: ast.ChildUpdateMap trn = ast.ChildUpdateMap
         let new_children': Array[ast.Node] trn = Array[ast.Node](
-          old_children.size() - (next_child - start_child))
+          existing_children.size() - (next_child - start_child))
         i = 0
         while i < start_child do
           try
-            let child = old_children(i)?
+            let child = existing_children(i)?
             update_map(child) = child
             new_children'.push(child)
           end
           i = i + 1
         end
         i = next_child
-        while i < old_children.size() do
+        while i < existing_children.size() do
           try
-            let child = old_children(i)?
+            let child = existing_children(i)?
             update_map(child) = child
             new_children'.push(child)
           end
           i = i + 1
         end
-        let update_map': ast.ChildUpdateMap val = consume update_map
-        let new_children'': Array[ast.Node] val = consume new_children'
         node.clone(where
-          new_children' = new_children'',
-          update_map' = update_map')
+          new_children' = consume new_children',
+          update_map' = consume update_map)
       else
-        if old_children isnt node.children() then
-          if old_children.size() == node.children().size() then
+        if existing_children isnt node.children() then
+          if existing_children.size() == node.children().size() then
             let update_map: ast.ChildUpdateMap trn = ast.ChildUpdateMap
             i = 0
-            while i < old_children.size() do
+            while i < existing_children.size() do
               try
-                update_map(node.children()(i)?) = old_children(i)?
+                update_map(node.children()(i)?) = existing_children(i)?
               end
               i = i + 1
             end
             node.clone(where
-              new_children' = old_children,
+              new_children' = existing_children,
               update_map' = consume update_map)
           else
-            errors.push((node, "Length of new children doesn't match!"))
-            node.clone(where new_children' = old_children)
+            errors.push((node, "length of updated children doesn't match old!"))
+            node.clone(where new_children' = existing_children)
           end
         else
           node

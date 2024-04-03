@@ -18,7 +18,7 @@ class val TypedefAlias is NodeData
 
   fun name(): String => "TypedefAlias"
 
-  fun val clone(updates: ChildUpdateMap): TypedefAlias =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefAlias(
       _map_with[Identifier](identifier, updates),
       _map_or_none[TypeParams](type_params, updates),

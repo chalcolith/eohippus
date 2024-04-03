@@ -22,7 +22,7 @@ class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
 
   fun name(): String => "LiteralChar"
 
-  fun val clone(updates: ChildUpdateMap): LiteralChar =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

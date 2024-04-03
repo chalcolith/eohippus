@@ -10,7 +10,7 @@ class val TypeParams is NodeData
 
   fun name(): String => "TypeParams"
 
-  fun val clone(updates: ChildUpdateMap): TypeParams =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeParams(_map[TypeParam](params, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
@@ -34,7 +34,7 @@ class val TypeParam is NodeData
 
   fun name(): String => "TypeParam"
 
-  fun val clone(updates: ChildUpdateMap): TypeParam =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeParam(
       _map_or_none[Identifier](identifier, updates),
       _map_or_none[TypeType](constraint, updates),

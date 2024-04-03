@@ -39,7 +39,7 @@ class val ExpLambda is NodeData
 
   fun name(): String => "ExpLambda"
 
-  fun val clone(updates: ChildUpdateMap): ExpLambda =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpLambda(
       bare,
       _map_or_none[Keyword](this_cap, updates),

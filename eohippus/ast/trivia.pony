@@ -25,7 +25,7 @@ class val Trivia is NodeData
 
   fun name(): String => "Trivia"
 
-  fun val clone(updates: ChildUpdateMap): Trivia =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

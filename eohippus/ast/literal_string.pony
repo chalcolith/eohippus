@@ -15,7 +15,7 @@ class val LiteralString is NodeDataWithValue[LiteralString, String]
 
   fun name(): String => "LiteralString"
 
-  fun val clone(updates: ChildUpdateMap): LiteralString =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

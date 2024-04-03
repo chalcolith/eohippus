@@ -18,7 +18,7 @@ class val ExpWhile is NodeData
 
   fun name(): String => "ExpWhile"
 
-  fun val clone(updates: ChildUpdateMap): ExpWhile =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpWhile(
       _map_with[Expression](condition, updates),
       _map_with[Expression](body, updates),

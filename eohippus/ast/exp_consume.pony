@@ -15,7 +15,7 @@ class val ExpConsume is NodeData
 
   fun name(): String => "ExpConsume"
 
-  fun val clone(updates: ChildUpdateMap): ExpConsume =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpConsume(
       _map_or_none[Keyword](cap, updates),
       _map_with[Expression](body, updates))

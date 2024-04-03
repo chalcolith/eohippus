@@ -14,7 +14,7 @@ class val ExpGeneric is NodeData
 
   fun name(): String => "ExpGeneric"
 
-  fun val clone(updates: ChildUpdateMap): ExpGeneric =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpGeneric(
       _map_with[Expression](lhs, updates),
       _map_with[TypeArgs](type_args, updates))

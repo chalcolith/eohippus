@@ -10,7 +10,7 @@ class val TypedefPrimitive is NodeData
 
   fun name(): String => "TypedefPrimitive"
 
-  fun val clone(updates: ChildUpdateMap): TypedefPrimitive =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefPrimitive(_map_with[Identifier](identifier, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

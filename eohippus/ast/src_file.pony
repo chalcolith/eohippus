@@ -21,7 +21,7 @@ class val SrcFile is NodeData
 
   fun name(): String => "SrcFile"
 
-  fun val clone(updates: ChildUpdateMap): SrcFile =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     SrcFile(
       locator,
       _map[Using](usings, updates),

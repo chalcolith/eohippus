@@ -8,7 +8,7 @@ class val Span is NodeData
 
   fun name(): String => "Span"
 
-  fun val clone(updates: ChildUpdateMap): Span =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

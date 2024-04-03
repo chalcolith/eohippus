@@ -8,7 +8,7 @@ class val Identifier is NodeData
 
   fun name(): String => "Identifier"
 
-  fun val clone(updates: ChildUpdateMap): Identifier =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

@@ -24,7 +24,7 @@ class val TypedefField is NodeData
 
   fun name(): String => "TypedefField"
 
-  fun val clone(updates: ChildUpdateMap): TypedefField =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefField(
       _map_with[Keyword](kind, updates),
       _map_with[Identifier](identifier, updates),

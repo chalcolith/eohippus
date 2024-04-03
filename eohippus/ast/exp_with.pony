@@ -15,7 +15,7 @@ class val ExpWith is NodeData
 
   fun name(): String => "ExpWith"
 
-  fun val clone(updates: ChildUpdateMap): ExpWith =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpWith(
       _map[WithElement](elements, updates),
       _map_with[Expression](body, updates))
@@ -41,7 +41,7 @@ class val WithElement is NodeData
 
   fun name(): String => "WithElement"
 
-  fun val clone(updates: ChildUpdateMap): WithElement =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     WithElement(
       _map_with[TuplePattern](pattern, updates),
       _map_with[Expression](body, updates))

@@ -14,7 +14,7 @@ class val TypeArrow is NodeData
 
   fun name(): String => "TypeArrow"
 
-  fun val clone(updates: ChildUpdateMap): TypeArrow =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeArrow(
       try updates(lhs)? else lhs end,
       _map_or_none[TypeType](rhs, updates))

@@ -12,7 +12,7 @@ class val ExpSequence is NodeData
 
   fun name(): String => "ExpSequence"
 
-  fun val clone(updates: ChildUpdateMap): ExpSequence =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpSequence(_map[Expression](expressions, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

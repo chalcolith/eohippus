@@ -15,7 +15,7 @@ class val ExpTry is NodeData
 
   fun name(): String => "ExpTry"
 
-  fun val clone(updates: ChildUpdateMap): ExpTry =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpTry(
       _map_with[Expression](body, updates),
       _map_or_none[Expression](else_block, updates))

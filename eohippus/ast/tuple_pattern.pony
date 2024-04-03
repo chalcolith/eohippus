@@ -14,7 +14,7 @@ class val TuplePattern is NodeData
 
   fun name(): String => "TuplePattern"
 
-  fun val clone(updates: ChildUpdateMap): TuplePattern =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     let result: Array[(NodeWith[Identifier] | NodeWith[TuplePattern])] trn =
       Array[(NodeWith[Identifier] | NodeWith[TuplePattern])](elements.size())
     for old_child in elements.values() do

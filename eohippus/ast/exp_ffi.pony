@@ -23,7 +23,7 @@ class val ExpFfi is NodeData
 
   fun name(): String => "ExpFfi"
 
-  fun val clone(updates: ChildUpdateMap): ExpFfi =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpFfi(
       try
         updates(identifier)? as (NodeWith[Identifier] | NodeWith[LiteralString])

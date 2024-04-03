@@ -15,7 +15,7 @@ class val ExpRecover is NodeData
 
   fun name(): String => "ExpRecover"
 
-  fun val clone(updates: ChildUpdateMap): ExpRecover =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpRecover(
       _map_or_none[Keyword](cap, updates),
       _map_with[Expression](body, updates))

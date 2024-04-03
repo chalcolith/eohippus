@@ -12,7 +12,7 @@ class val TypeArgs is NodeData
 
   fun name(): String => "TypeArgs"
 
-  fun val clone(updates: ChildUpdateMap): TypeArgs =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeArgs(_map[TypeType](types, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

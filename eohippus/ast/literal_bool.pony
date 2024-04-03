@@ -15,7 +15,7 @@ class val LiteralBool is NodeDataWithValue[LiteralBool, Bool]
 
   fun name(): String => "LiteralBool"
 
-  fun val clone(updates: ChildUpdateMap): LiteralBool =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

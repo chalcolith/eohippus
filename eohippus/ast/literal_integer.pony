@@ -15,7 +15,7 @@ class val LiteralInteger is NodeDataWithValue[LiteralInteger, U128]
 
   fun name(): String => "LiteralInteger"
 
-  fun val clone(updates: ChildUpdateMap): LiteralInteger =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

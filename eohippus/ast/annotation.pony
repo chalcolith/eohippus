@@ -8,7 +8,7 @@ class val Annotation is NodeData
   new val create(identifiers': NodeSeqWith[Identifier]) =>
     identifiers = identifiers'
 
-  fun val clone(updates: ChildUpdateMap): Annotation =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     Annotation(_map[Identifier](identifiers, updates))
 
   fun name(): String => "Annotation"

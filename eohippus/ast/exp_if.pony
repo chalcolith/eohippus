@@ -27,7 +27,7 @@ class val ExpIf is NodeData
 
   fun name(): String => "ExpIf"
 
-  fun val clone(updates: ChildUpdateMap): ExpIf =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpIf(
       kind,
       _map[IfCondition](conditions, updates),
@@ -64,7 +64,7 @@ class val IfCondition is NodeData
 
   fun name(): String => "IfCondition"
 
-  fun val clone(updates: ChildUpdateMap): IfCondition =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     IfCondition(
       _map_with[Expression](if_true, updates),
       _map_with[Expression](then_block, updates))

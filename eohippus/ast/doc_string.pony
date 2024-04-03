@@ -10,7 +10,7 @@ class val DocString is NodeData
 
   fun name(): String => "DocString"
 
-  fun val clone(updates: ChildUpdateMap): DocString =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     DocString(try updates(string)? as NodeWith[Literal] else string end)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

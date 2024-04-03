@@ -12,7 +12,7 @@ class val ExpHash is NodeData
 
   fun name(): String => "ExpHash"
 
-  fun val clone(updates: ChildUpdateMap): ExpHash =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpHash(_map_with[Expression](rhs, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

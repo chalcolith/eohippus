@@ -18,7 +18,7 @@ class val ExpArray is NodeData
 
   fun name(): String => "ExpArray"
 
-  fun val clone(updates: ChildUpdateMap): ExpArray =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpArray(
       _map_or_none[TypeType](array_type, updates),
       _map_with[Expression](body, updates))

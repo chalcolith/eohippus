@@ -18,7 +18,7 @@ class val ExpObject is NodeData
 
   fun name(): String => "ExpObject"
 
-  fun val clone(updates: ChildUpdateMap): ExpObject =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpObject(
       _map_or_none[Keyword](cap, updates),
       _map_or_none[TypeType](constraint, updates),

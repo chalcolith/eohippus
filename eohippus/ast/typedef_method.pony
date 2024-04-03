@@ -36,7 +36,7 @@ class val TypedefMethod is NodeData
 
   fun name(): String => "TypedefMethod"
 
-  fun val clone(updates: ChildUpdateMap): TypedefMethod =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefMethod(
       _map_with[Keyword](kind, updates),
       _map_or_none[Keyword](cap, updates),

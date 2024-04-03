@@ -19,15 +19,312 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
     let source =
       recover val
         // 1         2                    3           4
-        //[ " \nclass A  \n  new create() =>\t\n    None " ]
-        [ " \nclass A" ]
+        [ " \nclass A  \n  new create() =>\t\n    None " ]
       end
 
     let expected_json =
       recover val
         match json.Parse(
           """
-            { "foo": "bar" }
+            {
+              "name": "SrcFile",
+              "src_info": {
+                "line": 0,
+                "column": 0
+              },
+              "locator": "linter/fix/trim_trailing_whitespace",
+              "type_defs": [
+                1
+              ],
+              "pre_trivia": [
+                0
+              ],
+              "post_trivia": [
+                2
+              ],
+              "children": [
+                {
+                  "name": "Trivia",
+                  "src_info": {
+                    "line": 0,
+                    "column": 0
+                  },
+                  "kind": "EndOfLineTrivia",
+                  "string": "\n"
+                },
+                {
+                  "name": "TypedefClass",
+                  "src_info": {
+                    "line": 1,
+                    "column": 0
+                  },
+                  "kind": 0,
+                  "identifier": 1,
+                  "members": 2,
+                  "children": [
+                    {
+                      "name": "Keyword",
+                      "src_info": {
+                        "line": 1,
+                        "column": 0
+                      },
+                      "string": "class",
+                      "post_trivia": [
+                        1
+                      ],
+                      "children": [
+                        {
+                          "name": "Span",
+                          "src_info": {
+                            "line": 1,
+                            "column": 0
+                          }
+                        },
+                        {
+                          "name": "Trivia",
+                          "src_info": {
+                            "line": 1,
+                            "column": 5
+                          },
+                          "kind": "WhiteSpaceTrivia",
+                          "string": " "
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Identifier",
+                      "src_info": {
+                        "line": 1,
+                        "column": 6
+                      },
+                      "string": "A",
+                      "post_trivia": [
+                        1,
+                        2
+                      ],
+                      "children": [
+                        {
+                          "name": "Span",
+                          "src_info": {
+                            "line": 1,
+                            "column": 6
+                          }
+                        },
+                        {
+                          "name": "Trivia",
+                          "src_info": {
+                            "line": 1,
+                            "column": 7
+                          },
+                          "kind": "EndOfLineTrivia",
+                          "string": "\n"
+                        },
+                        {
+                          "name": "Trivia",
+                          "src_info": {
+                            "line": 2,
+                            "column": 0
+                          },
+                          "kind": "WhiteSpaceTrivia",
+                          "string": "  "
+                        }
+                      ]
+                    },
+                    {
+                      "name": "TypedefMembers",
+                      "src_info": {
+                        "line": 2,
+                        "column": 2
+                      },
+                      "methods": [
+                        0
+                      ],
+                      "children": [
+                        {
+                          "name": "TypedefMethod",
+                          "src_info": {
+                            "line": 2,
+                            "column": 2
+                          },
+                          "kind": 0,
+                          "identifier": 1,
+                          "body": 5,
+                          "children": [
+                            {
+                              "name": "Keyword",
+                              "src_info": {
+                                "line": 2,
+                                "column": 2
+                              },
+                              "string": "new",
+                              "post_trivia": [
+                                1
+                              ],
+                              "children": [
+                                {
+                                  "name": "Span",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 2
+                                  }
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 5
+                                  },
+                                  "kind": "WhiteSpaceTrivia",
+                                  "string": " "
+                                }
+                              ]
+                            },
+                            {
+                              "name": "Identifier",
+                              "src_info": {
+                                "line": 2,
+                                "column": 6
+                              },
+                              "string": "create",
+                              "children": [
+                                {
+                                  "name": "Span",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 6
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "name": "Token",
+                              "src_info": {
+                                "line": 2,
+                                "column": 12
+                              },
+                              "string": "(",
+                              "children": [
+                                {
+                                  "name": "Span",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 12
+                                  }
+                                }
+                              ]
+                            },
+                            {
+                              "name": "Token",
+                              "src_info": {
+                                "line": 2,
+                                "column": 13
+                              },
+                              "string": ")",
+                              "post_trivia": [
+                                1
+                              ],
+                              "children": [
+                                {
+                                  "name": "Span",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 13
+                                  }
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 14
+                                  },
+                                  "kind": "WhiteSpaceTrivia",
+                                  "string": " "
+                                }
+                              ]
+                            },
+                            {
+                              "name": "Token",
+                              "src_info": {
+                                "line": 2,
+                                "column": 15
+                              },
+                              "string": "=>",
+                              "post_trivia": [
+                                1,
+                                2
+                              ],
+                              "children": [
+                                {
+                                  "name": "Span",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 15
+                                  }
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "src_info": {
+                                    "line": 2,
+                                    "column": 17
+                                  },
+                                  "kind": "EndOfLineTrivia",
+                                  "string": "\n"
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "src_info": {
+                                    "line": 3,
+                                    "column": 0
+                                  },
+                                  "kind": "WhiteSpaceTrivia",
+                                  "string": "    "
+                                }
+                              ]
+                            },
+                            {
+                              "name": "ExpAtom",
+                              "src_info": {
+                                "line": 3,
+                                "column": 4
+                              },
+                              "body": 0,
+                              "children": [
+                                {
+                                  "name": "Identifier",
+                                  "src_info": {
+                                    "line": 3,
+                                    "column": 4
+                                  },
+                                  "string": "None",
+                                  "children": [
+                                    {
+                                      "name": "Span",
+                                      "src_info": {
+                                        "line": 3,
+                                        "column": 4
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Trivia",
+                  "src_info": {
+                    "line": 3,
+                    "column": 8
+                  },
+                  "kind": "EndOfFileTrivia",
+                  "string": ""
+                }
+              ]
+            }
           """)
         | let item: json.Item =>
           item
@@ -78,7 +375,7 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           h.log("ORIGINAL:\n" + tree.root.get_json(
             tree.lines_and_columns).string())
 
-          if not h.assert_eq[USize](1, issues.size(), "should be 4 issues") then
+          if not h.assert_eq[USize](4, issues.size(), "should be 4 issues") then
             h.complete(false)
           else
             linter.fix(consume tree, issues, fix_listener)

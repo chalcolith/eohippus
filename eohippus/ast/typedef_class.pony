@@ -33,7 +33,7 @@ class val TypedefClass is NodeData
 
   fun name(): String => "TypedefClass"
 
-  fun val clone(updates: ChildUpdateMap): TypedefClass =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefClass(
       _map_with[Keyword](kind, updates),
       raw,

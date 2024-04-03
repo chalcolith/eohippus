@@ -12,7 +12,7 @@ class val MethodParams is NodeData
 
   fun name(): String => "MethodParams"
 
-  fun val clone(updates: ChildUpdateMap): MethodParams =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     MethodParams(_map[MethodParam](params, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
@@ -36,7 +36,7 @@ class val MethodParam is NodeData
 
   fun name(): String => "MethodParam"
 
-  fun val clone(updates: ChildUpdateMap): MethodParam =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     MethodParam(
       _map_with[Identifier](identifier, updates),
       _map_or_none[TypeType](constraint, updates),

@@ -25,7 +25,7 @@ class val UsingPony is NodeData
 
   fun name(): String => "Using"
 
-  fun val clone(updates: ChildUpdateMap): UsingPony =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     UsingPony(
       _map_or_none[Identifier](identifier, updates),
       _map_with[Literal](path, updates),
@@ -76,7 +76,7 @@ class val UsingFFI is NodeData
 
   fun name(): String => "UsingFFI"
 
-  fun val clone(updates: ChildUpdateMap): UsingFFI =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     UsingFFI(
       _map_or_none[Identifier](identifier, updates),
       try

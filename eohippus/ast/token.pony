@@ -68,7 +68,7 @@ class val Token is NodeData
 
   fun name(): String => "Token"
 
-  fun val clone(updates: ChildUpdateMap): Token =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

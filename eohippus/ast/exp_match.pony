@@ -17,7 +17,7 @@ class val ExpMatch is NodeData
 
   fun name(): String => "ExpMatch"
 
-  fun val clone(updates: ChildUpdateMap): ExpMatch =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpMatch(
       _map_with[Expression](expression, updates),
       _map[MatchCase](cases, updates),
@@ -50,7 +50,7 @@ class val MatchCase is NodeData
 
   fun name(): String => "MatchCase"
 
-  fun val clone(updates: ChildUpdateMap): MatchCase =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     MatchCase(
       _map_with[Expression](pattern, updates),
       _map_or_none[Expression](condition, updates),

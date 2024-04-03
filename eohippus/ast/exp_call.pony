@@ -22,7 +22,7 @@ class val ExpCall is NodeData
 
   fun name(): String => "ExpCall"
 
-  fun val clone(updates: ChildUpdateMap): ExpCall =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpCall(
       _map_with[Expression](lhs, updates),
       _map_with[CallArgs](args, updates),

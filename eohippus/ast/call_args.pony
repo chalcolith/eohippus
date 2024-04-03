@@ -20,7 +20,7 @@ class val CallArgs is NodeData
 
   fun name(): String => "CallArgs"
 
-  fun val clone(updates: ChildUpdateMap): CallArgs =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     CallArgs(_map[Expression](pos, updates), _map[Expression](named, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

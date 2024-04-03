@@ -24,7 +24,7 @@ class val TypeNominal is NodeData
 
   fun name(): String => "TypeNominal"
 
-  fun val clone(updates: ChildUpdateMap): TypeNominal =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeNominal(
       _map_or_none[Identifier](lhs, updates),
       _map_with[Identifier](rhs, updates),

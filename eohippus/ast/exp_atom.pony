@@ -14,7 +14,7 @@ class val ExpAtom is NodeData
 
   fun name(): String => "ExpAtom"
 
-  fun val clone(updates: ChildUpdateMap): ExpAtom =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpAtom(try updates(body)? else body end)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

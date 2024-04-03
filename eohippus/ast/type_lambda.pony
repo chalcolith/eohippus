@@ -38,7 +38,7 @@ class val TypeLambda is NodeData
 
   fun name(): String => "TypeLambda"
 
-  fun val clone(updates: ChildUpdateMap): TypeLambda =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeLambda(
       bare,
       _map_or_none[Keyword](cap, updates),

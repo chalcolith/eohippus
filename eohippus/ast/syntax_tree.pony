@@ -64,8 +64,8 @@ class SyntaxTree
                 Array[Node](node.children().size())
               if i > 0 then
                 var j: USize = 0
-                while j < (i-1) do
-                  new_children'(j)? = node.children()(j)?
+                while j < i do
+                  new_children'.push(node.children()(j)?)
                   j = j + 1
                 end
               end

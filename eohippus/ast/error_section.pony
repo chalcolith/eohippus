@@ -14,7 +14,7 @@ class val ErrorSection is NodeData
 
   fun name(): String => "ErrorSection"
 
-  fun val clone(updates: ChildUpdateMap): ErrorSection =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

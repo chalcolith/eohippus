@@ -17,7 +17,7 @@ class val TypedefMembers is NodeData
 
   fun name(): String => "TypedefMembers"
 
-  fun val clone(updates: ChildUpdateMap): TypedefMembers =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefMembers(
       _map[TypedefField](fields, updates),
       _map[TypedefMethod](methods, updates))

@@ -29,7 +29,7 @@ class val ExpOperation is NodeData
 
   fun name(): String => "ExpOperation"
 
-  fun val clone(updates: ChildUpdateMap): ExpOperation =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     let lhs' =
       match lhs
       | let lhs_type: NodeWith[TypeType] =>

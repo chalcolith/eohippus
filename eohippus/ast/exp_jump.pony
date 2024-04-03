@@ -19,7 +19,7 @@ class val ExpJump is NodeData
 
   fun name(): String => "ExpJump"
 
-  fun val clone(updates: ChildUpdateMap): ExpJump =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpJump(
       _map_with[Keyword](keyword, updates),
       _map_or_none[Expression](rhs, updates))

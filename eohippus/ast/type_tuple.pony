@@ -9,7 +9,7 @@ class val TypeTuple is NodeData
 
   fun name(): String => "TypeTuple"
 
-  fun val clone(updates: ChildUpdateMap): TypeTuple =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeTuple(_map[TypeType](types, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

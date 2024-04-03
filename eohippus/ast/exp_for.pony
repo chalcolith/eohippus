@@ -23,7 +23,7 @@ class val ExpFor is NodeData
 
   fun name(): String => "ExpFor"
 
-  fun val clone(updates: ChildUpdateMap): ExpFor =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpFor(
       _map_with[TuplePattern](pattern, updates),
       _map_with[Expression](sequence, updates),

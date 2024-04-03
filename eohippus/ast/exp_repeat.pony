@@ -18,7 +18,7 @@ class val ExpRepeat is NodeData
 
   fun name(): String => "ExpRepeat"
 
-  fun val clone(updates: ChildUpdateMap): ExpRepeat =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpRepeat(
       _map_with[Expression](body, updates),
       _map_with[Expression](condition, updates),
