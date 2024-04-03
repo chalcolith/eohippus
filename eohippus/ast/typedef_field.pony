@@ -24,21 +24,21 @@ class val TypedefField is NodeData
 
   fun name(): String => "TypedefField"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefField(
-      NodeChild.child_with[Keyword](kind, old_children, new_children)?,
-      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](type_type, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](value, old_children, new_children)?)
+      _map_with[Keyword](kind, updates),
+      _map_with[Identifier](identifier, updates),
+      _map_or_none[TypeType](type_type, updates),
+      _map_or_none[Expression](value, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("kind", kind.get_json()))
-    props.push(("identifier", identifier.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
+    props.push(("identifier", node.child_ref(identifier)))
     match type_type
     | let type_type': NodeWith[TypeType] =>
-      props.push(("type", type_type'.get_json()))
+      props.push(("type", node.child_ref(type_type')))
     end
     match value
     | let value': NodeWith[Expression] =>
-      props.push(("value", value'.get_json()))
+      props.push(("value", node.child_ref(value')))
     end

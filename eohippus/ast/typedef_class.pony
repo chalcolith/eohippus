@@ -33,35 +33,35 @@ class val TypedefClass is NodeData
 
   fun name(): String => "TypedefClass"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefClass(
-      NodeChild.child_with[Keyword](kind, old_children, new_children)?,
+      _map_with[Keyword](kind, updates),
       raw,
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
-      NodeChild.with_or_none[TypedefMembers](members, old_children, new_children)?)
+      _map_or_none[Keyword](cap, updates),
+      _map_with[Identifier](identifier, updates),
+      _map_or_none[TypeParams](type_params, updates),
+      _map_or_none[TypeType](constraint, updates),
+      _map_or_none[TypedefMembers](members, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("kind", kind.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
     if raw then
       props.push(("raw", raw))
     end
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", node.child_ref(cap')))
     end
-    props.push(("identifier", identifier.get_json()))
+    props.push(("identifier", node.child_ref(identifier)))
     match type_params
     | let type_params': NodeWith[TypeParams] =>
-      props.push(("type_params", type_params'.get_json()))
+      props.push(("type_params", node.child_ref(type_params')))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", node.child_ref(constraint')))
     end
     match members
     | let members': NodeWith[TypedefMembers] =>
-      props.push(("members", members'.get_json()))
+      props.push(("members", node.child_ref(members')))
     end

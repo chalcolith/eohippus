@@ -18,19 +18,19 @@ class val ExpObject is NodeData
 
   fun name(): String => "ExpObject"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpObject(
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
-      NodeChild.child_with[TypedefMembers](members, old_children, new_children)?)
+      _map_or_none[Keyword](cap, updates),
+      _map_or_none[TypeType](constraint, updates),
+      _map_with[TypedefMembers](members, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", node.child_ref(cap')))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", node.child_ref(constraint')))
     end
-    props.push(("members", members.get_json()))
+    props.push(("members", node.child_ref(members)))

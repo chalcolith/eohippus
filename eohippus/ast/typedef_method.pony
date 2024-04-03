@@ -36,48 +36,48 @@ class val TypedefMethod is NodeData
 
   fun name(): String => "TypedefMethod"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefMethod(
-      NodeChild.child_with[Keyword](kind, old_children, new_children)?,
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
+      _map_with[Keyword](kind, updates),
+      _map_or_none[Keyword](cap, updates),
       raw,
-      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
-      NodeChild.with_or_none[MethodParams](params, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](return_type, old_children, new_children)?,
+      _map_with[Identifier](identifier, updates),
+      _map_or_none[TypeParams](type_params, updates),
+      _map_or_none[MethodParams](params, updates),
+      _map_or_none[TypeType](return_type, updates),
       partial,
-      NodeChild.with_or_none[Expression](body, old_children, new_children)?)
+      _map_or_none[Expression](body, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("kind", kind.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("kind", node.child_ref(kind)))
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", node.child_ref(cap')))
     end
     if raw then
       props.push(("raw", raw))
     end
-    props.push(("identifier", identifier.get_json()))
+    props.push(("identifier", node.child_ref(identifier)))
     match type_params
     | let type_params': NodeWith[TypeParams] =>
       if type_params'.data().params.size() > 0 then
-        props.push(("type_params", type_params'.get_json()))
+        props.push(("type_params", node.child_ref(type_params')))
       end
     end
     match params
     | let params': NodeWith[MethodParams] =>
       if params'.data().params.size() > 0 then
-        props.push(("params", params'.get_json()))
+        props.push(("params", node.child_ref(params')))
       end
     end
     match return_type
     | let return_type': NodeWith[TypeType] =>
-      props.push(("return_type", return_type'.get_json()))
+      props.push(("return_type", node.child_ref(return_type')))
     end
     if partial then
       props.push(("partial", partial))
     end
     match body
     | let body': NodeWith[Expression] =>
-      props.push(("body", body'.get_json()))
+      props.push(("body", node.child_ref(body')))
     end

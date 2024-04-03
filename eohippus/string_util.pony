@@ -24,8 +24,6 @@ primitive StringUtil
           result.append("\\t")
         elseif rune == '\v' then
           result.append("\\v")
-        elseif rune == '\\' then
-          result.append("\\\\")
         elseif rune == '\0' then
           result.append("\\0")
         elseif rune == '"' then
@@ -34,6 +32,8 @@ primitive StringUtil
           result.append("\\x")
           result.append(Format.int[U32](rune, FormatHexBare where prec = 2))
         end
+      elseif rune == '\\' then
+        result.append("\\\\")
       elseif rune == '"' then
         result.append("\\\"")
       elseif rune < 128 then

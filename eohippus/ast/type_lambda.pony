@@ -38,45 +38,45 @@ class val TypeLambda is NodeData
 
   fun name(): String => "TypeLambda"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeLambda(
       bare,
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
-      NodeChild.seq_with[TypeType](param_types, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](return_type, old_children, new_children)?,
+      _map_or_none[Keyword](cap, updates),
+      _map_or_none[Identifier](identifier, updates),
+      _map_or_none[TypeParams](type_params, updates),
+      _map[TypeType](param_types, updates),
+      _map_or_none[TypeType](return_type, updates),
       partial,
-      NodeChild.with_or_none[Keyword](rcap, old_children, new_children)?,
-      NodeChild.with_or_none[Token](reph, old_children, new_children)?)
+      _map_or_none[Keyword](rcap, updates),
+      _map_or_none[Token](reph, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("bare", bare))
     props.push(("partial", partial))
     match cap
     | let cap': Node =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", node.child_ref(cap')))
     end
     match identifier
     | let identifier': Node =>
-      props.push(("identifier", identifier'.get_json()))
+      props.push(("identifier", node.child_ref(identifier')))
     end
     match type_params
     | let type_params': Node =>
-      props.push(("type_params", type_params'.get_json()))
+      props.push(("type_params", node.child_ref(type_params')))
     end
     if param_types.size() > 0 then
-      props.push(("param_types", Nodes.get_json(param_types)))
+      props.push(("param_types", node.child_refs(param_types)))
     end
     match return_type
     | let return_type': Node =>
-      props.push(("return_type", return_type'.get_json()))
+      props.push(("return_type", node.child_ref(return_type')))
     end
     match rcap
     | let rcap': Node =>
-      props.push(("rcap", rcap'.get_json()))
+      props.push(("rcap", node.child_ref(rcap')))
     end
     match reph
     | let reph': Node =>
-      props.push(("reph", reph'.get_json()))
+      props.push(("reph", node.child_ref(reph')))
     end

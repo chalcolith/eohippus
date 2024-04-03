@@ -12,13 +12,12 @@ class val MethodParams is NodeData
 
   fun name(): String => "MethodParams"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    MethodParams(
-      NodeChild.seq_with[MethodParam](params, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): NodeData =>
+    MethodParams(_map[MethodParam](params, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
-      props.push(("params", Nodes.get_json(params)))
+      props.push(("params", node.child_refs(params)))
     end
 
 class val MethodParam is NodeData
@@ -37,19 +36,19 @@ class val MethodParam is NodeData
 
   fun name(): String => "MethodParam"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     MethodParam(
-      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](initializer, old_children, new_children)?)
+      _map_with[Identifier](identifier, updates),
+      _map_or_none[TypeType](constraint, updates),
+      _map_or_none[Expression](initializer, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("identifier", identifier.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("identifier", node.child_ref(identifier)))
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", node.child_ref(constraint')))
     end
     match initializer
     | let initializer': NodeWith[Expression] =>
-      props.push(("initializer", initializer'.get_json()))
+      props.push(("initializer", node.child_ref(initializer')))
     end

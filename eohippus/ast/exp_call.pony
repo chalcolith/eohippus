@@ -22,15 +22,15 @@ class val ExpCall is NodeData
 
   fun name(): String => "ExpCall"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpCall(
-      NodeChild.child_with[Expression](lhs, old_children, new_children)?,
-      NodeChild.child_with[CallArgs](args, old_children, new_children)?,
+      _map_with[Expression](lhs, updates),
+      _map_with[CallArgs](args, updates),
       partial)
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("lhs", lhs.get_json()))
-    props.push(("args", args.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("lhs", node.child_ref(lhs)))
+    props.push(("args", node.child_ref(args)))
     if partial then
       props.push(("partial", partial))
     end

@@ -5,7 +5,7 @@ primitive HexadecimalInteger
 primitive BinaryInteger
 type LiteralIntegerKind is (DecimalInteger | HexadecimalInteger | BinaryInteger)
 
-class val LiteralInteger is NodeDataWithValue[U128]
+class val LiteralInteger is NodeDataWithValue[LiteralInteger, U128]
   let _value: U128
   let kind: LiteralIntegerKind
 
@@ -15,10 +15,10 @@ class val LiteralInteger is NodeDataWithValue[U128]
 
   fun name(): String => "LiteralInteger"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | DecimalInteger => "DecimalInteger"

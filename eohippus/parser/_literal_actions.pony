@@ -84,14 +84,18 @@ primitive _LiteralActions
     then
       let int_num: U128 = try str.u128(10)? else 0 end
       let int_value = ast.NodeWith[ast.LiteralInteger](
-        src_info, c, ast.LiteralInteger(int_num, ast.DecimalInteger)
+        src_info,
+        _Build.span_and_post(src_info, c, p),
+        ast.LiteralInteger(int_num, ast.DecimalInteger)
         where post_trivia' = p)
       return (int_value, b)
     end
 
     let num: F64 = try str.f64()? else 0.0 end
     let value = ast.NodeWith[ast.Literal](
-      src_info, _Build.span_and_post(src_info, c, p), ast.LiteralFloat(num)
+      src_info,
+      _Build.span_and_post(src_info, c, p),
+      ast.LiteralFloat(num)
       where post_trivia' = p)
     (value, b)
 
@@ -134,8 +138,11 @@ primitive _LiteralActions
           num = (num << 8) or U32.from[U8](ch)
         end
       end
+      let src_info = _Build.info(d, r)
       let value = ast.NodeWith[ast.Literal](
-        _Build.info(d, r), c, ast.LiteralChar(num, ast.CharLiteral)
+        src_info,
+        _Build.span_and_post(src_info, c, p),
+        ast.LiteralChar(num, ast.CharLiteral)
         where post_trivia' = p)
       (value, b)
     end
@@ -232,6 +239,7 @@ primitive _LiteralActions
 
   fun tag _string(
     tri: Variable,
+    reg: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
@@ -274,11 +282,14 @@ primitive _LiteralActions
         if lines.size() > 1 then
           try
             (var start, var next) = lines(0)?
-            let first_line = indented.trim(start, next - 1)
+            let first_line = indented.trim(start, next)
             let fli = Iter[U8](first_line.values())
             // if the first line is all whitespace, then ignore it,
             // and trim prefixes from from subseqent lines
-            if fli.all({(ch) => (ch == ' ') or (ch == '\t') }) then
+            if fli.all(
+              {(ch) =>
+                (ch == ' ') or (ch == '\t') or (ch == '\n') or (ch == '\r') })
+            then
               (start, next) = lines(1)?
               let indent =
                 recover val
@@ -312,8 +323,50 @@ primitive _LiteralActions
         indented
       end
 
+    // collect child spans
+    let collected_children: Array[ast.Node] trn = Array[ast.Node]
+    var cur_start: (Loc | None) = None
+    var cur_next: (Loc | None) = None
+    for child in c.values() do
+      match child
+      | let span: ast.NodeWith[ast.Span] =>
+        match cur_start
+        | let _: Loc =>
+          cur_next = span.src_info().next
+        else
+          cur_start = span.src_info().next
+          cur_next = span.src_info().next
+        end
+      else
+        match cur_start
+        | let start: Loc =>
+          match cur_next
+          | let next: Loc =>
+            collected_children.push(
+              ast.NodeWith[ast.Span](
+                ast.SrcInfo(d.locator, start, next), [], ast.Span))
+          end
+        end
+        cur_start = None
+        cur_next = None
+
+        collected_children.push(child)
+      end
+    end
+    match cur_start
+    | let start: Loc =>
+      match cur_next
+      | let next: Loc =>
+        collected_children.push(
+          ast.NodeWith[ast.Span](
+            ast.SrcInfo(d.locator, start, next), [], ast.Span))
+      end
+    end
+
     let value = ast.NodeWith[ast.Literal](
-      _Build.info(d, r), c, ast.LiteralString(outdented, kind)
+      _Build.info(d, r),
+      consume collected_children,
+      ast.LiteralString(outdented, kind)
       where post_trivia' = p)
     (value, b)
 

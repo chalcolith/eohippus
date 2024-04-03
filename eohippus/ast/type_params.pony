@@ -10,12 +10,12 @@ class val TypeParams is NodeData
 
   fun name(): String => "TypeParams"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeParams(NodeChild.seq_with[TypeParam](params, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): NodeData =>
+    TypeParams(_map[TypeParam](params, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
-      props.push(("params", Nodes.get_json(params)))
+      props.push(("params", node.child_refs(params)))
     end
 
 class val TypeParam is NodeData
@@ -34,22 +34,22 @@ class val TypeParam is NodeData
 
   fun name(): String => "TypeParam"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeParam(
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](initializer, old_children, new_children)?)
+      _map_or_none[Identifier](identifier, updates),
+      _map_or_none[TypeType](constraint, updates),
+      _map_or_none[TypeType](initializer, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json()))
+      props.push(("identifier", node.child_ref(identifier')))
     end
     match constraint
     | let constraint': NodeWith[TypeType] =>
-      props.push(("constraint", constraint'.get_json()))
+      props.push(("constraint", node.child_ref(constraint')))
     end
     match initializer
     | let initializer': NodeWith[TypeType] =>
-      props.push(("initializer", initializer'.get_json()))
+      props.push(("initializer", node.child_ref(initializer')))
     end

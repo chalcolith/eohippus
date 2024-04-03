@@ -1,4 +1,3 @@
-use "debug"
 use "pony_test"
 
 use ast = "../ast"
@@ -30,22 +29,21 @@ class iso _TestSyntaxTreeLineBeginnings is UnitTest
             h.assert_eq[USize](1, v.size(), "should have one result value")
           then
             try
-              let old_root = v(0)?
-              (_, let line_beginnings) = ast.SyntaxTree.set_line_info(old_root)
+              let st = ast.SyntaxTree(v(0)?)
 
               succeeded = succeeded and
                 h.assert_eq[USize](
-                  4, line_beginnings.size(), "bad # of lines")
+                  4, st.line_beginnings.size(), "bad # of lines")
 
-              var pos = line_beginnings(0)?.index()
+              var pos = st.line_beginnings(0)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](0, pos, "wrong pos for line 0")
 
-              pos = line_beginnings(1)?.index()
+              pos = st.line_beginnings(1)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](8, pos, "wrong pos for line 1")
 
-              pos = line_beginnings(2)?.index()
+              pos = st.line_beginnings(2)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](20, pos, "wrong pos for line 2")
             else
@@ -84,30 +82,31 @@ class iso _TestSyntaxTreeLineNumbers is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let old_root = v(0)?
-            (let new_root, _) = ast.SyntaxTree.set_line_info(old_root)
+            let st = ast.SyntaxTree(v(0)?)
 
-            let src_file = new_root as ast.NodeWith[ast.SrcFile]
-            h.assert_eq[USize](0, src_file.src_info().line, "starting line")
-            h.assert_eq[USize](0, src_file.src_info().column, "starting col")
+            let src_file = st.root as ast.NodeWith[ast.SrcFile]
+            h.assert_eq[USize](
+              0, st.lines_and_columns(src_file)?._1, "starting line")
+            h.assert_eq[USize](
+              0, st.lines_and_columns(src_file)?._2, "starting col")
             h.assert_eq[USize](2, src_file.data().type_defs.size(), "# types")
 
             let a = src_file.data().type_defs(0)?
-            h.assert_eq[USize](0, a.src_info().line, "A line")
-            h.assert_eq[USize](0, a.src_info().column, "A col")
+            h.assert_eq[USize](0, st.lines_and_columns(a)?._1, "A line")
+            h.assert_eq[USize](0, st.lines_and_columns(a)?._2, "A col")
 
             let c = a.data() as ast.TypedefClass
             let m = c.members
               as ast.NodeWith[ast.TypedefMembers]
             let nc = m.data().methods(0)?
             let nc_id = nc.data().identifier
-            h.assert_eq[USize](1, nc_id.src_info().line, "nc line")
-            h.assert_eq[USize](6, nc_id.src_info().column, "nc col")
+            h.assert_eq[USize](1, st.lines_and_columns(nc_id)?._1, "nc line")
+            h.assert_eq[USize](6, st.lines_and_columns(nc_id)?._2, "nc col")
 
             let b = src_file.data().type_defs(1)?
             let b_id = (b.data() as ast.TypedefClass).identifier
-            h.assert_eq[USize](2, b_id.src_info().line, "B line")
-            h.assert_eq[USize](10, b_id.src_info().column, "B col")
+            h.assert_eq[USize](2, st.lines_and_columns(b_id)?._1, "B line")
+            h.assert_eq[USize](10, st.lines_and_columns(b_id)?._2, "B col")
           else
             h.fail("error in parse tree")
           end

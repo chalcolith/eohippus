@@ -5,7 +5,7 @@ primitive StringTripleQuote
 
 type StringLiteralKind is (StringLiteral | StringTripleQuote)
 
-class val LiteralString is NodeDataWithValue[String]
+class val LiteralString is NodeDataWithValue[LiteralString, String]
   let _value: String
   let kind: StringLiteralKind
 
@@ -15,10 +15,10 @@ class val LiteralString is NodeDataWithValue[String]
 
   fun name(): String => "LiteralString"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | StringLiteral => "StringLiteral"

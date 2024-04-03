@@ -1,12 +1,13 @@
 use "collections"
+use "itertools"
 use ".."
 
 class Object
-  embed _items: Map[String, Item] = _items.create()
+  embed _items: Array[(String, Item)] = _items.create()
 
   new create(items: Seq[(String, Item)] = Array[(String, Item)]) =>
     for (key, value) in items.values() do
-      _items(key) = value
+      _items.push((key, value))
     end
 
   fun contains(key: (String | USize)): Bool =>
@@ -15,16 +16,36 @@ class Object
       | let k: String => k
       | let n: USize => n.string()
       end
-    _items.contains(key')
+    for (k, _) in _items.values() do
+      if k == key' then
+        return true
+      end
+    end
+    false
 
   fun apply(key: String): this->Item ? =>
-    _items(key)?
+    for (k, v) in _items.values() do
+      if k == key then
+        return v
+      end
+    end
+    error
 
   fun ref update(key: String, value: Item) =>
-    _items.update(key, value)
+    var i: USize = 0
+    while i < _items.size() do
+      try
+        if _items(i)?._1 == key then
+          _items(i)? = (key, value)
+          return
+        end
+      end
+      i = i + 1
+    end
+    _items.push((key, value))
 
   fun pairs(): Iterator[(String, this->Item)] =>
-    _items.pairs()
+    _items.values()
 
   fun get_string(pretty: Bool, indent: String): String iso^ =>
     let indent' =
@@ -35,36 +56,33 @@ class Object
       end
     let result: String iso = String
     result.append("{")
-    let keys = _items.keys()
-    if keys.has_next() then
+    if _items.size() > 0 then
       if pretty then result.append("\n") end
       var first = true
-      for key in keys do
-        try
-          if first then
-            first = false
-          else
-            result.append(",")
-            if pretty then result.append("\n") end
-          end
-          result.append(indent')
-          result.append("\"" + key + "\": ")
-          match _items(key)?
-          | let obj: Object box =>
-            result.append(obj.get_string(pretty, indent'))
-          | let seq: Sequence box =>
-            result.append(seq.get_string(pretty, indent'))
-          | let str: String box =>
-            result.append("\"" + StringUtil.escape(str) + "\"")
-          | let int: I128 =>
-            result.append(int.string())
-          | let flt: F64 =>
-            result.append(flt.string())
-          | let bool: Bool =>
-            result.append(if bool then "true" else "false" end)
-          | let null: Null =>
-            result.append("null")
-          end
+      for (key, value) in _items.values() do
+        if first then
+          first = false
+        else
+          result.append(",")
+          if pretty then result.append("\n") end
+        end
+        result.append(indent')
+        result.append("\"" + key + "\": ")
+        match value
+        | let obj: Object box =>
+          result.append(obj.get_string(pretty, indent'))
+        | let seq: Sequence box =>
+          result.append(seq.get_string(pretty, indent'))
+        | let str: String box =>
+          result.append("\"" + StringUtil.escape(str) + "\"")
+        | let int: I128 =>
+          result.append(int.string())
+        | let flt: F64 =>
+          result.append(flt.string())
+        | let bool: Bool =>
+          result.append(if bool then "true" else "false" end)
+        | let null: Null =>
+          result.append("null")
         end
       end
       if pretty then

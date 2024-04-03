@@ -13,6 +13,7 @@ primitive _TestParserSrcFile
     test(_TestParserSrcFileUsingFfi)
     test(_TestParserSrcFileUsingErrorSection)
     test(_TestParserSrcFileTypedefMultiple)
+    test(_TestParserSrcFileTypedefSingle)
 
 class iso _TestParserSrcFileTriviaDocstring is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Trivia+Docstring"
@@ -22,56 +23,103 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let expected =
+    let src = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
+    let exp =
       """
         {
           "name": "SrcFile",
           "locator": "parser/src_file/SrcFile/Trivia+Docstring",
           "pre_trivia": [
-            {
-              "name": "Trivia",
-              "kind": "EndOfLineTrivia"
-            },
-            {
-              "name": "Trivia",
-              "kind": "WhiteSpaceTrivia"
-            },
-            {
-              "name": "Trivia",
-              "kind": "LineCommentTrivia"
-            },
-            {
-              "name": "Trivia",
-              "kind": "EndOfLineTrivia"
-            },
-            {
-              "name": "Trivia",
-              "kind": "WhiteSpaceTrivia"
-            }
+            0,
+            1,
+            2,
+            3,
+            4
           ],
           "doc_strings": [
+            5
+          ],
+          "post_trivia": [
+            6
+          ],
+          "children": [
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia",
+              "string": "\n"
+            },
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia",
+              "string": " "
+            },
+            {
+              "name": "Trivia",
+              "kind": "LineCommentTrivia",
+              "string": "// trivia!"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia",
+              "string": "\n"
+            },
+            {
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia",
+              "string": " "
+            },
             {
               "name": "DocString",
-              "string": {
-                "name": "LiteralString",
-                "kind": "StringTripleQuote",
-                "value": "This is a doc string\n",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia"
-                  }
-                ]
-              }
+              "string": 0,
+              "children": [
+                {
+                  "name": "LiteralString",
+                  "kind": "StringTripleQuote",
+                  "value": "This is a doc string\n",
+                  "post_trivia": [
+                    3
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "\"\"\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "\"\"\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " \t"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfFileTrivia",
+              "string": ""
             }
           ]
         }
       """
-    let source = "\n // trivia!\n \"\"\"\n This is a doc string\n \"\"\" \t"
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserSrcFileUsingPony is UnitTest
   fun name(): String => "parser/src_file/Using/Pony"
@@ -81,80 +129,271 @@ class iso _TestParserSrcFileUsingPony is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let source = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
-
-    let expected =
+    let src = " use \"foo\" if windows\nuse baz = \"bar\" if not osx"
+    let exp =
       """
         {
           "name": "SrcFile",
           "locator": "parser/src_file/Using/Pony",
           "usings": [
+            1,
+            2
+          ],
+          "pre_trivia": [
+            0
+          ],
+          "post_trivia": [
+            3
+          ],
+          "children": [
             {
-              "name": "Using",
-              "path": {
-                "name": "LiteralString",
-                "kind": "StringLiteral",
-                "value": "foo",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia"
-                  }
-                ]
-              },
-              "define": {
-                "name": "Identifier",
-                "string": "windows",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "EndOfLineTrivia"
-                  }
-                ]
-              }
+              "name": "Trivia",
+              "kind": "WhiteSpaceTrivia",
+              "string": " "
             },
             {
               "name": "Using",
-              "identifier": {
-                "name": "Identifier",
-                "string": "baz",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia"
-                  }
-                ]
-              },
-              "path": {
-                "name": "LiteralString",
-                "kind": "StringLiteral",
-                "value": "bar",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia"
-                  }
-                ]
-              },
+              "path": 1,
+              "define": 3,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "use",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "LiteralString",
+                  "kind": "StringLiteral",
+                  "value": "foo",
+                  "post_trivia": [
+                    3
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Keyword",
+                  "string": "if",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "windows",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\n"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Using",
+              "identifier": 1,
+              "path": 3,
               "def_true": false,
-              "define": {
-                "name": "Identifier",
-                "string": "osx"
-              }
-            }
-          ],
-          "pre_trivia": [
+              "define": 6,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "use",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "baz",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Token",
+                  "string": "=",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "LiteralString",
+                  "kind": "StringLiteral",
+                  "value": "bar",
+                  "post_trivia": [
+                    3
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Keyword",
+                  "string": "if",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Keyword",
+                  "string": "not",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "osx",
+                  "children": [
+                    {
+                      "name": "Span"
+                    }
+                  ]
+                }
+              ]
+            },
             {
               "name": "Trivia",
-              "kind": "WhiteSpaceTrivia"
+              "kind": "EndOfFileTrivia",
+              "string": ""
             }
           ]
         }
       """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserSrcFileUsingFfi is UnitTest
   fun name(): String => "parser/src_file/Using/FFI"
@@ -164,38 +403,255 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let source = " use a = @b[None](c: U8) ? "
-    let expected = """
+    let src = " use a = @b[None](c: U8) ? "
+    let exp = """
       {
         "name": "SrcFile",
+        "locator": "parser/src_file/Using/FFI",
         "usings": [
+          1
+        ],
+        "pre_trivia": [
+          0
+        ],
+        "post_trivia": [
+          2
+        ],
+        "children": [
           {
-            "identifier": { "string": "a" },
-            "name": { "string": "b" },
-            "type_args": {
-              "types": [
-                {
-                  "rhs": { "string": "None" }
-                }
-              ]
-            },
-            "params": {
-              "params": [
-                {
-                  "identifier": { "string": "c" },
-                  "constraint": { "rhs": { "string": "U8" } }
-                }
-              ]
-            },
-            "partial": true
+            "name": "Trivia",
+            "kind": "WhiteSpaceTrivia",
+            "string": " "
+          },
+          {
+            "name": "UsingFFI",
+            "identifier": 1,
+            "fun_name": 4,
+            "type_args": 5,
+            "params": 7,
+            "partial": true,
+            "children": [
+              {
+                "name": "Keyword",
+                "string": "use",
+                "post_trivia": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              },
+              {
+                "name": "Identifier",
+                "string": "a",
+                "post_trivia": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "=",
+                "post_trivia": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "@",
+                "children": [
+                  {
+                    "name": "Span"
+                  }
+                ]
+              },
+              {
+                "name": "Identifier",
+                "string": "b",
+                "children": [
+                  {
+                    "name": "Span"
+                  }
+                ]
+              },
+              {
+                "name": "TypeArgs",
+                "types": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Token",
+                    "string": "[",
+                    "children": [
+                      {
+                        "name": "Span"
+                      }
+                    ]
+                  },
+                  {
+                    "name": "TypeNominal",
+                    "rhs": 0,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "None",
+                        "children": [
+                          {
+                            "name": "Span"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Token",
+                    "string": "]",
+                    "children": [
+                      {
+                        "name": "Span"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "(",
+                "children": [
+                  {
+                    "name": "Span"
+                  }
+                ]
+              },
+              {
+                "name": "MethodParams",
+                "params": [
+                  0
+                ],
+                "children": [
+                  {
+                    "name": "MethodParam",
+                    "identifier": 0,
+                    "constraint": 2,
+                    "children": [
+                      {
+                        "name": "Identifier",
+                        "string": "c",
+                        "children": [
+                          {
+                            "name": "Span"
+                          }
+                        ]
+                      },
+                      {
+                        "name": "Token",
+                        "string": ":",
+                        "post_trivia": [
+                          1
+                        ],
+                        "children": [
+                          {
+                            "name": "Span"
+                          },
+                          {
+                            "name": "Trivia",
+                            "kind": "WhiteSpaceTrivia",
+                            "string": " "
+                          }
+                        ]
+                      },
+                      {
+                        "name": "TypeNominal",
+                        "rhs": 0,
+                        "children": [
+                          {
+                            "name": "Identifier",
+                            "string": "U8",
+                            "children": [
+                              {
+                                "name": "Span"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": ")",
+                "post_trivia": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              },
+              {
+                "name": "Token",
+                "string": "?",
+                "post_trivia": [
+                  1
+                ],
+                "children": [
+                  {
+                    "name": "Span"
+                  },
+                  {
+                    "name": "Trivia",
+                    "kind": "WhiteSpaceTrivia",
+                    "string": " "
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "name": "Trivia",
+            "kind": "EndOfFileTrivia",
+            "string": ""
           }
         ]
       }
     """
 
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
@@ -206,69 +662,188 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let expected =
+    //         0           11         20  22      30  32  36       42
+    let src = "// comment\nuse \"bar\"\n\ngousbnfg\n\nuse \"baz\"\n"
+    let exp =
       """
         {
           "name": "SrcFile",
           "locator": "parser/src_file/SrcFile/Using/error_section",
           "usings": [
-            {
-              "name": "Using",
-              "path": {
-                "name": "LiteralString",
-                "kind": "StringLiteral",
-                "value": "bar",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "EndOfLineTrivia"
-                  },
-                  {
-                    "name": "Trivia",
-                    "kind": "EndOfLineTrivia"
-                  }
-                ]
-              }
-            },
-            {
-              "name": "Using",
-              "path": {
-                "name": "LiteralString",
-                "kind": "StringLiteral",
-                "value": "baz",
-                "post_trivia": [
-                  {
-                    "name": "Trivia",
-                    "kind": "EndOfLineTrivia"
-                  }
-                ]
-              }
-            }
+            2,
+            4
           ],
           "error_sections": [
-            {
-              "name": "ErrorSection",
-              "message": "expected either a \"use\" statement or a type definition"
-            }
+            3
           ],
           "pre_trivia": [
+            0,
+            1
+          ],
+          "post_trivia": [
+            5
+          ],
+          "children": [
             {
               "name": "Trivia",
-              "kind": "LineCommentTrivia"
+              "kind": "LineCommentTrivia",
+              "string": "// comment"
             },
             {
               "name": "Trivia",
-              "kind": "EndOfLineTrivia"
+              "kind": "EndOfLineTrivia",
+              "string": "\n"
+            },
+            {
+              "name": "Using",
+              "path": 1,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "use",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "LiteralString",
+                  "kind": "StringLiteral",
+                  "value": "bar",
+                  "post_trivia": [
+                    3,
+                    4
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\n"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\n"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "ErrorSection",
+              "message": "expected either a \"use\" statement or a type definition",
+              "children": [
+                {
+                  "name": "Trivia",
+                  "kind": "EndOfLineTrivia",
+                  "string": "\n"
+                },
+                {
+                  "name": "Trivia",
+                  "kind": "EndOfLineTrivia",
+                  "string": "\n"
+                }
+              ]
+            },
+            {
+              "name": "Using",
+              "path": 1,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "use",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "LiteralString",
+                  "kind": "StringLiteral",
+                  "value": "baz",
+                  "post_trivia": [
+                    3
+                  ],
+                  "children": [
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Token",
+                      "string": "\"",
+                      "children": [
+                        {
+                          "name": "Span"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\n"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfFileTrivia",
+              "string": ""
             }
           ]
         }
       """
 
-    //            0           11         20  22      30  32  36       42
-    let source = "// comment\nuse \"bar\"\n\ngousbnfg\n\nuse \"baz\"\n"
-
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserSrcFileTypedefMultiple is UnitTest
   fun name(): String => "parser/src_file/Typedef/Multiple"
@@ -278,37 +853,428 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let expected =
-      """
-        {
-          "name": "SrcFile",
-          "type_defs": [
-            {
-              "name": "TypedefClass",
-              "identifier": { "string": "A" },
-              "members": {
-                "methods": [
-                  {
-                    "name": "TypedefMethod",
-                    "identifier": { "string": "create" }
-                  }
-                ]
-              }
-            },
-            {
-              "name": "TypedefClass",
-              "identifier": { "string": "B" }
-            }
-          ]
-        }
-      """
-
-    let source =
+    let src =
       """
         class A
           new create() => None
         interface B
       """
+    let exp =
+      """
+        {
+          "name": "SrcFile",
+          "locator": "parser/src_file/Typedef/Multiple",
+          "type_defs": [
+            0,
+            1
+          ],
+          "post_trivia": [
+            2
+          ],
+          "children": [
+            {
+              "name": "TypedefClass",
+              "kind": 0,
+              "identifier": 1,
+              "members": 2,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "class",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "A",
+                  "post_trivia": [
+                    1,
+                    2
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\r\n"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": "  "
+                    }
+                  ]
+                },
+                {
+                  "name": "TypedefMembers",
+                  "methods": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "TypedefMethod",
+                      "kind": 0,
+                      "identifier": 1,
+                      "body": 5,
+                      "children": [
+                        {
+                          "name": "Keyword",
+                          "string": "new",
+                          "post_trivia": [
+                            1
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": " "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Identifier",
+                          "string": "create",
+                          "children": [
+                            {
+                              "name": "Span"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": "(",
+                          "children": [
+                            {
+                              "name": "Span"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": ")",
+                          "post_trivia": [
+                            1
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": " "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": "=>",
+                          "post_trivia": [
+                            1
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": " "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "ExpAtom",
+                          "body": 0,
+                          "children": [
+                            {
+                              "name": "Identifier",
+                              "string": "None",
+                              "post_trivia": [
+                                1
+                              ],
+                              "children": [
+                                {
+                                  "name": "Span"
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "kind": "EndOfLineTrivia",
+                                  "string": "\r\n"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "TypedefClass",
+              "kind": 0,
+              "identifier": 1,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "interface",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "B",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\r\n"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfFileTrivia",
+              "string": ""
+            }
+          ]
+        }
+      """
 
-    _Assert.test_all(h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserSrcFileTypedefSingle is UnitTest
+  fun name(): String => "parser/src_file/Typedef/Single"
+  fun exclusion_group(): String => "parser/src_file"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.src_file.src_file
+
+    let src =
+      """
+        class A
+          new create() =>
+            None
+      """
+    let exp =
+      """
+        {
+          "name": "SrcFile",
+          "locator": "parser/src_file/Typedef/Single",
+          "type_defs": [
+            0
+          ],
+          "post_trivia": [
+            1
+          ],
+          "children": [
+            {
+              "name": "TypedefClass",
+              "kind": 0,
+              "identifier": 1,
+              "members": 2,
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "class",
+                  "post_trivia": [
+                    1
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": " "
+                    }
+                  ]
+                },
+                {
+                  "name": "Identifier",
+                  "string": "A",
+                  "post_trivia": [
+                    1,
+                    2
+                  ],
+                  "children": [
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia",
+                      "string": "\r\n"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "WhiteSpaceTrivia",
+                      "string": "  "
+                    }
+                  ]
+                },
+                {
+                  "name": "TypedefMembers",
+                  "methods": [
+                    0
+                  ],
+                  "children": [
+                    {
+                      "name": "TypedefMethod",
+                      "kind": 0,
+                      "identifier": 1,
+                      "body": 5,
+                      "children": [
+                        {
+                          "name": "Keyword",
+                          "string": "new",
+                          "post_trivia": [
+                            1
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": " "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Identifier",
+                          "string": "create",
+                          "children": [
+                            {
+                              "name": "Span"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": "(",
+                          "children": [
+                            {
+                              "name": "Span"
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": ")",
+                          "post_trivia": [
+                            1
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": " "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "Token",
+                          "string": "=>",
+                          "post_trivia": [
+                            1,
+                            2
+                          ],
+                          "children": [
+                            {
+                              "name": "Span"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "EndOfLineTrivia",
+                              "string": "\r\n"
+                            },
+                            {
+                              "name": "Trivia",
+                              "kind": "WhiteSpaceTrivia",
+                              "string": "    "
+                            }
+                          ]
+                        },
+                        {
+                          "name": "ExpAtom",
+                          "body": 0,
+                          "children": [
+                            {
+                              "name": "Identifier",
+                              "string": "None",
+                              "post_trivia": [
+                                1
+                              ],
+                              "children": [
+                                {
+                                  "name": "Span"
+                                },
+                                {
+                                  "name": "Trivia",
+                                  "kind": "EndOfLineTrivia",
+                                  "string": "\r\n"
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfFileTrivia",
+              "string": ""
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])

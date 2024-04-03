@@ -20,15 +20,13 @@ class val CallArgs is NodeData
 
   fun name(): String => "CallArgs"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    CallArgs(
-      NodeChild.seq_with[Expression](pos, old_children, new_children)?,
-      NodeChild.seq_with[Expression](named, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): NodeData =>
+    CallArgs(_map[Expression](pos, updates), _map[Expression](named, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if pos.size() > 0 then
-      props.push(("positional", Nodes.get_json(pos)))
+      props.push(("positional", node.child_refs(pos)))
     end
     if named.size() > 0 then
-      props.push(("named", Nodes.get_json(named)))
+      props.push(("named", node.child_refs(named)))
     end

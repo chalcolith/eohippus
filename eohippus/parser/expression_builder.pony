@@ -17,6 +17,7 @@ class ExpressionBuilder
   let item: NamedRule = NamedRule("an expression")
   let infix: NamedRule = NamedRule("an infix expression")
   let seq: NamedRule = NamedRule("an expression sequence")
+  let tuple_pattern: NamedRule = NamedRule("a tuple destructuring pattern")
   let _method_params: NamedRule
   let _typedef_members: NamedRule
 
@@ -90,7 +91,6 @@ class ExpressionBuilder
     let exp_while: NamedRule = NamedRule("a while loop")
     let exp_with: NamedRule = NamedRule("a with expression")
     let match_case: NamedRule = NamedRule("a match case")
-    let tuple_pattern: NamedRule = NamedRule("a tuple destructuring pattern")
     let with_elem: NamedRule = NamedRule("a with element")
 
     let amp = _token(ast.Tokens.amp())
@@ -422,8 +422,11 @@ class ExpressionBuilder
           kwd_end ]),
       _ExpActions~_repeat(repeat_body, repeat_cond, repeat_else_block))
 
-    // for <= 'for' (id / '(' id (',' id)* ')') 'in' seq ('else' seq)? 'end'
+    // for <= 'for' (id / '(' id (',' id)* ')') 'in' seq 'do'
+    //   seq ('else' seq)?
+    // 'end'
     let for_ids = Variable("for_ids")
+    let for_seq = Variable("for_seq")
     let for_body = Variable("for_body")
     let for_else_block = Variable("for_else_block")
     exp_for.set_body(
@@ -431,10 +434,12 @@ class ExpressionBuilder
         [ kwd_for
           Bind(for_ids, tuple_pattern)
           kwd_in
+          Bind(for_seq, seq)
+          kwd_do
           Bind(for_body, seq)
           Ques(Conj([ kwd_else; Bind(for_else_block, seq)]))
           kwd_end ]),
-      _ExpActions~_for(for_ids, for_body, for_else_block))
+      _ExpActions~_for(for_ids, for_seq, for_body, for_else_block))
 
     // tuple_pattern <= id / '(' tuple_pattern (',' tuple_pattern)* ')'
     tuple_pattern.set_body(

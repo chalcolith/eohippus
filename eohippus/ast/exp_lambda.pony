@@ -39,49 +39,49 @@ class val ExpLambda is NodeData
 
   fun name(): String => "ExpLambda"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpLambda(
       bare,
-      NodeChild.with_or_none[Keyword](this_cap, old_children, new_children)?,
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeParams](type_params, old_children, new_children)?,
-      NodeChild.child_with[MethodParams](params, old_children, new_children)?,
-      NodeChild.with_or_none[MethodParams](captures, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](ret_type, old_children, new_children)?,
+      _map_or_none[Keyword](this_cap, updates),
+      _map_or_none[Identifier](identifier, updates),
+      _map_or_none[TypeParams](type_params, updates),
+      _map_with[MethodParams](params, updates),
+      _map_or_none[MethodParams](captures, updates),
+      _map_or_none[TypeType](ret_type, updates),
       partial,
-      NodeChild.child_with[Expression](body, old_children, new_children)?,
-      NodeChild.with_or_none[Keyword](ref_cap, old_children, new_children)?)
+      _map_with[Expression](body, updates),
+      _map_or_none[Keyword](ref_cap, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if bare then
       props.push(("bare", bare))
     end
     match this_cap
     | let this_cap': NodeWith[Keyword] =>
-      props.push(("this_cap", this_cap'.get_json()))
+      props.push(("this_cap", node.child_ref(this_cap')))
     end
     match identifier
     | let identifier': NodeWith[Identifier] =>
-      props.push(("identifier", identifier'.get_json()))
+      props.push(("identifier", node.child_ref(identifier')))
     end
     match type_params
     | let type_params': NodeWith[TypeParams] =>
-      props.push(("type_params", type_params'.get_json()))
+      props.push(("type_params", node.child_ref(type_params')))
     end
-    props.push(("params", params.get_json()))
+    props.push(("params", node.child_ref(params)))
     match captures
     | let captures': NodeWith[MethodParams] =>
-      props.push(("captures", captures'.get_json()))
+      props.push(("captures", node.child_ref(captures')))
     end
     match ret_type
     | let ret_type': NodeWith[TypeType] =>
-      props.push(("ret_type", ret_type'.get_json()))
+      props.push(("ret_type", node.child_ref(ret_type')))
     end
     if partial then
       props.push(("partial", partial))
     end
-    props.push(("body", body.get_json()))
+    props.push(("body", node.child_ref(body)))
     match ref_cap
     | let ref_cap': NodeWith[Keyword] =>
-      props.push(("ref_cap", ref_cap'.get_json()))
+      props.push(("ref_cap", node.child_ref(ref_cap')))
     end

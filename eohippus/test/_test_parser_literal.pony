@@ -62,7 +62,10 @@ class iso _TestParserLiteralIntegerDec is UnitTest
         {
           "name": "LiteralInteger",
           "kind": "DecimalInteger",
-          "value": 1234
+          "value": 1234,
+          "children": [
+            { "name": "Span" }
+          ]
         }
       """
 
@@ -72,7 +75,9 @@ class iso _TestParserLiteralIntegerDec is UnitTest
           "name": "LiteralInteger",
           "kind": "DecimalInteger",
           "value": 1234,
-          "post_trivia": [
+          "post_trivia": [ 1 ],
+          "children": [
+            { "name": "Span" },
             {
               "name": "Trivia",
               "kind": "WhiteSpaceTrivia"
@@ -104,13 +109,17 @@ class iso _TestParserLiteralIntegerHex is UnitTest
         {
           "name": "LiteralInteger",
           "kind": "HexadecimalInteger",
-          "value": 1194684
+          "value": 1194684,
+          "children": [
+            { "name": "Span" },
+            { "name": "Trivia" }
+          ]
         }
       """
 
     _Assert.test_all(
       h,
-      [ _Assert.test_match(h, rule, setup.data, "0x12_3abc", expected) ])
+      [ _Assert.test_match(h, rule, setup.data, "0x12_3abc ", expected) ])
 
 class iso _TestParserLiteralIntegerBin is UnitTest
   fun name(): String => "parser/literal/Integer/Binary"
@@ -167,7 +176,11 @@ class iso _TestParserLiteralFloat is UnitTest
         {
           "name": "LiteralInteger",
           "kind": "DecimalInteger",
-          "value": 456
+          "value": 456,
+          "children": [
+            { "name": "Span" },
+            { "name": "Trivia", "string": " " }
+          ]
         }
       """
 
@@ -177,7 +190,7 @@ class iso _TestParserLiteralFloat is UnitTest
         _Assert.test_match(h, rule, setup.data, "23.45e63", expected_2)
         _Assert.test_match(h, rule, setup.data, "23.45e63 ", expected_2)
         _Assert.test_match(h, rule, setup.data, "345.678", expected_3)
-        _Assert.test_match(h, rule, setup.data, "456", expected_4)
+        _Assert.test_match(h, rule, setup.data, "456 ", expected_4)
         _Assert.test_match(h, rule, setup.data, "", None)
       ])
 
@@ -194,7 +207,11 @@ class iso _TestParserLiteralChar is UnitTest
         {
           "name": "LiteralChar",
           "kind": "CharLiteral",
-          "value": "A"
+          "value": "A",
+          "children": [
+            { "name": "Span" },
+            { "name": "Trivia", "string": " " }
+          ]
         }
       """
 
@@ -236,7 +253,7 @@ class iso _TestParserLiteralChar is UnitTest
 
     _Assert.test_all(
       h,
-      [ _Assert.test_match(h, rule, setup.data, "'A'", expected_1)
+      [ _Assert.test_match(h, rule, setup.data, "'A' ", expected_1)
         _Assert.test_match(h, rule, setup.data, "'\\n'", expected_2)
         _Assert.test_match(h, rule, setup.data, "'\\x41'", expected_3)
         _Assert.test_match(h, rule, setup.data, "'ABCD'", expected_4)
@@ -296,13 +313,26 @@ class iso _TestParserLiteralStringTriple is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.literal.string
 
-    let expected =
+    let src = "\"\"\"  \n   one\n   two\n   three\n\"\"\" "
+    let exp =
       """
         {
           "name": "LiteralString",
           "kind": "StringTripleQuote",
           "value": "one\ntwo\nthree",
-          "post_trivia": [
+          "post_trivia": [ 3 ],
+          "children": [
+            {
+              "name": "Token",
+              "string": "\"\"\""
+            },
+            {
+              "name": "Span"
+            },
+            {
+              "name": "Token",
+              "string": "\"\"\""
+            },
             {
               "name": "Trivia",
               "kind": "WhiteSpaceTrivia"
@@ -311,8 +341,4 @@ class iso _TestParserLiteralStringTriple is UnitTest
         }
       """
 
-    let source = "\"\"\"  \n   one\n   two\n   three\n\"\"\" "
-
-    _Assert.test_all(
-      h,
-      [ _Assert.test_match(h, rule, setup.data, source, expected) ])
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])

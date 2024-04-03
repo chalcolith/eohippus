@@ -21,17 +21,17 @@ class val SrcFile is NodeData
 
   fun name(): String => "SrcFile"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     SrcFile(
       locator,
-      NodeChild.seq_with[Using](usings, old_children, new_children)?,
-      NodeChild.seq_with[Typedef](type_defs, old_children, new_children)?)
+      _map[Using](usings, updates),
+      _map[Typedef](type_defs, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("locator", locator))
     if usings.size() > 0 then
-      props.push(("usings", Nodes.get_json(usings)))
+      props.push(("usings", node.child_refs(usings)))
     end
     if type_defs.size() > 0 then
-      props.push(("type_defs", Nodes.get_json(type_defs)))
+      props.push(("type_defs", node.child_refs(type_defs)))
     end

@@ -1,6 +1,6 @@
 use json = "../json"
 
-class val LiteralFloat is NodeDataWithValue[F64]
+class val LiteralFloat is NodeDataWithValue[LiteralFloat, F64]
   let _value: F64
 
   new val create(value': F64) =>
@@ -8,10 +8,10 @@ class val LiteralFloat is NodeDataWithValue[F64]
 
   fun name(): String => "LiteralFloat"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("value", _value))
 
   fun value(): F64 => _value

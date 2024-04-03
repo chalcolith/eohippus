@@ -435,6 +435,7 @@ primitive _ExpActions
 
   fun tag _for(
     ids: Variable,
+    seq: Variable,
     body: Variable,
     else_block: Variable,
     d: Data,
@@ -449,6 +450,12 @@ primitive _ExpActions
       else
         return _Build.bind_error(d, r, c, b, "Expression/For/Ids")
       end
+    let seq' =
+      try
+        _Build.value_with[ast.Expression](b, seq, r)?
+      else
+        return _Build.bind_error(d, r, c, b, "Expression/For/Sequence")
+      end
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
@@ -459,7 +466,7 @@ primitive _ExpActions
       b, else_block, r)
 
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(d, r), c, ast.ExpFor(ids', body', else_block'))
+      _Build.info(d, r), c, ast.ExpFor(ids', seq', body', else_block'))
     (value, b)
 
   fun tag _tuple_pattern(
@@ -469,32 +476,26 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let ids =
+    let elements =
       recover val
         Array[(ast.NodeWith[ast.Identifier] | ast.NodeWith[ast.TuplePattern])]
           .> concat(
             Iter[ast.Node](c.values())
               .filter_map[
                 (ast.NodeWith[ast.Identifier]
-                  | ast.NodeWith[ast.TuplePattern])](
+                | ast.NodeWith[ast.TuplePattern])](
                     {(n) =>
                       match n
                       | let idn: ast.NodeWith[ast.Identifier] =>
                         idn
                       | let tp: ast.NodeWith[ast.TuplePattern] =>
-                        try
-                          if tp.data().ids.size() == 1 then
-                            tp.data().ids(0)?
-                          else
-                            tp
-                          end
-                        end
+                        tp
                       end
                     }))
       end
 
     let value = ast.NodeWith[ast.TuplePattern](
-      _Build.info(d, r), c, ast.TuplePattern(ids))
+      _Build.info(d, r), c, ast.TuplePattern(elements))
     (value, b)
 
   fun tag _with(

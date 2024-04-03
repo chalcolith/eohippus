@@ -15,14 +15,14 @@ class val ExpConsume is NodeData
 
   fun name(): String => "ExpConsume"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpConsume(
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.child_with[Expression](body, old_children, new_children)?)
+      _map_or_none[Keyword](cap, updates),
+      _map_with[Expression](body, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match cap
     | let cap': NodeWith[Keyword] =>
-      props.push(("cap", cap'.get_json()))
+      props.push(("cap", node.child_ref(cap')))
     end
-    props.push(("body", body.get_json()))
+    props.push(("body", node.child_ref(body)))

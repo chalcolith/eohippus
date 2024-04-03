@@ -27,13 +27,13 @@ class val ExpIf is NodeData
 
   fun name(): String => "ExpIf"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpIf(
       kind,
-      NodeChild.seq_with[IfCondition](conditions, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
+      _map[IfCondition](conditions, updates),
+      _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | IfExp => "IfExp"
@@ -41,10 +41,10 @@ class val ExpIf is NodeData
       | IfType => "IfType"
       end
     props.push(("kind", kind_str))
-    props.push(("conditions", Nodes.get_json(conditions)))
+    props.push(("conditions", node.child_refs(conditions)))
     match else_block
     | let block: Node =>
-      props.push(("else_block", block.get_json()))
+      props.push(("else_block", node.child_ref(block)))
     end
 
 class val IfCondition is NodeData
@@ -64,11 +64,11 @@ class val IfCondition is NodeData
 
   fun name(): String => "IfCondition"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     IfCondition(
-      NodeChild.child_with[Expression](if_true, old_children, new_children)?,
-      NodeChild.child_with[Expression](then_block, old_children, new_children)?)
+      _map_with[Expression](if_true, updates),
+      _map_with[Expression](then_block, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("if_true", if_true.get_json()))
-    props.push(("then_block", then_block.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("if_true", node.child_ref(if_true)))
+    props.push(("then_block", node.child_ref(then_block)))

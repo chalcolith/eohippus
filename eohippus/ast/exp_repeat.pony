@@ -18,16 +18,16 @@ class val ExpRepeat is NodeData
 
   fun name(): String => "ExpRepeat"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpRepeat(
-      NodeChild.child_with[Expression](body, old_children, new_children)?,
-      NodeChild.child_with[Expression](condition, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
+      _map_with[Expression](body, updates),
+      _map_with[Expression](condition, updates),
+      _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("body", body.get_json()))
-    props.push(("condition", condition.get_json()))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("body", node.child_ref(body)))
+    props.push(("condition", node.child_ref(condition)))
     match else_block
     | let else_block': NodeWith[Expression] =>
-      props.push(("else_block", else_block'.get_json()))
+      props.push(("else_block", node.child_ref(else_block')))
     end

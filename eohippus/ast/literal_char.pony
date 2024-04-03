@@ -6,7 +6,7 @@ primitive CharUnicode
 
 type CharLiteralKind is (CharLiteral | CharEscaped | CharUnicode)
 
-class val LiteralChar is NodeDataWithValue[U32]
+class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
   """
     A character literal.
     - `kind`: either a single character 'x' or a standard escaped character, or
@@ -22,10 +22,10 @@ class val LiteralChar is NodeDataWithValue[U32]
 
   fun name(): String => "LiteralChar"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData =>
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | CharLiteral => "CharLiteral"

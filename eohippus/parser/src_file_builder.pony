@@ -46,6 +46,7 @@ class SrcFileBuilder
     let ds = Variable("ds")
     let us = Variable("us")
     let td = Variable("td")
+    let pt = Variable("pt")
 
     src_file.set_body(
       Conj(
@@ -85,15 +86,16 @@ class SrcFileBuilder
                 ])))
 
           //
-          _trivia.eof
+          Bind(pt, _trivia.eof)
         ]),
-        recover this~_src_file_action(t1, ds, us, td) end)
+        recover this~_src_file_action(t1, ds, us, td, pt) end)
 
   fun tag _src_file_action(
     t1: Variable,
     ds: Variable,
     us: Variable,
     td: Variable,
+    pt: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
@@ -115,9 +117,15 @@ class SrcFileBuilder
           _Build.values_and_errors[ast.Typedef](b, td, r, errs) )
       end
 
+    let pt' = _Build.values_with[ast.Trivia](b, pt, r)
+
     let value = ast.NodeWith[ast.SrcFile](
       _Build.info(d, r), c, ast.SrcFile(d.locator, us', td')
-      where pre_trivia' = t1', doc_strings' = ds', error_sections' = es')
+      where
+        pre_trivia' = t1',
+        doc_strings' = ds',
+        error_sections' = es',
+        post_trivia' = pt')
     (value, b)
 
   fun ref _build_using() =>

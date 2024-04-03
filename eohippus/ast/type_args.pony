@@ -12,9 +12,8 @@ class val TypeArgs is NodeData
 
   fun name(): String => "TypeArgs"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeArgs(
-      NodeChild.seq_with[TypeType](types, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): NodeData =>
+    TypeArgs(_map[TypeType](types, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
-    props.push(("types", Nodes.get_json(types)))
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+    props.push(("types", node.child_refs(types)))

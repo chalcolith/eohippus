@@ -17,18 +17,15 @@ class val TypedefMembers is NodeData
 
   fun name(): String => "TypedefMembers"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    let f = NodeChild.seq_with[TypedefField](fields, old_children, new_children)?
-    let m = NodeChild.seq_with[TypedefMethod](methods, old_children, new_children)?
-
+  fun val clone(updates: ChildUpdateMap): NodeData =>
     TypedefMembers(
-      f,
-      m)
+      _map[TypedefField](fields, updates),
+      _map[TypedefMethod](methods, updates))
 
-  fun add_json_props(props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if fields.size() > 0 then
-      props.push(("fields", Nodes.get_json(fields)))
+      props.push(("fields", node.child_refs(fields)))
     end
     if methods.size() > 0 then
-      props.push(("methods", Nodes.get_json(methods)))
+      props.push(("methods", node.child_refs(methods)))
     end
