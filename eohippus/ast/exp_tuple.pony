@@ -10,9 +10,8 @@ class val ExpTuple is NodeData
 
   fun name(): String => "ExpTuple"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    ExpTuple(
-      NodeChild.seq_with[Expression](sequences, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): ExpTuple =>
+    ExpTuple(_map[Expression](sequences, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if sequences.size() > 0 then

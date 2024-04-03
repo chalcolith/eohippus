@@ -10,9 +10,8 @@ class val DocString is NodeData
 
   fun name(): String => "DocString"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    DocString(
-      NodeChild.child_with[Literal](string, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): DocString =>
+    DocString(try updates(string)? as NodeWith[Literal] else string end)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("string", node.child_ref(string)))

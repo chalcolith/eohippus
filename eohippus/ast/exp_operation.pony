@@ -29,38 +29,33 @@ class val ExpOperation is NodeData
 
   fun name(): String => "ExpOperation"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpOperation =>
     let lhs' =
       match lhs
       | let lhs_type: NodeWith[TypeType] =>
-        NodeChild.child_with[TypeType](lhs_type, old_children, new_children)?
+        _map_with[TypeType](lhs_type, updates)
       | let lhs_exp: NodeWith[Expression] =>
-        NodeChild.child_with[Expression](lhs_exp, old_children, new_children)?
+        _map_with[Expression](lhs_exp, updates)
       | let lhs_id: NodeWith[Identifier] =>
-        NodeChild.child_with[Identifier](lhs_id, old_children, new_children)?
+        _map_with[Identifier](lhs_id, updates)
       end
     let op' =
       match op
       | let op_kw: NodeWith[Keyword] =>
-        NodeChild.child_with[Keyword](op_kw, old_children, new_children)?
+        _map_with[Keyword](op_kw, updates)
       | let op_tok: NodeWith[Token] =>
-        NodeChild.child_with[Token](op_tok, old_children, new_children)?
+        _map_with[Token](op_tok, updates)
       end
     let rhs' =
       match rhs
       | let rhs_type: NodeWith[TypeType] =>
-        NodeChild.child_with[TypeType](rhs_type, old_children, new_children)?
+        _map_with[TypeType](rhs_type, updates)
       | let rhs_exp: NodeWith[Expression] =>
-        NodeChild.child_with[Expression](rhs_exp, old_children, new_children)?
+        _map_with[Expression](rhs_exp, updates)
       | let rhs_id: NodeWith[Identifier] =>
-        NodeChild.child_with[Identifier](rhs_id, old_children, new_children)?
+        _map_with[Identifier](rhs_id, updates)
       end
-
-    ExpOperation(
-      lhs',
-      op',
-      rhs',
-      partial)
+    ExpOperation(lhs', op', rhs', partial)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match lhs

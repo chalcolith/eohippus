@@ -10,8 +10,8 @@ class val TypeParams is NodeData
 
   fun name(): String => "TypeParams"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeParams(NodeChild.seq_with[TypeParam](params, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): TypeParams =>
+    TypeParams(_map[TypeParam](params, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
@@ -34,11 +34,11 @@ class val TypeParam is NodeData
 
   fun name(): String => "TypeParam"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): TypeParam =>
     TypeParam(
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](constraint, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](initializer, old_children, new_children)?)
+      _map_or_none[Identifier](identifier, updates),
+      _map_or_none[TypeType](constraint, updates),
+      _map_or_none[TypeType](initializer, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier

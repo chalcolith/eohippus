@@ -14,10 +14,10 @@ class val TypeArrow is NodeData
 
   fun name(): String => "TypeArrow"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): TypeArrow =>
     TypeArrow(
-      NodeChild(lhs, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](rhs, old_children, new_children)?)
+      try updates(lhs)? else lhs end,
+      _map_or_none[TypeType](rhs, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("lhs", node.child_ref(lhs)))

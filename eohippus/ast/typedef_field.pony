@@ -24,12 +24,12 @@ class val TypedefField is NodeData
 
   fun name(): String => "TypedefField"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): TypedefField =>
     TypedefField(
-      NodeChild.child_with[Keyword](kind, old_children, new_children)?,
-      NodeChild.child_with[Identifier](identifier, old_children, new_children)?,
-      NodeChild.with_or_none[TypeType](type_type, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](value, old_children, new_children)?)
+      _map_with[Keyword](kind, updates),
+      _map_with[Identifier](identifier, updates),
+      _map_or_none[TypeType](type_type, updates),
+      _map_or_none[Expression](value, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("kind", node.child_ref(kind)))

@@ -19,10 +19,10 @@ class val ExpJump is NodeData
 
   fun name(): String => "ExpJump"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpJump =>
     ExpJump(
-      NodeChild.child_with[Keyword](keyword, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](rhs, old_children, new_children)?)
+      _map_with[Keyword](keyword, updates),
+      _map_or_none[Expression](rhs, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("keyword", node.child_ref(keyword)))

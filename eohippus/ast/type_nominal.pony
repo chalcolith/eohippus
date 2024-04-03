@@ -24,13 +24,13 @@ class val TypeNominal is NodeData
 
   fun name(): String => "TypeNominal"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): TypeNominal =>
     TypeNominal(
-      NodeChild.with_or_none[Identifier](lhs, old_children, new_children)?,
-      NodeChild.child_with[Identifier](rhs, old_children, new_children)?,
-      NodeChild.with_or_none[TypeParams](params, old_children, new_children)?,
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.with_or_none[Token](eph, old_children, new_children)?)
+      _map_or_none[Identifier](lhs, updates),
+      _map_with[Identifier](rhs, updates),
+      _map_or_none[TypeParams](params, updates),
+      _map_or_none[Keyword](cap, updates),
+      _map_or_none[Token](eph, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match lhs

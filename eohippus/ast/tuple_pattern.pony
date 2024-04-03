@@ -14,20 +14,15 @@ class val TuplePattern is NodeData
 
   fun name(): String => "TuplePattern"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): TuplePattern =>
     let result: Array[(NodeWith[Identifier] | NodeWith[TuplePattern])] trn =
       Array[(NodeWith[Identifier] | NodeWith[TuplePattern])](elements.size())
     for old_child in elements.values() do
-      var i: USize = 0
-      while i < old_children.size() do
-        if old_child is old_children(i)? then
-          result.push(new_children(i)? as
-            (NodeWith[Identifier] | NodeWith[TuplePattern]))
-          break
-        end
-        i = i + 1
+      try
+        result.push(
+          updates(old_child)?
+            as (NodeWith[Identifier] | NodeWith[TuplePattern]))
       end
-      if i == old_children.size() then error end
     end
     TuplePattern(consume result)
 

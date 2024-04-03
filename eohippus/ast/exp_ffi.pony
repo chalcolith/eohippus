@@ -23,12 +23,15 @@ class val ExpFfi is NodeData
 
   fun name(): String => "ExpFfi"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpFfi =>
     ExpFfi(
-      NodeChild(identifier, old_children, new_children)?
-        as (NodeWith[Identifier] | NodeWith[LiteralString]),
-      NodeChild.with_or_none[TypeArgs](type_args, old_children, new_children)?,
-      NodeChild.child_with[CallArgs](call_args, old_children, new_children)?,
+      try
+        updates(identifier)? as (NodeWith[Identifier] | NodeWith[LiteralString])
+      else
+        identifier
+      end,
+      _map_or_none[TypeArgs](type_args, updates),
+      _map_with[CallArgs](call_args, updates),
       partial)
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>

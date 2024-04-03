@@ -18,10 +18,8 @@ class val TypeInfix is NodeData
 
   fun name(): String => "TypeInfix"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    TypeInfix(
-      NodeChild.seq_with[TypeType](types, old_children, new_children)?,
-      NodeChild.with_or_none[Token](op, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): TypeInfix =>
+    TypeInfix(_map[TypeType](types, updates), _map_or_none[Token](op, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match op

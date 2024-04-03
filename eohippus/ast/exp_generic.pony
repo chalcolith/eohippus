@@ -14,10 +14,10 @@ class val ExpGeneric is NodeData
 
   fun name(): String => "ExpGeneric"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpGeneric =>
     ExpGeneric(
-      NodeChild.child_with[Expression](lhs, old_children, new_children)?,
-      NodeChild.child_with[TypeArgs](type_args, old_children, new_children)?)
+      _map_with[Expression](lhs, updates),
+      _map_with[TypeArgs](type_args, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("lhs", node.child_ref(lhs)))

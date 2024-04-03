@@ -15,10 +15,10 @@ class val ExpRecover is NodeData
 
   fun name(): String => "ExpRecover"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpRecover =>
     ExpRecover(
-      NodeChild.with_or_none[Keyword](cap, old_children, new_children)?,
-      NodeChild.child_with[Expression](body, old_children, new_children)?)
+      _map_or_none[Keyword](cap, updates),
+      _map_with[Expression](body, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match cap

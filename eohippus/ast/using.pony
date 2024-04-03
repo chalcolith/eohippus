@@ -25,12 +25,12 @@ class val UsingPony is NodeData
 
   fun name(): String => "Using"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): UsingPony =>
     UsingPony(
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild.child_with[Literal](path, old_children, new_children)?,
+      _map_or_none[Identifier](identifier, updates),
+      _map_with[Literal](path, updates),
       def_true,
-      NodeChild.with_or_none[Identifier](define, old_children, new_children)?)
+      _map_or_none[Identifier](define, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier
@@ -76,16 +76,19 @@ class val UsingFFI is NodeData
 
   fun name(): String => "UsingFFI"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): UsingFFI =>
     UsingFFI(
-      NodeChild.with_or_none[Identifier](identifier, old_children, new_children)?,
-      NodeChild(fun_name, old_children, new_children)? as
-        (NodeWith[Identifier] | NodeWith[LiteralString]),
-      NodeChild.child_with[TypeArgs](type_args, old_children, new_children)?,
-      NodeChild.with_or_none[MethodParams](params, old_children, new_children)?,
+      _map_or_none[Identifier](identifier, updates),
+      try
+        updates(fun_name)? as (NodeWith[Identifier] | NodeWith[LiteralString])
+      else
+        fun_name
+      end,
+      _map_with[TypeArgs](type_args, updates),
+      _map_or_none[MethodParams](params, updates),
       partial,
       def_true,
-      NodeChild.with_or_none[Identifier](define, old_children, new_children)?)
+      _map_or_none[Identifier](define, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match identifier

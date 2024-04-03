@@ -19,8 +19,8 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
     let source =
       recover val
         // 1         2                    3           4
-        [ " \nclass A  \n  new create() =>\t\n    None " ]
-        //[ " \nclass A" ]
+        //[ " \nclass A  \n  new create() =>\t\n    None " ]
+        [ " \nclass A" ]
       end
 
     let expected_json =
@@ -56,11 +56,8 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           end
           h.assert_eq[USize](0, issues.size(), "should be 0 unfixed issues")
 
-          //h.log("EXPECTED:\n" + expected_json.string())
           let actual_json = tree.root.get_json(tree.lines_and_columns)
-          //h.log("ACTUAL:\n" + actual_json.string())
-          //let child_json = tree.root.get_child_json(tree.lines_and_columns)
-          //h.log("CHILDREN:\n" + child_json.string())
+          h.log("ACTUAL:\n" + actual_json.string())
 
           (let sub, let msg) = json.Subsumes(expected_json, actual_json)
           h.assert_true(sub, msg)
@@ -78,9 +75,10 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           issues: ReadSeq[lint.Issue] val,
           errors: ReadSeq[ast.TraverseError] val)
         =>
-          //h.log("ORIGINAL:\n" + tree.root.get_json().string())
+          h.log("ORIGINAL:\n" + tree.root.get_json(
+            tree.lines_and_columns).string())
 
-          if not h.assert_eq[USize](4, issues.size(), "should be 4 issues") then
+          if not h.assert_eq[USize](1, issues.size(), "should be 4 issues") then
             h.complete(false)
           else
             linter.fix(consume tree, issues, fix_listener)

@@ -18,10 +18,10 @@ class val ExpArray is NodeData
 
   fun name(): String => "ExpArray"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpArray =>
     ExpArray(
-      NodeChild.with_or_none[TypeType](array_type, old_children, new_children)?,
-      NodeChild.child_with[Expression](body, old_children, new_children)?)
+      _map_or_none[TypeType](array_type, updates),
+      _map_with[Expression](body, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     match array_type

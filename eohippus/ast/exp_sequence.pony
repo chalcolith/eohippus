@@ -12,9 +12,8 @@ class val ExpSequence is NodeData
 
   fun name(): String => "ExpSequence"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
-    ExpSequence(
-      NodeChild.seq_with[Expression](expressions, old_children, new_children)?)
+  fun val clone(updates: ChildUpdateMap): ExpSequence =>
+    ExpSequence(_map[Expression](expressions, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("expressions", node.child_refs(expressions)))

@@ -17,15 +17,14 @@ trait val Node
 
   fun val clone(
     src_info': (SrcInfo | None) = None,
-    old_children': (NodeSeq | None) = None,
     new_children': (NodeSeq | None) = None,
-    data': (NodeData | None) = None,
+    update_map': (ChildUpdateMap | None) = None,
     annotation': (NodeWith[Annotation] | None) = None,
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
-    ast_type': (types.AstType | None) = None): Node ?
+    ast_type': (types.AstType | None) = None): Node
     """
       Used to clone the node with certain updated properties during AST
       transformation.
@@ -52,42 +51,19 @@ trait val Node
   fun val ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
-  fun val fix_up[T: NodeData val](
-    anciliary: NodeSeqWith[T],
-    new_children: NodeSeq)
-    : (NodeSeqWith[T] | None)
-  =>
-    """
-      Assuming `new_children` is the result of pruning, returns a new anciliary
-      list containing only those anciliary nodes that appear in `new_children`.
-    """
-    var result: (Array[NodeWith[T]] trn | None) = None
-    var i: USize = 0 // current position in anciliary
-    var c: USize = 0 // start position in children
-    while i < anciliary.size() do
-      var j: USize = c
-      while j < new_children.size() do
-        try
-          if anciliary(i)? is new_children(j)? then
-            if result is None then
-              result = recover trn Array[NodeWith[T]] end
-            end
-            match result
-            | let result': Array[NodeWith[T]] trn =>
-              result'.push(anciliary(i)?)
-            end
-            c = j + 1
-            break
-          end
-        end
-        j = j + 1
-      end
-      i = i + 1
-    end
-    consume result
-
   fun val get_json(lines_and_columns: (LineColumnMap | None) = None): json.Item
     """Get a JSON representation of the node."""
+
+  fun val map[D: NodeData val](seq: NodeSeqWith[D], updates: ChildUpdateMap)
+    : NodeSeqWith[D]
+  =>
+    let result: Array[NodeWith[D]] trn = Array[NodeWith[D]](seq.size())
+    for node in seq.values() do
+      try
+        result.push(updates(node)? as NodeWith[D])
+      end
+    end
+    consume result
 
   fun val child_ref(child: Node): json.Item =>
     var i: USize = 0
@@ -197,7 +173,7 @@ class val NodeWith[D: NodeData val] is Node
     orig: NodeWith[D],
     src_info': (SrcInfo | None) = None,
     children': (NodeSeq | None) = None,
-    data': (NodeData | None) = None,
+    data': (D | None) = None,
     annotation': (NodeWith[Annotation] | None) = None,
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
@@ -253,34 +229,32 @@ class val NodeWith[D: NodeData val] is Node
 
   fun val clone(
     src_info': (SrcInfo | None) = None,
-    old_children': (NodeSeq | None) = None,
     new_children': (NodeSeq | None) = None,
-    data': (NodeData | None) = None,
+    update_map': (ChildUpdateMap | None) = None,
     annotation': (NodeWith[Annotation] | None) = None,
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
-    ast_type': (types.AstType | None) = None): Node ?
+    ast_type': (types.AstType | None) = None): Node
   =>
     let data'' =
-      match data'
-      | let d: NodeData =>
-        d as D
+      match update_map'
+      | let um: ChildUpdateMap =>
+        try _data.clone(um) as D else _data end
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          _data.clone(oc, nc)? as D
-        end
+        _data
       end
     let annotation'' =
       match annotation'
       | let a: NodeWith[Annotation] =>
         a
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          NodeChild.with_or_none[Annotation](_annotation, oc, nc)?
+        match (_annotation, update_map')
+        | (let a: NodeWith[Annotation], let um: ChildUpdateMap) =>
+          try um(a)? as NodeWith[Annotation] else _annotation end
+        else
+          _annotation
         end
       end
     let doc_strings'' =
@@ -288,9 +262,11 @@ class val NodeWith[D: NodeData val] is Node
       | let ds: NodeSeqWith[DocString] =>
         ds
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          NodeChild.seq_with[DocString](_doc_strings, oc, nc)?
+        match update_map'
+        | let um: ChildUpdateMap =>
+          map[DocString](_doc_strings, um)
+        else
+          _doc_strings
         end
       end
     let pre_trivia'' =
@@ -298,9 +274,11 @@ class val NodeWith[D: NodeData val] is Node
       | let pt: NodeSeqWith[Trivia] =>
         pt
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          NodeChild.seq_with[Trivia](_pre_trivia, oc, nc)?
+        match update_map'
+        | let um: ChildUpdateMap =>
+          map[Trivia](_pre_trivia, um)
+        else
+          _pre_trivia
         end
       end
     let post_trivia'' =
@@ -308,9 +286,11 @@ class val NodeWith[D: NodeData val] is Node
       | let pt: NodeSeqWith[Trivia] =>
         pt
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          NodeChild.seq_with[Trivia](_post_trivia, oc, nc)?
+        match update_map'
+        | let um: ChildUpdateMap =>
+          map[Trivia](_post_trivia, um)
+        else
+          _post_trivia
         end
       end
     let error_sections'' =
@@ -318,9 +298,11 @@ class val NodeWith[D: NodeData val] is Node
       | let es: NodeSeqWith[ErrorSection] =>
         es
       else
-        match (old_children', new_children')
-        | (let oc: NodeSeq, let nc: NodeSeq) =>
-          NodeChild.seq_with[ErrorSection](_error_sections, oc, nc)?
+        match update_map'
+        | let um: ChildUpdateMap =>
+          map[ErrorSection](_error_sections, um)
+        else
+          _error_sections
         end
       end
 

@@ -27,11 +27,11 @@ class val ExpIf is NodeData
 
   fun name(): String => "ExpIf"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): ExpIf =>
     ExpIf(
       kind,
-      NodeChild.seq_with[IfCondition](conditions, old_children, new_children)?,
-      NodeChild.with_or_none[Expression](else_block, old_children, new_children)?)
+      _map[IfCondition](conditions, updates),
+      _map_or_none[Expression](else_block, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     let kind_str =
@@ -64,10 +64,10 @@ class val IfCondition is NodeData
 
   fun name(): String => "IfCondition"
 
-  fun val clone(old_children: NodeSeq, new_children: NodeSeq): NodeData ? =>
+  fun val clone(updates: ChildUpdateMap): IfCondition =>
     IfCondition(
-      NodeChild.child_with[Expression](if_true, old_children, new_children)?,
-      NodeChild.child_with[Expression](then_block, old_children, new_children)?)
+      _map_with[Expression](if_true, updates),
+      _map_with[Expression](then_block, updates))
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("if_true", node.child_ref(if_true)))
