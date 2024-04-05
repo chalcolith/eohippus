@@ -1,37 +1,28 @@
-Param(
+param(
   [Parameter(Position=0, HelpMessage="The action to take (fetch, build, test, install, package, clean).")]
   [string]
   $Command = 'build',
 
+  [Parameter(HelpMessage="The target(s) to build or test (eohippus-test, )")]
+  [string]
+  $Target = 'eohippus-test',
+
   [Parameter(HelpMessage="The build configuration (Release, Debug).")]
   [string]
-  $Config = "Release",
+  $Config = 'Release',
 
   [Parameter(HelpMessage="The version number to set.")]
   [string]
-  $Version = "",
+  $Version = '',
 
   [Parameter(HelpMessage="Architecture (native, x64).")]
   [string]
-  $Arch = "x86-64",
-
-  [Parameter(HelpMessage="Directory to install to.")]
-  [string]
-  $Destdir = "build/install",
-
-  [Parameter(HelpMessage="Force a build even if sources haven't changed.")]
-  [switch]
-  $Force
+  $Arch = 'x86-64'
 )
 
 $ErrorActionPreference = "Stop"
 
-$target = "eohippus" # The name of the source package, and the base name of the .exe file that is built if this is a program, not a library.
-$testPath = "test" # The path of the tests package relative to the $target directory.
-$isLibrary = $true
-
 $rootDir = Split-Path $script:MyInvocation.MyCommand.Path
-$srcDir = Join-Path -Path $rootDir -ChildPath $target
 
 if ($Config -ieq "Release")
 {
@@ -45,10 +36,8 @@ elseif ($Config -ieq "Debug")
 }
 else
 {
-  throw "Invalid -Config path '$Config'; must be one of (Debug, Release)."
+  throw "Invalid -Config '$Config'; must be one of (Debug, Release)."
 }
-
-# $libsDir = Join-Path -Path $rootDir -ChildPath "build/libs"
 
 if (($Version -eq "") -and (Test-Path -Path "$rootDir\VERSION"))
 {
@@ -57,17 +46,19 @@ if (($Version -eq "") -and (Test-Path -Path "$rootDir\VERSION"))
 
 $ponyArgs = "--define openssl_0.9.0"
 
+Write-Host "Command:          $Command"
+Write-Host "Target:           $Target"
 Write-Host "Configuration:    $Config"
+Write-Host "Arch:             $Arch"
 Write-Host "Version:          $Version"
 Write-Host "Root directory:   $rootDir"
-Write-Host "Source directory: $srcDir"
 Write-Host "Build directory:  $buildDir"
 
 # generate pony templated files if necessary
 if (($Command -ne "clean") -and (Test-Path -Path "$rootDir\VERSION"))
 {
   $versionTimestamp = (Get-ChildItem -Path "$rootDir\VERSION").LastWriteTimeUtc
-  Get-ChildItem -Path $srcDir -Include "*.pony.in" -Recurse | ForEach-Object {
+  Get-ChildItem -Path $rootDir -Include "*.pony.in" -Recurse | ForEach-Object {
     $templateFile = $_.FullName
     $ponyFile = $templateFile.Substring(0, $templateFile.Length - 3)
     $ponyFileTimestamp = [DateTime]::MinValue
@@ -82,96 +73,47 @@ if (($Command -ne "clean") -and (Test-Path -Path "$rootDir\VERSION"))
     }
   }
 }
-
-function BuildTarget
+function Run
 {
-  $binaryFile = Join-Path -Path $buildDir -ChildPath "$target.exe"
-  $binaryTimestamp = [DateTime]::MinValue
-  if (Test-Path $binaryFile)
-  {
-    $binaryTimestamp = (Get-ChildItem -Path $binaryFile).LastWriteTimeUtc
-  }
+  param($cmd)
 
-  :buildFiles foreach ($file in (Get-ChildItem -Path $srcDir -Include "*.pony" -Recurse))
-  {
-    if ($Force -or ($binaryTimestamp -lt $file.LastWriteTimeUtc))
-    {
-      Write-Host "corral run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$srcDir`""
-      $output = (corral run -- ponyc $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$srcDir")
-      $output | ForEach-Object { Write-Host $_ }
-      if ($LastExitCode -ne 0) { throw "Error" }
-      break buildFiles
-    }
+  Write-Host $cmd
+  $output = Invoke-Expression $cmd
+  $exitCode = $LastExitCode
+  if ($exitCode -ne 0) {
+    $output | ForEach-Object { Write-Host $_ }
+    exit $exitCode
   }
+  $output | ForEach-Object { Write-Host $_ }
 }
 
-function BuildTest
+function Build
 {
-  $testTarget = "test.exe"
-  if ($testPath -eq ".")
-  {
-    $testTarget = "$target.exe"
-  }
+  param($targets)
 
-  $testFile = Join-Path -Path $buildDir -ChildPath $testTarget
-  $testTimestamp = [DateTime]::MinValue
-  if (Test-Path $testFile)
-  {
-    $testTimestamp = (Get-ChildItem -Path $testFile).LastWriteTimeUtc
+  if ($targets -like 'eohippus-test') {
+    Run("corral.exe run -- ponyc --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test`"")
   }
-
-  :testFiles foreach ($file in (Get-ChildItem -Path $srcDir -Include "*.pony" -Recurse))
-  {
-    if ($Force -or ($testTimestamp -lt $file.LastWriteTimeUtc))
-    {
-      $testDir = Join-Path -Path $srcDir -ChildPath $testPath
-      Write-Host "corral run -- ponyc --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$testDir`""
-      $output = (corral run -- ponyc $configFlag $ponyArgs --cpu "$Arch" --output "$buildDir" "$testDir")
-      $output | ForEach-Object { Write-Host $_ }
-      if ($LastExitCode -ne 0) { throw "Error" }
-      break testFiles
-    }
-  }
-
-  Write-Output "$testTarget is built" # force function to return a list of outputs
-  return $testFile
 }
 
 switch ($Command.ToLower())
 {
   "fetch"
   {
-    Write-Host "corral fetch"
-    $output = (corral fetch)
-    $output | ForEach-Object { Write-Host $_ }
-    if ($LastExitCode -ne 0) { throw "Error" }
+    Run('corral fetch')
     break
   }
 
   "build"
   {
-    if (-not $isLibrary)
-    {
-      BuildTarget
-    }
-    else
-    {
-      BuildTest
-    }
+    Build($Target)
     break
   }
 
   "test"
   {
-    if (-not $isLibrary)
-    {
-      BuildTarget
-    }
-
-    $testFile = (BuildTest)[-1]
-    Write-Host "$testFile"
-    & "$testFile" --exclude=integration --sequential
-    if ($LastExitCode -ne 0) { throw "Error" }
+    Build('eohippus-test')
+    Run("$buildDir\test.exe")
     break
   }
 
@@ -179,8 +121,7 @@ switch ($Command.ToLower())
   {
     if (Test-Path "$buildDir")
     {
-      Write-Host "Remove-Item -Path `"$buildDir`" -Recurse -Force"
-      Remove-Item -Path "$buildDir" -Recurse -Force
+      Run("Remove-Item -Path `"$buildDir`" -Recurse -Force")
     }
     break
   }
@@ -190,51 +131,13 @@ switch ($Command.ToLower())
     $distDir = Join-Path -Path $rootDir -ChildPath "build"
     if (Test-Path $distDir)
     {
-      Remove-Item -Path $distDir -Recurse -Force
+      Run("Remove-Item -Path `"$distDir`" -Recurse -Force")
     }
-    Remove-Item -Path "*.lib" -Force
-  }
-
-  "install"
-  {
-    if (-not $isLibrary)
-    {
-      $binDir = Join-Path -Path $Destdir -ChildPath "bin"
-
-      if (-not (Test-Path $binDir))
-      {
-        mkdir "$binDir"
-      }
-
-      $binFile = Join-Path -Path $buildDir -ChildPath "$target.exe"
-      Copy-Item -Path $binFile -Destination $binDir -Force
-    }
-    else
-    {
-      Write-Host "$target is a library; nothing to install."
-    }
-    break
-  }
-
-  "package"
-  {
-    if (-not $isLibrary)
-    {
-      $binDir = Join-Path -Path $Destdir -ChildPath "bin"
-      $package = "$target-x86-64-pc-windows-msvc.zip"
-      Write-Host "Creating $package..."
-
-      Compress-Archive -Path $binDir -DestinationPath "$buildDir\..\$package" -Force
-    }
-    else
-    {
-      Write-Host "$target is a library; nothing to package."
-    }
-    break
+    Run("Remove-Item -Path `"*.lib`" -Force")
   }
 
   default
   {
-    throw "Unknown command '$Command'; must be one of (fetch, build, test, install, package, clean, distclean)."
+    throw "Unknown command '$Command'; must be one of (fetch, build, test, clean, distclean)."
   }
 }
