@@ -25,7 +25,8 @@ actor Helper is TestOutputNotify
   new create(
     h: TestHelper,
     notify_stdout: _StreamNotify,
-    notify_stderr: _StreamNotify)
+    notify_stderr: _StreamNotify,
+    server_connected: {(Helper tag)} val)
   =>
     stdin = TestInputStream
     stdout = TestOutputStream(this)
@@ -37,7 +38,14 @@ actor Helper is TestOutputNotify
       else
         Logger[String](Error, stderr, { (s: String): String => s })
       end
-    server = ls.EohippusServer(h.env, logger)
+    let self = this
+    server = ls.EohippusServer(
+      h.env,
+      logger,
+      object val is ls.ServerNotify
+        fun connected() =>
+          server_connected(self)
+      end)
     handler = rpc.Handler.from_streams(logger, server, stdin, stdout)
 
     _notify_stdout = consume notify_stdout
@@ -54,8 +62,11 @@ actor Helper is TestOutputNotify
 
   be send_message(obj: json.Object val) =>
     let body = obj.get_string(false)
-    stdin.write("Content-Length:" + body.size().string() + "\r\n")
+    logger(Fine) and logger.log("sending message")
+    let content_length = body.size()
     stdin.write(
-      "Content-Type:application/vscode-jsonrpc; charset=utf-8\r\n".clone())
-    stdin.write("\r\n".clone())
-    stdin.write(consume body)
+      "Content-Length:" + content_length.string() + "\r\n" +
+      "Content-Type:" + rpc.JsonRpc.mime_type() + "; charset=" +
+        rpc.JsonRpc.charset() + "\r\n" +
+      "\r\n".clone() +
+      (consume body))

@@ -38,16 +38,17 @@ class iso _TestLanguageServerExitBeforeInitialize is UnitTest
             end
             h.complete(true)
           end
-      end)
-
-    let message =
-      recover val
-        json.Object(
-          [ as (String, json.Item):
-            ("jsonrpc", "2.0")
-            ("id", I128(1))
-            ("method", "exit") ])
-      end
-    helper.send_message(message)
+      end,
+      {(helper: lsp.Helper) =>
+        let message =
+          recover val
+            json.Object(
+              [ as (String, json.Item):
+                ("jsonrpc", "2.0")
+                ("id", I128(1))
+                ("method", "exit") ])
+          end
+        helper.send_message(message)
+      })
 
     h.long_test(2_000_000_000)
