@@ -2,6 +2,16 @@
   "packages": [
     "eohippus"
   ],
+  "deps": [
+    {
+      "locator": "github.com/chalcolith/kiuatan.git",
+      "version": "1.4.4"
+    },
+    {
+      "locator": "github.com/ponylang/logger.git",
+      "version": "1.0.1"
+    }
+  ],
   "info": {
     "description": "Pony Language Tools",
     "homepage": "https://github.com/chalcolith/eohippus",
@@ -9,11 +19,5 @@
     "documentation_url": "https://chalcolith.github.io/eohippus/eohippus--index/",
     "version": "0.1.0",
     "name": "eohippus"
-  },
-  "deps": [
-    {
-      "locator": "github.com/chalcolith/kiuatan.git",
-      "version": "1.4.4"
-    }
-  ]
+  }
 }

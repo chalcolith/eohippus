@@ -47,7 +47,7 @@ class Object
   fun pairs(): Iterator[(String, this->Item)] =>
     _items.values()
 
-  fun get_string(pretty: Bool, indent: String): String iso^ =>
+  fun get_string(pretty: Bool, indent: String = ""): String iso^ =>
     let indent' =
       if pretty then
         recover val indent + "  " end

@@ -17,6 +17,8 @@ class Sequence
 
   fun apply(i: USize): this->Item ? => _items.apply(i)?
 
+  fun values(): Iterator[Item] => _items.values()
+
   fun ref update(i: USize, value: Item) ? => _items.update(i, value)?
 
   fun ref push(item: Item) => _items.push(item)

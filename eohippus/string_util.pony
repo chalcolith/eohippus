@@ -1,6 +1,9 @@
 use "format"
 
 primitive StringUtil
+  fun is_ws(ch: U8): Bool =>
+    (ch == ' ') or (ch == '\t') or (ch == '\r') or (ch == '\n') or (ch == 0)
+
   fun escape(orig: String box): String iso^ =>
     """Returns an "escaped" version of a string.""""
 
