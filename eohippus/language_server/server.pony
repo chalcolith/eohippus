@@ -9,7 +9,8 @@ interface Server
   be rpc_error()
   be rpc_closed()
 
-  be exit()
+  be request_shutdown(msg: rpc.RequestMessage)
+  be notification_exit()
 
 primitive ServerNotInitialized
 primitive ServerInitialized
@@ -59,15 +60,18 @@ actor EohippusServer is Server
       rpc_handler.respond(
         object val is rpc.ResponseMessage
           fun val id(): (I128 | String val | json.Null) => msg_id
+          fun val result(): (json.Item | None) => json.Null
         end)
     end
 
   be notification_exit() =>
+    _log(Fine) and _log.log("notification: exit")
     var close_handler = false
     match _state
     | ServerNotInitialized =>
+      _log(Warn) and _log.log("ungraceful exit requested without shutdown")
       _state = ServerExiting
-      _exit_code = 0
+      _exit_code = 1
       close_handler = true
     | ServerInitialized =>
       _log(Warn) and _log.log("ungraceful exit requested without shutdown")

@@ -53,6 +53,7 @@ actor Handler
   =>
     _log = log
     _server = server
+    _server.set_rpc_handler(this)
     _channel = StreamChannel(log, input, output, this)
     _json_parser = json.Parser
 
@@ -61,8 +62,6 @@ actor Handler
     _current_header_value = String
     _current_content_length = 0
     _current_content_type = String
-
-    _server.set_rpc_handler(this)
 
   // new from_tcp(
   //   log: Logger[String],
@@ -75,19 +74,24 @@ actor Handler
   //   _channel = TcpChannel(auth, host, service)
 
   be close() =>
+    _log(Fine) and _log.log("close")
     _channel.close()
 
   be connect_succeeded() =>
+    _log(Fine) and _log.log("connect_succeeded")
     _state = _ExpectHeaderName
 
   be connect_failed() =>
+    _log(Fine) and _log.log("connect_failed")
     _error_out("connection failed")
 
   be channel_closed() =>
+    _log(Fine) and _log.log("channel_closed")
     _state = _NotConnected
     _server.rpc_closed()
 
   be data_received(data: Array[U8] iso) =>
+    _log(Fine) and _log.log("data received: " + data.size().string() + " bytes")
     if _state is _NotConnected then
       _error_out("spurious data received when not connected")
       return
@@ -101,16 +105,16 @@ actor Handler
     for ch in (consume data).values() do
       match _state
       | _ExpectHeaderName =>
-        if StringUtil.is_ws(ch) then
-          None
-        elseif ch == ':' then
-          _error_out("invalid character ':'; expected header name")
-          return
-        elseif ch == '\n' then
+        if ch == '\n' then
           _error_out("\\n encountered; expected header name")
           return
         elseif ch == '\r' then
           _state = _InEndOfHeaders
+        elseif StringUtil.is_ws(ch) then
+          None
+        elseif ch == ':' then
+          _error_out("invalid character ':'; expected header name")
+          return
         else
           _state = _InHeaderName
           _current_header_name.clear()
@@ -123,11 +127,11 @@ actor Handler
           _current_header_name.push(ch)
         end
       | _ExpectHeaderValue =>
-        if StringUtil.is_ws(ch) then
-          None
-        elseif (ch == '\r') or (ch == '\n') then
+        if (ch == '\r') or (ch == '\n') then
           _error_out("EOL encountered; expected header value")
           return
+        elseif StringUtil.is_ws(ch) then
+          None
         else
           _state = _InHeaderValue
           _current_header_value.clear()
@@ -138,6 +142,8 @@ actor Handler
           _error_out("\\n encountered; expected \\r\\n")
           return
         elseif ch == '\r' then
+          _log(Fine) and _log.log(
+            "header: " + _current_header_name + ": " + _current_header_value)
           if _current_header_name == "Content-Length" then
             _current_content_length =
               try _current_header_value.u64()? else 0 end
@@ -206,6 +212,8 @@ actor Handler
     end
 
   fun ref _handle_rpc_message(obj: json.Object box) =>
+    _log(Fine) and _log.log("message: " + obj.get_string(false))
+
     let id: (I128 | String val | json.Null) =
       match try obj("id")? end
       | let int: I128 =>
@@ -235,26 +243,28 @@ actor Handler
     end
 
     let params =
-      match try obj("params")? end
-      | let obj': json.Object box =>
-        obj'
-      | let seq: json.Sequence box =>
-        seq
-      | json.Null =>
-        json.Null
+      try
+        match obj("params")?
+        | let obj': json.Object box =>
+          obj'
+        | let seq: json.Sequence box =>
+          seq
+        else
+          respond_error(
+            id,
+            ErrorCode.invalid_request(),
+            "'params' must be an object or sequence")
+          return
+        end
       else
-        respond_error(
-          id,
-          ErrorCode.invalid_request(),
-          "'params' must be an object or sequence")
-        return
+        json.Null
       end
 
     try
       let method = obj("method")? as String box
       match method
       | "exit" =>
-        _server.exit()
+        _server.notification_exit()
       else
         respond_error(
           id,
@@ -269,7 +279,10 @@ actor Handler
     end
 
   be respond(msg: ResponseMessage) =>
-    let props = [ as (String, json.Item): ("id", msg.id()) ]
+    let props =
+      [ as (String, json.Item):
+        ("jsonrpc", msg.jsonrpc())
+        ("id", msg.id()) ]
     match msg.result()
     | let item: json.Item =>
       props.push(("result", item))
@@ -289,24 +302,31 @@ actor Handler
     _write_message(json.Object(props))
 
   be respond_error(
-    msg_id: (I128 | String val | json.Null),
+    msg_id: (I128 | String | json.Null),
     code: I128,
-    message: String val,
-    data: json.Item val = json.Null)
+    message: String,
+    data: (json.Item val | None) = None)
   =>
-    let err = json.Object(
-      [ as (String, json.Item):
-        ("code", code)
-        ("message", message)
-        ("data", data) ])
-    let msg = json.Object(
-      [ as (String, json.Item):
-        ("id", msg_id)
-        ("error", err) ])
-    _write_message(msg)
+    _log(Error) and _log.log("response: error " + code.string() + ":" +
+      msg_id.string() + ": " + message)
+    respond(
+      object val is ResponseMessage
+        fun val id(): (I128 | String val | json.Null) => msg_id
+        fun val err(): (ResponseError | None) =>
+          let code' = code
+          let message' = message
+          let data' = data
+          object val is ResponseError
+            fun val code(): I128 => code'
+            fun val message(): String => message'
+            fun val data(): (json.Item | None) => data'
+          end
+      end)
 
   fun _write_message(obj: json.Object) =>
     let body = recover val obj.get_string(false) end
+    _log(Fine) and _log.log("response: " + body)
+
     _channel.write("Content-Length:" + body.size().string() + "\r\n")
     _channel.write(
       "Content-Type:" + JsonRpc.mime_type() + ";" + JsonRpc.charset() + "\r\n")
@@ -316,6 +336,6 @@ actor Handler
     _channel.flush()
 
   fun ref _error_out(message: String) =>
-    _log(Error) and _log.log(message)
+    _log(Error) and _log.log("error: " + message)
     _state = _Errored
     _server.rpc_error()

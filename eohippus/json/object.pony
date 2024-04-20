@@ -67,7 +67,8 @@ class Object
           if pretty then result.append("\n") end
         end
         result.append(indent')
-        result.append("\"" + key + "\": ")
+        result.append("\"" + key + "\":")
+        if pretty then result.append(" ") end
         match value
         | let obj: Object box =>
           result.append(obj.get_string(pretty, indent'))

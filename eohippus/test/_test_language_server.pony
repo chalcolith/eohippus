@@ -18,16 +18,27 @@ class iso _TestLanguageServerExitBeforeInitialize is UnitTest
   fun apply(h: TestHelper) =>
     let helper = lsp.Helper(
       h,
-      {(buf_stdout: String) =>
-        if buf_stdout.contains("id:1") then
-          h.complete(true)
-        end
+      { ref (buf: String) =>
+        h.fail("there should not be a response from the server")
+        h.complete(false)
       },
-      {(buf_stderr: String) =>
-        if buf_stderr.contains("Error") then
-          h.complete(false)
-        end
-      })
+      object iso
+        var ungraceful_exit: Bool = false
+        fun ref apply(buf: String) =>
+          h.log(buf)
+          if buf.contains("ungraceful exit requested") then
+            ungraceful_exit = true
+          elseif buf.contains("server exiting with code") then
+            if buf.contains("server exiting with code 1") then
+              if not ungraceful_exit then
+                h.fail("server did not exit ungracefully")
+              end
+            elseif buf.contains("server exiting with code 0") then
+              h.fail("server should not exit with code 0")
+            end
+            h.complete(true)
+          end
+      end)
 
     let message =
       recover val
