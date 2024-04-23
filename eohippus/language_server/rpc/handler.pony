@@ -2,6 +2,9 @@ use "logger"
 use "net"
 
 use json = "../../json"
+
+use rpc_data = "data_types"
+use c_caps = "data_types/client_capabilities"
 use "../.."
 use ".."
 
@@ -33,9 +36,22 @@ type _HandlerState is
   | _InJsonObject
   | _Errored )
 
-actor Handler
+interface tag Handler
+  be close()
+  be connect_succeeded()
+  be connect_failed()
+  be channel_closed()
+  be data_received(data: Array[U8] iso)
+  be respond(msg: rpc_data.ResponseMessage)
+  be respond_error(
+    msg_id: (I128 | String | None),
+    code: I128,
+    message: String,
+    data: (json.Item val | None) = None)
+
+actor EohippusHandler is Handler
   let _log: Logger[String]
-  let _server: Server tag
+  let _server: Server
   let _channel: Channel
   let _json_parser: json.Parser
 
@@ -47,7 +63,7 @@ actor Handler
 
   new from_streams(
     log: Logger[String],
-    server: Server tag,
+    server: Server,
     input: InputStream,
     output: OutStream)
   =>
@@ -90,8 +106,11 @@ actor Handler
     _state = _NotConnected
     _server.rpc_closed()
 
-  be data_received(data: Array[U8] iso) =>
-    _log(Fine) and _log.log("data received: " + data.size().string() + " bytes")
+  be data_received(buf: Array[U8] iso) =>
+    let data_str = String.from_iso_array(consume buf)
+    let data = data_str.clone()
+
+    _log(Fine) and _log.log("data received: " + data.size().string() + " bytes: " + (consume data_str))
     if _state is _NotConnected then
       _error_out("spurious data received when not connected")
       return
@@ -188,12 +207,13 @@ actor Handler
 
   fun ref _process_json_char(ch: U8) =>
     match _json_parser.parse_char(ch)
-    | let obj: json.Object box =>
+    | let obj: json.Object =>
       _handle_rpc_message(obj)
-    | let seq: json.Sequence box =>
+      _state = _ExpectHeaderName
+    | let seq: json.Sequence =>
       for item in seq.values() do
         match item
-        | let obj: json.Object box =>
+        | let obj: json.Object =>
           _handle_rpc_message(obj)
           if _state is _Errored then break end
         else
@@ -204,7 +224,6 @@ actor Handler
     | let err: json.ParseError =>
       _error_out(
         "JSON parse error at " + err.index.string() + ": " + err.message)
-      return
     | None =>
       _state = _InJsonObject
     else
@@ -214,14 +233,14 @@ actor Handler
   fun ref _handle_rpc_message(obj: json.Object box) =>
     _log(Fine) and _log.log("message: " + obj.get_string(false))
 
-    let id: (I128 | String val | json.Null) =
+    let id: (I128 | String) =
       match try obj("id")? end
       | let int: I128 =>
         int
       | let str: String box =>
         str.clone()
       else
-        json.Null
+        I128(-1)
       end
 
     try
@@ -242,12 +261,12 @@ actor Handler
       return
     end
 
-    let params =
+    let params: (json.Object | json.Sequence | None) =
       try
         match obj("params")?
-        | let obj': json.Object box =>
+        | let obj': json.Object =>
           obj'
-        | let seq: json.Sequence box =>
+        | let seq: json.Sequence =>
           seq
         else
           respond_error(
@@ -256,13 +275,17 @@ actor Handler
             "'params' must be an object or sequence")
           return
         end
-      else
-        json.Null
       end
 
     try
       let method = obj("method")? as String box
       match method
+      | "initialize" =>
+        _handle_initialize(id, params)
+      | "initialized" =>
+        _server.notification_initialized()
+      | "shutdown" =>
+        _handle_shutdown(id)
       | "exit" =>
         _server.notification_exit()
       else
@@ -278,17 +301,51 @@ actor Handler
         "an rpc message must contain a 'method' property of type string")
     end
 
-  be respond(msg: ResponseMessage) =>
+  fun _handle_initialize(
+    message_id: (I128 | String),
+    params_item: (json.Object | json.Sequence | None))
+  =>
+    match params_item
+    | let params_obj: json.Object =>
+      match rpc_data.ParseInitializeParams(params_obj)
+      | let params: rpc_data.InitializeParams =>
+        _server.request_initialize(
+          object val is rpc_data.RequestMessage
+            fun val id(): (I128 | String) => message_id
+            fun val method(): String => "initialize"
+          end,
+          params)
+      | let err: String =>
+        respond_error(message_id, ErrorCode.invalid_params(), err)
+      end
+    else
+      respond_error(
+        message_id,
+        ErrorCode.invalid_params(),
+        "an 'initialize' request must contain 'params' of type Object")
+    end
+
+  fun _handle_shutdown(message_id: (I128 | String)) =>
+    _server.request_shutdown(
+      object val is rpc_data.RequestMessage
+        fun val id(): (I128 | String) => message_id
+        fun val method(): String => "shutdown"
+      end)
+
+  be respond(msg: rpc_data.ResponseMessage) =>
     let props =
       [ as (String, json.Item):
-        ("jsonrpc", msg.jsonrpc())
-        ("id", msg.id()) ]
+        ("jsonrpc", msg.jsonrpc()) ]
+    match msg.id()
+    | let id_item: (I128 | String) =>
+      props.push(("id", id_item))
+    end
     match msg.result()
-    | let item: json.Item =>
-      props.push(("result", item))
+    | let data: rpc_data.ResultData =>
+      props.push(("result", data.get_json()))
     end
     match msg.err()
-    | let err: ResponseError =>
+    | let err: rpc_data.ResponseError =>
       let eprops =
         [ as (String, json.Item):
           ("code", err.code())
@@ -302,7 +359,7 @@ actor Handler
     _write_message(json.Object(props))
 
   be respond_error(
-    msg_id: (I128 | String | json.Null),
+    msg_id: (I128 | String | None),
     code: I128,
     message: String,
     data: (json.Item val | None) = None)
@@ -310,13 +367,13 @@ actor Handler
     _log(Error) and _log.log("response: error " + code.string() + ":" +
       msg_id.string() + ": " + message)
     respond(
-      object val is ResponseMessage
-        fun val id(): (I128 | String val | json.Null) => msg_id
-        fun val err(): (ResponseError | None) =>
+      object val is rpc_data.ResponseMessage
+        fun val id(): (I128 | String | None) => msg_id
+        fun val err(): (rpc_data.ResponseError | None) =>
           let code' = code
           let message' = message
           let data' = data
-          object val is ResponseError
+          object val is rpc_data.ResponseError
             fun val code(): I128 => code'
             fun val message(): String => message'
             fun val data(): (json.Item | None) => data'

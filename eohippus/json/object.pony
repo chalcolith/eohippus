@@ -2,10 +2,15 @@ use "collections"
 use "itertools"
 use ".."
 
-class Object
+class box Object
   embed _items: Array[(String, Item)] = _items.create()
 
-  new create(items: Seq[(String, Item)] = Array[(String, Item)]) =>
+  new create(items: Seq[(String, Item)] box = Array[(String, Item)]) =>
+    for (key, value) in items.values() do
+      _items.push((key, value))
+    end
+
+  new from_vals(items: Seq[(String, Item val)] box) =>
     for (key, value) in items.values() do
       _items.push((key, value))
     end

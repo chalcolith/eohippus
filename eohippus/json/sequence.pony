@@ -1,11 +1,16 @@
 use "collections"
 use ".."
 
-class Sequence
+class box Sequence
   embed _items: Array[Item] = _items.create()
 
-  new create(items: Seq[Item] = Array[Item]) =>
+  new create(items: Seq[Item] box = Array[Item]) =>
     _items.append(items)
+
+  new from_vals(items: Seq[Item val] box) =>
+    for item in items.values() do
+      _items.push(item)
+    end
 
   new from_iter(items: Iterator[Item]) =>
     _items.concat(items)
