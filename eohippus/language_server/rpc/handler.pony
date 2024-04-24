@@ -38,9 +38,9 @@ type _HandlerState is
 
 interface tag Handler
   be close()
-  be connect_succeeded()
+  be listening()
+  be connected()
   be connect_failed()
-  be channel_closed()
   be data_received(data: Array[U8] iso)
   be respond(msg: rpc_data.ResponseMessage)
   be respond_error(
@@ -48,6 +48,7 @@ interface tag Handler
     code: I128,
     message: String,
     data: (json.Item val | None) = None)
+  be closed()
 
 actor EohippusHandler is Handler
   let _log: Logger[String]
@@ -79,32 +80,41 @@ actor EohippusHandler is Handler
     _current_content_length = 0
     _current_content_type = String
 
-  // new from_tcp(
-  //   log: Logger[String],
-  //   server: Server,
-  //   auth: TcpListenAuth,
-  //   host: String,
-  //   service: String)
-  // =>
-  //   _server = server
-  //   _channel = TcpChannel(auth, host, service)
+  new from_tcp(
+    log: Logger[String],
+    server: Server,
+    auth: TCPListenAuth,
+    host: String,
+    service: String)
+  =>
+    _log = log
+    _server = server
+    _server.set_rpc_handler(this)
+    _channel = TcpChannel(log, auth, host, service, this)
+    _json_parser = json.Parser
+
+    _state = _NotConnected
+    _current_header_name = String
+    _current_header_value = String
+    _current_content_length = 0
+    _current_content_type = String
 
   be close() =>
     _log(Fine) and _log.log("close")
     _channel.close()
 
-  be connect_succeeded() =>
+  be listening() =>
+    _log(Fine) and _log.log("listening")
+    _server.rpc_listening()
+
+  be connected() =>
     _log(Fine) and _log.log("connect_succeeded")
     _state = _ExpectHeaderName
+    _server.rpc_connected()
 
   be connect_failed() =>
     _log(Fine) and _log.log("connect_failed")
     _error_out("connection failed")
-
-  be channel_closed() =>
-    _log(Fine) and _log.log("channel_closed")
-    _state = _NotConnected
-    _server.rpc_closed()
 
   be data_received(buf: Array[U8] iso) =>
     let data_str = String.from_iso_array(consume buf)
@@ -380,7 +390,12 @@ actor EohippusHandler is Handler
           end
       end)
 
-  fun _write_message(obj: json.Object) =>
+  be closed() =>
+    _log(Fine) and _log.log("closed")
+    _state = _NotConnected
+    _server.rpc_closed()
+
+  fun ref _write_message(obj: json.Object) =>
     let body = recover val obj.get_string(false) end
     _log(Fine) and _log.log("response: " + body)
 

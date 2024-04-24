@@ -2,11 +2,9 @@ use "logger"
 
 interface Channel
   fun valid(): Bool
-  fun write(data: (String val | Array[U8] val))
-  fun flush()
-  fun close()
-
-// class TcpChannel is Channel
+  fun ref write(data: (String val | Array[U8] val))
+  fun ref flush()
+  fun ref close()
 
 class StreamChannel is Channel
   let _log: Logger[String]
@@ -27,6 +25,7 @@ class StreamChannel is Channel
     _rpc_handler = rpc_handler
     _valid = true
 
+    _rpc_handler.listening()
     _input(
       object iso is InputNotify
         fun ref apply(data: Array[U8] iso) =>
@@ -34,22 +33,22 @@ class StreamChannel is Channel
 
         fun ref dispose() =>
           _valid = false
-          _rpc_handler.channel_closed()
+          _rpc_handler.closed()
       end)
-    _rpc_handler.connect_succeeded()
+    _rpc_handler.connected()
 
   fun valid(): Bool =>
     _valid
 
-  fun write(data: (String val | Array[U8] val)) =>
+  fun ref write(data: (String val | Array[U8] val)) =>
     if _valid then
       _output.write(data)
     end
 
-  fun flush() =>
+  fun ref flush() =>
     if _valid then
       _output.flush()
     end
 
-  fun close() =>
+  fun ref close() =>
     _input.dispose()

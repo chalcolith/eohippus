@@ -9,10 +9,24 @@ use ".."
 
 interface tag Server
   be set_rpc_handler(rpc_handler: rpc.Handler)
+  be rpc_listening()
+  be rpc_connected()
   be rpc_error()
   be rpc_closed()
-
+  be dispose()
   be exit()
+
+  be notify_listening()
+  be notify_connected()
+  be notify_errored()
+  be notify_initializing()
+  be notify_initialized()
+  be notify_received_request(id: (I128 | String | None), method: String)
+  be notify_received_notification(method: String)
+  be notify_sent_error(id: (I128 | String | None), code: I128, message: String)
+  be notify_disconnected()
+  be notify_shutting_down()
+  be notify_exiting(code: I32)
 
   be request_initialize(
     message: rpc_data.RequestMessage,
@@ -20,19 +34,6 @@ interface tag Server
   be notification_initialized()
   be request_shutdown(message: rpc_data.RequestMessage)
   be notification_exit()
-
-interface val ServerNotify
-  fun connected() => None
-  fun errored() => None
-  fun initializing() => None
-  fun initialized() => None
-  fun received_request(id: (I128 | String | None), method: String) => None
-  fun received_notification(method: String) => None
-  fun sent_error(id: (I128 | String | None), code: I128, message: String) =>
-    None
-  fun disconnected() => None
-  fun shutting_down() => None
-  fun exiting(code: I32) => None
 
 primitive ServerNotConnected
 primitive ServerNotInitialized
@@ -53,7 +54,7 @@ actor EohippusServer is Server
   let _env: Env
   let _log: Logger[String]
 
-  var _notify: ServerNotify
+  var _notify: ServerNotify iso
   var _rpc_handler: rpc.Handler
 
   var _state: ServerState = ServerNotConnected
@@ -66,15 +67,15 @@ actor EohippusServer is Server
   new create(
     env: Env,
     log: Logger[String],
-    notify: (ServerNotify | None) = None,
+    notify: (ServerNotify iso | None) = None,
     rpc_handler: (rpc.Handler | None) = None)
   =>
     _env = env
     _log = log
     _notify =
       match notify
-      | let sn: ServerNotify =>
-        sn
+      | let sn: ServerNotify iso =>
+        consume sn
       else
         _DummyNotify
       end
@@ -86,46 +87,100 @@ actor EohippusServer is Server
         _DummyHandler(_log)
       end
 
-    _handle_initialize = req.Initialize(_log, this, _notify)
-    _handle_shutdown = req.Shutdown(_log, this, _notify)
+    _handle_initialize = req.Initialize(_log, this)
+    _handle_shutdown = req.Shutdown(_log, this)
 
-  be set_notify(notify: ServerNotify) =>
+  be set_notify(notify: ServerNotify iso) =>
     _log(Fine) and _log.log("server notify set")
-    _notify = notify
+    _notify = consume notify
+
+  be notify_listening() =>
+    let self: Server tag = this
+    _notify.listening(self)
+
+  be notify_connected() =>
+    let self: Server tag = this
+    _notify.connected(self)
+
+  be notify_errored() =>
+    let self: Server tag = this
+    _notify.errored(self)
+
+  be notify_initializing() =>
+    let self: Server tag = this
+    _notify.initializing(self)
+
+  be notify_initialized() =>
+    let self: Server tag = this
+    _notify.initialized(self)
+
+  be notify_received_request(id: (I128 | String | None), method: String) =>
+    let self: Server tag = this
+    _notify.received_request(self, id, method)
+
+  be notify_received_notification(method: String) =>
+    let self: Server tag = this
+    _notify.received_notification(self, method)
+
+  be notify_sent_error(
+    id: (I128 | String | None), code: I128, message: String)
+  =>
+    let self: Server tag = this
+    _notify.sent_error(self, id, code, message)
+
+  be notify_disconnected() =>
+    let self: Server tag = this
+    _notify.disconnected(self)
+
+  be notify_shutting_down() =>
+    let self: Server tag = this
+    _notify.shutting_down(self)
+
+  be notify_exiting(code: I32) =>
+    _notify.exiting(code)
 
   be set_rpc_handler(rpc_handler: rpc.Handler) =>
     _log(Info) and _log.log("server rpc handler set")
-    _state = ServerNotInitialized
     _rpc_handler = rpc_handler
-    _notify.connected()
+
+  be rpc_listening() =>
+    _log(Info) and _log.log("server rpc handler listening")
+    notify_listening()
+
+  be rpc_connected() =>
+    _log(Info) and _log.log("server rpc handler connected")
+    _state = ServerNotInitialized
+    notify_connected()
 
   be rpc_error() =>
     _log(Info) and _log.log("rpc handler error")
     _exit_code = 1
-    _notify.errored()
+    notify_errored()
     exit()
 
   be rpc_closed() =>
     _log(Info) and _log.log("rpc handler closed")
-    _notify.disconnected()
+    notify_disconnected()
     exit()
+
+  be dispose() =>
+    _log(Info) and _log.log("server disposed; closing rpc handler")
+    _rpc_handler.close()
 
   be exit() =>
     _log(Info) and _log.log("server exiting with code " + _exit_code.string())
     // make sure things are cleaned up
     _state = ServerExiting
     _env.exitcode(_exit_code)
-    _notify.exiting(_exit_code)
+    notify_exiting(_exit_code)
 
   be request_initialize(
     message: rpc_data.RequestMessage,
     params: rpc_data.InitializeParams)
   =>
-    _notify.received_request(message.id(), message.method())
     _handle_request(_handle_initialize(_state, _rpc_handler, message, params))
 
   be request_shutdown(message: rpc_data.RequestMessage) =>
-    _notify.received_request(message.id(), message.method())
     _handle_request(_handle_shutdown(_state, _rpc_handler, message))
 
   fun ref _handle_request(status: ((ServerState | None), (I32 | None))) =>
@@ -140,17 +195,17 @@ actor EohippusServer is Server
 
   be notification_initialized() =>
     _log(Fine) and _log.log("notification: initialized")
-    _notify.received_notification("initialized")
+    notify_received_notification("initialized")
     if _state is ServerInitializing then
       _state = ServerInitialized
-      _notify.initialized()
+      notify_initialized()
     else
       _log(Error) and _log.log("initialized notification when not initializing")
     end
 
   be notification_exit() =>
     _log(Fine) and _log.log("notification: exit")
-    _notify.received_notification("exit")
+    notify_received_notification("exit")
     var close_handler = false
     match _state
     | ServerNotInitialized =>
@@ -175,7 +230,7 @@ actor EohippusServer is Server
     end
 
     if close_handler then
-      _notify.exiting(_exit_code)
+      notify_exiting(_exit_code)
       _rpc_handler.close()
     end
 
@@ -190,14 +245,14 @@ actor _DummyHandler is rpc.Handler
   be close() =>
     _log(Warn) and _log.log("handler.close(): no handler set")
 
-  be connect_succeeded() =>
+  be listening() =>
+    _log(Warn) and _log.log("handler.listening(): no handler set")
+
+  be connected() =>
     _log(Warn) and _log.log("handler.connect_succeeded(): no handler set")
 
   be connect_failed() =>
     _log(Warn) and _log.log("handler.connect_failed(): no handler set")
-
-  be channel_closed() =>
-    _log(Warn) and _log.log("handler.channel_closed(): no handler set")
 
   be data_received(data: Array[U8] iso) =>
     _log(Warn) and _log.log("handler.data_received(): no handler set")
@@ -212,3 +267,6 @@ actor _DummyHandler is rpc.Handler
     data: (json.Item val | None) = None)
   =>
     _log(Warn) and _log.log("handler.response_error(): no handler set")
+
+  be closed() =>
+    _log(Warn) and _log.log("handler.channel_closed(): no handler set")

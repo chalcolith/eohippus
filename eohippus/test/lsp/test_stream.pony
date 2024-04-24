@@ -41,13 +41,10 @@ actor TestInputStream is InputStream
       "\r\n".clone() +
       (consume body))
 
-interface TestOutputNotify
-  be write_output(stream: TestOutputStream tag, str: String)
-
 actor TestOutputStream is OutStream
-  let _notify: TestOutputNotify tag
+  let _notify: ({(String)} val | None)
 
-  new create(notify: TestOutputNotify tag) =>
+  new create(notify: ({(String)} val | None) = None) =>
     _notify = notify
 
   be print(data: (String | Array[U8] val)) =>
@@ -66,9 +63,15 @@ actor TestOutputStream is OutStream
   be write(data: (String | Array[U8] val)) =>
     match data
     | let str: String =>
-      _notify.write_output(this, str)
+      match _notify
+      | let notify: {(String)} val =>
+        notify(str)
+      end
     | let arr: Array[U8] val =>
-      _notify.write_output(this, String.from_array(arr))
+      match _notify
+      | let notify: {(String)} val =>
+        notify(String.from_array(arr))
+      end
     end
 
   be writev(data: ByteSeqIter val) =>

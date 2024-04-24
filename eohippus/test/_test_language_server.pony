@@ -18,32 +18,19 @@ class iso _TestLanguageServerNotificationExitBeforeInitialize is UnitTest
 
   fun apply(h: TestHelper) =>
     let server_stdin = lsp.TestInputStream
-    let helper = lsp.Helper(
-      h,
-      server_stdin,
-      { ref (buf: String) =>
-        h.fail("there should not be a response from the server")
-        h.complete(false)
-      },
-      object iso
-        var ungraceful_exit: Bool = false
-        fun ref apply(buf: String) =>
-          h.log(buf)
-          if buf.contains("ungraceful exit requested") then
-            ungraceful_exit = true
-          elseif buf.contains("server exiting with code") then
-            if buf.contains("server exiting with code 1") then
-              if not ungraceful_exit then
-                h.fail("server did not exit ungracefully")
-              end
-            elseif buf.contains("server exiting with code 0") then
-              h.fail("server should not exit with code 0")
-            end
-            h.complete(true)
-          end
-      end,
-      object val is ls.ServerNotify
-        fun connected() =>
+    let server_stdout = lsp.TestOutputStream
+    let server_stderr = lsp.TestOutputStream({(str) => h.log(str) })
+
+    let logger =
+      ifdef debug then
+        Logger[String](Fine, server_stderr, {(s: String): String => s })
+      else
+        Logger[String](Error, server_stderr, {(s: String): String => s })
+      end
+
+    let server_notify =
+      object iso is ls.ServerNotify
+        fun ref listening(s: ls.Server) =>
           let msg_text =
             """
               {
@@ -58,8 +45,20 @@ class iso _TestLanguageServerNotificationExitBeforeInitialize is UnitTest
           | let err: json.ParseError =>
             h.fail("invalid JSON at " + err.index.string() + ": " + err.message)
             h.complete(false)
+            s.dispose()
           end
-      end)
+        fun ref exiting(code: I32) =>
+          if code == 1 then
+            h.complete(true)
+          else
+            h.fail("server should not exit with code " + code.string())
+            h.complete(false)
+          end
+      end
+
+    let server = ls.EohippusServer(h.env, logger, consume server_notify)
+    let handler = rpc.EohippusHandler.from_streams(
+      logger, server, server_stdin, server_stdout)
 
     h.long_test(2_000_000_000)
 
@@ -69,10 +68,19 @@ class iso _TestLanguageServerRequestInitialize is UnitTest
 
   fun apply(h: TestHelper) =>
     let server_stdin = lsp.TestInputStream
+    let server_stdout = lsp.TestOutputStream
+    let server_stderr = lsp.TestOutputStream({(str) => h.log(str) })
 
-    let notify =
-      object val is ls.ServerNotify
-        fun connected() =>
+    let logger =
+      ifdef debug then
+        Logger[String](Fine, server_stderr, {(s: String): String => s })
+      else
+        Logger[String](Error, server_stderr, {(s: String): String => s })
+      end
+
+    let server_notify =
+      object iso is ls.ServerNotify
+        fun ref listening(s: ls.Server) =>
           let msg_text =
             """
               {
@@ -99,9 +107,10 @@ class iso _TestLanguageServerRequestInitialize is UnitTest
           | let err: json.ParseError =>
             h.fail("invalid JSON at " + err.index.string() + ": " + err.message)
             h.complete(false)
+            s.dispose()
           end
 
-        fun initializing() =>
+        fun ref initializing(s: ls.Server) =>
           let msg_text =
             """
               {
@@ -115,12 +124,15 @@ class iso _TestLanguageServerRequestInitialize is UnitTest
           | let err: json.ParseError =>
             h.fail("invalid JSON at " + err.index.string() + ": " + err.message)
             h.complete(false)
+            s.dispose()
           end
 
-        fun initialized() =>
+        fun ref initialized(s: ls.Server) =>
           h.complete(true)
+          s.dispose()
 
-        fun sent_error(
+        fun ref sent_error(
+          s: ls.Server,
           id: (I128 | String | None),
           code: I128,
           message: String)
@@ -128,13 +140,11 @@ class iso _TestLanguageServerRequestInitialize is UnitTest
           h.fail(
             "error for " + id.string() + ": " + code.string() + ": " + message)
           h.complete(false)
+          s.dispose()
       end
 
-    let helper = lsp.Helper(
-      h,
-      server_stdin,
-      { ref (buf: String) => None },
-      { ref (buf: String) => h.log(buf) },
-      notify)
+    let server = ls.EohippusServer(h.env, logger, consume server_notify)
+    let handler = rpc.EohippusHandler.from_streams(
+      logger, server, server_stdin, server_stdout)
 
     h.long_test(2_000_000_000)

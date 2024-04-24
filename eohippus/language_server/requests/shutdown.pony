@@ -7,16 +7,13 @@ use ".."
 class Shutdown
   let _log: Logger[String]
   let _server: Server
-  let _notify: ServerNotify
 
   new create(
     log: Logger[String],
-    server: Server,
-    notify: ServerNotify)
+    server: Server)
   =>
     _log = log
     _server = server
-    _notify = notify
 
   fun apply(
     server_state: ServerState,
@@ -25,7 +22,7 @@ class Shutdown
   =>
     _log(Fine) and _log.log(
       "request " + message.id().string() + ": " + message.method())
-    _notify.received_request(message.id(), message.method())
+    _server.notify_received_request(message.id(), message.method())
 
     if server_state is ServerInitialized then
       // clean things up
@@ -33,7 +30,7 @@ class Shutdown
         object val is rpc_data.ResponseMessage
           fun val id(): (I128 | String | None) => message.id()
         end)
-      _notify.shutting_down()
+      _server.notify_shutting_down()
       (ServerShuttingDown, None)
     elseif
       (server_state is ServerShuttingDown) or (server_state is ServerExiting)
@@ -45,7 +42,7 @@ class Shutdown
       let message_id = message.id()
       let error_code = rpc.ErrorCode.server_not_initialized()
       let error_message = "server not initialized; shutting down anyway"
-      _notify.sent_error(message_id, error_code, error_message)
+      _server.notify_sent_error(message_id, error_code, error_message)
       rpc_handler.respond_error(message_id, error_code, error_message)
       _server.exit()
       (ServerShuttingDown, 1)

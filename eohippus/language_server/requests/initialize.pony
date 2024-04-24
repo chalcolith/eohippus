@@ -11,16 +11,13 @@ use ".."
 class Initialize
   let _log: Logger[String]
   let _server: Server
-  let _notify: ServerNotify
 
   new create(
     log: Logger[String],
-    server: Server,
-    notify: ServerNotify)
+    server: Server)
   =>
     _log = log
     _server = server
-    _notify = notify
 
   fun apply(
     server_state: ServerState,
@@ -30,7 +27,7 @@ class Initialize
   =>
     _log(Fine) and _log.log(
       "request " + message.id().string() + ": " + message.method())
-    _notify.received_request(message.id(), message.method())
+    _server.notify_received_request(message.id(), message.method())
 
     match server_state
     | ServerNotConnected =>
@@ -76,14 +73,14 @@ class Initialize
           fun val id(): (I128 | String | None) => message.id()
           fun val result(): rpc_data.ResultData => result'
         end)
-      _notify.initializing()
+      _server.notify_initializing()
       (ServerInitializing, None)
     else
       _log(Error) and _log.log("initialize request when already initialized!")
       let message_id = message.id()
       let error_code = rpc.ErrorCode.request_failed()
       let error_message = "already initialized"
-      _notify.sent_error(message_id, error_code, error_message)
+      _server.notify_sent_error(message_id, error_code, error_message)
       rpc_handler.respond_error(
         message_id,
         error_code,
