@@ -16,3 +16,5 @@ interface ServerNotify
   fun ref disconnected(server: Server) => None
   fun ref shutting_down(server: Server) => None
   fun ref exiting(code: I32) => None
+
+class val _DummyNotify is ServerNotify

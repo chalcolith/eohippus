@@ -117,10 +117,7 @@ actor EohippusHandler is Handler
     _error_out("connection failed")
 
   be data_received(buf: Array[U8] iso) =>
-    let data_str = String.from_iso_array(consume buf)
-    let data = data_str.clone()
-
-    _log(Fine) and _log.log("data received: " + data.size().string() + " bytes: " + (consume data_str))
+    _log(Fine) and _log.log("data received: " + buf.size().string() + " bytes")
     if _state is _NotConnected then
       _error_out("spurious data received when not connected")
       return
@@ -131,7 +128,7 @@ actor EohippusHandler is Handler
       return
     end
 
-    for ch in (consume data).values() do
+    for ch in (consume buf).values() do
       match _state
       | _ExpectHeaderName =>
         if ch == '\n' then
@@ -241,8 +238,6 @@ actor EohippusHandler is Handler
     end
 
   fun ref _handle_rpc_message(obj: json.Object box) =>
-    _log(Fine) and _log.log("message: " + obj.get_string(false))
-
     let id: (I128 | String) =
       match try obj("id")? end
       | let int: I128 =>
@@ -289,6 +284,8 @@ actor EohippusHandler is Handler
 
     try
       let method = obj("method")? as String box
+      _log(Fine) and _log.log("message: " + method)
+
       match method
       | "initialize" =>
         _handle_initialize(id, params)
@@ -411,3 +408,38 @@ actor EohippusHandler is Handler
     _log(Error) and _log.log("error: " + message)
     _state = _Errored
     _server.rpc_error()
+
+actor DummyHandler is Handler
+  let _log: Logger[String]
+
+  new create(log: Logger[String]) =>
+    _log = log
+
+  be close() =>
+    _log(Warn) and _log.log("handler.close(): no handler set")
+
+  be listening() =>
+    _log(Warn) and _log.log("handler.listening(): no handler set")
+
+  be connected() =>
+    _log(Warn) and _log.log("handler.connect_succeeded(): no handler set")
+
+  be connect_failed() =>
+    _log(Warn) and _log.log("handler.connect_failed(): no handler set")
+
+  be data_received(data: Array[U8] iso) =>
+    _log(Warn) and _log.log("handler.data_received(): no handler set")
+
+  be respond(msg: rpc_data.ResponseMessage) =>
+    _log(Warn) and _log.log("handler.respond(): no handler set")
+
+  be respond_error(
+    msg_id: (I128 | String | None),
+    code: I128,
+    message: String,
+    data: (json.Item val | None) = None)
+  =>
+    _log(Warn) and _log.log("handler.response_error(): no handler set")
+
+  be closed() =>
+    _log(Warn) and _log.log("handler.channel_closed(): no handler set")

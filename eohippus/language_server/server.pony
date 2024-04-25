@@ -84,7 +84,7 @@ actor EohippusServer is Server
       | let rh: rpc.Handler =>
         rh
       else
-        _DummyHandler(_log)
+        rpc.DummyHandler(_log)
       end
 
     _handle_initialize = req.Initialize(_log, this)
@@ -168,11 +168,13 @@ actor EohippusServer is Server
     _rpc_handler.close()
 
   be exit() =>
-    _log(Info) and _log.log("server exiting with code " + _exit_code.string())
-    // make sure things are cleaned up
-    _state = ServerExiting
-    _env.exitcode(_exit_code)
-    notify_exiting(_exit_code)
+    if _state isnt ServerExiting then
+      _log(Info) and _log.log("server exiting with code " + _exit_code.string())
+      // make sure things are cleaned up
+      _state = ServerExiting
+      _env.exitcode(_exit_code)
+      notify_exiting(_exit_code)
+    end
 
   be request_initialize(
     message: rpc_data.RequestMessage,
@@ -233,40 +235,3 @@ actor EohippusServer is Server
       notify_exiting(_exit_code)
       _rpc_handler.close()
     end
-
-class val _DummyNotify is ServerNotify
-
-actor _DummyHandler is rpc.Handler
-  let _log: Logger[String]
-
-  new create(log: Logger[String]) =>
-    _log = log
-
-  be close() =>
-    _log(Warn) and _log.log("handler.close(): no handler set")
-
-  be listening() =>
-    _log(Warn) and _log.log("handler.listening(): no handler set")
-
-  be connected() =>
-    _log(Warn) and _log.log("handler.connect_succeeded(): no handler set")
-
-  be connect_failed() =>
-    _log(Warn) and _log.log("handler.connect_failed(): no handler set")
-
-  be data_received(data: Array[U8] iso) =>
-    _log(Warn) and _log.log("handler.data_received(): no handler set")
-
-  be respond(msg: rpc_data.ResponseMessage) =>
-    _log(Warn) and _log.log("handler.respond(): no handler set")
-
-  be respond_error(
-    msg_id: (I128 | String | None),
-    code: I128,
-    message: String,
-    data: (json.Item val | None) = None)
-  =>
-    _log(Warn) and _log.log("handler.response_error(): no handler set")
-
-  be closed() =>
-    _log(Warn) and _log.log("handler.channel_closed(): no handler set")
