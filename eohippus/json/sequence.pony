@@ -1,11 +1,16 @@
 use "collections"
 use ".."
 
-class Sequence
+class box Sequence
   embed _items: Array[Item] = _items.create()
 
-  new create(items: Seq[Item] = Array[Item]) =>
+  new create(items: Seq[Item] box = Array[Item]) =>
     _items.append(items)
+
+  new from_vals(items: Seq[Item val] box) =>
+    for item in items.values() do
+      _items.push(item)
+    end
 
   new from_iter(items: Iterator[Item]) =>
     _items.concat(items)
@@ -16,6 +21,8 @@ class Sequence
     key < _items.size()
 
   fun apply(i: USize): this->Item ? => _items.apply(i)?
+
+  fun values(): Iterator[Item] => _items.values()
 
   fun ref update(i: USize, value: Item) ? => _items.update(i, value)?
 

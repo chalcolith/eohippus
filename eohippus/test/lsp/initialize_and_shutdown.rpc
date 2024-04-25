@@ -1,0 +1,37 @@
+Content-Length: 0
+
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "initialize",
+  "params": {
+    "processId": 1,
+    "clientInfo": {
+      "name": "_TestLanguageServerRequestInitialize"
+    },
+    "rootUri": null,
+    "capabilities": {
+      "general": {
+        "positionEncodings": [ "utf-8" ]
+      }
+    }
+  }
+}
+Content-Length: 0
+
+{
+  "jsonrpc": "2.0",
+  "method": "initialized"
+}
+Content-Length: 0
+
+{
+  "jsonrpc": "2.0"
+  "method": "shutdown"
+}
+Content-Length: 0
+
+{
+  "jsonrpc": "2.0"
+  "method": "exit"
+}

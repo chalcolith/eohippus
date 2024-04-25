@@ -32,59 +32,100 @@ class SyntaxTree
       node,
       per.Cons[Node](node, per.Nil[Node]),
       consume errors)
-    (new_node, consume errors)
+    match new_node
+    | let n: Node =>
+      (n, consume errors)
+    else
+      errors.push((node, "traversal deleted the node"))
+      (node, errors)
+    end
+
+  fun tag _indent(n: USize): String =>
+    recover val
+      let s = String(n)
+      var i: USize = 0
+      while i < n do
+        s.append("  ")
+        i = i + 1
+      end
+      s
+    end
 
   fun tag _traverse[S](
     visitor: Visitor[S],
     node: Node,
     path: Path,
     errors: Array[TraverseError] iso)
-    : (Node, Array[TraverseError] iso^)
+    : ((Node | None), Array[TraverseError] iso^)
   =>
     var errors': Array[TraverseError] iso = consume errors
     (let node_state, errors') = visitor.visit_pre(node, path, consume errors')
-    if node.children().size() == 0 then
+    let num_children = node.children().size()
+    if num_children == 0 then
       (let result, errors') = visitor.visit_post(
         consume node_state, node, path, consume errors')
       (result, consume errors')
     else
       var new_children: (Array[Node] trn | None) = None
+      var update_map: (ChildUpdateMap trn | None) = None
       var i: USize = 0
-      while i < node.children().size() do
+      while i < num_children do
         try
           let child = node.children()(i)?
+          let child_name = child.name()
           (let new_child, errors') = _traverse[S](
             visitor, child, path.prepend(child), consume errors')
-          match new_children
-          | let arr: Array[Node] trn =>
-            arr.push(new_child)
-          | None =>
+
+          match (new_children, update_map)
+          | (let arr: Array[Node] trn, let um: ChildUpdateMap trn) =>
+            match new_child
+            | let nc: Node =>
+              arr.push(nc)
+              um(child) = nc
+            end
+          | (None, None) =>
             if new_child isnt child then
-              let new_children': Array[Node] trn =
+              let arr: Array[Node] trn =
                 Array[Node](node.children().size())
+              let um: ChildUpdateMap trn =
+                ChildUpdateMap(node.children().size())
               if i > 0 then
                 var j: USize = 0
                 while j < i do
-                  new_children'.push(node.children()(j)?)
+                  let old_child = node.children()(j)?
+                  arr.push(old_child)
+                  um(old_child) = old_child
                   j = j + 1
                 end
               end
-              new_children'.push(new_child)
-              new_children = consume new_children'
+
+              match new_child
+              | let nc:Node =>
+                arr.push(nc)
+                um(child) = nc
+              end
+
+              new_children = consume arr
+              update_map = consume um
             end
           end
         end
         i = i + 1
       end
 
-      match new_children
-      | let arr: Array[Node] trn =>
+      match (new_children, update_map)
+      | (let arr: Array[Node] trn, let um: ChildUpdateMap trn) =>
         (let result, errors') = visitor.visit_post(
-            consume node_state, node, path, consume errors', consume arr)
+            consume node_state,
+            node,
+            path,
+            consume errors',
+            consume arr,
+            consume um)
         (result, consume errors')
       else
         (let result, errors') = visitor.visit_post(
-            consume node_state, node, path, consume errors', node.children())
+            consume node_state, node, path, consume errors')
         (result, consume errors')
       end
     end

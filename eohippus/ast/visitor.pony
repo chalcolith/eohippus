@@ -28,9 +28,13 @@ interface Visitor[State]
     node: Node,
     path: Path,
     errors: Array[TraverseError] iso,
-    new_children: (NodeSeq | None) = None)
-    : (Node, Array[TraverseError] iso^)
+    new_children: (NodeSeq | None) = None,
+    update_map: (ChildUpdateMap | None) = None)
+    : ((Node | None), Array[TraverseError] iso^)
     """
       Returns a new node constructed from the "pre" state (the intermediate
-      state) that was returned by `visit_pre()`, and the new children itself.
+      state) that was returned by `visit_pre()`, and the new children.
+
+      Even if no other processing is needed, make sure to clone the node if
+      `new_children` and `update_map` exist.
     """

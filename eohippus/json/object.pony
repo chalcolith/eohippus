@@ -2,10 +2,15 @@ use "collections"
 use "itertools"
 use ".."
 
-class Object
+class box Object
   embed _items: Array[(String, Item)] = _items.create()
 
-  new create(items: Seq[(String, Item)] = Array[(String, Item)]) =>
+  new create(items: Seq[(String, Item)] box = Array[(String, Item)]) =>
+    for (key, value) in items.values() do
+      _items.push((key, value))
+    end
+
+  new from_vals(items: Seq[(String, Item val)] box) =>
     for (key, value) in items.values() do
       _items.push((key, value))
     end
@@ -47,7 +52,7 @@ class Object
   fun pairs(): Iterator[(String, this->Item)] =>
     _items.values()
 
-  fun get_string(pretty: Bool, indent: String): String iso^ =>
+  fun get_string(pretty: Bool, indent: String = ""): String iso^ =>
     let indent' =
       if pretty then
         recover val indent + "  " end
@@ -67,7 +72,8 @@ class Object
           if pretty then result.append("\n") end
         end
         result.append(indent')
-        result.append("\"" + key + "\": ")
+        result.append("\"" + key + "\":")
+        if pretty then result.append(" ") end
         match value
         | let obj: Object box =>
           result.append(obj.get_string(pretty, indent'))

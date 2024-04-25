@@ -14,11 +14,11 @@ primitive Parse
     end
     ParseError(str.size(), "unknown error")
 
-class ParseError
+class val ParseError
   let index: USize
   let message: String
 
-  new create(index': USize, message': String) =>
+  new val create(index': USize, message': String) =>
     index = index'
     message = message'
 
@@ -80,8 +80,8 @@ class Parser
   var _index: USize = 0
   var _depth: ISize = 0
   var _bool_count: USize = 0
-  var _ch: U8 = 0
   var _expect_hex: USize = 0
+  var _ch: U8 = 0
 
   new create() =>
     None

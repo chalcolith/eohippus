@@ -1,5 +1,3 @@
-use "debug"
-
 use per = "collections/persistent"
 
 use ast = "../../ast"
@@ -92,6 +90,8 @@ class val TrimTrailingWhitespace is lint.Rule
 class _TrailingWhitespaceVisitor is ast.Visitor[None]
   let _issue: lint.Issue
 
+  var _in_trailing_ws: Bool = false
+
   new iso create(issue: lint.Issue) =>
     _issue = issue
 
@@ -108,91 +108,34 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     node: ast.Node,
     path: ast.Path,
     errors: Array[ast.TraverseError] iso,
-    new_children: (ast.NodeSeq | None) = None)
-    : (ast.Node, Array[ast.TraverseError] iso^)
+    new_children: (ast.NodeSeq | None) = None,
+    update_map: (ast.ChildUpdateMap | None) = None)
+    : ((ast.Node | None), Array[ast.TraverseError] iso^)
   =>
-    // Trailing whitespace will all be children of one node, usually
-    // post_trivia (except for pre_trivia in SrcFile)
-    let existing_children =
-      match new_children
-      | let nc: ast.NodeSeq =>
-        nc
-      else
-        node.children()
-      end
-
-    // find the start and next index of the trailing whitespace
-    var start_child: USize = 0
-    var next_child: USize = 0
-    var found = false
-    var i: USize = 0
-    while i < existing_children.size() do
-      let child =
-        try
-          existing_children(i)?
-        else
-          next_child = i
-          break
-        end
-      if _issue.match_start(child) then
-        start_child = i
-        found = true
-      elseif _issue.match_next(child) then
-        next_child = i
-        break
-      end
-      i = i + 1
+    // check for trailing whitespace
+    if _issue.match_start(node) then
+      _in_trailing_ws = true
     end
-    if found and (next_child <= start_child) then
-      next_child = start_child + 1
+    if _issue.match_next(node) then
+      _in_trailing_ws = false
     end
 
+    // if we're a leaf and in trailing whitespace, delete us
+    if _in_trailing_ws then
+      match node
+      | let t: ast.NodeWith[ast.Trivia] if
+          (t.data().kind is ast.WhiteSpaceTrivia)
+      =>
+        return (None, consume errors)
+      end
+    end
+
+    // if our children have been adjusted, clone us with the new children
     let new_node =
-      if found then
-        let update_map: ast.ChildUpdateMap trn = ast.ChildUpdateMap
-        let new_children': Array[ast.Node] trn = Array[ast.Node](
-          existing_children.size() - (next_child - start_child))
-        i = 0
-        while i < start_child do
-          try
-            let child = existing_children(i)?
-            update_map(child) = child
-            new_children'.push(child)
-          end
-          i = i + 1
-        end
-        i = next_child
-        while i < existing_children.size() do
-          try
-            let child = existing_children(i)?
-            update_map(child) = child
-            new_children'.push(child)
-          end
-          i = i + 1
-        end
-        node.clone(where
-          new_children' = consume new_children',
-          update_map' = consume update_map)
+      match (new_children, update_map)
+      | (let nc: ast.NodeSeq, let um: ast.ChildUpdateMap) =>
+        node.clone(where new_children' = nc, update_map' = um)
       else
-        if existing_children isnt node.children() then
-          if existing_children.size() == node.children().size() then
-            let update_map: ast.ChildUpdateMap trn = ast.ChildUpdateMap
-            i = 0
-            while i < existing_children.size() do
-              try
-                update_map(node.children()(i)?) = existing_children(i)?
-              end
-              i = i + 1
-            end
-            node.clone(where
-              new_children' = existing_children,
-              update_map' = consume update_map)
-          else
-            errors.push((node, "length of updated children doesn't match old!"))
-            node.clone(where new_children' = existing_children)
-          end
-        else
-          node
-        end
+        node
       end
     (new_node, consume errors)

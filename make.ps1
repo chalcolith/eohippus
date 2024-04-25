@@ -3,9 +3,9 @@ param(
   [string]
   $Command = 'build',
 
-  [Parameter(HelpMessage="The target(s) to build or test (eohippus-test, )")]
+  [Parameter(HelpMessage="The target(s) to build or test (test, eohippus_lsp)")]
   [string]
-  $Target = 'eohippus-test',
+  $Target = 'test,eohippus_lsp',
 
   [Parameter(HelpMessage="The build configuration (Release, Debug).")]
   [string]
@@ -91,8 +91,11 @@ function Build
 {
   param($targets)
 
-  if ($targets -like 'eohippus-test') {
-    Run("corral.exe run -- ponyc --immerr $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test`"")
+  if ($targets -like 'test') {
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test`"")
+  }
+  if ($targets -like 'eohippus_lsp') {
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus_lsp`"")
   }
 }
 
