@@ -78,10 +78,15 @@ class Parser
   let _value_stack: Array[_TempItem] = _value_stack.create()
   var _state: _ParseState = _ExpectItem
   var _index: USize = 0
+  var _line: USize = 1
   var _depth: ISize = 0
   var _bool_count: USize = 0
   var _expect_hex: USize = 0
   var _ch: U8 = 0
+
+  let _context: Array[U8] = Array[U8].init(0, 64)
+  let _context_size: USize = 64
+  var _context_start: USize = 0
 
   new create() =>
     None
@@ -110,6 +115,19 @@ class Parser
 
   fun ref parse_char(ch: U8): (Item | ParseError | None) =>
     _ch = ch
+
+    if _ch == '\n' then
+      _line = _line + 1
+    end
+
+    try
+      _context(_context_start)? = _ch
+      _context_start = _context_start + 1
+      if _context_start == _context_size then
+        _context_start = 0
+      end
+    end
+
     try
       let possible_error =
         match _state
@@ -275,6 +293,16 @@ class Parser
       let float = F64.from[I128](int)
       _value_stack.push((float, I32.max_value()))
       _state = _InExp
+    elseif _ch == ']' then
+      let int = _value_stack.pop()? as I128
+      _add_item(int)?
+      match _value_stack.pop()?
+      | let seq: Sequence trn =>
+        _add_item(consume seq)?
+        _state = _ExpectComma
+      else
+        return _invalid_char(_index)
+      end
     else
       return _invalid_char(_index)
     end
@@ -311,6 +339,16 @@ class Parser
       (let float, _) = _value_stack.pop()? as (F64, F64)
       _add_item(float)?
       _state = _expect_next()?
+    elseif _ch == ']' then
+      (let float, _) = _value_stack.pop()? as (F64, F64)
+      _add_item(float)?
+      match _value_stack.pop()?
+      | let seq: Sequence trn =>
+        _add_item(consume seq)?
+        _state = _ExpectComma
+      else
+        return _invalid_char(_index)
+      end
     else
       return _invalid_char(_index)
     end
@@ -341,6 +379,16 @@ class Parser
       (let float, let exp) = _value_stack.pop()? as (F64, I32)
       _add_item(_make_exp(float, exp))?
       _state = _expect_next()?
+    elseif _ch == ']' then
+      (let float, let exp) = _value_stack.pop()? as (F64, I32)
+      _add_item(_make_exp(float, exp))?
+      match _value_stack.pop()?
+      | let seq: Sequence trn =>
+        _add_item(consume seq)?
+        _state = _ExpectComma
+      else
+        return _invalid_char(_index)
+      end
     else
       return _invalid_char(_index)
     end
@@ -537,6 +585,34 @@ class Parser
     let message: String trn = String
     message.append("invalid character '")
     message.push(_ch)
+    message.append("' in line " + _line.string() + "; expecting ")
+    message.append(
+      match _state
+      | _ExpectItem => "an item"
+      | _ExpectName => "a name"
+      | _ExpectColon => "a colon"
+      | _ExpectComma => "a comma"
+      | _InString => "a string"
+      | _InName => "a name"
+      | _InEscape => "an escape"
+      | _InInt => "an int"
+      | _InFrac => "a frac"
+      | _InExp => "an exponent"
+      | _InTrue => "true"
+      | _InFalse => "false"
+      | _InNull => "null"
+      end)
+    message.append("; context: '")
+    var i: USize = 0
+    while i < _context_size do
+      try
+        let ch = _context((i + _context_start) % _context_size)?
+        if ch != 0 then
+          message.push(ch)
+        end
+        i = i + 1
+      end
+    end
     message.append("'")
     ParseError(index, consume message)
 

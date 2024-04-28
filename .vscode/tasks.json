@@ -1,0 +1,41 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "label": "Build Eohippus Tests",
+      "type": "shell",
+      "command": "make",
+      "args": [ "build/debug/test", "config=debug" ],
+      "windows": {
+        "command": ".\\make.ps1",
+        "args": [ "build", "-Config", "debug", "-Target", "test" ]
+      },
+      "group": "build"
+    },
+    {
+      "label": "Build Eohippus Language Server",
+      "type": "shell",
+      "command": "make",
+      "args": [ "build/debug/eohippus-lsp", "config=debug" ],
+      "windows": {
+        "command": ".\\make.ps1",
+        "args": [ "build", "-Config", "debug", "-Target", "eohippus-lsp" ]
+      },
+      "group": "build"
+    },
+		{
+      "label": "Watch VSCode Extension",
+			"type": "npm",
+			"script": "watch",
+      "path": "eohippus-vscode",
+			"problemMatcher": "$tsc-watch",
+			"isBackground": true,
+			"presentation": {
+				"reveal": "always"
+			},
+      "group": "build"
+		}
+	]
+}

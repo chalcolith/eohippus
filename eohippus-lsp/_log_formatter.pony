@@ -32,4 +32,15 @@ class _LogFormatter is LogFormatter
         end
       end
 
-    "[" + stamp + "." + millis + "Z] " + fname + ":" + line + ": " + message
+    let buf: String trn = String
+    buf.append("[")
+    buf.append(stamp)
+    buf.append(".")
+    buf.append(millis)
+    buf.append("Z] ")
+    buf.append(fname)
+    buf.append(":")
+    buf.append(line)
+    buf.append(": ")
+    buf.append(message)
+    consume buf

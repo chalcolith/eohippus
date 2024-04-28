@@ -38,108 +38,104 @@ class iso _TestLanguageServerTcpRequestInitialize is UnitTest
         Logger[String](Error, server_stderr, {(s: String): String => s })
       end
 
-    let port = "43251"
+    let port = "63421"
+    let tcp_listener = TCPListener(
+      TCPListenAuth(h.env.root),
+      object iso is TCPListenNotify
+        fun ref connected(listen: TCPListener ref): TCPConnectionNotify iso^ =>
+          h.log("client: connected")
+
+          object iso is TCPConnectionNotify
+            let _input_buf: String iso = String
+
+            fun ref accepted(conn: TCPConnection ref) =>
+              h.log("client: accepted, sending initialize")
+              let initialize_message =
+                """
+                  {
+                    "jsonrpc": "2.0",
+                    "id": 1,
+                    "method": "initialize",
+                    "params": {
+                      "processId": 1,
+                      "clientInfo": {
+                        "name": "_TestLanguageServerRequestInitialize"
+                      },
+                      "rootUri": null,
+                      "capabilities": {
+                        "general": {
+                          "positionEncodings": [ "utf-8" ]
+                        }
+                      }
+                    }
+                  }
+                """
+              let buf: String iso = String
+              buf.append("Content-Length:")
+              buf.append(initialize_message.size().string())
+              buf.append("\r\n\r\n")
+              buf.append(initialize_message)
+              conn.write(consume buf)
+
+            fun ref connect_failed(conn: TCPConnection ref) =>
+              h.fail("client: connection failed")
+              h.complete(false)
+
+            fun ref auth_failed(conn: TCPConnection ref) =>
+              h.fail("client: auth failed")
+              h.complete(false)
+
+            fun ref received(
+              conn: TCPConnection ref,
+              data: Array[U8] iso,
+              times: USize)
+              : Bool
+            =>
+              h.log("client: received " + data.size().string() + " bytes")
+              _input_buf.append(consume data)
+              if _input_buf.contains("positionEncoding") then
+                h.log("client: sending initialized")
+                let initialized_message =
+                  """
+                    {
+                      "jsonrpc": "2.0",
+                      "method": "initialized"
+                    }
+                  """
+                let buf: String iso = String
+                buf.append("Content-Length:")
+                buf.append(initialized_message.size().string())
+                buf.append("\r\n\r\n")
+                buf.append(initialized_message)
+                conn.write(consume buf)
+              end
+              true
+          end
+
+        fun ref not_listening(listen:TCPListener ref) =>
+          h.fail("client: not listening")
+          h.complete(false)
+      end,
+      "",
+      port)
 
     let server_notify =
       object iso is ls.ServerNotify
-        var _conn: (TCPConnection | None) = None
-
-        fun ref listening(s: ls.Server) =>
-          h.log("ServerNotify: listening: connecting")
-          let msg_text =
-            """
-              {
-                "jsonrpc": "2.0",
-                "id": 1,
-                "method": "initialize",
-                "params": {
-                  "processId": 1,
-                  "clientInfo": {
-                    "name": "_TestLanguageServerRequestInitialize"
-                  },
-                  "rootUri": null,
-                  "capabilities": {
-                    "general": {
-                      "positionEncodings": [ "utf-8" ]
-                    }
-                  }
-                }
-              }
-            """
-          match recover val json.Parse(msg_text) end
-          | let msg: json.Object val =>
-            _conn = TCPConnection(
-              TCPConnectAuth(h.env.root),
-              object iso is TCPConnectionNotify
-                fun ref connected(conn: TCPConnection ref) =>
-                  h.log("client connected; sending initialize message")
-                  let str = recover val msg.get_string(false) end
-                  let len = str.size()
-                  conn.write(
-                    "Content-Length:" + len.string() + "\r\n" +
-                    "\r\n" +
-                    str)
-                fun ref connect_failed(conn: TCPConnection ref) =>
-                  conn.dispose()
-                  s.dispose()
-                  h.fail("TCP connection failed")
-                  h.complete(false)
-                fun ref closed(conn: TCPConnection ref) =>
-                  h.log("client closed")
-              end,
-              "",
-              port)
-          | let err: json.ParseError =>
-            s.dispose()
-            h.fail("invalid JSON at " + err.index.string() + ": " + err.message)
-            h.complete(false)
-          end
-
-        fun ref initializing(s: ls.Server) =>
-          h.log("ServerNotify: initializing: sending initialied notification")
-          let msg_text =
-            """
-              {
-                "jsonrpc": "2.0",
-                "method": "initialized"
-              }
-            """
-          match recover val json.Parse(msg_text) end
-          | let msg: json.Object val =>
-            match _conn
-            | let conn: TCPConnection =>
-              let str = recover val msg.get_string(false) end
-              let len = str.size()
-              conn.write(
-                "Content-Length:" + len.string() + "\r\n" +
-                "\r\n" +
-                str)
-            else
-              s.dispose()
-              h.fail("connection not established")
-              h.complete(false)
-            end
-          | let err: json.ParseError =>
-            dispose()
-            s.dispose()
-            h.fail("invalid JSON at " + err.index.string() + ": " + err.message)
-            h.complete(false)
-          end
-
         fun ref initialized(s: ls.Server) =>
-          h.log("ServerNotify: initialized: disposing")
-          dispose()
+          h.log("server: initialized: disposing")
           s.dispose()
 
         fun ref exiting(code: I32) =>
-          h.log("ServerNotify: exiting: complete true")
+          h.log("server: exiting")
+          h.assert_eq[I32](0, code, "server exit code should be 0")
           h.complete(true)
+          tcp_listener.dispose()
 
         fun ref errored(s: ls.Server) =>
-          dispose()
           s.dispose()
-          h.fail("server errored")
+          h.fail("server: errored")
           h.complete(false)
+          tcp_listener.dispose()
 
         fun ref sent_error(
           s: ls.Server,
@@ -147,21 +143,16 @@ class iso _TestLanguageServerTcpRequestInitialize is UnitTest
           code: I128,
           message: String)
         =>
-          dispose()
+          h.fail("server: sent error for " + id.string() + ": " + code.string())
           s.dispose()
           h.fail(
             "error for " + id.string() + ": " + code.string() + ": " + message)
           h.complete(false)
-
-        fun ref dispose() =>
-          match _conn
-          | let conn: TCPConnection =>
-            conn.dispose()
-          end
+          tcp_listener.dispose()
       end
 
     let server = ls.EohippusServer(h.env, logger, consume server_notify)
     let handler = rpc.EohippusHandler.from_tcp(
-      logger, server, TCPListenAuth(h.env.root), "", port)
+      logger, server, TCPConnectAuth(h.env.root), "", port)
 
     h.long_test(4_000_000_000)

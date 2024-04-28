@@ -13,7 +13,8 @@ primitive _TestLanguageServer
     test(_TestLanguageServerRequestInitialize)
 
 class iso _TestLanguageServerNotificationExitBeforeInitialize is UnitTest
-  fun name(): String => "language_server/notification/exit/before_initialize"
+  fun name(): String =>
+    "language_server/stream/notification/exit/before_initialize"
   fun exclusion_group(): String => "language_server"
 
   fun apply(h: TestHelper) =>
@@ -63,7 +64,7 @@ class iso _TestLanguageServerNotificationExitBeforeInitialize is UnitTest
     h.long_test(2_000_000_000)
 
 class iso _TestLanguageServerRequestInitialize is UnitTest
-  fun name(): String => "language_server/request/initialize"
+  fun name(): String => "language_server/stream/request/initialize"
   fun exclusion_group(): String => "language_server"
 
   fun apply(h: TestHelper) =>

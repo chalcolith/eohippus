@@ -1,11 +1,11 @@
-_corral/
-_repos/
 build/
-.vscode/
+_corral/
+node_modules/
+_repos/
 .vs/
-version.pony
-lock.json
 CppProperties.json
+lock.json
+version.pony
 *.exe
 *.ilk
 *.pdb

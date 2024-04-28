@@ -14,6 +14,7 @@ primitive JsonRpc
   fun charset(): String => "utf-8"
 
 primitive _NotConnected
+primitive _BetweenMessages
 primitive _ExpectHeaderName
 primitive _InHeaderName
 primitive _ExpectHeaderValue
@@ -26,6 +27,7 @@ primitive _Errored
 
 type _HandlerState is
   ( _NotConnected
+  | _BetweenMessages
   | _ExpectHeaderName
   | _InHeaderName
   | _ExpectHeaderValue
@@ -83,7 +85,7 @@ actor EohippusHandler is Handler
   new from_tcp(
     log: Logger[String],
     server: Server,
-    auth: TCPListenAuth,
+    auth: TCPConnectAuth,
     host: String,
     service: String)
   =>
@@ -117,7 +119,6 @@ actor EohippusHandler is Handler
     _error_out("connection failed")
 
   be data_received(buf: Array[U8] iso) =>
-    _log(Fine) and _log.log("data received: " + buf.size().string() + " bytes")
     if _state is _NotConnected then
       _error_out("spurious data received when not connected")
       return
@@ -128,8 +129,18 @@ actor EohippusHandler is Handler
       return
     end
 
+    _log(Fine) and _log.log("data received: " + buf.size().string() + " bytes")
+
     for ch in (consume buf).values() do
       match _state
+      | _BetweenMessages =>
+        if StringUtil.is_ws(ch) then
+          None
+        else
+          _state = _InHeaderName
+          _current_header_name.clear()
+          _current_header_name.push(ch)
+        end
       | _ExpectHeaderName =>
         if ch == '\n' then
           _error_out("\\n encountered; expected header name")
@@ -216,7 +227,7 @@ actor EohippusHandler is Handler
     match _json_parser.parse_char(ch)
     | let obj: json.Object =>
       _handle_rpc_message(obj)
-      _state = _ExpectHeaderName
+      _state = _BetweenMessages
     | let seq: json.Sequence =>
       for item in seq.values() do
         match item
@@ -371,11 +382,17 @@ actor EohippusHandler is Handler
     message: String,
     data: (json.Item val | None) = None)
   =>
-    _log(Error) and _log.log("response: error " + code.string() + ":" +
-      msg_id.string() + ": " + message)
+    _log(Error) and _log.log(
+      "response: error: " + msg_id.string() + ":" + code.string())
     respond(
       object val is rpc_data.ResponseMessage
-        fun val id(): (I128 | String | None) => msg_id
+        fun val id(): (I128 | String | None) =>
+          match msg_id
+          | let n: I128 if n != -1 =>
+            n
+          | let s: String =>
+            s
+          end
         fun val err(): (rpc_data.ResponseError | None) =>
           let code' = code
           let message' = message
@@ -394,14 +411,12 @@ actor EohippusHandler is Handler
 
   fun ref _write_message(obj: json.Object) =>
     let body = recover val obj.get_string(false) end
-    _log(Fine) and _log.log("response: " + body)
-
-    _channel.write("Content-Length:" + body.size().string() + "\r\n")
-    _channel.write(
-      "Content-Type:" + JsonRpc.mime_type() + ";" + JsonRpc.charset() + "\r\n")
-    _channel.write("\r\n")
-    _channel.write(body)
-    _channel.write("\r\n")
+    let message: String trn = String
+    message.append("Content-Length:")
+    message.append(body.size().string())
+    message.append("\r\n\r\n")
+    message.append(body)
+    _channel.write(consume message)
     _channel.flush()
 
   fun ref _error_out(message: String) =>

@@ -3,22 +3,20 @@ use "cli"
 primitive _Options
   fun str_stdio(): String => "stdio"
   fun str_socket(): String => "socket"
-  fun str_port(): String => "port"
+  fun str_version(): String => "version"
 
   fun apply(env: Env): _CliOptions ? =>
     let spec =
       recover val
-        CommandSpec.parent(
-          "eohippus_lsp",
+        CommandSpec.leaf(
+          "eohippus-lsp",
           "Eohippus Pony Language Server",
-          [],
-          [ CommandSpec.leaf(str_stdio(), "Communicate via stdio", [], [])?
-            CommandSpec.leaf(
-              str_socket(),
-              "Communicate via sockets",
-              [ OptionSpec.string(str_port(), "port") ],
-              [])?
-            CommandSpec.leaf("version", "Print the program version", [], [])?
+          [ OptionSpec.bool(
+              str_stdio(), "Communicate via stdio" where default'=false)
+            OptionSpec.string(
+              str_socket(), "Communication via socket" where default'="")
+            OptionSpec.bool(
+              str_version(), "Print the program version" where default'=true)
           ])?
           .> add_help()?
       end
@@ -49,14 +47,16 @@ class val _CliOptions
   let socket_port: String
 
   new create(command': Command) =>
-    match command'.fullname()
-    | "eohippus_lsp/stdio" =>
+    if command'.option(_Options.str_stdio()).bool() then
       command = StdioCommand
       socket_port = ""
-    | "eohippus_lsp/socket" =>
-      command = SocketCommand
-      socket_port = command'.option(_Options.str_port()).string()
     else
-      command = VersionCommand
-      socket_port = ""
+      let socket = command'.option(_Options.str_socket()).string()
+      if socket != "" then
+        command = SocketCommand
+        socket_port = socket
+      else
+        command = VersionCommand
+        socket_port = ""
+      end
     end

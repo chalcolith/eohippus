@@ -57,10 +57,20 @@ class Initialize
           fun val name(): String => "Eohippus Pony Language Server"
           fun val version(): String => Version()
         end
+      let text_document_sync_options' =
+        object val is s_caps.TextDocumentSyncOptions
+          fun val openClose(): (Bool | None) => true
+          fun val change(): (s_caps.TextDocumentSyncKind | None) =>
+            s_caps.TextDocumentSyncIncremental
+        end
       let server_capabilities' =
         object val is s_caps.ServerCapabilities
           fun val positionEncoding(): rpc_data.PositionEncodingKind =>
             position_encoding
+          fun val textDocumentSync()
+            : (s_caps.TextDocumentSyncOptions | None)
+          =>
+            text_document_sync_options'
         end
       let result' =
         object val is rpc_data.InitializeResult
@@ -97,14 +107,22 @@ class Initialize
   =>
     // we only do utf-8
     var found_utf8 = false
+    var found_utf16 = false
     match params.capabilities().general()
     | let general: c_caps.GeneralClientCapabilities =>
       match general.positionEncodings()
       | let position_encodings: Array[rpc_data.PositionEncodingKind] val =>
         for pe in position_encodings.values() do
           if pe is rpc_data.PositionEncodingUtf8 then
-            return rpc_data.PositionEncodingUtf8
+            found_utf8 = true
+          elseif pe is rpc_data.PositionEncodingUtf16 then
+            found_utf16 = true
           end
         end
       end
+    end
+    if found_utf8 then
+      rpc_data.PositionEncodingUtf8
+    elseif found_utf16 then
+      rpc_data.PositionEncodingUtf16
     end
