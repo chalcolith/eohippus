@@ -14,13 +14,13 @@ trait val InitializeParams is WorkDoneProgressParams
   fun val workspaceFolders(): (Array[WorkspaceFolder] val | None)
 
 primitive ParseInitializeParams
-  fun apply(obj: json.Object): (InitializeParams | String) =>
+  fun apply(obj: json.Object val): (InitializeParams | String) =>
     let workDoneToken': (I128 | String | None) =
       try
         match obj("workDoneToken")?
         | let int: I128 =>
           int
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         else
           return
@@ -43,7 +43,7 @@ primitive ParseInitializeParams
     let clientInfo' =
       try
         match obj("clientInfo")?
-        | let ci_obj: json.Object =>
+        | let ci_obj: json.Object val =>
           match ParseClientInfo(ci_obj)
           | let ci: ClientInfo => ci
           | let err: String => return err
@@ -55,7 +55,7 @@ primitive ParseInitializeParams
     let locale': (String | None) =
       try
         match obj("locale")?
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         else
           return "initializeParams.locale must be of type string"
@@ -64,7 +64,7 @@ primitive ParseInitializeParams
     let rootPath': (String | None) =
       try
         match obj("rootPath")?
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         | json.Null =>
           None
@@ -75,7 +75,7 @@ primitive ParseInitializeParams
     let rootUri': (String | None) =
       try
         match obj("rootUri")?
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         | json.Null =>
           None
@@ -92,7 +92,7 @@ primitive ParseInitializeParams
     let capabilities' =
       try
         match obj("capabilities")?
-        | let cap_obj: json.Object =>
+        | let cap_obj: json.Object val =>
           match c_caps.ParseClientCapabilities(cap_obj)
           | let client_caps: c_caps.ClientCapabilities =>
             client_caps
@@ -108,7 +108,7 @@ primitive ParseInitializeParams
     let trace' =
       try
         match obj("trace")?
-        | let str: String box =>
+        | let str: String =>
           match ParseTraceValue(str)
           | let tv: TraceValue =>
             tv
@@ -122,11 +122,11 @@ primitive ParseInitializeParams
     let workspaceFolders': (Array[WorkspaceFolder] val | None) =
       try
         match obj("workspaceFolders")?
-        | let wf_seq: json.Sequence =>
+        | let wf_seq: json.Sequence val =>
           let folders: Array[WorkspaceFolder] trn = Array[WorkspaceFolder]
           for wf_item in wf_seq.values() do
             match wf_item
-            | let wf_obj: json.Object =>
+            | let wf_obj: json.Object val =>
               match ParseWorkspaceFolder(wf_obj)
               | let wf: WorkspaceFolder =>
                 folders.push(wf)
@@ -162,11 +162,11 @@ interface val WorkspaceFolder
   fun val name(): String
 
 primitive ParseWorkspaceFolder
-  fun apply(obj: json.Object): (WorkspaceFolder | String) =>
+  fun apply(obj: json.Object val): (WorkspaceFolder | String) =>
     let uri': String =
       try
         match obj("uri")?
-        | let s: String box =>
+        | let s: String =>
           s.clone()
         else
           return "workspaceFolder.uri must be of type string"
@@ -177,7 +177,7 @@ primitive ParseWorkspaceFolder
     let name': String =
       try
         match obj("name")?
-        | let s: String box =>
+        | let s: String =>
           s.clone()
         else
           return "workspaceFolder.name must be of type string"
@@ -188,4 +188,44 @@ primitive ParseWorkspaceFolder
     object val is WorkspaceFolder
       fun uri(): Uri => uri'
       fun name(): String => name'
+    end
+
+primitive TraceOff
+primitive TraceMessages
+primitive TraceVerbose
+
+type TraceValue is (TraceOff | TraceMessages | TraceVerbose)
+
+primitive ParseTraceValue
+  fun apply(item: json.Item): (TraceValue | String) =>
+    match item
+    | "off" =>
+      TraceOff
+    | "messages" =>
+      TraceMessages
+    | "verbose" =>
+      TraceVerbose
+    else
+      "traceValue must be one of ('off' | 'messages' | 'verbose')"
+    end
+
+interface val SetTraceParams
+  fun val value(): TraceValue
+
+primitive ParseSetTraceParams
+  fun apply(obj: json.Object val): (SetTraceParams | String) =>
+    let value' =
+      match try obj("value")? end
+      | let trace_value: String =>
+        match ParseTraceValue(trace_value)
+        | let tv: TraceValue =>
+          tv
+        | let err: String =>
+          return err
+        end
+      else
+        return "traceValue should be a string"
+      end
+    object val is SetTraceParams
+      fun val value(): TraceValue => value'
     end

@@ -15,6 +15,17 @@
       "group": "build"
     },
     {
+      "label": "Run Eohippus Tests",
+      "type": "shell",
+      "command": "make",
+      "args": [ "build/debug/test", "config=debug" ],
+      "windows": {
+        "command": ".\\make.ps1",
+        "args": [ "test", "-Config", "debug" ]
+      },
+      "group": "test"
+    },
+    {
       "label": "Build Eohippus Language Server",
       "type": "shell",
       "command": "make",

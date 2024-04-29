@@ -17,3 +17,4 @@ actor Main is TestList
     _TestLinter(test)
     _TestLanguageServer(test)
     _TestLanguageServerTcp(test)
+    _TestStringUtil(test)

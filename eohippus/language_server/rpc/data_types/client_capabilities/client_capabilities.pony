@@ -9,11 +9,11 @@ interface val ClientCapabilities
   fun val experimental(): (json.Item val | None)
 
 primitive ParseClientCapabilities
-  fun apply(obj: json.Object): (ClientCapabilities | String) =>
+  fun apply(obj: json.Object val): (ClientCapabilities | String) =>
     let workspace' =
       try
         match obj("workspace")?
-        | let ws_obj: json.Object =>
+        | let ws_obj: json.Object val =>
           match ParseWorkspaceClientCapabilities(ws_obj)
           | let ws: WorkspaceClientCapabilities =>
             ws
@@ -69,7 +69,7 @@ primitive ParseClientCapabilities
     let general' =
       try
         match obj("general")?
-        | let g_obj: json.Object =>
+        | let g_obj: json.Object val =>
           match ParseGeneralClientCapabilities(g_obj)
           | let g: GeneralClientCapabilities =>
             g

@@ -75,11 +75,11 @@ class box Object
         result.append("\"" + key + "\":")
         if pretty then result.append(" ") end
         match value
-        | let obj: Object box =>
+        | let obj: this->Object box =>
           result.append(obj.get_string(pretty, indent'))
-        | let seq: Sequence box =>
+        | let seq: this->Sequence box =>
           result.append(seq.get_string(pretty, indent'))
-        | let str: String box =>
+        | let str: this->String box =>
           result.append("\"" + StringUtil.escape(str) + "\"")
         | let int: I128 =>
           result.append(int.string())

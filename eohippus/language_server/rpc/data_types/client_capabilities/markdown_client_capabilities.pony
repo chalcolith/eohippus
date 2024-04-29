@@ -6,11 +6,11 @@ interface val MarkdownClientCapabilities
   fun val allowedTags(): (Array[String] val | None)
 
 primitive ParseMarkdownClientCapabilities
-  fun apply(obj: json.Object): (MarkdownClientCapabilities | String) =>
+  fun apply(obj: json.Object val): (MarkdownClientCapabilities | String) =>
     let parser': String =
       try
         match obj("parser")?
-        | let s: String box =>
+        | let s: String =>
           s.clone()
         else
           return "markdown.parser must be of type string"
@@ -21,7 +21,7 @@ primitive ParseMarkdownClientCapabilities
     let version': (String | None) =
       try
         match obj("version")?
-        | let s: String box =>
+        | let s: String =>
           s.clone()
         else
           return "markdown.version must be of type string"
@@ -30,11 +30,11 @@ primitive ParseMarkdownClientCapabilities
     let allowedTags': (Array[String] val | None) =
       try
         match obj("allowedTags")?
-        | let at_seq: json.Sequence =>
+        | let at_seq: json.Sequence val =>
           let ats: Array[String] trn = Array[String]
           for at_item in at_seq.values() do
             match at_item
-            | let s: String box =>
+            | let s: String =>
               ats.push(s.clone())
             else
               return "markdown.allowedTags must be strings"

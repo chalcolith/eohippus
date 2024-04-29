@@ -25,25 +25,6 @@ interface val ResultData
 interface val StaticRegistrationOptions
   fun val id(): (String | None) => None
 
-primitive TraceOff
-primitive TraceMessages
-primitive TraceVerbose
-
-type TraceValue is (TraceOff | TraceMessages | TraceVerbose)
-
-primitive ParseTraceValue
-  fun apply(item: json.Item): (TraceValue | String) =>
-    match item
-    | "off" =>
-      TraceOff
-    | "messages" =>
-      TraceMessages
-    | "verbose" =>
-      TraceVerbose
-    else
-      "traceValue must be one of ('off' | 'messages' | 'verbose')"
-    end
-
 type DocumentUri is String
 type Uri is String
 

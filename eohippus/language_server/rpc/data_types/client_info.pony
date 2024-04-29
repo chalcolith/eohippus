@@ -5,11 +5,11 @@ interface val ClientInfo
   fun val version(): (String | None)
 
 primitive ParseClientInfo
-  fun apply(obj: json.Object): (ClientInfo | String) =>
+  fun apply(obj: json.Object val): (ClientInfo | String) =>
     let name': String =
       try
         match obj("name")?
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         else
           return "clientInfo.name must be of type string"
@@ -20,7 +20,7 @@ primitive ParseClientInfo
     let version': (String | None) =
       try
         match obj("version")?
-        | let str: String box =>
+        | let str: String =>
           str.clone()
         else
           return "clientInfo.version must be of type string"

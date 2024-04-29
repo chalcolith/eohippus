@@ -5,13 +5,13 @@ interface val RegularExpressionsClientCapabilities
   fun val version(): (String | None)
 
 primitive ParseRegularExpressionsClientCapabilities
-  fun apply(obj: json.Object):
+  fun apply(obj: json.Object val):
     (RegularExpressionsClientCapabilities | String)
   =>
     let engine': String =
       try
         match obj("engine")?
-        | let e: String box =>
+        | let e: String =>
           e.clone()
         else
           return "regularExpressions.engine must be of type string"
@@ -22,7 +22,7 @@ primitive ParseRegularExpressionsClientCapabilities
     let version': (String | None) =
       try
         match obj("version")?
-        | let v: String box =>
+        | let v: String =>
           v.clone()
         else
           return "regularExpressions.version must be of type string"

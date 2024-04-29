@@ -1,10 +1,13 @@
+use "collections"
+use "files"
 use "logger"
 
+use ast = "../ast"
 use json = "../json"
-
+use parser = "../parser"
+use req = "requests"
 use rpc = "rpc"
 use rpc_data = "rpc/data_types"
-use req = "requests"
 use ".."
 
 interface tag Server
@@ -32,6 +35,15 @@ interface tag Server
     message: rpc_data.RequestMessage,
     params: rpc_data.InitializeParams)
   be notification_initialized()
+  be notification_set_trace(params: rpc_data.SetTraceParams)
+  be notification_did_open_text_document(
+    params: rpc_data.DidOpenTextDocumentParams)
+  be notification_did_close_text_document(
+    params: rpc_data.DidCloseTextDocumentParams)
+  be parse_succeeded(
+    task_id: USize,
+    canonical_path: String,
+    node: ast.NodeWith[ast.SrcFile])
   be request_shutdown(message: rpc_data.RequestMessage)
   be notification_exit()
 
@@ -61,8 +73,17 @@ actor EohippusServer is Server
   var _trace_value: rpc_data.TraceValue = rpc_data.TraceMessages
   var _exit_code: I32 = 0
 
+  let _parser_context: parser.Context
+  let _parser_grammar: parser.Builder val
+  let _src_files_by_client_uri: Map[String, SrcFileInfo] =
+    _src_files_by_client_uri.create()
+  let _src_files_by_canonical_path: Map[String, SrcFileInfo] =
+    _src_files_by_canonical_path.create()
+
   let _handle_initialize: req.Initialize
   let _handle_shutdown: req.Shutdown
+
+  var _next_task_id: USize = 1
 
   new create(
     env: Env,
@@ -86,6 +107,9 @@ actor EohippusServer is Server
       else
         rpc.DummyHandler(_log)
       end
+
+    _parser_context = parser.Context([])
+    _parser_grammar = parser.Builder(_parser_context)
 
     _handle_initialize = req.Initialize(_log, this)
     _handle_shutdown = req.Shutdown(_log, this)
@@ -203,6 +227,84 @@ actor EohippusServer is Server
       notify_initialized()
     else
       _log(Error) and _log.log("initialized notification when not initializing")
+    end
+
+  be notification_set_trace(params: rpc_data.SetTraceParams) =>
+    _log(Fine) and _log.log("trace value set")
+    _trace_value = params.value()
+
+  be notification_did_open_text_document(
+    params: rpc_data.DidOpenTextDocumentParams)
+  =>
+    _log(Fine) and _log.log("notification: textDocument/didOpen " +
+      params.textDocument().uri())
+    let src_file_info =
+      if
+        _src_files_by_client_uri.contains(params.textDocument().uri())
+      then
+        try
+          _src_files_by_client_uri(params.textDocument().uri())?
+        end
+      else
+        let info = SrcFileInfo(
+          _log, this, FileAuth(_env.root), params.textDocument().uri())
+        _src_files_by_client_uri.update(info.client_uri, info)
+
+        if
+          _src_files_by_canonical_path.contains(info.canonical_file_path.path)
+        then
+          try
+            let actual =
+              _src_files_by_canonical_path(info.canonical_file_path.path)?
+            _src_files_by_client_uri.update(params.textDocument().uri(), actual)
+            actual
+          end
+        else
+          _src_files_by_canonical_path.update(
+            info.canonical_file_path.path, info)
+          info
+        end
+      end
+    match src_file_info
+    | let sfi: SrcFileInfo =>
+      sfi.is_open_in_client = true
+      sfi.parse_full(
+        _next_task_id,
+        _parser_grammar,
+        params.textDocument().text())
+      _next_task_id = _next_task_id + 1
+    else
+      _log(Error) and _log.log("unable to open " + params.textDocument().uri())
+    end
+
+  be parse_succeeded(
+    task_id: USize,
+    canonical_path: String,
+    node: ast.NodeWith[ast.SrcFile])
+  =>
+    _log(Fine) and _log.log(
+      "parse succeeded for task " + task_id.string() + ": " + canonical_path)
+    try
+      let info = _src_files_by_canonical_path(canonical_path)?
+      if task_id == info.parse_task_id then
+        info.finish_parse(node)
+      else
+        _log(Fine) and _log.log("parse is out of date for " + canonical_path)
+      end
+    else
+      _log(Error) and _log.log("no info found for " + canonical_path)
+    end
+
+  be notification_did_close_text_document(
+    params: rpc_data.DidCloseTextDocumentParams)
+  =>
+    _log(Fine) and _log.log("notification: textDocument/didClose")
+    let uri = params.textDocument().uri()
+    try
+      let info = _src_files_by_client_uri(uri)?
+      info.is_open_in_client = false
+    else
+      _log(Error) and _log.log("no info found for " + uri)
     end
 
   be notification_exit() =>

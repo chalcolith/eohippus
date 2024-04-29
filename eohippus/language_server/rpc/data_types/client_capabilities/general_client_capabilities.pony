@@ -9,11 +9,11 @@ interface val GeneralClientCapabilities
   fun val positionEncodings(): (Array[PositionEncodingKind] val | None)
 
 primitive ParseGeneralClientCapabilities
-  fun apply(obj: json.Object): (GeneralClientCapabilities | String) =>
+  fun apply(obj: json.Object val): (GeneralClientCapabilities | String) =>
     let staleRequestSupport' =
       try
         match obj("staleRequestSupport")?
-        | let srs_obj: json.Object =>
+        | let srs_obj: json.Object val =>
           match ParseStaleRequestSupport(srs_obj)
           | let srs: StaleRequestSupport =>
             srs
@@ -27,7 +27,7 @@ primitive ParseGeneralClientCapabilities
     let regularExpressions' =
       try
         match obj("regularExpressions")?
-        | let re_obj: json.Object =>
+        | let re_obj: json.Object val =>
           match ParseRegularExpressionsClientCapabilities(re_obj)
           | let re: RegularExpressionsClientCapabilities =>
             re
@@ -41,7 +41,7 @@ primitive ParseGeneralClientCapabilities
     let markdown' =
       try
         match obj("markdown")?
-        | let md_obj: json.Object =>
+        | let md_obj: json.Object val =>
           match ParseMarkdownClientCapabilities(md_obj)
           | let md: MarkdownClientCapabilities =>
             md
@@ -55,7 +55,7 @@ primitive ParseGeneralClientCapabilities
     let positionEncodings': (Array[PositionEncodingKind] val | None) =
       try
         match obj("positionEncodings")?
-        | let pe_seq: json.Sequence =>
+        | let pe_seq: json.Sequence val =>
           let encs: Array[PositionEncodingKind] trn =
             Array[PositionEncodingKind]
           for item in pe_seq.values() do

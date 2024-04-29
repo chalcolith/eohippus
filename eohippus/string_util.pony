@@ -53,3 +53,23 @@ primitive StringUtil
       end
     end
     consume result
+
+  fun url_decode(str: String): String =>
+    let result: String trn = String
+    var i: USize = 0
+    while i < str.size() do
+      let ch: U8 = try str(i)? else '?' end
+      if (ch == '%') and ((i + 2) < str.size()) then
+        try
+          let hex = str.trim(i + 1, i + 3)
+          result.push(hex.u8(16)?)
+          i = i + 2
+        else
+          result.push(ch)
+        end
+      else
+        result.push(ch)
+      end
+      i = i + 1
+    end
+    consume result

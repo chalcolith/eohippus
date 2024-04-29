@@ -225,13 +225,13 @@ actor EohippusHandler is Handler
 
   fun ref _process_json_char(ch: U8) =>
     match _json_parser.parse_char(ch)
-    | let obj: json.Object =>
+    | let obj: json.Object val =>
       _handle_rpc_message(obj)
       _state = _BetweenMessages
-    | let seq: json.Sequence =>
+    | let seq: json.Sequence val =>
       for item in seq.values() do
         match item
-        | let obj: json.Object =>
+        | let obj: json.Object val =>
           _handle_rpc_message(obj)
           if _state is _Errored then break end
         else
@@ -248,19 +248,19 @@ actor EohippusHandler is Handler
       _error_out("only JSON objects or sequences allowed")
     end
 
-  fun ref _handle_rpc_message(obj: json.Object box) =>
+  fun ref _handle_rpc_message(obj: json.Object val) =>
     let id: (I128 | String) =
       match try obj("id")? end
       | let int: I128 =>
         int
-      | let str: String box =>
+      | let str: String val =>
         str.clone()
       else
         I128(-1)
       end
 
     try
-      let jsonrpc = obj("jsonrpc")? as String box
+      let jsonrpc = obj("jsonrpc")? as String val
       if jsonrpc != JsonRpc.version() then
         respond_error(
           id,
@@ -277,12 +277,12 @@ actor EohippusHandler is Handler
       return
     end
 
-    let params: (json.Object | json.Sequence | None) =
+    let params: (json.Object val | json.Sequence val | None) =
       try
         match obj("params")?
-        | let obj': json.Object =>
+        | let obj': json.Object val =>
           obj'
-        | let seq: json.Sequence =>
+        | let seq: json.Sequence val =>
           seq
         else
           respond_error(
@@ -294,7 +294,7 @@ actor EohippusHandler is Handler
       end
 
     try
-      let method = obj("method")? as String box
+      let method = obj("method")? as String
       _log(Fine) and _log.log("message: " + method)
 
       match method
@@ -304,6 +304,12 @@ actor EohippusHandler is Handler
         _server.notification_initialized()
       | "shutdown" =>
         _handle_shutdown(id)
+      | "$/setTrace" =>
+        _handle_set_trace(params)
+      | "textDocument/didOpen" =>
+        _handle_text_document_did_open(params)
+      | "textDocument/didClose" =>
+        _handle_text_document_did_close(params)
       | "exit" =>
         _server.notification_exit()
       else
@@ -321,10 +327,10 @@ actor EohippusHandler is Handler
 
   fun _handle_initialize(
     message_id: (I128 | String),
-    params_item: (json.Object | json.Sequence | None))
+    params_item: (json.Object val | json.Sequence val | None))
   =>
     match params_item
-    | let params_obj: json.Object =>
+    | let params_obj: json.Object val =>
       match rpc_data.ParseInitializeParams(params_obj)
       | let params: rpc_data.InitializeParams =>
         _server.request_initialize(
@@ -341,6 +347,52 @@ actor EohippusHandler is Handler
         message_id,
         ErrorCode.invalid_params(),
         "an 'initialize' request must contain 'params' of type Object")
+    end
+
+  fun _handle_set_trace(
+    params_item: (json.Object val | json.Sequence val | None))
+  =>
+    match params_item
+    | let params_obj: json.Object val =>
+      match rpc_data.ParseSetTraceParams(params_obj)
+      | let stp: rpc_data.SetTraceParams =>
+        _server.notification_set_trace(stp)
+      | let err: String =>
+        _log(Warn) and _log.log("$/setTrace: " + err)
+      end
+    else
+      _log(Warn) and _log.log("$/setTrace params should be an object")
+    end
+
+  fun _handle_text_document_did_open(
+    params_item: (json.Object val | json.Sequence val | None))
+  =>
+    match params_item
+    | let params_obj: json.Object val =>
+      match rpc_data.ParseDidOpenTextDocumentParams(params_obj)
+      | let dotdp: rpc_data.DidOpenTextDocumentParams =>
+        _server.notification_did_open_text_document(dotdp)
+      | let err: String =>
+        _log(Warn) and _log.log("textDocument/didOpen: " + err)
+      end
+    else
+      _log(Warn) and _log.log("textDocument/didOpen params should be an object")
+    end
+
+  fun _handle_text_document_did_close(
+    params_item: (json.Object val | json.Sequence val | None))
+  =>
+    match params_item
+    | let params_obj: json.Object val =>
+      match rpc_data.ParseDidCloseTextDocumentParams(params_obj)
+      | let dctdp: rpc_data.DidCloseTextDocumentParams =>
+        _server.notification_did_close_text_document(dctdp)
+      | let err: String =>
+        _log(Warn) and _log.log("textDocument/didClose: " + err)
+      end
+    else
+      _log(Warn) and
+        _log.log("textDocument/didClose params should be an object")
     end
 
   fun _handle_shutdown(message_id: (I128 | String)) =>

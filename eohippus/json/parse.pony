@@ -113,7 +113,7 @@ class Parser
       end
     end
 
-  fun ref parse_char(ch: U8): (Item | ParseError | None) =>
+  fun ref parse_char(ch: U8): (Item val | ParseError | None) =>
     _ch = ch
 
     if _ch == '\n' then
