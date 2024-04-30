@@ -28,13 +28,6 @@
         "aliases": [ "Pony" ],
         "configuration": "./pony-configuration.json"
       }
-    ],
-    "grammars": [
-      {
-        "language": "pony",
-        "scopeName": "source.pony",
-        "path": "./syntaxes/pony.tmLanguage.json"
-      }
     ]
   },
   "scripts": {

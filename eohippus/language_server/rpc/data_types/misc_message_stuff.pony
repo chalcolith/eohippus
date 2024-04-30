@@ -111,3 +111,63 @@ primitive PositionEncodingKindJson
     | None =>
       json.Null
     end
+
+interface val Range
+  fun val start(): Position
+  fun val endd(): Position
+
+primitive ParseRange
+  fun apply(obj: json.Object val): (Range | String) =>
+    let start' =
+      match try obj("start")? end
+      | let start_obj: json.Object val =>
+        match ParsePosition(start_obj)
+        | let pos: Position =>
+          pos
+        | let err: String =>
+          return err
+        end
+      else
+        return "range.start must be an object"
+      end
+    let endd' =
+      match try obj("end")? end
+      | let end_obj: json.Object val =>
+        match ParsePosition(end_obj)
+        | let pos: Position =>
+          pos
+        | let err: String =>
+          return err
+        end
+      else
+        return "range.end must be an object"
+      end
+    object val is Range
+      fun val start(): Position => start'
+      fun val endd(): Position => endd'
+    end
+
+interface val Position
+  fun val line(): I128
+  fun val character(): I128
+
+primitive ParsePosition
+  fun apply(obj: json.Object val): (Position | String) =>
+    let line' =
+      match try obj("line")? end
+      | let int: I128 =>
+        int
+      else
+        return "position.line must be an integer"
+      end
+    let character' =
+      match try obj("character")? end
+      | let int: I128 =>
+        int
+      else
+        return "position.character must be an integer"
+      end
+    object val is Position
+      fun val line(): I128 => line'
+      fun val character(): I128 => character'
+    end

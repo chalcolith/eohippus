@@ -254,7 +254,7 @@ actor EohippusHandler is Handler
       | let int: I128 =>
         int
       | let str: String val =>
-        str.clone()
+        str
       else
         I128(-1)
       end
@@ -308,6 +308,8 @@ actor EohippusHandler is Handler
         _handle_set_trace(params)
       | "textDocument/didOpen" =>
         _handle_text_document_did_open(params)
+      | "textDocument/didChange" =>
+        _handle_text_document_did_change(params)
       | "textDocument/didClose" =>
         _handle_text_document_did_close(params)
       | "exit" =>
@@ -377,6 +379,22 @@ actor EohippusHandler is Handler
       end
     else
       _log(Warn) and _log.log("textDocument/didOpen params should be an object")
+    end
+
+  fun _handle_text_document_did_change(
+    params_item: (json.Object val | json.Sequence val | None))
+  =>
+    match params_item
+    | let params_obj: json.Object val =>
+      match rpc_data.ParseDidChangeTextDocumentParams(params_obj)
+      | let dctdp: rpc_data.DidChangeTextDocumentParams =>
+        _server.notification_did_change_text_document(dctdp)
+      | let err: String =>
+        _log(Warn) and _log.log("textDocument/didChange: " + err)
+      end
+    else
+      _log(Warn) and _log.log(
+        "textDocument/didChange params should be an object")
     end
 
   fun _handle_text_document_did_close(

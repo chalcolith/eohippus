@@ -303,6 +303,11 @@ class Parser
       else
         return _invalid_char(_index)
       end
+    elseif _ch == '}' then
+      let int = _value_stack.pop()? as I128
+      _add_item(int)?
+      _add_item(_value_stack.pop()? as Object trn^)?
+      _state = _ExpectComma
     else
       return _invalid_char(_index)
     end
@@ -349,6 +354,11 @@ class Parser
       else
         return _invalid_char(_index)
       end
+    elseif _ch == '}' then
+      let int = _value_stack.pop()? as I128
+      _add_item(int)?
+      _add_item(_value_stack.pop()? as Object trn^)?
+      _state = _ExpectComma
     else
       return _invalid_char(_index)
     end
@@ -389,6 +399,11 @@ class Parser
       else
         return _invalid_char(_index)
       end
+    elseif _ch == '}' then
+      let int = _value_stack.pop()? as I128
+      _add_item(int)?
+      _add_item(_value_stack.pop()? as Object trn^)?
+      _state = _ExpectComma
     else
       return _invalid_char(_index)
     end

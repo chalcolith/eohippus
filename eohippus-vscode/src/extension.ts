@@ -40,10 +40,7 @@ export async function activate(context: ExtensionContext) {
 				scheme: 'file',
 				language: 'pony'
 			}
-		],
-		synchronize: {
-			fileEvents: workspace.createFileSystemWatcher('**/*.pony')
-		}
+		]
 	};
 
 	let client = new LanguageClient('eohippus-lsp', 'Eohippus Pony Language Server', serverOptions, clientOptions);

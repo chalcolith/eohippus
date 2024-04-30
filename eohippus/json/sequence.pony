@@ -4,13 +4,8 @@ use ".."
 class box Sequence
   embed _items: Array[Item] = _items.create()
 
-  new create(items: Seq[this->Item] box = Array[this->Item]) =>
+  new create(items: ReadSeq[this->Item] box = Array[this->Item]) =>
     _items.append(items)
-
-  new from_vals(items: Seq[Item val] box) =>
-    for item in items.values() do
-      _items.push(item)
-    end
 
   new from_iter(items: Iterator[this->Item]) =>
     _items.concat(items)

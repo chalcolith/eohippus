@@ -1,6 +1,7 @@
 use "collections"
 use "files"
 use "logger"
+use "time"
 
 use ast = "../ast"
 use json = "../json"
@@ -38,14 +39,19 @@ interface tag Server
   be notification_set_trace(params: rpc_data.SetTraceParams)
   be notification_did_open_text_document(
     params: rpc_data.DidOpenTextDocumentParams)
+  be notification_did_change_text_document(
+    params: rpc_data.DidChangeTextDocumentParams)
   be notification_did_close_text_document(
     params: rpc_data.DidCloseTextDocumentParams)
+  be request_shutdown(message: rpc_data.RequestMessage)
+  be notification_exit()
+
+  be schedule_parse(task_id: USize, canonical_path: String)
+  be start_parse(task_id: USize, canonical_path: String)
   be parse_succeeded(
     task_id: USize,
     canonical_path: String,
     node: ast.NodeWith[ast.SrcFile])
-  be request_shutdown(message: rpc_data.RequestMessage)
-  be notification_exit()
 
 primitive ServerNotConnected
 primitive ServerNotInitialized
@@ -83,6 +89,7 @@ actor EohippusServer is Server
   let _handle_initialize: req.Initialize
   let _handle_shutdown: req.Shutdown
 
+  let _timers: Timers = _timers.create()
   var _next_task_id: USize = 1
 
   new create(
@@ -113,6 +120,11 @@ actor EohippusServer is Server
 
     _handle_initialize = req.Initialize(_log, this)
     _handle_shutdown = req.Shutdown(_log, this)
+
+  fun ref _task_id(): USize =>
+    let id = _next_task_id
+    _next_task_id = _next_task_id + 1
+    id
 
   be set_notify(notify: ServerNotify iso) =>
     _log(Fine) and _log.log("server notify set")
@@ -247,7 +259,11 @@ actor EohippusServer is Server
         end
       else
         let info = SrcFileInfo(
-          _log, this, FileAuth(_env.root), params.textDocument().uri())
+          _log,
+          this,
+          _parser_grammar,
+          FileAuth(_env.root),
+          params.textDocument().uri())
         _src_files_by_client_uri.update(info.client_uri, info)
 
         if
@@ -268,31 +284,27 @@ actor EohippusServer is Server
     match src_file_info
     | let sfi: SrcFileInfo =>
       sfi.is_open_in_client = true
-      sfi.parse_full(
-        _next_task_id,
-        _parser_grammar,
+      sfi.did_open(
+        _task_id(),
+        params.textDocument().version(),
         params.textDocument().text())
-      _next_task_id = _next_task_id + 1
     else
       _log(Error) and _log.log("unable to open " + params.textDocument().uri())
     end
 
-  be parse_succeeded(
-    task_id: USize,
-    canonical_path: String,
-    node: ast.NodeWith[ast.SrcFile])
+  be notification_did_change_text_document(
+    params: rpc_data.DidChangeTextDocumentParams)
   =>
-    _log(Fine) and _log.log(
-      "parse succeeded for task " + task_id.string() + ": " + canonical_path)
+    _log(Fine) and _log.log("notification: textDocument/didChange")
+    let uri = params.textDocument().uri()
     try
-      let info = _src_files_by_canonical_path(canonical_path)?
-      if task_id == info.parse_task_id then
-        info.finish_parse(node)
-      else
-        _log(Fine) and _log.log("parse is out of date for " + canonical_path)
-      end
+      let info = _src_files_by_client_uri(uri)?
+      info.did_change(
+        _task_id(),
+        params.textDocument(),
+        params.contentChanges())
     else
-      _log(Error) and _log.log("no info found for " + canonical_path)
+      _log(Error) and _log.log("no open info found for " + uri)
     end
 
   be notification_did_close_text_document(
@@ -302,7 +314,7 @@ actor EohippusServer is Server
     let uri = params.textDocument().uri()
     try
       let info = _src_files_by_client_uri(uri)?
-      info.is_open_in_client = false
+      info.did_close()
     else
       _log(Error) and _log.log("no info found for " + uri)
     end
@@ -336,4 +348,44 @@ actor EohippusServer is Server
     if close_handler then
       notify_exiting(_exit_code)
       _rpc_handler.close()
+    end
+
+  be schedule_parse(task_id: USize, canonical_path: String) =>
+    let self: Server = this
+    let timer = Timer(
+      object iso is TimerNotify
+        fun ref apply(timer: Timer, count: U64): Bool =>
+          self.start_parse(task_id, canonical_path)
+          false
+      end,
+      500_000_000)
+    _timers(consume timer)
+
+  be start_parse(task_id: USize, canonical_path: String) =>
+    try
+      let info = _src_files_by_canonical_path(canonical_path)?
+      if task_id is info.parse_task_id then
+        _log(Fine) and _log.log(
+          "starting parse for task " + task_id.string() + ": " + canonical_path)
+        info.start_parse(task_id)
+      // else
+      //   _log(Fine) and _log.log(
+      //     "abandon parse for task " + task_id.string() + ": " + canonical_path)
+      end
+    end
+
+  be parse_succeeded(
+    task_id: USize,
+    canonical_path: String,
+    node: ast.NodeWith[ast.SrcFile])
+  =>
+    _log(Fine) and _log.log(
+      "parse succeeded for task " + task_id.string() + ": " + canonical_path)
+    try
+      let info = _src_files_by_canonical_path(canonical_path)?
+      if task_id is info.parse_task_id then
+        info.finish_parse(node)
+      else
+        _log(Fine) and _log.log("parse is out of date for " + canonical_path)
+      end
     end

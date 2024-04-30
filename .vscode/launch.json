@@ -18,6 +18,11 @@
       "console": "internalConsole",
     },
     {
+      "name": "Debug Language Server",
+      "type": "cppvsdbg",
+      "request": "attach"
+    },
+    {
       "name": "Debug Tests (Unix)",
       "type": "cppdbg",
       "request": "launch",

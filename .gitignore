@@ -3,6 +3,7 @@ _corral/
 node_modules/
 _repos/
 .vs/
+out/
 CppProperties.json
 lock.json
 version.pony
