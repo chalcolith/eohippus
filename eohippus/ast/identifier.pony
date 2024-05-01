@@ -13,3 +13,14 @@ class val Identifier is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("string", string))
+
+primitive ParseIdentifier
+  fun apply(obj: json.Object, children: NodeSeq): (Identifier | String) =>
+    let string =
+      match try obj("string")? end
+      | let s: String box =>
+        s
+      else
+        return "Identifier.string must be a string"
+      end
+    Identifier(string.clone())

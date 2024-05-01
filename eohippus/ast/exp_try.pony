@@ -26,3 +26,32 @@ class val ExpTry is NodeData
     | let else_block': NodeWith[Expression] =>
       props.push(("else_block", node.child_ref(else_block')))
     end
+
+primitive ParseExpTry
+  fun apply(obj: json.Object, children: NodeSeq): (ExpTry | String) =>
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpTry.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpTry.body must be an Expression"
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpTry.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpTry(body, else_block)

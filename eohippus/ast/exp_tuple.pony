@@ -17,3 +17,18 @@ class val ExpTuple is NodeData
     if sequences.size() > 0 then
       props.push(("sequences", node.child_refs(sequences)))
     end
+
+primitive ParseExpTuple
+  fun apply(obj: json.Object, children: NodeSeq): (ExpTuple | String) =>
+    let sequences =
+      match ParseNode._get_seq_with[Expression](
+        obj,
+        children,
+        "sequences",
+        "ExpTuple.sequences must be a sequence of Expressions")
+      | let seq: NodeSeqWith[Expression] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    ExpTuple(sequences)

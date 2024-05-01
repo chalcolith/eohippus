@@ -15,7 +15,7 @@ primitive _LiteralActions
     let true_str = ast.Keywords.kwd_true()
     let is_true = string.compare_sub(true_str, true_str.size()) == Equal
 
-    let value = ast.NodeWith[ast.Literal](
+    let value = ast.NodeWith[ast.LiteralBool](
       src_info, _Build.span_and_post(src_info, c, p), ast.LiteralBool(is_true))
     (value, b)
 
@@ -52,7 +52,7 @@ primitive _LiteralActions
         2
       end
     let num: U128 = try str.u128(base)? else 0 end
-    let value = ast.NodeWith[ast.Literal](
+    let value = ast.NodeWith[ast.LiteralInteger](
       src_info,
       _Build.span_and_post(src_info, c, p),
       ast.LiteralInteger(num, kind)
@@ -92,7 +92,7 @@ primitive _LiteralActions
     end
 
     let num: F64 = try str.f64()? else 0.0 end
-    let value = ast.NodeWith[ast.Literal](
+    let value = ast.NodeWith[ast.LiteralFloat](
       src_info,
       _Build.span_and_post(src_info, c, p),
       ast.LiteralFloat(num)
@@ -139,10 +139,10 @@ primitive _LiteralActions
         end
       end
       let src_info = _Build.info(d, r)
-      let value = ast.NodeWith[ast.Literal](
+      let value = ast.NodeWith[ast.LiteralChar](
         src_info,
         _Build.span_and_post(src_info, c, p),
-        ast.LiteralChar(num, ast.CharLiteral)
+        ast.LiteralChar(ast.CharLiteral, num)
         where post_trivia' = p)
       (value, b)
     end
@@ -153,7 +153,7 @@ primitive _LiteralActions
     body: Success,
     c: ast.NodeSeq,
     p: ast.NodeSeqWith[ast.Trivia])
-    : ast.NodeWith[ast.Literal]
+    : ast.NodeWith[ast.LiteralChar]
   =>
     var num: U32 = 0
     var at_start = true
@@ -210,8 +210,8 @@ primitive _LiteralActions
       end
     end
 
-    ast.NodeWith[ast.Literal](
-      _Build.info(data, outer), c, ast.LiteralChar(num, ast.CharEscaped)
+    ast.NodeWith[ast.LiteralChar](
+      _Build.info(data, outer), c, ast.LiteralChar(ast.CharEscaped, num)
       where post_trivia' = p)
 
   fun tag _char_uni(
@@ -220,7 +220,7 @@ primitive _LiteralActions
     body: Success,
     c: ast.NodeSeq,
     p: ast.NodeSeqWith[ast.Trivia])
-    : ast.NodeWith[ast.Literal]
+    : ast.NodeWith[ast.LiteralChar]
   =>
     var num: U32 = 0
     for ch in (body.start + 2).values(body.next) do
@@ -233,8 +233,8 @@ primitive _LiteralActions
       end
     end
 
-    ast.NodeWith[ast.Literal](
-      _Build.info(data, outer), c, ast.LiteralChar(num, ast.CharUnicode)
+    ast.NodeWith[ast.LiteralChar](
+      _Build.info(data, outer), c, ast.LiteralChar(ast.CharUnicode, num)
       where post_trivia' = p)
 
   fun tag _string(
@@ -260,14 +260,17 @@ primitive _LiteralActions
         let indented' = String
         for child in c.values() do
           match child
-          | let ch: ast.NodeWith[ast.Literal] =>
+          | let ch: ast.NodeWith[ast.LiteralChar] =>
             match ch.data()
             | let chd: ast.LiteralChar =>
               indented'.push_utf32(chd.value())
             end
           | let sp: ast.NodeWith[ast.Span] =>
             let si = sp.src_info()
-            indented'.concat(si.start.values(si.next))
+            match (si.start, si.next)
+            | (let s': Loc, let n': Loc) =>
+              indented'.concat(s'.values(n'))
+            end
           end
         end
         indented'
@@ -363,7 +366,7 @@ primitive _LiteralActions
       end
     end
 
-    let value = ast.NodeWith[ast.Literal](
+    let value = ast.NodeWith[ast.LiteralString](
       _Build.info(d, r),
       consume collected_children,
       ast.LiteralString(outdented, kind)

@@ -174,7 +174,7 @@ class SrcFileBuilder
 
     let pt' =
       try
-        _Build.value_with[ast.Literal](b, pt, r)?
+        _Build.value_with[ast.LiteralString](b, pt, r)?
       else
         return _Build.bind_error(d, r, c, b, "SrcFile/UsingPony/LiteralString")
       end

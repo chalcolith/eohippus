@@ -29,3 +29,32 @@ class val ExpArray is NodeData
       props.push(("type", node.child_ref(array_type')))
     end
     props.push(("body", node.child_ref(body)))
+
+primitive ParseExpArray
+  fun apply(obj: json.Object, children: NodeSeq): (ExpArray | String) =>
+    let array_type =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "type",
+        "ExpArray.type must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpArray.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      | None =>
+        return "ExpArray.body must be an Expression"
+      end
+    ExpArray(array_type, body)

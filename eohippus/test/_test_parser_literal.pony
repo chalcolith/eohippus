@@ -186,7 +186,8 @@ class iso _TestParserLiteralFloat is UnitTest
 
     _Assert.test_all(
       h,
-      [ _Assert.test_match(h, rule, setup.data, "123.456e-42", expected_1)
+      [
+        _Assert.test_match(h, rule, setup.data, "123.456e-42", expected_1)
         _Assert.test_match(h, rule, setup.data, "23.45e63", expected_2)
         _Assert.test_match(h, rule, setup.data, "23.45e63 ", expected_2)
         _Assert.test_match(h, rule, setup.data, "345.678", expected_3)

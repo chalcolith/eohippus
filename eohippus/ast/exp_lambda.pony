@@ -85,3 +85,133 @@ class val ExpLambda is NodeData
     | let ref_cap': NodeWith[Keyword] =>
       props.push(("ref_cap", node.child_ref(ref_cap')))
     end
+
+primitive ParseExpLambda
+  fun apply(obj: json.Object, children: NodeSeq): (ExpLambda | String) =>
+    let bare =
+      match try obj("bare")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "ExpLambda.bare must be a boolean"
+      else
+        false
+      end
+    let this_cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "this_cap",
+        "ExpLambda.this_cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "ExpLambda.identifier must be an Identifier",
+        false)
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let type_params =
+      match ParseNode._get_child_with[TypeParams](
+        obj,
+        children,
+        "type_params",
+        "ExpLambda.type_params must be a TypeParams",
+        false)
+      | let node: NodeWith[TypeParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let params =
+      match ParseNode._get_child_with[MethodParams](
+        obj,
+        children,
+        "params",
+        "ExpLambda.params must be a MethodParams")
+      | let node: NodeWith[MethodParams] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpLambda.params must be a MethodParams"
+      end
+    let captures =
+      match ParseNode._get_child_with[MethodParams](
+        obj,
+        children,
+        "captures",
+        "ExpLambda.captures must be a MethodParams",
+        false)
+      | let node: NodeWith[MethodParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let ret_type =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "ret_type",
+        "ExpLambda.ret_type must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let partial =
+      match try obj("partial")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "ExpLambda.partial must be a boolean"
+      else
+        false
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpLambda.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpLambda.body must be an Expression"
+      end
+    let ref_cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "ref_cap",
+        "ExpLambda.ref_cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpLambda(
+      bare,
+      this_cap,
+      identifier,
+      type_params,
+      params,
+      captures,
+      ret_type,
+      partial,
+      body,
+      ref_cap)

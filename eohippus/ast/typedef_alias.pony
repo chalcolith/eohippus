@@ -31,3 +31,45 @@ class val TypedefAlias is NodeData
       props.push(("type_params", node.child_ref(type_params')))
     end
     props.push(("type", node.child_ref(type_type)))
+
+primitive ParseTypedefAlias
+  fun apply(obj: json.Object, children: NodeSeq): (TypedefAlias | String) =>
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "TypedefAlias.identifier must be an Identifier")
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefAlias.identifier must be an Identifier"
+      end
+    let type_params =
+      match ParseNode._get_child_with[TypeParams](
+        obj,
+        children,
+        "type_params",
+        "TypedefAlias.type_params must be a TypeParams",
+        false)
+      | let node: NodeWith[TypeParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let type_type =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "type",
+        "TypedefAlias.type must be a TypeType")
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefAlias.type must be a TypeType"
+      end
+    TypedefAlias(identifier, type_params, type_type)

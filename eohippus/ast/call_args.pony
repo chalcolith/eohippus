@@ -30,3 +30,29 @@ class val CallArgs is NodeData
     if named.size() > 0 then
       props.push(("named", node.child_refs(named)))
     end
+
+primitive ParseCallArgs
+  fun apply(obj: json.Object, children: NodeSeq): (CallArgs | String) =>
+    let positional =
+      match ParseNode._get_seq_with[Expression](
+        obj,
+        children,
+        "positional",
+        "CallArgs.positional must refer to Expressions")
+      | let seq: NodeSeqWith[Expression] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let named =
+      match ParseNode._get_seq_with[Expression](
+        obj,
+        children,
+        "named",
+        "CallArgs.named must refer to Expressions")
+      | let seq: NodeSeqWith[Expression] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    CallArgs(positional, named)

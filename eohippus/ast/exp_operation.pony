@@ -67,3 +67,64 @@ class val ExpOperation is NodeData
     if partial then
       props.push(("partial", partial))
     end
+
+primitive ParseExpOperation
+  fun apply(obj: json.Object, children: NodeSeq): (ExpOperation | String) =>
+    let lhs =
+      match ParseNode._get_child(
+        obj,
+        children,
+        "lhs",
+        "ExpOperation.lhs must be (TypeType | Expression | Identifier)",
+        false)
+      | let tt: NodeWith[TypeType] =>
+        tt
+      | let ex: NodeWith[Expression] =>
+        ex
+      | let id: NodeWith[Identifier] =>
+        id
+      | let err: String =>
+        return err
+      end
+    let op =
+      match ParseNode._get_child(
+        obj,
+        children,
+        "op",
+        "ExpOperation.op must be (Keyword | Token)")
+      | let kw: NodeWith[Keyword] =>
+        kw
+      | let tk: NodeWith[Token] =>
+        tk
+      | let err: String =>
+        return err
+      else
+        return "ExpOperation.op must be (Keyword | Token)"
+      end
+    let rhs =
+      match ParseNode._get_child(
+        obj,
+        children,
+        "rhs",
+        "ExpOperation.rhs must be (TypeType | Expression | Identifier)")
+      | let tt: NodeWith[TypeType] =>
+        tt
+      | let ex: NodeWith[Expression] =>
+        ex
+      | let id: NodeWith[Identifier] =>
+        id
+      | let err: String =>
+        return err
+      else
+        return "ExpOperation.rhs must be (TypeType | Expression | Identifier)"
+      end
+    let partial =
+      match try obj("partial")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "ExpOperation.partial must be a boolean"
+      else
+        false
+      end
+    ExpOperation(lhs, op, rhs, partial)

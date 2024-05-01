@@ -136,12 +136,15 @@ class SyntaxTree
         let lb = Array[parser.Loc]
         let lc = col.MapIs[Node box, (USize, USize)]
 
-        _update_line_info(
-          root,
-          _UpdateLineState(
-            root.src_info().locator, root.src_info().start.segment()),
-          lb,
-          lc)
+        match root.src_info().start
+        | let root_start: parser.Loc =>
+          _update_line_info(
+            root,
+            _UpdateLineState(
+              root.src_info().locator, root_start.segment()),
+            lb,
+            lc)
+        end
 
         (lb, lc)
       end
@@ -155,7 +158,10 @@ class SyntaxTree
     let si = node.src_info()
     if si.locator != state.locator then
       state.locator = si.locator
-      state.segment = si.start.segment()
+      match si.start
+      | let si_start: parser.Loc =>
+        state.segment = si_start.segment()
+      end
       state.line = 0
       state.column = 0
     end
@@ -165,15 +171,24 @@ class SyntaxTree
     match node
     | let eol: NodeWith[Trivia] if eol.data().kind is EndOfLineTrivia =>
       if lb.size() == 0 then
-        lb.push(si.start)
+        match si.start
+        | let si_start: parser.Loc =>
+          lb.push(si_start)
+        end
       end
-      lb.push(si.next)
+      match si.next
+      | let si_next: parser.Loc =>
+        lb.push(si_next)
+      end
       state.line = state.line + 1
       state.column = 0
     else
       if node.children().size() == 0 then
         if lb.size() == 0 then
-          lb.push(si.start)
+          match si.start
+          | let si_start: parser.Loc =>
+            lb.push(si_start)
+          end
         end
         state.column = state.column + si.length()
       end

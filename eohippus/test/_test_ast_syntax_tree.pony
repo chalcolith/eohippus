@@ -4,14 +4,14 @@ use ast = "../ast"
 use json = "../json"
 use parser = "../parser"
 
-primitive _TestSyntaxTree
+primitive _TestAstSyntaxTree
   fun apply(test: PonyTest) =>
-    test(_TestSyntaxTreeLineBeginnings)
-    test(_TestSyntaxTreeLineNumbers)
+    test(_TestAstSyntaxTreeLineBeginnings)
+    test(_TestAstSyntaxTreeLineNumbers)
 
-class iso _TestSyntaxTreeLineBeginnings is UnitTest
-  fun name(): String => "parser/syntax_tree/line_beginnings"
-  fun exclusion_group(): String => "parser/syntax_tree"
+class iso _TestAstSyntaxTreeLineBeginnings is UnitTest
+  fun name(): String => "ast/syntax_tree/line_beginnings"
+  fun exclusion_group(): String => "ast/syntax_tree"
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
@@ -61,9 +61,9 @@ class iso _TestSyntaxTreeLineBeginnings is UnitTest
       })
     h.long_test(2_000_000_000)
 
-class iso _TestSyntaxTreeLineNumbers is UnitTest
-  fun name(): String => "parser/syntax_tree/line_numbers"
-  fun exclusion_group(): String => "parser/syntax_tree"
+class iso _TestAstSyntaxTreeLineNumbers is UnitTest
+  fun name(): String => "ast/syntax_tree/line_numbers"
+  fun exclusion_group(): String => "ast/syntax_tree"
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())

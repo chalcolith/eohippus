@@ -38,3 +38,58 @@ class val ExpFor is NodeData
     | let else_block': NodeWith[Expression] =>
       props.push(("else_block", node.child_ref(else_block')))
     end
+
+primitive ParseExpFor
+  fun apply(obj: json.Object, children: NodeSeq): (ExpFor | String) =>
+    let pattern =
+      match ParseNode._get_child_with[TuplePattern](
+        obj,
+        children,
+        "pattern",
+        "ExpFor.pattern must be a TuplePattern")
+      | let node: NodeWith[TuplePattern] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpFor.pattern must be a TuplePattern"
+      end
+    let sequence =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "sequence",
+        "ExpFor.sequence must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpFor.sequence must be an Expression"
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpFor.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpFor.body must be an Expression"
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpFor.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpFor(pattern, sequence, body, else_block)

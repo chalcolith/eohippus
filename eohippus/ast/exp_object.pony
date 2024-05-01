@@ -34,3 +34,44 @@ class val ExpObject is NodeData
       props.push(("constraint", node.child_ref(constraint')))
     end
     props.push(("members", node.child_ref(members)))
+
+primitive ParseExpObject
+  fun apply(obj: json.Object, children: NodeSeq): (ExpObject | String) =>
+    let cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "cap",
+        "ExpObject.cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let constraint =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "constraint",
+        "ExpObject.constraint must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let members =
+      match ParseNode._get_child_with[TypedefMembers](
+        obj,
+        children,
+        "members",
+        "ExpObject.members must be a TypedefMembers")
+      | let node: NodeWith[TypedefMembers] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpObject.members must be a TypedefMembers"
+      end
+    ExpObject(cap, constraint, members)

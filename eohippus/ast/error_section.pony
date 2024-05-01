@@ -19,3 +19,14 @@ class val ErrorSection is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("message", message))
+
+primitive ParseErrorSection
+  fun apply(obj: json.Object, children: NodeSeq): (ErrorSection | String) =>
+    let message =
+      match try obj("message")? end
+      | let message': String box =>
+        message'
+      else
+        return "ErrorSection.message must be a string"
+      end
+    ErrorSection(message.clone())

@@ -19,7 +19,9 @@ interface val ResponseError
   fun val message(): String val
   fun val data(): (json.Item | None) => None
 
-interface val ResultData
+interface val ResultData is SendData
+
+interface val SendData
   fun val get_json(): json.Item
 
 interface val StaticRegistrationOptions

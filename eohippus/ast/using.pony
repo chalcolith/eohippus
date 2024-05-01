@@ -8,13 +8,13 @@ class val UsingPony is NodeData
   """A `using` statement referencing a Pony package."""
 
   let identifier: (NodeWith[Identifier] | None)
-  let path: NodeWith[Literal]
+  let path: NodeWith[LiteralString]
   let def_true: Bool
   let define: (NodeWith[Identifier] | None)
 
   new val create(
     identifier': (NodeWith[Identifier] | None),
-    path': NodeWith[Literal],
+    path': NodeWith[LiteralString],
     def_true': Bool,
     define': (NodeWith[Identifier] | None))
   =>
@@ -28,7 +28,7 @@ class val UsingPony is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     UsingPony(
       _map_or_none[Identifier](identifier, updates),
-      _map_with[Literal](path, updates),
+      _map_with[LiteralString](path, updates),
       def_true,
       _map_or_none[Identifier](define, updates))
 

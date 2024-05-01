@@ -18,6 +18,22 @@ class val TypeParams is NodeData
       props.push(("params", node.child_refs(params)))
     end
 
+primitive ParseTypeParams
+  fun apply(obj: json.Object, children: NodeSeq): (TypeParams | String) =>
+    let params =
+      match ParseNode._get_seq_with[TypeParam](
+        obj,
+        children,
+        "params",
+        "TypeParams.params must be a sequence of TypeParam",
+        false)
+      | let seq: NodeSeqWith[TypeParam] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    TypeParams(params)
+
 class val TypeParam is NodeData
   let identifier: (NodeWith[Identifier] | None)
   let constraint: (NodeWith[TypeType] | None)
@@ -53,3 +69,43 @@ class val TypeParam is NodeData
     | let initializer': NodeWith[TypeType] =>
       props.push(("initializer", node.child_ref(initializer')))
     end
+
+primitive ParseTypeParam
+  fun apply(obj: json.Object, children: NodeSeq): (TypeParam | String) =>
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "TypeParam.identifier must be an identifier",
+        false)
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let constraint =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "constraint",
+        "TypeParam.constraint must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let initializer =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "initializer",
+        "TypeParam.initializer must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    TypeParam(identifier, constraint, initializer)

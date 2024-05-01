@@ -26,6 +26,35 @@ class val ExpWith is NodeData
     end
     props.push(("body", node.child_ref(body)))
 
+primitive ParseExpWith
+  fun apply(obj: json.Object, children: NodeSeq): (ExpWith | String) =>
+    let elements =
+      match ParseNode._get_seq_with[WithElement](
+        obj,
+        children,
+        "elements",
+        "ExpWith.elements must be a sequence of WithElement",
+        false)
+      | let seq: NodeSeqWith[WithElement] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpWith.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpWith.body must be an Expression"
+      end
+    ExpWith(elements, body)
+
 class val WithElement is NodeData
   """An arm of a `with` expression."""
 
@@ -49,3 +78,33 @@ class val WithElement is NodeData
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("pattern", node.child_ref(pattern)))
     props.push(("body", node.child_ref(body)))
+
+primitive ParseWithElement
+  fun apply(obj: json.Object, children: NodeSeq): (WithElement | String) =>
+    let pattern =
+      match ParseNode._get_child_with[TuplePattern](
+        obj,
+        children,
+        "pattern",
+        "WithElement.pattern must be a TuplePattern")
+      | let node: NodeWith[TuplePattern] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "WithElement.pattern must be a TuplePattern"
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "WithElement.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "WithElement.body must be an Expression"
+      end
+    WithElement(pattern, body)

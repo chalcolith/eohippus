@@ -52,3 +52,68 @@ class val TypeNominal is NodeData
     | let eph': NodeWith[Token] =>
       props.push(("eph", node.child_ref(eph')))
     end
+
+primitive ParseTypeNominal
+  fun apply(obj: json.Object, children: NodeSeq): (TypeNominal | String) =>
+    let lhs =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "lhs",
+        "TypeNominal.lhs must be an Identifier",
+        false)
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let rhs =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "rhs",
+        "TypeNominal.rhs must be an Identifier")
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypeNominal.rhs must be an Identifier"
+      end
+    let params =
+      match ParseNode._get_child_with[TypeParams](
+        obj,
+        children,
+        "params",
+        "TypeNominal.params must be a TypeParams",
+        false)
+      | let node: NodeWith[TypeParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "cap",
+        "TypeNominal.cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let eph =
+      match ParseNode._get_child_with[Token](
+        obj,
+        children,
+        "eph",
+        "TypeNominal.eph must be a Token",
+        false)
+      | let node: NodeWith[Token] =>
+        node
+      | let err: String =>
+        return err
+      end
+    TypeNominal(lhs, rhs, params, cap, eph)

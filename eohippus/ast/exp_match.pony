@@ -33,6 +33,46 @@ class val ExpMatch is NodeData
       props.push(("else_block", node.child_ref(else_block')))
     end
 
+primitive ParseExpMatch
+  fun apply(obj: json.Object, children: NodeSeq): (ExpMatch | String) =>
+    let expression =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "expression",
+        "ExpMatch.expression must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpMatch.expression must be an Expression"
+      end
+    let cases =
+      match ParseNode._get_seq_with[MatchCase](
+        obj,
+        children,
+        "cases",
+        "ExpMatch.cases must be a list of MatchCase")
+      | let seq: NodeSeqWith[MatchCase] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpMatch.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpMatch(expression, cases, else_block)
+
 class val MatchCase is NodeData
   """A case in a `match` expression."""
   let pattern: NodeWith[Expression]
@@ -63,3 +103,45 @@ class val MatchCase is NodeData
       props.push(("condition", node.child_ref(condition')))
     end
     props.push(("body", node.child_ref(body)))
+
+primitive ParseMatchCase
+  fun apply(obj: json.Object, children: NodeSeq): (MatchCase | String) =>
+    let pattern =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "pattern",
+        "MatchCase.pattern must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "MatchCase.pattern must be an Expression"
+      end
+    let condition =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "condition",
+        "MatchCase.condition must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "MatchCase.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "MatchCase.body must be an Expression"
+      end
+    MatchCase(pattern, condition, body)

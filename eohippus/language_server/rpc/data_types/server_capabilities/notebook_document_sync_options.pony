@@ -2,7 +2,7 @@ use json = "../../../../json"
 
 use ".."
 
-interface val NotebookDocumentSyncOptions is ResultData
+interface val NotebookDocumentSyncOptions is SendData
   fun val notebookSelector(): Array[NotebookSelectorData]
   fun val save(): (Bool | None) => None
 
@@ -27,7 +27,7 @@ interface val NotebookDocumentSyncOptions is ResultData
   fun val get_json(): json.Item =>
     json.Object(get_json_props())
 
-interface val NotebookSelectorData is ResultData
+interface val NotebookSelectorData is SendData
   fun val notebook(): (String | NotebookDocumentFilter | None) => None
   fun val cells(): (Array[NotebookCell] | None) => None
 
@@ -59,7 +59,7 @@ interface val NotebookSelectorData is ResultData
       json.Null
     end
 
-interface val NotebookDocumentFilter is ResultData
+interface val NotebookDocumentFilter is SendData
   fun val notebookType(): (String | None) => None
   fun val scheme(): (String | None) => None
   fun val pattern(): (String | None) => None
@@ -84,7 +84,7 @@ interface val NotebookDocumentFilter is ResultData
       json.Null
     end
 
-interface val NotebookCell is ResultData
+interface val NotebookCell is SendData
   fun val language(): String
 
   fun val get_json(): json.Item =>

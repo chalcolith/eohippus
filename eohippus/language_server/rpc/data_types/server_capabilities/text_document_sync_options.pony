@@ -22,7 +22,7 @@ primitive TextDocumentSyncKindJson
       json.Null
     end
 
-interface val TextDocumentSyncOptions is ResultData
+interface val TextDocumentSyncOptions is SendData
   fun val openClose(): (Bool | None) => None
   fun val change(): (TextDocumentSyncKind | None) => None
 

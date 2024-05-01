@@ -17,3 +17,20 @@ class val ExpHash is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("rhs", node.child_ref(rhs)))
+
+primitive ParseExpHash
+  fun apply(obj: json.Object, children: NodeSeq): (ExpHash | String) =>
+    let rhs =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "rhs",
+        "ExpHash.rhs must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpHash.rhs must be an Expression"
+      end
+    ExpHash(rhs)

@@ -61,8 +61,8 @@ interface val ServerCapabilities is ResultData
   //   (Bool | CallHierarchyOptions | CallHierarchyRegistrationOptions | None)
   // =>
   //   None
-  // fun val semanticTokensProvider():
-  //   (SemanticTokensOptions | SemanticTokensRegistrationOptions | None) => None
+  fun val semanticTokensProvider():
+    (SemanticTokensOptions | SemanticTokensRegistrationOptions | None) => None
   // fun val monikerProvider():
   //   (Bool | MonikerOptions | MonikerRegistrationOptions | None) => None
   // fun val typeHierarchyProvider():

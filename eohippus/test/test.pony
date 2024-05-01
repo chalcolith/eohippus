@@ -5,7 +5,12 @@ actor Main is TestList
     PonyTest(env, this)
 
   fun tag tests(test: PonyTest) =>
+    _TestAstParseNode(test)
+    _TestAstSyntaxTree(test)
     _TestJson(test)
+    _TestLanguageServer(test)
+    _TestLanguageServerTcp(test)
+    _TestLinter(test)
     _TestParserExpression(test)
     _TestParserKeyword(test)
     _TestParserLiteral(test)
@@ -13,8 +18,4 @@ actor Main is TestList
     _TestParserTrivia(test)
     _TestParserType(test)
     _TestParserTypedef(test)
-    _TestSyntaxTree(test)
-    _TestLinter(test)
-    _TestLanguageServer(test)
-    _TestLanguageServerTcp(test)
     _TestStringUtil(test)
