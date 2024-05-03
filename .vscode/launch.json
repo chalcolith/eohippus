@@ -20,7 +20,8 @@
     {
       "name": "Debug Language Server",
       "type": "cppvsdbg",
-      "request": "attach"
+      "request": "attach",
+      "processId": "${command:pickProcess}"
     },
     {
       "name": "Debug Tests (Unix)",

@@ -2,14 +2,14 @@ use "files"
 use "logger"
 
 use ast = "../ast"
-use prsr = "../parser"
+use parser = "../parser"
 use rpc_data = "rpc/data_types"
 use ".."
 
 class SrcFileInfo
   let _log: Logger[String]
   let _server: Server
-  let _grammar: prsr.Builder val
+  let _grammar: parser.Builder val
 
   let client_uri: String
   let canonical_file_path: FilePath
@@ -19,14 +19,14 @@ class SrcFileInfo
   var is_parsing: Bool = false
   var parse_task_id: (USize | None) = None
   var segments: Array[String] = []
-  var parser: (prsr.Parser | None) = None
+  var parse: (parser.Parser | None) = None
   var syntax_tree: (ast.SyntaxTree | None) = None
   var line_beginnings: Array[(USize, USize)] = []
 
   new create(
     log: Logger[String],
     server: Server,
-    grammar: prsr.Builder val,
+    grammar: parser.Builder val,
     auth: FileAuth,
     client_uri': String)
   =>
@@ -76,9 +76,9 @@ class SrcFileInfo
           var i: USize = 0
           while i < ((end_segment - start_segment) + 1) do
             segments.delete(start_segment)?
-            match parser
-            | let parser': prsr.Parser =>
-              parser'.remove_segment(start_segment)
+            match parse
+            | let parse': parser.Parser =>
+              parse'.remove_segment(start_segment)
             end
             i = i + 1
           end
@@ -93,34 +93,34 @@ class SrcFileInfo
             let new_chunk': String val = consume new_chunk
 
             segments.insert(start_segment, new_chunk')?
-            match parser
-            | let parser': prsr.Parser =>
-              parser'.insert_segment(start_segment, new_chunk')
+            match parse
+            | let parse': parser.Parser =>
+              parse'.insert_segment(start_segment, new_chunk')
             end
           else
             // otherwise, insert prefix then change then suffix
             var insert_pos = start_segment
             if prefix.size() > 0 then
               segments.insert(insert_pos, prefix)?
-              match parser
-              | let parser': prsr.Parser =>
-                parser'.insert_segment(insert_pos, prefix)
+              match parse
+              | let parse': parser.Parser =>
+                parse'.insert_segment(insert_pos, prefix)
               end
               insert_pos = insert_pos + 1
             end
             if change.text().size() > 0 then
               segments.insert(insert_pos, change.text())?
-              match parser
-              | let parser': prsr.Parser =>
-                parser'.insert_segment(insert_pos, change.text())
+              match parse
+              | let parse': parser.Parser =>
+                parse'.insert_segment(insert_pos, change.text())
               end
               insert_pos = insert_pos + 1
             end
             if suffix.size() > 0 then
               segments.insert(insert_pos, suffix)?
-              match parser
-              | let parser': prsr.Parser =>
-                parser'.insert_segment(insert_pos, suffix)
+              match parse
+              | let parse': parser.Parser =>
+                parse'.insert_segment(insert_pos, suffix)
               end
               insert_pos = insert_pos + 1
             end
@@ -131,15 +131,15 @@ class SrcFileInfo
         // remove all segments and add the new one
         var i: USize = 0
         while i < segments.size() do
-          match parser
-          | let parser': prsr.Parser =>
-            parser'.remove_segment(0)
+          match parse
+          | let parse': parser.Parser =>
+            parse'.remove_segment(0)
           end
           i = i + 1
         end
-        match parser
-        | let parser': prsr.Parser =>
-          parser'.insert_segment(0, change.text())
+        match parse
+        | let parse': parser.Parser =>
+          parse'.insert_segment(0, change.text())
         end
         segments.clear()
         segments.push(change.text())
@@ -265,14 +265,14 @@ class SrcFileInfo
     for segment in segments.values() do
       segments'.push(segment)
     end
-    let parser' = prsr.Parser(consume segments')
-    parser = parser'
-    parser'.parse(
+    let parse' = parser.Parser(consume segments')
+    parse = parse'
+    parse'.parse(
       _grammar.src_file.src_file,
-      prsr.Data(path),
-      {(result: (prsr.Success | prsr.Failure), values: ast.NodeSeq) =>
+      parser.Data(path),
+      {(result: (parser.Success | parser.Failure), values: ast.NodeSeq) =>
         match result
-        | let success: prsr.Success =>
+        | let success: parser.Success =>
           try
             match values(0)?
             | let node: ast.NodeWith[ast.SrcFile] =>
@@ -285,7 +285,7 @@ class SrcFileInfo
             _log(Error) and _log.log(
               "failed to get SrcFile result from parsing " + path)
           end
-        | let failure: prsr.Failure =>
+        | let failure: parser.Failure =>
           _log(Error) and _log.log("failed to parse " + path + ": " +
             failure.get_message())
         end
