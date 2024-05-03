@@ -4,22 +4,38 @@ use p = "promises"
 use ast = "../ast"
 use rules = "rules"
 
-interface Listener
-  fun apply(
+interface tag LinterListener
+  be lint_completed(
+    linter: Linter,
+    task_id: USize,
     tree: ast.SyntaxTree iso,
     issues: ReadSeq[Issue] val,
     errors: ReadSeq[ast.TraverseError] val)
-  fun reject(message: String)
+  =>
+    None
+
+  be fix_completed(
+    linter: Linter,
+    task_id: USize,
+    tree: ast.SyntaxTree iso,
+    issues: ReadSeq[Issue] val,
+    errors: ReadSeq[ast.TraverseError] val)
+  =>
+    None
+
+  be linter_failed(task_id: USize, message: String) => None
 
 actor Linter
   """
-    Provides the ability to lint and fix eoh ASTs.
+    Provides the ability to lint and fix eohippus ASTs.
   """
+  let _listener: LinterListener
   let _config: Config val
   let _rules: Map[String, Rule] val
 
-  new create(config': Config val) =>
+  new create(config': Config val, listener': LinterListener) =>
     _config = config'
+    _listener = listener'
     _rules =
       recover val
         Map[String, Rule]
@@ -27,33 +43,42 @@ actor Linter
             ConfigKey.trim_trailing_whitespace(), rules.TrimTrailingWhitespace)
       end
 
-  be analyze(tree: ast.SyntaxTree iso, listener: Listener val) =>
-    _Analyze(_config, _rules, consume tree, listener)
+  be lint(
+    task_id: USize,
+    tree: ast.SyntaxTree iso)
+  =>
+    _Lint(this, task_id, _config, _rules, consume tree, _listener)
 
   be fix(
+    task_id: USize,
     tree: ast.SyntaxTree iso,
-    issues: ReadSeq[Issue] val,
-    listener: Listener val)
+    issues: ReadSeq[Issue] val)
   =>
-    _Fix(_config, _rules, consume tree, issues, listener)
+    _Fix(this, task_id, _config, _rules, consume tree, issues, _listener)
 
-actor _Analyze
+actor _Lint
+  let _linter: Linter
+  let _task_id: USize
   let _config: Config val
   let _rules: Iterator[Rule]
-  let _listener: Listener val
+  let _listener: LinterListener
 
   new create(
+    linter': Linter,
+    task_id': USize,
     config': Config val,
     rules': Map[String, Rule] val,
     tree': ast.SyntaxTree iso,
-    listener': Listener val)
+    listener': LinterListener)
   =>
+    _linter = linter'
+    _task_id = task_id'
     _config = config'
     _rules = rules'.values()
     _listener = listener'
-    _analyze_next(consume tree', Array[Issue], Array[ast.TraverseError])
+    _lint_next(consume tree', Array[Issue], Array[ast.TraverseError])
 
-  be _analyze_next(
+  be _lint_next(
     tree: ast.SyntaxTree iso,
     issues: Seq[Issue] iso,
     errors: Seq[ast.TraverseError] iso)
@@ -68,26 +93,34 @@ actor _Analyze
             consume tree', consume issues')
           errors.append(errors')
         end
-        _analyze_next(consume tree', consume issues', consume errors)
+        _lint_next(consume tree', consume issues', consume errors)
       else
-        _listener.reject("internal error: analyze overran iterator")
+        _listener.linter_failed(
+          _task_id, "internal error: analyze overran iterator")
       end
     else
-      _listener(consume tree, consume issues, consume errors)
+      _listener.lint_completed(
+        _linter, _task_id, consume tree, consume issues, consume errors)
     end
 
 actor _Fix
+  let _linter: Linter
+  let _task_id: USize
   let _config: Config val
   let _rules: Iterator[Rule]
-  let _listener: Listener val
+  let _listener: LinterListener
 
   new create(
+    linter': Linter,
+    task_id': USize,
     config': Config val,
     rules': Map[String, Rule] val,
     tree': ast.SyntaxTree iso,
     issues': ReadSeq[Issue] val,
-    listener': Listener val)
+    listener': LinterListener)
   =>
+    _linter = linter'
+    _task_id = task_id'
     _config = config'
     _rules = rules'.values()
     _listener = listener'
@@ -109,8 +142,10 @@ actor _Fix
         end
         _fix_next(consume tree', consume issues', consume errors)
       else
-        _listener.reject("internal error: fix overran iterator")
+        _listener.linter_failed(
+          _task_id, "internal error: fix overran iterator")
       end
     else
-      _listener(consume tree, consume issues, consume errors)
+      _listener.fix_completed(
+        _linter, _task_id, consume tree, consume issues, consume errors)
     end
