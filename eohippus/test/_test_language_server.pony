@@ -2,8 +2,8 @@ use "logger"
 use "pony_test"
 
 use json = "../json"
-use ls = "../language_server"
-use rpc = "../language_server/rpc"
+use ls = "../server"
+use rpc = "../server/rpc"
 
 use lsp = "lsp"
 

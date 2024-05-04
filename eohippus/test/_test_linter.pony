@@ -21,8 +21,8 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
         [ " class A  \n  new create() =>\t\n    None " ]
       end
 
-    let listener =
-      object tag is linter.LinterListener
+    let notify =
+      object tag is linter.LinterNotify
         be lint_completed(
           lint: linter.Linter,
           task_id: USize,
@@ -70,7 +70,7 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
                 linter.Config
                   .> update(linter.ConfigKey.trim_trailing_whitespace(), "true")
               end,
-              listener)
+              notify)
             lint.lint(0, ast.SyntaxTree(sf))
           else
             h.fail("result value was not a NodeWith[SrcFile]")
@@ -408,8 +408,8 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
         end
       end
 
-    let listener =
-      object tag is linter.LinterListener
+    let notify =
+      object tag is linter.LinterNotify
         be lint_completed(
           lint: linter.Linter,
           task_id: USize,
@@ -456,7 +456,7 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
         linter.Config .>
           update(linter.ConfigKey.trim_trailing_whitespace(), "true")
       end,
-      listener)
+      notify)
 
     let parse = parser.Parser(source)
     parse.parse(

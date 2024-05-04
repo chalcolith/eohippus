@@ -21,7 +21,7 @@ class _LogFormatter is LogFormatter
 
     fname =
       try
-        let index = USize.from[ISize](fname.rfind("language_server")?)
+        let index = USize.from[ISize](fname.rfind("server")?)
         fname.trim(index + 16)
       else
         try

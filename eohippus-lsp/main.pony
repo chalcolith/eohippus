@@ -2,8 +2,8 @@ use "logger"
 use "net"
 
 use "../eohippus"
-use ls = "../eohippus/language_server"
-use rpc = "../eohippus/language_server/rpc"
+use ls = "../eohippus/server"
+use rpc = "../eohippus/server/rpc"
 
 actor Main
   new create(env: Env) =>

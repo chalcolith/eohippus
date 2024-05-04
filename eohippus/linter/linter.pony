@@ -4,7 +4,7 @@ use p = "promises"
 use ast = "../ast"
 use rules = "rules"
 
-interface tag LinterListener
+interface tag LinterNotify
   be lint_completed(
     linter: Linter,
     task_id: USize,
@@ -29,13 +29,13 @@ actor Linter
   """
     Provides the ability to lint and fix eohippus ASTs.
   """
-  let _listener: LinterListener
+  let _notify: LinterNotify
   let _config: Config val
   let _rules: Map[String, Rule] val
 
-  new create(config': Config val, listener': LinterListener) =>
+  new create(config': Config val, notify': LinterNotify) =>
     _config = config'
-    _listener = listener'
+    _notify = notify'
     _rules =
       recover val
         Map[String, Rule]
@@ -47,21 +47,21 @@ actor Linter
     task_id: USize,
     tree: ast.SyntaxTree iso)
   =>
-    _Lint(this, task_id, _config, _rules, consume tree, _listener)
+    _Lint(this, task_id, _config, _rules, consume tree, _notify)
 
   be fix(
     task_id: USize,
     tree: ast.SyntaxTree iso,
     issues: ReadSeq[Issue] val)
   =>
-    _Fix(this, task_id, _config, _rules, consume tree, issues, _listener)
+    _Fix(this, task_id, _config, _rules, consume tree, issues, _notify)
 
 actor _Lint
   let _linter: Linter
   let _task_id: USize
   let _config: Config val
   let _rules: Iterator[Rule]
-  let _listener: LinterListener
+  let _notify: LinterNotify
 
   new create(
     linter': Linter,
@@ -69,13 +69,13 @@ actor _Lint
     config': Config val,
     rules': Map[String, Rule] val,
     tree': ast.SyntaxTree iso,
-    listener': LinterListener)
+    notify': LinterNotify)
   =>
     _linter = linter'
     _task_id = task_id'
     _config = config'
     _rules = rules'.values()
-    _listener = listener'
+    _notify = notify'
     _lint_next(consume tree', Array[Issue], Array[ast.TraverseError])
 
   be _lint_next(
@@ -95,11 +95,11 @@ actor _Lint
         end
         _lint_next(consume tree', consume issues', consume errors)
       else
-        _listener.linter_failed(
+        _notify.linter_failed(
           _task_id, "internal error: analyze overran iterator")
       end
     else
-      _listener.lint_completed(
+      _notify.lint_completed(
         _linter, _task_id, consume tree, consume issues, consume errors)
     end
 
@@ -108,7 +108,7 @@ actor _Fix
   let _task_id: USize
   let _config: Config val
   let _rules: Iterator[Rule]
-  let _listener: LinterListener
+  let _notify: LinterNotify
 
   new create(
     linter': Linter,
@@ -117,13 +117,13 @@ actor _Fix
     rules': Map[String, Rule] val,
     tree': ast.SyntaxTree iso,
     issues': ReadSeq[Issue] val,
-    listener': LinterListener)
+    notify': LinterNotify)
   =>
     _linter = linter'
     _task_id = task_id'
     _config = config'
     _rules = rules'.values()
-    _listener = listener'
+    _notify = notify'
     _fix_next(consume tree', issues', Array[ast.TraverseError])
 
   be _fix_next(
@@ -142,10 +142,10 @@ actor _Fix
         end
         _fix_next(consume tree', consume issues', consume errors)
       else
-        _listener.linter_failed(
+        _notify.linter_failed(
           _task_id, "internal error: fix overran iterator")
       end
     else
-      _listener.fix_completed(
+      _notify.fix_completed(
         _linter, _task_id, consume tree, consume issues, consume errors)
     end
