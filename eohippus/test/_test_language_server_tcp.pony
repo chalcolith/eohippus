@@ -151,7 +151,8 @@ class iso _TestLanguageServerTcpRequestInitialize is UnitTest
           tcp_listener.dispose()
       end
 
-    let server = ls.EohippusServer(h.env, logger, consume server_notify)
+    let server = ls.EohippusServer(
+      h.env, logger, ls.ServerConfig(None), consume server_notify)
     let handler = rpc.EohippusHandler.from_tcp(
       logger, server, TCPConnectAuth(h.env.root), "", port)
 

@@ -51,7 +51,7 @@ class Initialize
           return (None, None)
         end
 
-      // initialize me
+      // send response
       let server_info' =
         object val is rpc_data.ServerInfo
           fun val name(): String => "Eohippus Pony Language Server"
@@ -84,6 +84,25 @@ class Initialize
           fun val result(): rpc_data.ResultData => result'
         end)
       _server.notify_initializing()
+
+      //
+      match params.workspaceFolders()
+      | let folders: Array[rpc_data.WorkspaceFolder] val =>
+        for folder in folders.values() do
+          _server.open_workspace(folder.name(), folder.uri())
+        end
+      else
+        match params.rootUri()
+        | let uri: rpc_data.DocumentUri =>
+          _server.open_workspace(uri, uri)
+        else
+          match params.rootPath()
+          | let path: String =>
+            _server.open_workspace(path, path)
+          end
+        end
+      end
+
       (ServerInitializing, None)
     else
       _log(Error) and _log.log("initialize request when already initialized!")

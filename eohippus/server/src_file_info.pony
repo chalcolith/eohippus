@@ -9,7 +9,7 @@ use ".."
 class SrcFileInfo
   let _log: Logger[String]
   let _server: Server
-  let _grammar: parser.Builder val
+  let _grammar: parser.RuleNode val
 
   let client_uri: String
   let canonical_file_path: FilePath
@@ -26,7 +26,7 @@ class SrcFileInfo
   new create(
     log: Logger[String],
     server: Server,
-    grammar: parser.Builder val,
+    grammar: parser.RuleNode val,
     auth: FileAuth,
     client_uri': String)
   =>
@@ -268,7 +268,7 @@ class SrcFileInfo
     let parse' = parser.Parser(consume segments')
     parse = parse'
     parse'.parse(
-      _grammar.src_file.src_file,
+      _grammar,
       parser.Data(path),
       {(result: (parser.Success | parser.Failure), values: ast.NodeSeq) =>
         match result

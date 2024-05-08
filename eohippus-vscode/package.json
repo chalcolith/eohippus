@@ -19,6 +19,15 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "configuration": {
+      "title": "Eohippus Pony Tools",
+      "properties": {
+        "eohippus-vscode.ponycExecutablePath": {
+          "type": [ "null", "string" ],
+          "description": "Path to the PonyC executable."
+        }
+      }
+    },
     "languages": [
       {
         "id": "pony",

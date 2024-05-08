@@ -21,11 +21,21 @@ class _LogFormatter is LogFormatter
 
     fname =
       try
-        let index = USize.from[ISize](fname.rfind("server")?)
+        let index = USize.from[ISize](
+          ifdef windows then
+            fname.rfind("eohippus\\server\\")?
+          else
+            fname.rfind("eohippus/server/")?
+          end)
         fname.trim(index + 16)
       else
         try
-          let index = USize.from[ISize](fname.rfind("eohippus")?)
+          let index = USize.from[ISize](
+            ifdef windows then
+              fname.rfind("eohippus\\")?
+            else
+              fname.rfind("eohippus/")?
+            end)
           fname.trim(index + 9)
         else
           fname

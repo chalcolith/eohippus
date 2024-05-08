@@ -4,6 +4,7 @@ primitive _Options
   fun str_stdio(): String => "stdio"
   fun str_socket(): String => "socket"
   fun str_version(): String => "version"
+  fun str_ponyc_executable(): String => "ponycExecutable"
 
   fun apply(env: Env): _CliOptions ? =>
     let spec =
@@ -17,6 +18,9 @@ primitive _Options
               str_socket(), "Communication via socket" where default'="")
             OptionSpec.bool(
               str_version(), "Print the program version" where default'=true)
+            OptionSpec.string(
+              str_ponyc_executable(), "Path of the ponyc executable"
+              where default'="")
           ])?
           .> add_help()?
       end
@@ -45,8 +49,16 @@ type LspCommand is (StdioCommand | SocketCommand | VersionCommand)
 class val _CliOptions
   let command: LspCommand
   let socket_port: String
+  let ponyc_executable: (String | None)
 
   new create(command': Command) =>
+    let ponyc_executable' = command'.option(_Options.str_ponyc_executable())
+      .string()
+    ponyc_executable =
+      if ponyc_executable' != "" then
+        ponyc_executable'
+      end
+
     if command'.option(_Options.str_stdio()).bool() then
       command = StdioCommand
       socket_port = ""

@@ -336,7 +336,7 @@ class val NodeWith[D: NodeData val] is Node
     _ast_type
 
   fun val get_json(lines_and_columns: (LineColumnMap | None) = None)
-    : json.Item
+    : json.Object
   =>
     """Get a JSON representation of the node."""
     let props = [ as (String, json.Item): ("name", name()) ]

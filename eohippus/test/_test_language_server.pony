@@ -57,7 +57,8 @@ class iso _TestLanguageServerNotificationExitBeforeInitialize is UnitTest
           end
       end
 
-    let server = ls.EohippusServer(h.env, logger, consume server_notify)
+    let server = ls.EohippusServer(
+      h.env, logger, ls.ServerConfig(None), consume server_notify)
     let handler = rpc.EohippusHandler.from_streams(
       logger, server, server_stdin, server_stdout)
 
@@ -144,7 +145,8 @@ class iso _TestLanguageServerRequestInitialize is UnitTest
           s.dispose()
       end
 
-    let server = ls.EohippusServer(h.env, logger, consume server_notify)
+    let server = ls.EohippusServer(
+      h.env, logger, ls.ServerConfig(None), consume server_notify)
     let handler = rpc.EohippusHandler.from_streams(
       logger, server, server_stdin, server_stdout)
 

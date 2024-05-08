@@ -4,6 +4,7 @@ node_modules/
 _repos/
 .vs/
 out/
+.eohippus/
 CppProperties.json
 lock.json
 version.pony

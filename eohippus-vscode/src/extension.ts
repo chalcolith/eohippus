@@ -21,12 +21,20 @@ export async function activate(context: ExtensionContext) {
 		}
 	});
 
+	const serverArgs = [];
+	const config = workspace.getConfiguration('eohippus-vscode');
+	let ponycExecutable = config.get<string | null>('ponycExecutablePath');
+	if (ponycExecutable) {
+		serverArgs.push(`--ponycExecutable=${ponycExecutable}`);
+	}
+
 	const serverRunOptions: Executable = {
 		command: serverPath,
 		transport: {
 			kind: TransportKind.socket,
 			port: serverPort
-		}
+		},
+		args: serverArgs
 	};
 
 	const serverOptions: ServerOptions = {

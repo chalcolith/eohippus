@@ -34,13 +34,15 @@ actor Main
           Error, env.err, {(s: String): String => s }, _LogFormatter)
       end
 
+    let config = recover val ls.ServerConfig(options.ponyc_executable) end
+
     match options.command
     | StdioCommand =>
-      let server = ls.EohippusServer(env, logger)
+      let server = ls.EohippusServer(env, logger, config)
       let handler = rpc.EohippusHandler.from_streams(
         logger, server, env.input, env.out)
     | SocketCommand =>
-      let server = ls.EohippusServer(env, logger)
+      let server = ls.EohippusServer(env, logger, config)
       let handler = rpc.EohippusHandler.from_tcp(
         logger, server, TCPConnectAuth(env.root), "", options.socket_port)
     | VersionCommand =>

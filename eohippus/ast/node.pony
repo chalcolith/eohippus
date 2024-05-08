@@ -52,7 +52,8 @@ trait val Node
   fun val ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
-  fun val get_json(lines_and_columns: (LineColumnMap | None) = None): json.Item
+  fun val get_json(lines_and_columns: (LineColumnMap | None) = None)
+    : json.Object
     """Get a JSON representation of the node."""
 
   fun val map[D: NodeData val](seq: NodeSeqWith[D], updates: ChildUpdateMap)
