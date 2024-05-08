@@ -396,7 +396,7 @@ actor EohippusAnalyzer is Analyzer
     match CreateFile(syntax_tree_path)
     | let file: File =>
       file.seek(0)
-      let json = syntax_tree.root.get_json(syntax_tree.lines_and_columns)
+      let json = syntax_tree.root.get_json()
       let json_str =
         ifdef debug then
           json.get_string(true)

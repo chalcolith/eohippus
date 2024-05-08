@@ -335,21 +335,18 @@ class val NodeWith[D: NodeData val] is Node
     """The resolved type of this node, if any."""
     _ast_type
 
-  fun val get_json(lines_and_columns: (LineColumnMap | None) = None)
+  fun val get_json()
     : json.Object
   =>
     """Get a JSON representation of the node."""
     let props = [ as (String, json.Item): ("name", name()) ]
-    match lines_and_columns
-    | let lc: LineColumnMap =>
-      try
-        (let line, let column) = lc(this)?
-        let si = json.Object(
-          [ as (String, json.Item):
-            ("line", I128.from[USize](line))
-            ("column", I128.from[USize](column))])
-        props.push(("src_info", si))
-      end
+    match (_src_info.line, _src_info.column)
+    | (let line: USize, let column: USize) =>
+      let si = json.Object(
+        [ as (String, json.Item):
+          ("line", I128.from[USize](line))
+          ("column", I128.from[USize](column))])
+      props.push(("src_info", si))
     end
     match _annotation
     | let annotation': NodeWith[Annotation] =>
@@ -371,7 +368,7 @@ class val NodeWith[D: NodeData val] is Node
     if _children.size() > 0 then
       let child_json = json.Sequence.from_iter(
         Iter[Node](_children.values()).map[json.Item](
-          {(child) => child.get_json(lines_and_columns)}))
+          {(child) => child.get_json()}))
       props.push(("children", child_json))
     end
     json.Object(props)

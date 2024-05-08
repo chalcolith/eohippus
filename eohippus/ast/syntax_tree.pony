@@ -11,16 +11,37 @@ type Path is per.List[Node]
 type TraverseError is (Node, String)
 
 class SyntaxTree
-  var root: Node val
+  var root: Node
   var line_beginnings: Array[parser.Loc] val
-  var lines_and_columns: LineColumnMap
+  var traverse_errors: ReadSeq[TraverseError] val
 
   new create(root': Node, update_lines: Bool = true) =>
     root = root'
-    line_beginnings = Array[parser.Loc]
-    lines_and_columns = col.MapIs[Node box, (USize, USize)]
     if update_lines then
-      update_line_info()
+      match root.src_info().start
+      | let root_start: parser.Loc =>
+        let visitor = _UpdateLineInfoVisitor(
+          root.src_info().locator, root_start.segment())
+        (let new_root, let errors) =
+          traverse[(USize, USize)](visitor, root)
+        match new_root
+        | let new_root': Node =>
+          root = new_root'
+        end
+        let lb: Array[parser.Loc] trn =
+          Array[parser.Loc](visitor.beginnings.size())
+        for loc in visitor.beginnings.values() do
+          lb.push(loc)
+        end
+        line_beginnings = consume lb
+        traverse_errors = consume errors
+      else
+        line_beginnings = Array[parser.Loc]
+        traverse_errors = Array[TraverseError]
+      end
+    else
+      line_beginnings = Array[parser.Loc]
+      traverse_errors = Array[TraverseError]
     end
 
   fun tag traverse[S](visitor: Visitor[S], node: Node)
@@ -130,75 +151,8 @@ class SyntaxTree
       end
     end
 
-  fun ref update_line_info() =>
-    (line_beginnings, lines_and_columns) =
-      recover val
-        let lb = Array[parser.Loc]
-        let lc = col.MapIs[Node box, (USize, USize)]
-
-        match root.src_info().start
-        | let root_start: parser.Loc =>
-          _update_line_info(
-            root,
-            _UpdateLineState(
-              root.src_info().locator, root_start.segment()),
-            lb,
-            lc)
-        end
-
-        (lb, lc)
-      end
-
-  fun tag _update_line_info(
-    node: Node,
-    state: _UpdateLineState,
-    lb: Array[parser.Loc],
-    lc: col.MapIs[Node box, (USize, USize)])
-  =>
-    let si = node.src_info()
-    if si.locator != state.locator then
-      state.locator = si.locator
-      match si.start
-      | let si_start: parser.Loc =>
-        state.segment = si_start.segment()
-      end
-      state.line = 0
-      state.column = 0
-    end
-
-    lc(node) = (state.line, state.column)
-
-    match node
-    | let eol: NodeWith[Trivia] if eol.data().kind is EndOfLineTrivia =>
-      if lb.size() == 0 then
-        match si.start
-        | let si_start: parser.Loc =>
-          lb.push(si_start)
-        end
-      end
-      match si.next
-      | let si_next: parser.Loc =>
-        lb.push(si_next)
-      end
-      state.line = state.line + 1
-      state.column = 0
-    else
-      if node.children().size() == 0 then
-        if lb.size() == 0 then
-          match si.start
-          | let si_start: parser.Loc =>
-            lb.push(si_start)
-          end
-        end
-        state.column = state.column + si.length()
-      end
-    end
-
-    for child in node.children().values() do
-      _update_line_info(child, state, lb, lc)
-    end
-
-class _UpdateLineState
+class _UpdateLineInfoVisitor is Visitor[(USize, USize)]
+  let beginnings: Array[parser.Loc]
   var locator: parser.Locator
   var segment: parser.Segment
   var line: USize
@@ -208,7 +162,71 @@ class _UpdateLineState
     locator': parser.Locator,
     segment': parser.Segment)
   =>
+    beginnings = Array[parser.Loc]
     locator = locator'
     segment = segment'
     line = 0
     column = 0
+
+  fun ref visit_pre(node: Node, path: Path, errors: Array[TraverseError] iso)
+    : ((USize, USize), Array[TraverseError] iso^)
+  =>
+    let si = node.src_info()
+    if si.locator != locator then
+      locator = si.locator
+      match si.start
+      | let si_start: parser.Loc =>
+        segment = si_start.segment()
+      end
+      line = 0
+      column = 0
+    end
+    let state = (line, column)
+
+    match node
+    | let eol: NodeWith[Trivia] if eol.data().kind is EndOfLineTrivia =>
+      if beginnings.size() == 0 then
+        match si.start
+        | let si_start: parser.Loc =>
+          beginnings.push(si_start)
+        end
+      end
+      match si.next
+      | let si_next: parser.Loc =>
+        beginnings.push(si_next)
+      end
+      line = line + 1
+      column = 0
+    else
+      if node.children().size() == 0 then
+        if beginnings.size() == 0 then
+          match si.start
+          | let si_start: parser.Loc =>
+            beginnings.push(si_start)
+          end
+        end
+        column = column + si.length()
+      end
+    end
+
+    (state, consume errors)
+
+  fun ref visit_post(
+    pre_state: (USize, USize),
+    node: Node,
+    path: Path,
+    errors: Array[TraverseError] iso,
+    new_children: (NodeSeq | None) = None,
+    update_map: (ChildUpdateMap | None) = None)
+    : ((Node | None), Array[TraverseError] iso^)
+  =>
+    (let l, let c) = pre_state
+    let src_info = SrcInfo.from(node.src_info()
+      where line' = l, column' = c)
+
+    let new_node =
+      node.clone(where
+        src_info' = src_info,
+        new_children' = new_children,
+        update_map' = update_map)
+    (new_node, consume errors)

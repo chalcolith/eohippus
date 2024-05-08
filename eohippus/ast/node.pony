@@ -52,7 +52,7 @@ trait val Node
   fun val ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
-  fun val get_json(lines_and_columns: (LineColumnMap | None) = None)
+  fun val get_json()
     : json.Object
     """Get a JSON representation of the node."""
 

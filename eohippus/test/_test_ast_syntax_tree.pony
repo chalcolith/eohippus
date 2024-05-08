@@ -85,28 +85,46 @@ class iso _TestAstSyntaxTreeLineNumbers is UnitTest
             let st = ast.SyntaxTree(v(0)?)
 
             let src_file = st.root as ast.NodeWith[ast.SrcFile]
-            h.assert_eq[USize](
-              0, st.lines_and_columns(src_file)?._1, "starting line")
-            h.assert_eq[USize](
-              0, st.lines_and_columns(src_file)?._2, "starting col")
+            match (src_file.src_info().line, src_file.src_info().column)
+            | (let line: USize, let column: USize) =>
+              h.assert_eq[USize](0, line, "starting line")
+              h.assert_eq[USize](0, column, "starting column")
+            else
+              h.fail("no line or column info for src_file")
+            end
             h.assert_eq[USize](2, src_file.data().type_defs.size(), "# types")
 
             let a = src_file.data().type_defs(0)?
-            h.assert_eq[USize](0, st.lines_and_columns(a)?._1, "A line")
-            h.assert_eq[USize](0, st.lines_and_columns(a)?._2, "A col")
+            match (a.src_info().line, a.src_info().column)
+            | (let line: USize, let column: USize) =>
+              h.assert_eq[USize](0, line, "A line")
+              h.assert_eq[USize](0, column, "A column")
+            else
+              h.fail("no line or column info for a")
+            end
 
             let c = a.data() as ast.TypedefClass
             let m = c.members
               as ast.NodeWith[ast.TypedefMembers]
             let nc = m.data().methods(0)?
             let nc_id = nc.data().identifier
-            h.assert_eq[USize](1, st.lines_and_columns(nc_id)?._1, "nc line")
-            h.assert_eq[USize](6, st.lines_and_columns(nc_id)?._2, "nc col")
+            match (nc_id.src_info().line, nc_id.src_info().column)
+            | (let line: USize, let column: USize) =>
+              h.assert_eq[USize](1, line, "nc_id line")
+              h.assert_eq[USize](6, column, "nc_id column")
+            else
+              h.fail("no line or column info for nc_id")
+            end
 
             let b = src_file.data().type_defs(1)?
             let b_id = (b.data() as ast.TypedefClass).identifier
-            h.assert_eq[USize](2, st.lines_and_columns(b_id)?._1, "B line")
-            h.assert_eq[USize](10, st.lines_and_columns(b_id)?._2, "B col")
+            match (b_id.src_info().line, b_id.src_info().column)
+            | (let line: USize, let column: USize) =>
+              h.assert_eq[USize](2, line, "b_id line")
+              h.assert_eq[USize](10, column, "b_id column")
+            else
+              h.fail("no line or column info in b_id")
+            end
           else
             h.fail("error in parse tree")
           end
