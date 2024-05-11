@@ -1,6 +1,7 @@
 use "files"
 use "logger"
 
+use analyzer = "../analyzer"
 use ast = "../ast"
 use parser = "../parser"
 use rpc_data = "rpc/data_types"
@@ -9,46 +10,55 @@ use ".."
 class SrcFileInfo
   let _log: Logger[String]
   let _server: Server
-  let _grammar: parser.RuleNode val
 
   let client_uri: String
-  let canonical_file_path: FilePath
+  let canonical_path: FilePath
 
-  var is_open_in_client: Bool = false
-  var client_version: (I128 | None) = None
-  var is_parsing: Bool = false
-  var parse_task_id: (USize | None) = None
+  var client_version: I128 = 0
+  var analyze_task_id: USize = 0
   var segments: Array[String] = []
   var parse: (parser.Parser | None) = None
   var syntax_tree: (ast.SyntaxTree | None) = None
   var line_beginnings: Array[(USize, USize)] = []
 
+  var parse_errors: Array[analyzer.AnalyzerError] val = []
+  var lint_errors: Array[analyzer.AnalyzerError] val = []
+  var analyze_errors: Array[analyzer.AnalyzerError] val = []
+
   new create(
     log: Logger[String],
-    server: Server,
-    grammar: parser.RuleNode val,
     auth: FileAuth,
+    server: Server,
     client_uri': String)
   =>
     _log = log
     _server = server
-    _grammar = grammar
     client_uri = client_uri'
-    canonical_file_path = _get_canonical_file_path(auth, client_uri')
+    canonical_path = _get_canonical_path(auth, client_uri')
 
-  fun ref did_open(task_id: USize, version: I128, text: String) =>
-    _log(Fine) and _log.log("starting parse for " + canonical_file_path.path)
+  fun ref did_open(task_id: USize, version: I128, text: String)
+    : parser.Parser
+  =>
+    _log(Fine) and _log.log("starting parse for " + canonical_path.path)
+    analyze_task_id = task_id
     client_version = version
+    syntax_tree = None
     segments.clear()
     segments.push(text)
-    start_parse(task_id)
+    let segments': Array[String] trn = Array[String]
+    for segment in segments.values() do
+      segments'.push(segment)
+    end
+    let parse' = parser.Parser(consume segments', {(s) => _log.log(s) })
+    parse = parse'
+    parse'
 
   fun ref did_change(
     task_id: USize,
     document: rpc_data.VersionedTextDocumentIdentifier,
     changes: Array[rpc_data.TextDocumentContentChangeEvent] val)
   =>
-    _log(Fine) and _log.log("got " + changes.size().string() + " changes")
+    //_log(Fine) and _log.log("got " + changes.size().string() + " changes")
     syntax_tree = None
     for change in changes.values() do
       match change.range()
@@ -146,17 +156,16 @@ class SrcFileInfo
       end
       line_beginnings.clear()
     end
-    // _log(Fine) and _log.log("segments now")
-    // var i: USize = 0
-    // for segment in segments.values() do
-    //   _log(Fine) and _log.log("  " + i.string() + " '" + StringUtil.escape(segment) + "'")
-    //   i = i + 1
-    // end
-    // _build_line_beginnings()
+    _log(Fine) and _log.log("segments now")
+    var i: USize = 0
+    for segment in segments.values() do
+      _log(Fine) and _log.log("  " + i.string() + " '" + StringUtil.escape(segment) + "'")
+      i = i + 1
+    end
+    _build_line_beginnings()
 
     client_version = document.version()
-    parse_task_id = task_id
-    _server.schedule_parse(task_id, canonical_file_path.path)
+    analyze_task_id = task_id
 
   fun ref _get_range_data(range: rpc_data.Range)
     : (USize, USize, USize, USize)
@@ -171,7 +180,7 @@ class SrcFileInfo
     try
       (var seg, var index) = line_beginnings(
         USize.from[I128](range.start().line()))?
-      _log(Fine) and _log.log("  start line " + seg.string() + ":" + index.string())
+      //_log(Fine) and _log.log("  start line " + seg.string() + ":" + index.string())
       start_segment = seg
       start_index = index + USize.from[I128](range.start().character())
       var cur_size = segments(start_segment)?.size()
@@ -182,7 +191,7 @@ class SrcFileInfo
       end
 
       (seg, index) = line_beginnings(USize.from[I128](range.endd().line()))?
-      _log(Fine) and _log.log("  end line  " + seg.string() + ":" + index.string())
+      //_log(Fine) and _log.log("  end line  " + seg.string() + ":" + index.string())
       end_segment = seg
       end_index = index + USize.from[I128](range.endd().character())
       cur_size = segments(end_segment)?.size()
@@ -253,51 +262,7 @@ class SrcFileInfo
     //   i = i + 1
     // end
 
-  fun ref did_close() =>
-    is_open_in_client = false
-
-  fun ref start_parse(task_id: USize) =>
-    is_parsing = true
-    parse_task_id = task_id
-    syntax_tree = None
-    let path = canonical_file_path.path
-    let segments': Array[String] trn = Array[String](segments.size())
-    for segment in segments.values() do
-      segments'.push(segment)
-    end
-    let parse' = parser.Parser(consume segments')
-    parse = parse'
-    parse'.parse(
-      _grammar,
-      parser.Data(path),
-      {(result: (parser.Success | parser.Failure), values: ast.NodeSeq) =>
-        match result
-        | let success: parser.Success =>
-          try
-            match values(0)?
-            | let node: ast.NodeWith[ast.SrcFile] =>
-              _server.parse_succeeded(task_id, path, node)
-            else
-              _log(Error) and _log.log(
-                "parse result was not SrcFile for " + path)
-            end
-          else
-            _log(Error) and _log.log(
-              "failed to get SrcFile result from parsing " + path)
-          end
-        | let failure: parser.Failure =>
-          _log(Error) and _log.log("failed to parse " + path + ": " +
-            failure.get_message())
-        end
-      })
-
-  fun ref finish_parse(node: ast.NodeWith[ast.SrcFile]) =>
-    is_parsing = false
-    syntax_tree = ast.SyntaxTree(node)
-
-  fun tag _get_canonical_file_path(auth: FileAuth, client_uri': String)
-    : FilePath
-  =>
+  fun tag _get_canonical_path(auth: FileAuth, client_uri': String) : FilePath =>
     var path_name = StringUtil.url_decode(
       if client_uri'.compare_sub("file://", 7) == Equal then
         client_uri'.trim(7)

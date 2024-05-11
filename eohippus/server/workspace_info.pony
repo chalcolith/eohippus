@@ -1,6 +1,6 @@
 use analyzer = "../analyzer"
 
-class ServerWorkspace
+class WorkspaceInfo
   let name: String
   let client_uri: String
   let canonical_path: String

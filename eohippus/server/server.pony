@@ -61,11 +61,3 @@ interface tag Server is analyzer.AnalyzerNotify
     task_id: USize,
     canonical_path: String,
     errors: ReadSeq[analyzer.AnalyzerError] val)
-
-  // DEPRECATED
-  be schedule_parse(task_id: USize, canonical_path: String)
-  be start_parse(task_id: USize, canonical_path: String)
-  be parse_succeeded(
-    task_id: USize,
-    canonical_path: String,
-    node: ast.NodeWith[ast.SrcFile])
