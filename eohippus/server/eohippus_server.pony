@@ -5,11 +5,12 @@ use "time"
 
 use analyzer = "../analyzer"
 use ast = "../ast"
+use handlers = "handlers"
+use handle_text_document = "handlers/text_document"
 use json = "../json"
 use parser = "../parser"
-use req = "requests"
 use rpc = "rpc"
-use rpc_data = "rpc/data_types"
+use rpc_data = "rpc/data"
 use ".."
 
 primitive ServerNotConnected
@@ -42,20 +43,15 @@ actor EohippusServer is Server
   let _parser_context: parser.Context
   let _parser_grammar: parser.NamedRule val
 
-  let _workspaces_by_client_uri: Map[String, WorkspaceInfo] =
-    _workspaces_by_client_uri.create()
-  let _workspaces_by_canonical_path: Map[String, WorkspaceInfo] =
-    _workspaces_by_canonical_path.create()
-  let _workspaces_by_analyzer: MapIs[analyzer.Analyzer, WorkspaceInfo] =
-    _workspaces_by_analyzer.create()
+  let _workspaces: Workspaces
+  let _src_files: SrcFiles
 
-  let _src_files_by_client_uri: Map[String, SrcFileInfo] =
-    _src_files_by_client_uri.create()
-  let _src_files_by_canonical_path: Map[String, SrcFileInfo] =
-    _src_files_by_canonical_path.create()
+  let _handle_initialize: handlers.Initialize
+  let _handle_shutdown: handlers.Shutdown
 
-  let _handle_initialize: req.Initialize
-  let _handle_shutdown: req.Shutdown
+  let _handle_text_document_did_open: handle_text_document.DidOpen
+  let _handle_text_document_did_change: handle_text_document.DidChange
+  let _handle_text_document_did_close: handle_text_document.DidClose
 
   var _next_task_id: USize = 1
 
@@ -87,8 +83,17 @@ actor EohippusServer is Server
     _parser_context = parser.Context([])
     _parser_grammar = parser.Builder(_parser_context).src_file.src_file
 
-    _handle_initialize = req.Initialize(_log, this)
-    _handle_shutdown = req.Shutdown(_log, this)
+    _workspaces = Workspaces(_log, this, _parser_grammar)
+    _src_files = SrcFiles
+
+    _handle_initialize = handlers.Initialize(_log, this)
+    _handle_shutdown = handlers.Shutdown(_log, this)
+    _handle_text_document_did_open = handle_text_document.DidOpen(
+      _log, this, _config)
+    _handle_text_document_did_change = handle_text_document.DidChange(
+      _log, _config)
+    _handle_text_document_did_close = handle_text_document.DidClose(
+      _log, _config)
 
   fun ref _get_next_task_id(): USize =>
     let id = _next_task_id
@@ -193,12 +198,12 @@ actor EohippusServer is Server
     _log(Info) and _log.log("server disposed; closing rpc handler")
     _rpc_handler.close()
 
-    for workspace in _workspaces_by_client_uri.values() do
+    for workspace in _workspaces.by_client_uri.values() do
       workspace.analyze.dispose()
     end
-    _workspaces_by_client_uri.clear()
-    _workspaces_by_canonical_path.clear()
-    _workspaces_by_analyzer.clear()
+    _workspaces.by_client_uri.clear()
+    _workspaces.by_canonical_path.clear()
+    _workspaces.by_analyzer.clear()
 
   be exit() =>
     if _state isnt ServerExiting then
@@ -209,15 +214,6 @@ actor EohippusServer is Server
       notify_exiting(_exit_code)
     end
 
-  be request_initialize(
-    message: rpc_data.RequestMessage,
-    params: rpc_data.InitializeParams)
-  =>
-    _handle_request(_handle_initialize(_state, _rpc_handler, message, params))
-
-  be request_shutdown(message: rpc_data.RequestMessage) =>
-    _handle_request(_handle_shutdown(_state, _rpc_handler, message))
-
   fun ref _handle_request(status: ((ServerState | None), (I32 | None))) =>
     match status._1
     | let state: ServerState =>
@@ -227,6 +223,15 @@ actor EohippusServer is Server
     | let exit_code: I32 =>
       _exit_code = exit_code
     end
+
+  be request_initialize(
+    message: rpc_data.RequestMessage,
+    params: rpc_data.InitializeParams)
+  =>
+    _handle_request(_handle_initialize(_state, _rpc_handler, message, params))
+
+  be request_shutdown(message: rpc_data.RequestMessage) =>
+    _handle_request(_handle_shutdown(_state, _rpc_handler, message))
 
   be notification_initialized() =>
     _log(Fine) and _log.log("notification: initialized")
@@ -245,116 +250,32 @@ actor EohippusServer is Server
   be notification_did_open_text_document(
     params: rpc_data.DidOpenTextDocumentParams)
   =>
-    _log(Fine) and _log.log("notification: textDocument/didOpen " +
-      params.textDocument().uri())
-    let src_file_info =
-      if
-        _src_files_by_client_uri.contains(params.textDocument().uri())
-      then
-        try
-          _src_files_by_client_uri(params.textDocument().uri())?
-        end
-      else
-        let info = SrcFileInfo(
-          _log,
-          FileAuth(_env.root),
-          this,
-          params.textDocument().uri())
-        _src_files_by_client_uri.update(info.client_uri, info)
-
-        if
-          _src_files_by_canonical_path.contains(info.canonical_path.path)
-        then
-          try
-            let actual =
-              _src_files_by_canonical_path(info.canonical_path.path)?
-            _src_files_by_client_uri.update(params.textDocument().uri(), actual)
-            actual
-          end
-        else
-          _src_files_by_canonical_path.update(
-            info.canonical_path.path, info)
-          info
-        end
-      end
-    match src_file_info
-    | let sfi: SrcFileInfo =>
-      let task_id = _get_next_task_id()
-      let parse = sfi.did_open(
-        task_id,
-        params.textDocument().version(),
-        params.textDocument().text())
-      let workspace = _get_workspace(sfi.canonical_path.path)
-      workspace.analyze.open_file(task_id, sfi.canonical_path.path, parse)
-    else
-      _log(Error) and _log.log("unable to open " + params.textDocument().uri())
-    end
-
-  fun ref _get_workspace(canonical_path: String): WorkspaceInfo =>
-    for (ws_path, workspace) in _workspaces_by_canonical_path.pairs() do
-      if canonical_path.compare_sub(ws_path, ws_path.size()) is Equal then
-        return workspace
-      end
-    end
-    (let dir, _) = Path.split(canonical_path)
-    _log(Fine) and _log.log("creating ad-hoc workspace for " + dir)
-    let auth = FileAuth(_env.root)
-    let ponyc =
-      match _config.ponyc_executable
-      | let path: String =>
-        FilePath(auth, path)
-      end
-    let analyze = analyzer.EohippusAnalyzer(
-      _log,
-      auth,
-      _parser_grammar,
-      FilePath(auth, dir),
-      None,
-      [],
-      ponyc,
-      None,
-      this)
-    let workspace = WorkspaceInfo(dir, dir, dir, analyze)
-    _workspaces_by_canonical_path.update(dir, workspace)
-    _workspaces_by_analyzer.update(analyze, workspace)
-    workspace
+    _handle_request(_handle_text_document_did_open(
+      FileAuth(_env.root),
+      _workspaces,
+      _src_files,
+      _get_next_task_id(),
+      params))
 
   be notification_did_change_text_document(
     params: rpc_data.DidChangeTextDocumentParams)
   =>
-    _log(Fine) and _log.log("notification: textDocument/didChange")
-    let uri = params.textDocument().uri()
-    try
-      let info = _src_files_by_client_uri(uri)?
-      let task_id = _get_next_task_id()
-      info.did_change(
-        task_id,
-        params.textDocument(),
-        params.contentChanges())
-      let workspace = _get_workspace(info.canonical_path.path)
-      match info.parse
-      | let parse': parser.Parser =>
-        workspace.analyze.update_file(task_id, info.canonical_path.path, parse')
-      end
-    else
-      _log(Error) and _log.log("no open info found for " + uri)
-    end
+    _handle_request(_handle_text_document_did_change(
+      FileAuth(_env.root),
+      _workspaces,
+      _src_files,
+      _get_next_task_id(),
+      params))
 
   be notification_did_close_text_document(
     params: rpc_data.DidCloseTextDocumentParams)
   =>
-    _log(Fine) and _log.log("notification: textDocument/didClose")
-    let uri = params.textDocument().uri()
-    try
-      let info = _src_files_by_client_uri(uri)?
-      let task_id = _get_next_task_id()
-      let workspace = _get_workspace(info.canonical_path.path)
-      workspace.analyze.close_file(task_id, info.canonical_path.path)
-      _src_files_by_client_uri.remove(uri)?
-      _src_files_by_canonical_path.remove(info.canonical_path.path)?
-    else
-      _log(Error) and _log.log("no info found for " + uri)
-    end
+    _handle_request(_handle_text_document_did_close(
+      FileAuth(_env.root),
+      _workspaces,
+      _src_files,
+      _get_next_task_id(),
+      params))
 
   be notification_exit() =>
     _log(Fine) and _log.log("notification: exit")
@@ -389,7 +310,7 @@ actor EohippusServer is Server
 
   be open_workspace(name: String, client_uri: String) =>
     _log(Fine) and _log.log("open workspace " + name + " " + client_uri)
-    if not _workspaces_by_client_uri.contains(client_uri) then
+    if not _workspaces.by_client_uri.contains(client_uri) then
       let canonical_path = _get_canonical_path(client_uri)
       let ponyc_executable =
         match _config.ponyc_executable
@@ -407,9 +328,9 @@ actor EohippusServer is Server
           notify = this)
       let workspace = WorkspaceInfo(
         name, client_uri, canonical_path.path, analyze)
-      _workspaces_by_client_uri.update(client_uri, workspace)
-      _workspaces_by_canonical_path.update(canonical_path.path, workspace)
-      _workspaces_by_analyzer.update(analyze, workspace)
+      _workspaces.by_client_uri.update(client_uri, workspace)
+      _workspaces.by_canonical_path.update(canonical_path.path, workspace)
+      _workspaces.by_analyzer.update(analyze, workspace)
     else
       _log(Warn) and _log.log("workspace " + client_uri + " already open")
     end

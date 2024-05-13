@@ -1,7 +1,7 @@
 use "logger"
 
 use rpc = "../rpc"
-use rpc_data = "../rpc/data_types"
+use rpc_data = "../rpc/data"
 use ".."
 
 class Shutdown

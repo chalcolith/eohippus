@@ -3,8 +3,8 @@ use "net"
 
 use json = "../../json"
 
-use rpc_data = "data_types"
-use c_caps = "data_types/client_capabilities"
+use rpc_data = "data"
+use c_caps = "data/client_capabilities"
 use "../.."
 use ".."
 

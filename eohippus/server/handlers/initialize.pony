@@ -2,9 +2,9 @@ use "logger"
 
 use json = "../../json"
 use rpc = "../rpc"
-use rpc_data = "../rpc/data_types"
-use c_caps = "../rpc/data_types/client_capabilities"
-use s_caps = "../rpc/data_types/server_capabilities"
+use rpc_data = "../rpc/data"
+use c_caps = "../rpc/data/client_capabilities"
+use s_caps = "../rpc/data/server_capabilities"
 use "../.."
 use ".."
 

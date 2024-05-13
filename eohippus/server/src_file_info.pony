@@ -1,10 +1,11 @@
+use "collections"
 use "files"
 use "logger"
 
 use analyzer = "../analyzer"
 use ast = "../ast"
 use parser = "../parser"
-use rpc_data = "rpc/data_types"
+use rpc_data = "rpc/data"
 use ".."
 
 class SrcFileInfo
@@ -39,7 +40,8 @@ class SrcFileInfo
   fun ref did_open(task_id: USize, version: I128, text: String)
     : parser.Parser
   =>
-    _log(Fine) and _log.log("starting parse for " + canonical_path.path)
+    _log(Fine) and _log.log(
+      task_id.string() + ": did open " + canonical_path.path)
     analyze_task_id = task_id
     client_version = version
     syntax_tree = None
@@ -58,7 +60,9 @@ class SrcFileInfo
     document: rpc_data.VersionedTextDocumentIdentifier,
     changes: Array[rpc_data.TextDocumentContentChangeEvent] val)
   =>
-    //_log(Fine) and _log.log("got " + changes.size().string() + " changes")
+    _log(Fine) and _log.log(
+      task_id.string() + ": did change; got " + changes.size().string() +
+      " changes")
     syntax_tree = None
     for change in changes.values() do
       match change.range()
@@ -282,3 +286,9 @@ class SrcFileInfo
       file_path = file_path.canonical()?
     end
     file_path
+
+class SrcFiles
+  let by_client_uri: Map[String, SrcFileInfo]
+    = by_client_uri.create()
+  let by_canonical_path: Map[String, SrcFileInfo]
+    = by_canonical_path.create()

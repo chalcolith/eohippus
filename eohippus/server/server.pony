@@ -1,7 +1,7 @@
 use analyzer = "../analyzer"
 use ast = "../ast"
 use rpc = "rpc"
-use rpc_data = "rpc/data_types"
+use rpc_data = "rpc/data"
 
 interface tag Server is analyzer.AnalyzerNotify
   be set_rpc_handler(rpc_handler: rpc.Handler)
