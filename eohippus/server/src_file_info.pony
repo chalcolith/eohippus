@@ -49,7 +49,7 @@ class SrcFileInfo
     for segment in segments.values() do
       segments'.push(segment)
     end
-    let parse' = parser.Parser(consume segments', {(s) => _log.log(s) })
+    let parse' = parser.Parser(consume segments')
     parse = parse'
     parse'
 
@@ -156,12 +156,12 @@ class SrcFileInfo
       end
       line_beginnings.clear()
     end
-    _log(Fine) and _log.log("segments now")
-    var i: USize = 0
-    for segment in segments.values() do
-      _log(Fine) and _log.log("  " + i.string() + " '" + StringUtil.escape(segment) + "'")
-      i = i + 1
-    end
+    // _log(Fine) and _log.log("segments now")
+    // var i: USize = 0
+    // for segment in segments.values() do
+    //   _log(Fine) and _log.log("  " + i.string() + " '" + StringUtil.escape(segment) + "'")
+    //   i = i + 1
+    // end
     _build_line_beginnings()
 
     client_version = document.version()

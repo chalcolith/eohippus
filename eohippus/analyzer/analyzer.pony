@@ -534,7 +534,7 @@ actor EohippusAnalyzer is Analyzer
       end
 
       _log(Fine) and _log.log(
-        "parsed source file; writing syntax tree for " + canonical_path)
+        task_id.string() + ": parsed; writing syntax tree: " + canonical_path)
       let syntax_tree = recover val ast.SyntaxTree(node) end
       src_file.syntax_tree = syntax_tree
       _write_syntax_tree(src_file, syntax_tree)
@@ -735,10 +735,12 @@ actor EohippusAnalyzer is Analyzer
       src_file.schedule = _schedule(300)
       src_file.is_open = true
       src_file.parse = parse
+      _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
       if needs_queue then
+        _log(Fine) and _log.log(
+          task_id.string() + ": enqueueing as Unknown: " + canonical_path)
         _src_file_queue.push(src_file)
       end
-      // _log(Fine) and _log.log("found in-memory file")
       // _log_queue()
     else
       try
@@ -753,7 +755,8 @@ actor EohippusAnalyzer is Analyzer
         src_file.parse = parse
         _src_files.update(canonical_path, src_file)
         _src_file_queue.push(src_file)
-        // _log(Fine) and _log.log("enqueueing as Unknown: " + canonical_path)
+        _log(Fine) and _log.log(
+          task_id.string() + ": in-memory file not found; creating")
         // _log_queue()
       else
         _log(Error) and _log.log(
