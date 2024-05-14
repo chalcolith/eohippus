@@ -342,11 +342,16 @@ class val NodeWith[D: NodeData val] is Node
     let props = [ as (String, json.Item): ("name", name()) ]
     match (_src_info.line, _src_info.column)
     | (let line: USize, let column: USize) =>
-      let si = json.Object(
+      let si_props =
         [ as (String, json.Item):
           ("line", I128.from[USize](line))
-          ("column", I128.from[USize](column))])
-      props.push(("src_info", si))
+          ("column", I128.from[USize](column))]
+      match (_src_info.next_line, _src_info.next_column)
+      | (let nl: USize, let nc: USize) =>
+        si_props.push(("next_line", I128.from[USize](nl)))
+        si_props.push(("next_column", I128.from[USize](nc)))
+      end
+      props.push(("src_info", json.Object(si_props)))
     end
     match _annotation
     | let annotation': NodeWith[Annotation] =>

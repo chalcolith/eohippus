@@ -21,6 +21,8 @@ class val SrcInfo is Equatable[SrcInfo]
   let next: (parser.Loc | None)
   let line: (USize | None)
   let column: (USize | None)
+  let next_line: (USize | None)
+  let next_column: (USize | None)
   let derived_from: ((SrcDerivation, Node) | None)
 
   new val create(
@@ -29,6 +31,8 @@ class val SrcInfo is Equatable[SrcInfo]
     next': (parser.Loc | None) = None,
     line': (USize | None) = None,
     column': (USize | None) = None,
+    next_line': (USize | None) = None,
+    next_column': (USize | None) = None,
     derived_from': ((SrcDerivation, Node)  | None) = None)
   =>
     locator = locator'
@@ -36,6 +40,8 @@ class val SrcInfo is Equatable[SrcInfo]
     next = next'
     line = line'
     column = column'
+    next_line = next_line'
+    next_column = next_column'
     derived_from = derived_from'
 
   new val from(
@@ -45,6 +51,8 @@ class val SrcInfo is Equatable[SrcInfo]
     next': (parser.Loc | None) = None,
     line': (USize | None) = None,
     column': (USize | None) = None,
+    next_line': (USize | None) = None,
+    next_column': (USize | None) = None,
     derived_from': ((SrcDerivation, Node) | None) = None)
   =>
     locator =
@@ -72,6 +80,16 @@ class val SrcInfo is Equatable[SrcInfo]
       | let n: USize => n
       else orig.column
       end
+    next_line =
+      match next_line'
+      | let n: USize => n
+      else orig.next_line
+      end
+    next_column =
+      match next_column'
+      | let n: USize => n
+      else orig.next_column
+      end
     derived_from =
       match derived_from'
       | (let sd: SrcDerivation, let n: Node) => (sd, n)
@@ -90,7 +108,14 @@ class val SrcInfo is Equatable[SrcInfo]
     end
     match (line, column, other.line, other.column)
     | (let l': USize, let c': USize, let ol': USize, let oc': USize) =>
-      return (l' == ol') and (c' == oc')
+      if (l' == ol') and (c' == oc') then
+        match (next_line, next_column, other.next_line, other.next_column)
+        | (let nl': USize, let nc': USize, let onl': USize, let onc': USize) =>
+          (nl' == onl') and (nc' == onc')
+        else
+          true
+        end
+      end
     end
     false
 

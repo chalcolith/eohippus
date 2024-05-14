@@ -221,8 +221,32 @@ class _UpdateLineInfoVisitor is Visitor[(USize, USize)]
     : ((Node | None), Array[TraverseError] iso^)
   =>
     (let l, let c) = pre_state
+
+    (let nl, let nc) =
+      match new_children
+      | let nc: NodeSeq if nc.size() > 0 =>
+        try
+          let last = nc(nc.size() - 1)?
+          match (last.src_info().next_line, last.src_info().next_column)
+          | (let nl': USize, let nc': USize) =>
+            (nl', nc')
+          else
+            (l, c)
+          end
+        else
+          (l, c)
+        end
+      else
+        match node
+        | let eol: NodeWith[Trivia] if eol.data().kind is EndOfLineTrivia =>
+          (l + 1, 0)
+        else
+          (l, c + node.src_info().length())
+        end
+      end
+
     let src_info = SrcInfo.from(node.src_info()
-      where line' = l, column' = c)
+      where line' = l, column' = c, next_line' = nl, next_column' = nc)
 
     let new_node =
       node.clone(where
