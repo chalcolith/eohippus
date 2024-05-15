@@ -761,8 +761,11 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
             },
             {
               "name": "ErrorSection",
-              "message": "expected either a \"use\" statement or a type definition",
+              "message": "Expected either a \"use\" statement or a type definition",
               "children": [
+                {
+                  "name": "Span"
+                },
                 {
                   "name": "Trivia",
                   "kind": "EndOfLineTrivia",
