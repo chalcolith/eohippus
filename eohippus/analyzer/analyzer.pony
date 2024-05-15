@@ -26,15 +26,20 @@ actor EohippusAnalyzer is Analyzer
   let _grammar: parser.NamedRule val
   let _notify: AnalyzerNotify
 
-  let _src_files: Map[String, SrcFile] = _src_files.create()
-  let _src_file_queue: List[SrcFile] = _src_file_queue.create()
+  let _src_items: Map[String, SrcItem] = _src_items.create()
+  let _src_item_queue: List[SrcItem] = _src_item_queue.create()
+
   var _analysis_task_id: USize = 0
   var _analysis_in_progress: Bool = false
 
-  let _workspace_errors: Array[AnalyzerError] = _workspace_errors.create()
-  let _parse_errors: Array[AnalyzerError] = _parse_errors.create()
-  let _lint_errors: Array[AnalyzerError] = _lint_errors.create()
-  let _analyze_errors: Array[AnalyzerError] = _analyze_errors.create()
+  let _workspace_errors: Map[String, Array[AnalyzerError]] =
+    _workspace_errors.create()
+  let _parse_errors: Map[String, Array[AnalyzerError]] =
+    _parse_errors.create()
+  let _lint_errors: Map[String, Array[AnalyzerError]] =
+    _lint_errors.create()
+  let _analyze_errors: Map[String, Array[AnalyzerError]] =
+    _analyze_errors.create()
 
   var _disposing: Bool = false
 
@@ -73,14 +78,16 @@ actor EohippusAnalyzer is Analyzer
         let info = FileInfo(ws)?
         if not info.directory then
           _log(Error) and _log.log(fp.path + " is not a directory")
-          _workspace_errors.push(AnalyzerError(
-            ws.path, 0, 0, "workspace is not a directory"))
+          _workspace_errors(ws.path) =
+            [ AnalyzerError(
+                ws.path, AnalyzeError, "workspace is not a directory") ]
           _workspace = None
         end
       else
         _log(Error) and _log.log(fp.path + " does not exist")
-        _workspace_errors.push(AnalyzerError(
-          ws.path, 0, 0, "workspace directory does not exist"))
+        _workspace_errors(ws.path) =
+          [ AnalyzerError(
+              ws.path, AnalyzeError, "workspace directory does not exist") ]
         _workspace = None
       end
     end
@@ -105,14 +112,16 @@ actor EohippusAnalyzer is Analyzer
         let info = FileInfo(sp)?
         if not info.directory then
           _log(Error) and _log.log(fp.path + " is not a directory")
-          _workspace_errors.push(AnalyzerError(
-            sp.path, 0, 0, "storage path is not a directory"))
+          _workspace_errors(sp.path) =
+            [ AnalyzerError(
+                sp.path, AnalyzeError, "storage path is not a directory") ]
           _storage_path = None
         end
       else
         _log(Error) and _log.log(fp.path + " unable to stat")
-        _workspace_errors.push(AnalyzerError(
-          sp.path, 0, 0, "unable to stat storage path"))
+        _workspace_errors(sp.path) =
+          [ AnalyzerError(
+              sp.path, AnalyzeError, "unable to stat storage path") ]
         _storage_path = None
       end
     else
@@ -122,29 +131,33 @@ actor EohippusAnalyzer is Analyzer
           let sp = fp.join(".eohippus")?
           if (not sp.exists() and not sp.mkdir()) then
             _log(Error) and _log.log("unable to create " + sp.path)
-            _workspace_errors.push(AnalyzerError(
-              sp.path, 0, 0, "unable to create storage directory"))
+            _workspace_errors(sp.path) =
+              [ AnalyzerError(
+                  sp.path, AnalyzeError, "unable to create storage directory") ]
             _storage_path = None
           else
             try
               let fi = FileInfo(sp)?
               if not fi.directory then
                 _log(Error) and _log.log(sp.path + " is not a directory")
-                _workspace_errors.push(AnalyzerError(
-                  sp.path, 0, 0, "storage path is not a directory"))
+                _workspace_errors(sp.path) =
+                  [ AnalyzerError(
+                      sp.path, AnalyzeError, "storage path is not a directory") ]
               else
                 _storage_path = sp
               end
             else
               _log(Error) and _log.log(sp.path + " unable to stat")
-              _workspace_errors.push(AnalyzerError(
-                sp.path, 0, 0, "unable to stat storage path"))
+              _workspace_errors(sp.path) =
+                [ AnalyzerError(
+                    sp.path, AnalyzeError, "unable to stat storage path") ]
             end
           end
         else
           _log(Error) and _log.log("unable to build storage path")
-          _workspace_errors.push(AnalyzerError(
-            fp.path, 0, 0, "unable to build storage path"))
+          _workspace_errors(fp.path) =
+            [ AnalyzerError(
+                fp.path, AnalyzeError, "unable to build storage path") ]
         end
       end
     end
@@ -170,14 +183,16 @@ actor EohippusAnalyzer is Analyzer
         let info = FileInfo(pe)?
         if not info.file then
           _log(Error) and _log.log(fp.path + " is not a file")
-          _workspace_errors.push(AnalyzerError(
-            pe.path, 0, 0, "ponyc executable is not a file"))
+          _workspace_errors(pe.path) =
+            [ AnalyzerError(
+                pe.path, AnalyzeError, "ponyc executable is not a file") ]
           _ponyc_executable = None
         end
       else
         _log(Error) and _log.log(fp.path + " does not exist")
-        _workspace_errors.push(AnalyzerError(
-          pe.path, 0, 0, "ponyc executable does not exist"))
+        _workspace_errors(pe.path) =
+          [ AnalyzerError(
+              pe.path, AnalyzeError, "ponyc executable does not exist") ]
       end
     end
     match _ponyc_executable
@@ -201,14 +216,16 @@ actor EohippusAnalyzer is Analyzer
         let info = FileInfo(pp)?
         if not info.directory then
           _log(Error) and _log.log(fp.path + " is not a directory")
-          _workspace_errors.push(AnalyzerError(
-            pp.path, 0, 0, "pony packages path is not a directory"))
+          _workspace_errors(pp.path) =
+            [ AnalyzerError(
+                pp.path, AnalyzeError, "pony packages path is not a directory") ]
           _pony_packages_path = None
         end
       else
         _log(Error) and _log.log(fp.path + " does not exist")
-        _workspace_errors.push(AnalyzerError(
-          pp.path, 0, 0, "pony packages path does not exist"))
+        _workspace_errors(pp.path) =
+          [ AnalyzerError(
+              pp.path, AnalyzeError, "pony packages path does not exist") ]
         _pony_packages_path = None
       end
     else
@@ -240,184 +257,208 @@ actor EohippusAnalyzer is Analyzer
       analyze(0, workspace_path.path)
     end
 
-  be _add_parse_error(
-    canonical_path: String,
-    line: USize,
-    column: USize,
-    message: String)
+  fun ref _push_error(
+    errors: Map[String, Array[AnalyzerError]],
+    new_error: AnalyzerError)
   =>
-    _parse_errors.push(AnalyzerError(canonical_path, line, column, message))
+    let arr =
+      match try errors(new_error.canonical_path)? end
+      | let arr': Array[AnalyzerError] =>
+        arr'
+      else
+        let arr' = Array[AnalyzerError]
+        errors(new_error.canonical_path) = arr'
+        arr'
+      end
+    arr.push(new_error)
+
+  fun ref _clear_errors(
+    canonical_path: String,
+    errors: Map[String, Array[AnalyzerError]])
+  =>
     try
-      let src_file = _src_files(canonical_path)?
-      src_file.state = ParseError
-      _log(Fine) and _log.log("enqueing as ParseError: " + canonical_path)
-      _src_file_queue.push(src_file)
+      errors.remove(canonical_path)?
     end
+
+  fun ref _clear_and_push(
+    canonical_path: String,
+    errors: Map[String, Array[AnalyzerError]],
+    new_error: AnalyzerError)
+  =>
+    let arr =
+      match try errors(new_error.canonical_path)? end
+      | let arr': Array[AnalyzerError] =>
+        arr'.clear()
+        arr'
+      else
+        let arr' = Array[AnalyzerError]
+        errors(new_error.canonical_path) = arr'
+        arr'
+      end
+    arr.push(new_error)
 
   be _start_analyze_file(task_id: USize, canonical_path: String) =>
     try
       let storage_prefix = _storage_prefix(canonical_path)?
-      let src_file = SrcFile(canonical_path, storage_prefix)
+      let src_file = SrcItem(canonical_path, storage_prefix)
       src_file.task_id = task_id
-      _src_files.update(canonical_path, src_file)
+      _src_items.update(canonical_path, src_file)
       _log(Fine) and _log.log(
-        task_id.string() + ": enqueueing as Unknown: " + canonical_path +
+        task_id.string() + ": enqueueing as AnalysisStart: " + canonical_path +
         " (" + storage_prefix + ")")
-      _src_file_queue.push(src_file)
+      _src_item_queue.push(src_file)
     else
-      _log(Error) and _log.log(
-        "unable to get storage prefix for " + canonical_path)
+      _log(Error) and _log.log(task_id.string() +
+        ": unable to get storage prefix for " + canonical_path)
     end
 
-  be _process_src_file_queue() =>
-    if _src_file_queue.size() > 0 then
+  fun _collect_errors(
+    errors: Map[String, Array[AnalyzerError]],
+    canonical_path: (String | None) = None)
+    : Array[AnalyzerError] val
+  =>
+    let result: Array[AnalyzerError] trn = Array[AnalyzerError]
+    match canonical_path
+    | let key: String =>
       try
-        let src_file = _src_file_queue.shift()?
-        _process_src_file(src_file)
+        for err in errors(key)?.values() do
+          result.push(err)
+        end
       end
-      _process_src_file_queue()
+    else
+      for key in errors.keys() do
+        try
+          for err in errors(key)?.values() do
+            result.push(err)
+          end
+        end
+      end
+    end
+    consume result
+
+  be _process_src_item_queue() =>
+    if _src_item_queue.size() > 0 then
+      try
+        let src_item = _src_item_queue.shift()?
+        _process_src_item(src_item)
+      end
+      _process_src_item_queue()
     elseif _analysis_in_progress then
-      _log(Fine) and _log.log("analysis finished; notifying")
-
-      let ke: Array[AnalyzerError] trn =
-        Array[AnalyzerError](_workspace_errors.size())
-      for err in _workspace_errors.values() do ke.push(err) end
-
-      let pe: Array[AnalyzerError] trn =
-        Array[AnalyzerError](_parse_errors.size())
-      for err in _parse_errors.values() do pe.push(err) end
-
-      let le: Array[AnalyzerError] trn =
-        Array[AnalyzerError](_lint_errors.size())
-      for err in _lint_errors.values() do le.push(err) end
-
-      let ae: Array[AnalyzerError] trn =
-        Array[AnalyzerError](_analyze_errors.size())
-      for err in _analyze_errors.values() do ae.push(err) end
+      _log(Fine) and _log.log(
+        _analysis_task_id.string() + ": analysis finished; notifying")
 
       _analysis_in_progress = false
       _notify.analyzed_workspace(
         this,
         _analysis_task_id,
-        consume ke,
-        consume pe,
-        consume le,
-        consume ae)
+        _collect_errors(_workspace_errors),
+        _collect_errors(_parse_errors),
+        _collect_errors(_lint_errors),
+        _collect_errors(_analyze_errors))
     end
 
   fun _log_queue() =>
     if _log(Fine) then
       let message: String trn = String
       message.append("queue: [ ")
-      for src_file in _src_file_queue.values() do
-        message.append(src_file.task_id.string())
+      for src_item in _src_item_queue.values() do
+        message.append(src_item.task_id.string())
         message.append(" ")
       end
       message.append("]")
       _log.log(consume message)
     end
 
-  fun ref _process_src_file(src_file: SrcFile) =>
-    match src_file.state
-    | Unknown =>
-      if src_file.is_open then
-        if _is_due(src_file.schedule) then
-          src_file.state = NeedsParse
-          _src_file_queue.push(src_file)
-          // _log(Fine) and _log.log(
-          //   "enqueueing as NeedsParse: " + src_file.canonical_path)
-          // _log_queue()
-        else
-          _src_file_queue.push(src_file)
+  fun ref _process_src_item(src_item: SrcItem) =>
+    match src_item.state
+    | AnalysisStart =>
+      try _workspace_errors.remove(src_item.canonical_path)? end
+      try _parse_errors.remove(src_item.canonical_path)? end
+      try _lint_errors.remove(src_item.canonical_path)? end
+      try _analyze_errors.remove(src_item.canonical_path)? end
+
+      if src_item.is_open then
+        if _is_due(src_item.schedule) then
+          src_item.state = AnalysisNeedsParse
         end
+        _src_item_queue.push(src_item)
       else
-        let src_file_path = FilePath(_auth, src_file.canonical_path)
-        let syntax_tree_path = FilePath(_auth, _syntax_tree_path(src_file))
+        let src_item_path = FilePath(_auth, src_item.canonical_path)
+        let syntax_tree_path = FilePath(_auth, _syntax_tree_path(src_item))
         if syntax_tree_path.exists() then
-          if _source_is_newer(src_file_path, syntax_tree_path) then
-            src_file.state = NeedsParse
-            _src_file_queue.push(src_file)
-            // _log(Fine) and _log.log(
-            //   "enqueueing as NeedsParse: " + src_file.canonical_path)
-            // _log_queue()
+          if _source_is_newer(src_item_path, syntax_tree_path) then
+            src_item.state = AnalysisNeedsParse
+            _src_item_queue.push(src_item)
           else
             _log(Fine) and _log.log(
-              src_file.task_id.string() + ": " + src_file.canonical_path +
+              src_item.task_id.string() + ": " + src_item.canonical_path +
               " is up to date on disk")
-            src_file.state = UpToDate
-            _src_file_queue.push(src_file)
-            // _log_queue()
+            src_item.state = AnalysisUpToDate
+            _src_item_queue.push(src_item)
           end
         else
-          src_file.state = NeedsParse
-          _src_file_queue.push(src_file)
-          // _log(Fine) and _log.log(
-          //   "enqueueing as NeedsParse: " + src_file.canonical_path)
-          // _log_queue()
+          src_item.state = AnalysisNeedsParse
+          _src_item_queue.push(src_item)
         end
       end
-    | NeedsParse =>
-      src_file.state = Parsing
-      _src_file_queue.push(src_file)
-      // _log(Fine) and _log.log(
-      //   "enqueueing as Parsing: " + src_file.canonical_path)
-      // _log_queue()
-      if src_file.is_open then
+    | AnalysisNeedsParse =>
+      src_item.state = AnalysisParsing
+      if src_item.is_open then
         _log(Fine) and _log.log(
-          src_file.task_id.string() + ": parsing in memory " +
-          src_file.canonical_path)
-        _parse_open_file(src_file)
+          src_item.task_id.string() + ": parsing in memory " +
+          src_item.canonical_path)
+        _parse_open_file(src_item)
       else
         _log(Fine) and _log.log(
-          src_file.task_id.string() + ": parsing on disk " +
-          src_file.canonical_path)
-        _parse_src_file(src_file)
+          src_item.task_id.string() + ": parsing on disk " +
+          src_item.canonical_path)
+        _parse_disk_file(src_item)
       end
-    | Parsing =>
-      _src_file_queue.push(src_file)
-    | ParseError =>
+      _src_item_queue.push(src_item)
+    | AnalysisParsing =>
+      _src_item_queue.push(src_item)
+    | AnalysisError =>
       var errors: Array[AnalyzerError] trn = Array[AnalyzerError]
-      errors = _collect_errors(
-        src_file.canonical_path, _workspace_errors, consume errors)
-      errors = _collect_errors(
-        src_file.canonical_path, _parse_errors, consume errors)
+      try
+        for err in _workspace_errors(src_item.canonical_path)?.values() do
+          errors.push(err)
+        end
+      end
+      try
+        for err in _parse_errors(src_item.canonical_path)?.values() do
+          errors.push(err)
+        end
+      end
+      try
+        for err in _lint_errors(src_item.canonical_path)?.values() do
+          errors.push(err)
+        end
+      end
+      try
+        for err in _analyze_errors(src_item.canonical_path)?.values() do
+          errors.push(err)
+        end
+      end
       let errors': Array[AnalyzerError] val = consume errors
       _notify.analyze_failed(
         this,
-        src_file.task_id,
-        src_file.canonical_path,
+        src_item.task_id,
+        src_item.canonical_path,
         errors')
-      try _src_files.remove(src_file.canonical_path)? end
-    | UpToDate =>
-      if src_file.is_open then
+    | AnalysisUpToDate =>
+      if src_item.is_open then
         _log(Fine) and _log.log(
-          src_file.task_id.string() + ": up to date " + src_file.canonical_path)
-        // _log_queue()
-        var pe: Array[AnalyzerError] trn = Array[AnalyzerError]
-        pe = _collect_errors(
-          src_file.canonical_path, _parse_errors, consume pe)
-        let pe': Array[AnalyzerError] val = consume pe
-        var le: Array[AnalyzerError] trn = Array[AnalyzerError]
-        le = _collect_errors(
-          src_file.canonical_path, _lint_errors, consume le)
-        let le': Array[AnalyzerError] val = consume le
-        var ae: Array[AnalyzerError] trn = Array[AnalyzerError]
-        ae = _collect_errors(
-          src_file.canonical_path, _analyze_errors, consume ae)
-        let ae': Array[AnalyzerError] val = consume ae
+          src_item.task_id.string() + ": up to date " + src_item.canonical_path)
+
         _notify.analyzed_file(
           this,
-          src_file.task_id,
-          src_file.canonical_path,
-          src_file.syntax_tree,
+          src_item.task_id,
+          src_item.canonical_path,
+          src_item.syntax_tree,
           None,
-          pe',
-          le',
-          ae')
-      else
-        try
-          _src_files.remove(src_file.canonical_path)?
-        end
+          _collect_errors(_parse_errors, src_item.canonical_path),
+          _collect_errors(_lint_errors, src_item.canonical_path),
+          _collect_errors(_analyze_errors, src_item.canonical_path))
       end
     end
 
@@ -440,20 +481,7 @@ actor EohippusAnalyzer is Analyzer
       nanos > schedule._2
     end
 
-  fun _collect_errors(
-    canonical_path: String,
-    src: Array[AnalyzerError],
-    dest: Array[AnalyzerError] trn)
-    : Array[AnalyzerError] trn^
-  =>
-    for err in src.values() do
-      if err.canonical_path == canonical_path then
-        dest.push(err)
-      end
-    end
-    consume dest
-
-  fun ref _parse_open_file(src_file: SrcFile) =>
+  fun ref _parse_open_file(src_file: SrcItem) =>
     let task_id = src_file.task_id
     let canonical_path = src_file.canonical_path
     match src_file.parse
@@ -464,7 +492,7 @@ actor EohippusAnalyzer is Analyzer
         task_id.string() + ": parse failed for " + canonical_path + "; no data")
     end
 
-  fun ref _parse_src_file(src_file: SrcFile) =>
+  fun ref _parse_disk_file(src_file: SrcItem) =>
     let task_id = src_file.task_id
     let canonical_path = src_file.canonical_path
     match OpenFile(FilePath(_auth, src_file.canonical_path))
@@ -476,12 +504,10 @@ actor EohippusAnalyzer is Analyzer
       _parse(task_id, canonical_path, parse)
     else
       _log(Error) and _log.log("unable to read " + canonical_path)
-      _analyze_errors.push(AnalyzerError(
-        canonical_path, 0, 0, "unable to read file"))
-      src_file.state = ParseError
-      _src_file_queue.push(src_file)
-      // _log(Fine) and _log.log("enqueueing as ParseError: " + canonical_path)
-      // _log_queue()
+      _push_error(_workspace_errors, AnalyzerError(
+        canonical_path, AnalyzeError, "unable to read file"))
+      src_file.state = AnalysisError
+      _src_item_queue.push(src_file)
     end
 
   fun _parse(
@@ -503,21 +529,39 @@ actor EohippusAnalyzer is Analyzer
             else
               _log(Error) and _log.log(
                 canonical_path + ": root node was not SrcFile")
-              self._add_parse_error(
-                canonical_path, 0, 0, "root node was not SrcFile")
+              self._parse_failure(canonical_path, "root node was not SrcFile")
             end
           else
             _log(Error) and _log.log(
               canonical_path + "failed to get SrcFile node")
-            self._add_parse_error(
-              canonical_path, 0, 0, "failed to get SrcFile node")
+            self._parse_failure(canonical_path, "failed to get SrcFile node")
           end
         | let failure: parser.Failure =>
           _log(Error) and _log.log(
             canonical_path + ": " + failure.get_message())
-          self._add_parse_error(canonical_path, 0, 0, failure.get_message())
+          self._parse_failure(canonical_path, failure.get_message())
         end
       })
+
+  fun ref _collect_error_sections(canonical_path: String, node: ast.Node) =>
+    match node
+    | let es: ast.NodeWith[ast.ErrorSection] =>
+      let si = es.src_info()
+      match (si.line, si.column, si.next_line, si.next_column)
+      | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
+        _push_error(_parse_errors, AnalyzerError(
+          canonical_path,
+          AnalyzeError,
+          es.data().message,
+          l,
+          c,
+          nl,
+          nc))
+      end
+    end
+    for child in node.children().values() do
+      _collect_error_sections(canonical_path, child)
+    end
 
   be _parsed_file(
     task_id: USize,
@@ -525,7 +569,7 @@ actor EohippusAnalyzer is Analyzer
     node: ast.NodeWith[ast.SrcFile])
   =>
     try
-      let src_file = _src_files(canonical_path)?
+      let src_file = _src_items(canonical_path)?
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
           "abandoning parse for task_id " + task_id.string() +
@@ -538,15 +582,44 @@ actor EohippusAnalyzer is Analyzer
       let syntax_tree = recover val ast.SyntaxTree(node) end
       src_file.syntax_tree = syntax_tree
       _write_syntax_tree(src_file, syntax_tree)
-      src_file.state = UpToDate
-      // _log(Fine) and _log.log("setting UpToDate: " + canonical_path)
-      // _log_queue()
+
+      _clear_errors(canonical_path, _parse_errors)
+      _collect_error_sections(canonical_path, syntax_tree.root)
+
+      src_file.state = AnalysisUpToDate
     else
       _log(Error) and _log.log("parsed untracked source file " + canonical_path)
     end
 
+  be _parse_failure(
+    canonical_path: String,
+    message: String,
+    line: USize = 0,
+    column: USize = 0,
+    next_line: USize = 0,
+    next_column: USize = 0)
+  =>
+    _push_error(_parse_errors, AnalyzerError(
+      canonical_path,
+      AnalyzeError,
+      message,
+      line,
+      column,
+      next_line,
+      next_column))
+    try
+      let src_file = _src_items(canonical_path)?
+      src_file.state = AnalysisError
+      let error_section = ast.NodeWith[ast.ErrorSection](
+        ast.SrcInfo(canonical_path), [], ast.ErrorSection(message))
+      let node = ast.NodeWith[ast.SrcFile](
+        ast.SrcInfo(canonical_path), [ error_section ], ast.SrcFile(canonical_path, [], [])
+        where error_sections' = [ error_section ])
+      _write_syntax_tree(src_file, ast.SyntaxTree(node, false))
+    end
+
   fun ref _write_syntax_tree(
-    src_file: SrcFile,
+    src_file: SrcItem,
     syntax_tree: ast.SyntaxTree box)
   =>
     let syntax_tree_path = _syntax_tree_path(src_file)
@@ -554,8 +627,8 @@ actor EohippusAnalyzer is Analyzer
     let dir_path = FilePath(_auth, dir)
     if (not dir_path.exists()) and (not dir_path.mkdir()) then
       _log(Error) and _log.log("unable to create directory " + dir_path.path)
-      _workspace_errors.push(AnalyzerError(
-        dir_path.path, 0, 0, "unable to create storage directory"))
+      _push_error(_workspace_errors, AnalyzerError(
+        dir_path.path, AnalyzeError, "unable to create storage directory"))
     end
 
     match CreateFile(FilePath(_auth, syntax_tree_path))
@@ -574,17 +647,21 @@ actor EohippusAnalyzer is Analyzer
         _log(Error) and _log.log(
           src_file.canonical_path + ": unable to write syntax tree file " +
           syntax_tree_path)
-        _workspace_errors.push(AnalyzerError(
-          src_file.canonical_path, 0, 0,
-          "unable to write syntax tree file" + syntax_tree_path))
+        _push_error(_workspace_errors, AnalyzerError(
+          src_file.canonical_path,
+          AnalyzeError,
+          "unable to write syntax tree file" +
+          syntax_tree_path))
       end
     else
       _log(Error) and _log.log(
         src_file.canonical_path + ": unable to create syntax tree file " +
         syntax_tree_path)
-      _workspace_errors.push(AnalyzerError(
-        src_file.canonical_path, 0, 0,
-        "unable to create syntax tree file " + syntax_tree_path))
+      _push_error(_workspace_errors, AnalyzerError(
+        src_file.canonical_path,
+        AnalyzeError,
+        "unable to create syntax tree file " +
+        syntax_tree_path))
     end
 
   fun _storage_prefix(canonical_path: String): String ? =>
@@ -629,7 +706,7 @@ actor EohippusAnalyzer is Analyzer
       return source_nanos > other_nanos
     end
 
-  fun _syntax_tree_path(src_file: SrcFile box): String =>
+  fun _syntax_tree_path(src_file: SrcItem box): String =>
     src_file.storage_prefix + ".syntax.json"
 
   be analyze(task_id: USize, canonical_path: String) =>
@@ -660,7 +737,7 @@ actor EohippusAnalyzer is Analyzer
               end
             end
           })
-        _process_src_file_queue()
+        _process_src_item_queue()
       elseif fi.file then
         (let dir, _) = Path.split(canonical_path)
         analyze(task_id, dir)
@@ -676,49 +753,44 @@ actor EohippusAnalyzer is Analyzer
         task_id,
         canonical_path,
         [ AnalyzerError(
-            canonical_path, 0, 0, "error opening " + canonical_path)
-        ])
+            canonical_path, AnalyzeError, "error opening " + canonical_path) ])
     end
 
   be open_file(task_id: USize, canonical_path: String, parse: parser.Parser) =>
     if _disposing then return end
     _log(Fine) and _log.log(task_id.string() + ": opening " + canonical_path)
     try
-      let src_file = _src_files(canonical_path)?
-      let needs_queue = src_file.state is UpToDate
+      let src_file = _src_items(canonical_path)?
+      let needs_queue =
+        (src_file.state is AnalysisUpToDate) or
+        (src_file.state is AnalysisError)
       src_file.task_id = task_id
-      src_file.state = NeedsParse
+      src_file.state = AnalysisStart
       src_file.schedule = _schedule(0)
       src_file.is_open = true
       src_file.parse = parse
       if needs_queue then
-        _src_file_queue.push(src_file)
+        _src_item_queue.push(src_file)
       end
-      // _log(Fine) and _log.log("found in-memory file; setting NeedsParse")
-      // _log_queue()
     else
       try
         let storage_prefix = _storage_prefix(canonical_path)?
-        let src_file = SrcFile(
-          canonical_path,
-          storage_prefix)
+        let src_file = SrcItem(canonical_path, storage_prefix)
         src_file.task_id = task_id
-        src_file.state = NeedsParse
+        src_file.state = AnalysisStart
         src_file.is_open = true
         src_file.schedule = _schedule(0)
         src_file.parse = parse
-        _src_files.update(canonical_path, src_file)
-        _src_file_queue.push(src_file)
-        // _log(Fine) and _log.log("enqueueing as Unknown: " + canonical_path)
-        // _log_queue()
+        _src_items.update(canonical_path, src_file)
+        _src_item_queue.push(src_file)
       else
         _log(Error) and _log.log(
           task_id.string() + " unable to open " + canonical_path +
-          "; unable to build storage prefix")
+            "; unable to build storage prefix")
         return
       end
     end
-    _process_src_file_queue()
+    _process_src_item_queue()
 
   be update_file(
     task_id: USize,
@@ -728,36 +800,32 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _log(Fine) and _log.log(task_id.string() + ": updating " + canonical_path)
     try
-      let src_file = _src_files(canonical_path)?
-      let needs_queue = src_file.state is UpToDate
+      let src_file = _src_items(canonical_path)?
+      let needs_queue =
+        (src_file.state is AnalysisUpToDate) or
+        (src_file.state is AnalysisError)
       src_file.task_id = task_id
-      src_file.state = Unknown
+      src_file.state = AnalysisStart
       src_file.schedule = _schedule(300)
       src_file.is_open = true
       src_file.parse = parse
       _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
       if needs_queue then
-        _log(Fine) and _log.log(
-          task_id.string() + ": enqueueing as Unknown: " + canonical_path)
-        _src_file_queue.push(src_file)
+        _src_item_queue.push(src_file)
       end
-      // _log_queue()
     else
       try
         let storage_prefix = _storage_prefix(canonical_path)?
-        let src_file = SrcFile(
-          canonical_path,
-          storage_prefix)
+        let src_file = SrcItem(canonical_path, storage_prefix)
         src_file.task_id = task_id
-        src_file.state = Unknown
+        src_file.state = AnalysisStart
         src_file.is_open = true
         src_file.schedule = _schedule(300)
         src_file.parse = parse
-        _src_files.update(canonical_path, src_file)
-        _src_file_queue.push(src_file)
+        _src_items.update(canonical_path, src_file)
+        _src_item_queue.push(src_file)
         _log(Fine) and _log.log(
           task_id.string() + ": in-memory file not found; creating")
-        // _log_queue()
       else
         _log(Error) and _log.log(
           task_id.string() + " unable to update " + canonical_path +
@@ -765,11 +833,11 @@ actor EohippusAnalyzer is Analyzer
         return
       end
     end
-    _process_src_file_queue()
+    _process_src_item_queue()
 
   be close_file(task_id: USize, canonical_path: String) =>
     try
-      let src_file = _src_files(canonical_path)?
+      let src_file = _src_items(canonical_path)?
       src_file.is_open = false
     end
 

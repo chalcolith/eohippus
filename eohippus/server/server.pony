@@ -2,6 +2,7 @@ use analyzer = "../analyzer"
 use ast = "../ast"
 use rpc = "rpc"
 use rpc_data = "rpc/data"
+use c_caps = "rpc/data/client_capabilities"
 
 interface tag Server is analyzer.AnalyzerNotify
   be set_rpc_handler(rpc_handler: rpc.Handler)
@@ -38,12 +39,17 @@ interface tag Server is analyzer.AnalyzerNotify
   be request_shutdown(message: rpc_data.RequestMessage)
   be notification_exit()
 
+  be set_client_data(
+    capabilities: c_caps.ClientCapabilities,
+    workspaceFolders: (Array[rpc_data.WorkspaceFolder] val | None),
+    rootUri: (rpc_data.DocumentUri | None),
+    rootPath: (String | None))
   be open_workspace(name: String, client_uri: String)
 
   be analyzed_workspace(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    package_errors: ReadSeq[analyzer.AnalyzerError] val,
+    workspace_errors: ReadSeq[analyzer.AnalyzerError] val,
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)

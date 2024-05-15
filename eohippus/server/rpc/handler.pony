@@ -44,6 +44,7 @@ interface tag Handler
   be connected()
   be connect_failed()
   be data_received(data: Array[U8] iso)
+  be notify(method: String, params: rpc_data.NotificationParams)
   be respond(msg: rpc_data.ResponseMessage)
   be respond_error(
     msg_id: (I128 | String | None),
@@ -420,10 +421,18 @@ actor EohippusHandler is Handler
         fun val method(): String => "shutdown"
       end)
 
-  be respond(msg: rpc_data.ResponseMessage) =>
+  be notify(method: String, params: rpc_data.NotificationParams) =>
+    _log(Fine) and _log.log("send notification: " + method)
     let props =
       [ as (String, json.Item):
-        ("jsonrpc", msg.jsonrpc()) ]
+        ("jsonrpc", JsonRpc.version())
+        ("method", method)
+        ("params", params.get_json()) ]
+    _write_message(json.Object(props))
+
+  be respond(msg: rpc_data.ResponseMessage) =>
+    _log(Fine) and _log.log("send response: " + msg.id().string())
+    let props = [ as (String, json.Item): ("jsonrpc", msg.jsonrpc()) ]
     match msg.id()
     | let id_item: (I128 | String) =>
       props.push(("id", id_item))
@@ -453,7 +462,7 @@ actor EohippusHandler is Handler
     data: (json.Item val | None) = None)
   =>
     _log(Error) and _log.log(
-      "response: error: " + msg_id.string() + ":" + code.string())
+      "send response: error: " + msg_id.string() + ":" + code.string())
     respond(
       object val is rpc_data.ResponseMessage
         fun val id(): (I128 | String | None) =>
@@ -514,6 +523,9 @@ actor DummyHandler is Handler
 
   be data_received(data: Array[U8] iso) =>
     _log(Warn) and _log.log("handler.data_received(): no handler set")
+
+  be notify(method: String, params: rpc_data.NotificationParams) =>
+    _log(Warn) and _log.log("handler.notiry(): no handler set")
 
   be respond(msg: rpc_data.ResponseMessage) =>
     _log(Warn) and _log.log("handler.respond(): no handler set")

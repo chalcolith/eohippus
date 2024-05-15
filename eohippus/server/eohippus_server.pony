@@ -11,6 +11,7 @@ use json = "../json"
 use parser = "../parser"
 use rpc = "rpc"
 use rpc_data = "rpc/data"
+use c_caps = "rpc/data/client_capabilities"
 use ".."
 
 primitive ServerNotConnected
@@ -42,6 +43,8 @@ actor EohippusServer is Server
 
   let _parser_context: parser.Context
   let _parser_grammar: parser.NamedRule val
+
+  let _client_data: ClientData
 
   let _workspaces: Workspaces
   let _src_files: SrcFiles
@@ -82,6 +85,8 @@ actor EohippusServer is Server
 
     _parser_context = parser.Context([])
     _parser_grammar = parser.Builder(_parser_context).src_file.src_file
+
+    _client_data = ClientData
 
     _workspaces = Workspaces(_log, this, _parser_grammar)
     _src_files = SrcFiles
@@ -239,6 +244,23 @@ actor EohippusServer is Server
     if _state is ServerInitializing then
       _state = ServerInitialized
       notify_initialized()
+
+      match _client_data.workspaceFolders
+      | let folders: Array[rpc_data.WorkspaceFolder] val =>
+        for folder in folders.values() do
+          open_workspace(folder.name(), folder.uri())
+        end
+      else
+        match _client_data.rootUri
+        | let uri: rpc_data.DocumentUri =>
+          open_workspace(uri, uri)
+        else
+          match _client_data.rootPath
+          | let path: String =>
+            open_workspace(path, path)
+          end
+        end
+      end
     else
       _log(Error) and _log.log("initialized notification when not initializing")
     end
@@ -308,6 +330,17 @@ actor EohippusServer is Server
       _rpc_handler.close()
     end
 
+  be set_client_data(
+    capabilities: c_caps.ClientCapabilities,
+    workspaceFolders: (Array[rpc_data.WorkspaceFolder] val | None),
+    rootUri: (rpc_data.DocumentUri | None),
+    rootPath: (String | None))
+  =>
+    _client_data.capabilities = capabilities
+    _client_data.workspaceFolders = workspaceFolders
+    _client_data.rootUri = rootUri
+    _client_data.rootPath = rootPath
+
   be open_workspace(name: String, client_uri: String) =>
     _log(Fine) and _log.log("open workspace " + name + " " + client_uri)
     if not _workspaces.by_client_uri.contains(client_uri) then
@@ -335,15 +368,122 @@ actor EohippusServer is Server
       _log(Warn) and _log.log("workspace " + client_uri + " already open")
     end
 
+  fun _clear_errors(
+    canonical_path: String,
+    dest: Map[String, Array[analyzer.AnalyzerError]])
+  =>
+    try
+      dest(canonical_path)?.clear()
+    end
+
+  fun _add_errors(
+    src: ReadSeq[analyzer.AnalyzerError],
+    dest: Map[String, Array[analyzer.AnalyzerError]])
+  =>
+    for err in src.values() do
+      let arr =
+        try
+          dest(err.canonical_path)?
+        else
+          let arr' = Array[analyzer.AnalyzerError]
+          dest(err.canonical_path) = arr'
+          arr'
+        end
+      arr.push(err)
+    end
+
+  fun _get_range(err: analyzer.AnalyzerError): rpc_data.Range =>
+    object val is rpc_data.Range
+      let _err: analyzer.AnalyzerError = err
+      fun val start(): rpc_data.Position =>
+        object val is rpc_data.Position
+          fun val line(): I128 => I128.from[USize](_err.line)
+          fun val character(): I128 => I128.from[USize](_err.column)
+        end
+      fun val endd(): rpc_data.Position =>
+        object val is rpc_data.Position
+          fun val line(): I128 => I128.from[USize](_err.next_line)
+          fun val character(): I128 => I128.from[USize](_err.next_column)
+        end
+    end
+
+  fun _notify_file_diagnostics(
+    canonical_path: String,
+    errors: Array[analyzer.AnalyzerError])
+  =>
+    let path: String iso = canonical_path.clone() .> replace("\\", "/")
+    let client_uri: String val =
+      "file:///" + StringUtil.url_encode(consume path)
+    let diagnostics: Array[rpc_data.Diagnostic] trn = []
+    for err in errors.values() do
+      let range' = _get_range(err)
+      let severity' =
+        match err.severity
+        | analyzer.AnalyzeError =>
+          rpc_data.DiagnosticError
+        | analyzer.AnalyzeWarning =>
+          rpc_data.DiagnosticWarning
+        | analyzer.AnalyzeInfo =>
+          rpc_data.DiagnosticInformation
+        | analyzer.AnalyzeHint =>
+          rpc_data.DiagnosticHint
+        end
+      let message' = err.message
+      diagnostics.push(
+        object val is rpc_data.Diagnostic
+          fun val range(): rpc_data.Range => range'
+          fun val severity(): rpc_data.DiagnosticSeverity => severity'
+          fun val message(): String => message'
+        end)
+    end
+    let diagnostics': Array[rpc_data.Diagnostic] val =
+      consume diagnostics
+    let params =
+      object val is rpc_data.PublishDiagnosticsParams
+        fun val uri(): String => client_uri
+        fun val diagnostics(): Array[rpc_data.Diagnostic] val =>
+          diagnostics'
+      end
+    _log(Fine) and _log.log("textDocument/publishDiagnostics: " + client_uri +
+      ": " + diagnostics'.size().string() + " diagnostics")
+    _rpc_handler.notify("textDocument/publishDiagnostics", params)
+
+  fun _notify_workspace_diagnostics(
+    errors: Map[String, Array[analyzer.AnalyzerError]])
+  =>
+    var num_sent: USize = 0
+    for canonical_path in errors.keys() do
+      try
+        _notify_file_diagnostics(canonical_path, errors(canonical_path)?)
+      end
+      num_sent = num_sent + 1
+    end
+    _log(Fine) and _log.log(
+      "textDocument/publishDiagnostics: sent " + num_sent.string())
+
   be analyzed_workspace(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    package_errors: ReadSeq[analyzer.AnalyzerError] val,
+    workspace_errors: ReadSeq[analyzer.AnalyzerError] val,
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
     _log(Fine) and _log.log(task_id.string() + ": workspace analyzed")
+
+    match try _workspaces.by_analyzer(analyze)? end
+    | let workspace: WorkspaceInfo =>
+      workspace.errors.clear()
+      _add_errors(workspace_errors, workspace.errors)
+      _add_errors(parse_errors, workspace.errors)
+      _add_errors(lint_errors, workspace.errors)
+      _add_errors(analyze_errors, workspace.errors)
+
+      if _client_data.text_document_publish_diagnostics() then
+        _log(Fine) and _log.log(task_id.string() + ": sending diagnostics")
+        _notify_workspace_diagnostics(workspace.errors)
+      end
+    end
 
   be analyzed_file(
     analyze: analyzer.Analyzer,
@@ -357,6 +497,37 @@ actor EohippusServer is Server
   =>
     _log(Fine) and _log.log(
       task_id.string() + ": file analyzed: " + canonical_path)
+    if parse_errors.size() > 0 then
+      _log(Fine) and _log.log(
+        "  " + parse_errors.size().string() + " parse errors")
+    end
+    if lint_errors.size() > 0 then
+      _log(Fine) and _log.log(
+        "  " + lint_errors.size().string() + " lint errors")
+    end
+    if analyze_errors.size() > 0 then
+      _log(Fine) and _log.log(
+        "  " + analyze_errors.size().string() + " analyze errors")
+    end
+
+    match try _workspaces.by_analyzer(analyze)? end
+    | let workspace: WorkspaceInfo =>
+      _clear_errors(canonical_path, workspace.errors)
+      _add_errors(parse_errors, workspace.errors)
+      _add_errors(lint_errors, workspace.errors)
+      _add_errors(analyze_errors, workspace.errors)
+
+      if _client_data.text_document_publish_diagnostics() then
+        if workspace.errors.contains(canonical_path) then
+          try
+            _log(Fine) and _log.log(
+              task_id.string() + ": sending diagnostics for " + canonical_path)
+            _notify_file_diagnostics(
+              canonical_path, workspace.errors(canonical_path)?)
+          end
+        end
+      end
+    end
 
   be analyze_failed(
     analyze: analyzer.Analyzer,

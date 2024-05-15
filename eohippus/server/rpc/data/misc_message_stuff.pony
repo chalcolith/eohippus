@@ -1,7 +1,17 @@
 use json = "../../../json"
 
+use analyzer = "../../../analyzer"
+use ".."
+
 interface val Message
-  fun val jsonrpc(): String => "2.0"
+  fun val jsonrpc(): String => JsonRpc.version()
+
+interface val Notification is Message
+  fun val method(): String
+  fun val params(): NotificationParams
+
+interface val NotificationParams
+  fun val get_json(): json.Item val
 
 interface val RequestMessage is Message
   fun val id(): (I128 | String val)
@@ -114,9 +124,29 @@ primitive PositionEncodingKindJson
       json.Null
     end
 
+interface val Location
+  fun val uri(): DocumentUri
+  fun val range(): Range
+
+  fun val get_json(): json.Item =>
+    recover val
+      json.Object(
+        [ as (String, json.Item):
+          ("uri", uri())
+          ("range", range().get_json()) ])
+    end
+
 interface val Range
   fun val start(): Position
   fun val endd(): Position
+
+  fun val get_json(): json.Item =>
+    recover val
+      json.Object(
+        [ as (String, json.Item):
+          ("start", start().get_json())
+          ("end", endd().get_json()) ])
+    end
 
 primitive ParseRange
   fun apply(obj: json.Object val): (Range | String) =>
@@ -152,6 +182,14 @@ primitive ParseRange
 interface val Position
   fun val line(): I128
   fun val character(): I128
+
+  fun val get_json(): json.Item =>
+    recover val
+      json.Object(
+        [ as (String, json.Item):
+          ("line", line())
+          ("character", character()) ])
+    end
 
 primitive ParsePosition
   fun apply(obj: json.Object val): (Position | String) =>

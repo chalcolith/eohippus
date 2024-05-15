@@ -22,10 +22,6 @@ class SrcFileInfo
   var syntax_tree: (ast.SyntaxTree | None) = None
   var line_beginnings: Array[(USize, USize)] = []
 
-  var parse_errors: Array[analyzer.AnalyzerError] val = []
-  var lint_errors: Array[analyzer.AnalyzerError] val = []
-  var analyze_errors: Array[analyzer.AnalyzerError] val = []
-
   new create(
     log: Logger[String],
     auth: FileAuth,

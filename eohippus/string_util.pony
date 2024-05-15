@@ -54,6 +54,23 @@ primitive StringUtil
     end
     consume result
 
+  fun url_encode(str: String box): String =>
+    let result: String trn = String
+    for ch in str.values() do
+      if
+        ( (ch >= 'a') and (ch <= 'z') ) or
+        ( (ch >= 'A') and (ch <= 'Z') ) or
+        ( (ch >= '0') and (ch <= '9') ) or
+        ( ch == '/' ) or (ch == ':')
+      then
+        result.push(ch)
+      else
+        result.push('%')
+        result.append(Format.int[U8](ch, FormatHexBare where prec = 2))
+      end
+    end
+    consume result
+
   fun url_decode(str: String): String =>
     let result: String trn = String
     var i: USize = 0

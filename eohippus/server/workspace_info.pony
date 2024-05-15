@@ -11,9 +11,7 @@ class WorkspaceInfo
   let canonical_path: String
   let analyze: analyzer.Analyzer
 
-  let parse_errors: Array[analyzer.AnalyzerError] = []
-  let lint_errors: Array[analyzer.AnalyzerError] = []
-  let analyze_errors: Array[analyzer.AnalyzerError] = []
+  let errors: Map[String, Array[analyzer.AnalyzerError]] = errors.create()
 
   new create(
     name': String,
