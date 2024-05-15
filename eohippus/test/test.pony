@@ -19,3 +19,4 @@ actor Main is TestList
     _TestParserType(test)
     _TestParserTypedef(test)
     _TestStringUtil(test)
+    _TestQueue(test)

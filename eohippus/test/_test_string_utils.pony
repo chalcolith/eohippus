@@ -8,7 +8,7 @@ primitive _TestStringUtil
 
 class iso _TestStringUtilUrlDecode is UnitTest
   fun name(): String => "string_util/url_decode"
-  fun exclusion_group(): String => "string_util"
+  fun exclusion_group(): String => "utils"
 
   fun apply(h: TestHelper) =>
     let url = "file:///c%3A/one/two"

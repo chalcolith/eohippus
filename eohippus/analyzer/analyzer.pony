@@ -5,6 +5,7 @@ use "time"
 
 use ast = "../ast"
 use parser = "../parser"
+use ".."
 
 interface tag Analyzer
   be open_file(task_id: USize, canonical_path: String, parse: parser.Parser)
@@ -27,7 +28,7 @@ actor EohippusAnalyzer is Analyzer
   let _notify: AnalyzerNotify
 
   let _src_items: Map[String, SrcItem] = _src_items.create()
-  let _src_item_queue: List[SrcItem] = _src_item_queue.create()
+  let _src_item_queue: Queue[SrcItem] = _src_item_queue.create()
 
   var _analysis_task_id: USize = 0
   var _analysis_in_progress: Bool = false
@@ -355,18 +356,6 @@ actor EohippusAnalyzer is Analyzer
         _collect_errors(_parse_errors),
         _collect_errors(_lint_errors),
         _collect_errors(_analyze_errors))
-    end
-
-  fun _log_queue() =>
-    if _log(Fine) then
-      let message: String trn = String
-      message.append("queue: [ ")
-      for src_item in _src_item_queue.values() do
-        message.append(src_item.task_id.string())
-        message.append(" ")
-      end
-      message.append("]")
-      _log.log(consume message)
     end
 
   fun ref _process_src_item(src_item: SrcItem) =>
