@@ -65,12 +65,7 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
           try
             let sf = v(0)? as ast.NodeWith[ast.SrcFile]
 
-            let lint = linter.Linter(
-              recover val
-                linter.Config
-                  .> update(linter.ConfigKey.trim_trailing_whitespace(), "true")
-              end,
-              notify)
+            let lint = linter.Linter(linter.EditorConfig.default(), notify)
             lint.lint(0, ast.SyntaxTree(sf))
           else
             h.fail("result value was not a NodeWith[SrcFile]")
@@ -450,13 +445,7 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           h.complete(false)
       end
 
-    let lint = linter.Linter(
-      recover val
-        linter.Config .>
-          update(linter.ConfigKey.trim_trailing_whitespace(), "true")
-      end,
-      notify)
-
+    let lint = linter.Linter(linter.EditorConfig.default(), notify)
     let parse = parser.Parser(source)
     parse.parse(
       setup.builder.src_file.src_file,

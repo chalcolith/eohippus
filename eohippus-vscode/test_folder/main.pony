@@ -16,7 +16,7 @@ actor Main
       foo
     end
 
-    let y = 3.14e-12.3
+    let y = 3.14e-12 + a
     let z = 0x1ef_dec + false
     let b = 0b1000_101_1
 
