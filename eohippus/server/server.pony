@@ -1,5 +1,6 @@
 use analyzer = "../analyzer"
 use ast = "../ast"
+use parser = "../parser"
 use rpc = "rpc"
 use rpc_data = "rpc/data"
 use c_caps = "rpc/data/client_capabilities"
@@ -46,6 +47,13 @@ interface tag Server is analyzer.AnalyzerNotify
     rootPath: (String | None))
   be open_workspace(name: String, client_uri: String)
 
+  be parsed_file(
+      analyze: analyzer.Analyzer,
+      task_id: USize,
+      canonical_name: String,
+      syntax_tree: ast.Node,
+      line_beginnings: ReadSeq[parser.Loc] val)
+
   be analyzed_workspace(
     analyze: analyzer.Analyzer,
     task_id: USize,
@@ -57,7 +65,7 @@ interface tag Server is analyzer.AnalyzerNotify
     analyze: analyzer.Analyzer,
     task_id: USize,
     canonical_path: String,
-    syntax_tree: (ast.SyntaxTree val | None),
+    syntax_tree: (ast.Node | None),
     file_scope: (analyzer.SrcFileScope | None),
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,

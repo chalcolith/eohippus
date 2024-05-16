@@ -22,18 +22,11 @@ actor Linter
             ConfigKey.trim_trailing_whitespace(), rules.TrimTrailingWhitespace)
       end
 
-  be lint(
-    task_id: USize,
-    tree: ast.SyntaxTree iso)
-  =>
-    _Lint(this, task_id, _config, _rules, consume tree, _notify)
+  be lint(task_id: USize, tree: ast.Node) =>
+    _Lint(this, task_id, _config, _rules, tree, _notify)
 
-  be fix(
-    task_id: USize,
-    tree: ast.SyntaxTree iso,
-    issues: ReadSeq[Issue] val)
-  =>
-    _Fix(this, task_id, _config, _rules, consume tree, issues, _notify)
+  be fix(task_id: USize, tree: ast.Node, issues: ReadSeq[Issue] val) =>
+    _Fix(this, task_id, _config, _rules, tree, issues, _notify)
 
 actor _Lint
   let _linter: Linter
@@ -47,7 +40,7 @@ actor _Lint
     task_id': USize,
     config': Config val,
     rules': Map[String, Rule] val,
-    tree': ast.SyntaxTree iso,
+    tree': ast.Node,
     notify': LinterNotify)
   =>
     _linter = linter'
@@ -55,31 +48,30 @@ actor _Lint
     _config = config'
     _rules = rules'.values()
     _notify = notify'
-    _lint_next(consume tree', Array[Issue], Array[ast.TraverseError])
+    _lint_next(tree', Array[Issue], Array[ast.TraverseError])
 
   be _lint_next(
-    tree: ast.SyntaxTree iso,
+    tree: ast.Node,
     issues: Seq[Issue] iso,
     errors: Seq[ast.TraverseError] iso)
   =>
     if _rules.has_next() then
       try
         let rule = _rules.next()?
-        var tree': ast.SyntaxTree iso = consume tree
+        var tree' = tree
         var issues': Seq[Issue] iso = consume issues
         if rule.should_apply(_config) then
-          (tree', issues', let errors') = rule.analyze(
-            consume tree', consume issues')
+          (tree', issues', let errors') = rule.analyze(tree', consume issues')
           errors.append(errors')
         end
-        _lint_next(consume tree', consume issues', consume errors)
+        _lint_next(tree', consume issues', consume errors)
       else
         _notify.linter_failed(
           _task_id, "internal error: analyze overran iterator")
       end
     else
       _notify.lint_completed(
-        _linter, _task_id, consume tree, consume issues, consume errors)
+        _linter, _task_id, tree, consume issues, consume errors)
     end
 
 actor _Fix
@@ -94,7 +86,7 @@ actor _Fix
     task_id': USize,
     config': Config val,
     rules': Map[String, Rule] val,
-    tree': ast.SyntaxTree iso,
+    tree': ast.Node,
     issues': ReadSeq[Issue] val,
     notify': LinterNotify)
   =>
@@ -103,28 +95,28 @@ actor _Fix
     _config = config'
     _rules = rules'.values()
     _notify = notify'
-    _fix_next(consume tree', issues', Array[ast.TraverseError])
+    _fix_next(tree', issues', Array[ast.TraverseError])
 
   be _fix_next(
-    tree: ast.SyntaxTree iso,
+    tree: ast.Node,
     issues: ReadSeq[Issue] val,
     errors: Seq[ast.TraverseError] iso)
   =>
     if _rules.has_next() then
       try
         let rule = _rules.next()?
-        var tree': ast.SyntaxTree iso = consume tree
+        var tree' = tree
         var issues' = issues
         if rule.should_apply(_config) then
-          (tree', issues', let errors') = rule.fix(consume tree', issues')
+          (tree', issues', let errors') = rule.fix(tree', issues')
           errors.append(errors')
         end
-        _fix_next(consume tree', consume issues', consume errors)
+        _fix_next(tree', consume issues', consume errors)
       else
         _notify.linter_failed(
           _task_id, "internal error: fix overran iterator")
       end
     else
       _notify.fix_completed(
-        _linter, _task_id, consume tree, consume issues, consume errors)
+        _linter, _task_id, tree, consume issues, consume errors)
     end

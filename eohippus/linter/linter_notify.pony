@@ -4,7 +4,7 @@ interface tag LinterNotify
   be lint_completed(
     linter: Linter,
     task_id: USize,
-    tree: ast.SyntaxTree iso,
+    tree: ast.Node,
     issues: ReadSeq[Issue] val,
     errors: ReadSeq[ast.TraverseError] val)
   =>
@@ -13,7 +13,7 @@ interface tag LinterNotify
   be fix_completed(
     linter: Linter,
     task_id: USize,
-    tree: ast.SyntaxTree iso,
+    tree: ast.Node,
     issues: ReadSeq[Issue] val,
     errors: ReadSeq[ast.TraverseError] val)
   =>

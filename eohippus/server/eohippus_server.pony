@@ -461,6 +461,23 @@ actor EohippusServer is Server
     _log(Fine) and _log.log(
       "textDocument/publishDiagnostics: sent " + num_sent.string())
 
+  be parsed_file(
+    analyze: analyzer.Analyzer,
+    task_id: USize,
+    canonical_path: String,
+    syntax_tree: ast.Node,
+    line_beginnings: ReadSeq[parser.Loc] val)
+  =>
+    match try _src_files.by_canonical_path(canonical_path)? end
+    | let src_file: SrcFileInfo =>
+      _log(Fine) and _log.log(task_id.string() + ": parsed " + canonical_path)
+      src_file.syntax_tree = syntax_tree
+      src_file.set_line_beginnings(line_beginnings)
+    else
+      _log(Fine) and _log.log(
+        task_id.string() + " parsed unknown " + canonical_path)
+    end
+
   be analyzed_workspace(
     analyze: analyzer.Analyzer,
     task_id: USize,
@@ -489,7 +506,7 @@ actor EohippusServer is Server
     analyze: analyzer.Analyzer,
     task_id: USize,
     canonical_path: String,
-    syntax_tree: (ast.SyntaxTree val | None),
+    syntax_tree: (ast.Node | None),
     file_scope: (analyzer.SrcFileScope | None),
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,

@@ -19,8 +19,8 @@ class SrcFileInfo
   var analyze_task_id: USize = 0
   var segments: Array[String] = []
   var parse: (parser.Parser | None) = None
-  var syntax_tree: (ast.SyntaxTree | None) = None
-  var line_beginnings: Array[(USize, USize)] = []
+  var syntax_tree: (ast.Node | None) = None
+  let line_beginnings: Array[(USize, USize)] = []
 
   new create(
     log: Logger[String],
@@ -162,7 +162,6 @@ class SrcFileInfo
     //   _log(Fine) and _log.log("  " + i.string() + " '" + StringUtil.escape(segment) + "'")
     //   i = i + 1
     // end
-    _build_line_beginnings()
 
     client_version = document.version()
     analyze_task_id = task_id
@@ -203,56 +202,58 @@ class SrcFileInfo
     end
     (start_segment, start_index, end_segment, end_index)
 
-  fun ref _build_line_beginnings() =>
+  fun ref set_line_beginnings(line_begin_locs: ReadSeq[parser.Loc]) =>
     line_beginnings.clear()
     match syntax_tree
-    | let st: ast.SyntaxTree =>
+    | let node: ast.Node =>
       var seg_index: USize = 0
-      for line_pos in st.line_beginnings.values() do
+      for line_loc in line_begin_locs.values() do
         try
-          while segments(seg_index)? isnt line_pos.segment() do
+          while segments(seg_index)? isnt line_loc.segment() do
             seg_index = seg_index + 1
           end
-          line_beginnings.push((seg_index, line_pos.index()))
+          line_beginnings.push((seg_index, line_loc.index()))
         end
       end
-    else
-      var found_cr = false
-      var found_nl = false
-      line_beginnings.push((0, 0))
+    end
 
-      var seg_index: USize = 0
-      for seg in segments.values() do
-        var char_index: USize = 0
+  fun ref _build_line_beginnings() =>
+    line_beginnings.clear()
+    var found_cr = false
+    var found_nl = false
+    line_beginnings.push((0, 0))
 
-        for ch in seg.values() do
-          if ch == '\r' then
-            if found_nl then
-              line_beginnings.push((seg_index, char_index))
-            end
-            found_cr = true
-            found_nl = false
-          elseif ch == '\n' then
-            found_cr = false
-            found_nl = true
-          else
-            if found_nl then
-              line_beginnings.push((seg_index, char_index))
-            elseif found_cr then
-              line_beginnings.push((seg_index, char_index))
-            end
-            found_cr = false
-            found_nl = false
+    var seg_index: USize = 0
+    for seg in segments.values() do
+      var char_index: USize = 0
+
+      for ch in seg.values() do
+        if ch == '\r' then
+          if found_nl then
+            line_beginnings.push((seg_index, char_index))
           end
-          char_index = char_index + 1
+          found_cr = true
+          found_nl = false
+        elseif ch == '\n' then
+          found_cr = false
+          found_nl = true
+        else
+          if found_nl then
+            line_beginnings.push((seg_index, char_index))
+          elseif found_cr then
+            line_beginnings.push((seg_index, char_index))
+          end
+          found_cr = false
+          found_nl = false
         end
-        seg_index = seg_index + 1
+        char_index = char_index + 1
       end
+      seg_index = seg_index + 1
+    end
 
-      if found_cr or found_nl then
-        try
-          line_beginnings.push((seg_index - 1, segments(seg_index - 1)?.size()))
-        end
+    if found_cr or found_nl then
+      try
+        line_beginnings.push((seg_index - 1, segments(seg_index - 1)?.size()))
       end
     end
     // _log(Fine) and _log.log("line beginnings:")

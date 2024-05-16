@@ -33,7 +33,7 @@ class SrcItem
   var is_open: Bool = false
   var schedule: (I64, I64) = (0, 0)
   var parse: (parser.Parser | None) = None
-  var syntax_tree: (ast.SyntaxTree val | None) = None
+  var syntax_tree: (ast.Node | None) = None
 
   new create(
     canonical_path': String,

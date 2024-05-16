@@ -10,41 +10,8 @@ type LineColumnMap is col.MapIs[Node box, (USize, USize)] val
 type Path is per.List[Node]
 type TraverseError is (Node, String)
 
-class SyntaxTree
-  var root: Node
-  var line_beginnings: Array[parser.Loc] val
-  var traverse_errors: ReadSeq[TraverseError] val
-
-  new create(root': Node, update_lines: Bool = true) =>
-    root = root'
-    if update_lines then
-      match root.src_info().start
-      | let root_start: parser.Loc =>
-        let visitor = _UpdateLineInfoVisitor(
-          root.src_info().locator, root_start.segment())
-        (let new_root, let errors) =
-          traverse[(USize, USize)](visitor, root)
-        match new_root
-        | let new_root': Node =>
-          root = new_root'
-        end
-        let lb: Array[parser.Loc] trn =
-          Array[parser.Loc](visitor.beginnings.size())
-        for loc in visitor.beginnings.values() do
-          lb.push(loc)
-        end
-        line_beginnings = consume lb
-        traverse_errors = consume errors
-      else
-        line_beginnings = Array[parser.Loc]
-        traverse_errors = Array[TraverseError]
-      end
-    else
-      line_beginnings = Array[parser.Loc]
-      traverse_errors = Array[TraverseError]
-    end
-
-  fun tag traverse[S](visitor: Visitor[S], node: Node)
+primitive SyntaxTree
+  fun traverse[S](visitor: Visitor[S], node: Node)
     : (Node, ReadSeq[TraverseError] val)
   =>
     var errors: Array[TraverseError] iso = Array[TraverseError]
@@ -61,18 +28,7 @@ class SyntaxTree
       (node, errors)
     end
 
-  fun tag _indent(n: USize): String =>
-    recover val
-      let s = String(n)
-      var i: USize = 0
-      while i < n do
-        s.append("  ")
-        i = i + 1
-      end
-      s
-    end
-
-  fun tag _traverse[S](
+  fun _traverse[S](
     visitor: Visitor[S],
     node: Node,
     path: Path,
@@ -149,6 +105,22 @@ class SyntaxTree
             consume node_state, node, path, consume errors')
         (result, consume errors')
       end
+    end
+
+  fun add_line_info(node: Node)
+    : (Node, Array[parser.Loc] val, ReadSeq[TraverseError] val)
+  =>
+    match node.src_info().start
+    | let start: parser.Loc =>
+      let visitor = _UpdateLineInfoVisitor(
+        node.src_info().locator, start.segment())
+      (let new_node, let errors) =
+        traverse[(USize, USize)](visitor, node)
+      let lb: Array[parser.Loc] trn = []
+      for loc in visitor.beginnings.values() do lb.push(loc) end
+      (new_node, consume lb, consume errors)
+    else
+      (node, [], [])
     end
 
 class _UpdateLineInfoVisitor is Visitor[(USize, USize)]

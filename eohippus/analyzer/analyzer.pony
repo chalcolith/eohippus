@@ -738,14 +738,10 @@ actor EohippusAnalyzer is Analyzer
       let si = es.src_info()
       match (si.line, si.column, si.next_line, si.next_column)
       | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-        _push_error(_parse_errors, AnalyzerError(
-          canonical_path,
-          AnalyzeError,
-          es.data().message,
-          l,
-          c,
-          nl,
-          nc))
+        _push_error(
+          _parse_errors,
+          AnalyzerError(
+            canonical_path, AnalyzeError, es.data().message, l, c, nl, nc))
       end
     end
     for child in node.children().values() do
@@ -768,12 +764,28 @@ actor EohippusAnalyzer is Analyzer
 
       _log(Fine) and _log.log(
         task_id.string() + ": parsed; writing syntax tree: " + canonical_path)
-      let syntax_tree = recover val ast.SyntaxTree(node) end
+
+      _clear_errors(canonical_path, _parse_errors)
+      (let syntax_tree, let lb, let errors) = ast.SyntaxTree.add_line_info(node)
+      _notify.parsed_file(this, task_id, canonical_path, syntax_tree, lb)
+
+      for (n, message) in errors.values() do
+        let si = n.src_info()
+        match (si.line, si.column, si.next_line, si.next_column)
+        | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
+          _push_error(
+            _parse_errors,
+            AnalyzerError(canonical_path, AnalyzeError, message, l, c, nl, nc))
+        else
+          _push_error(
+            _parse_errors,
+            AnalyzerError(canonical_path, AnalyzeError, message))
+        end
+      end
       src_file.syntax_tree = syntax_tree
       _write_syntax_tree(src_file, syntax_tree)
 
-      _clear_errors(canonical_path, _parse_errors)
-      _collect_error_sections(canonical_path, syntax_tree.root)
+      _collect_error_sections(canonical_path, syntax_tree)
 
       src_file.state = AnalysisNeedsLint
     else
@@ -804,13 +816,10 @@ actor EohippusAnalyzer is Analyzer
       let node = ast.NodeWith[ast.SrcFile](
         ast.SrcInfo(canonical_path), [ error_section ], ast.SrcFile(canonical_path, [], [])
         where error_sections' = [ error_section ])
-      _write_syntax_tree(src_file, ast.SyntaxTree(node, false))
+      _write_syntax_tree(src_file, node)
     end
 
-  fun ref _write_syntax_tree(
-    src_file: SrcItem,
-    syntax_tree: ast.SyntaxTree box)
-  =>
+  fun ref _write_syntax_tree(src_file: SrcItem, syntax_tree: ast.Node) =>
     let syntax_tree_path = _syntax_tree_path(src_file)
     (let dir, _) = Path.split(syntax_tree_path)
     let dir_path = FilePath(_auth, dir)
@@ -823,7 +832,7 @@ actor EohippusAnalyzer is Analyzer
     match CreateFile(FilePath(_auth, syntax_tree_path))
     | let file: File =>
       file.set_length(0)
-      let json_item = syntax_tree.root.get_json()
+      let json_item = syntax_tree.get_json()
       let json_str =
         ifdef debug then
           json_item.get_string(true)
@@ -853,10 +862,10 @@ actor EohippusAnalyzer is Analyzer
         syntax_tree_path))
     end
 
-  fun _get_syntax_tree(src_file: SrcItem): (ast.SyntaxTree val | None) =>
+  fun _get_syntax_tree(src_file: SrcItem): (ast.Node | None) =>
     match src_file.syntax_tree
-    | let st: ast.SyntaxTree val =>
-      st
+    | let node: ast.Node =>
+      node
     else
       let syntax_path = FilePath(_auth, _syntax_tree_path(src_file))
       match OpenFile(syntax_path)
@@ -866,7 +875,7 @@ actor EohippusAnalyzer is Analyzer
         | let obj: json.Object =>
           match ast.ParseNode(src_file.canonical_path, obj)
           | let node: ast.Node =>
-            return recover val ast.SyntaxTree(node, false) end
+            return node
           | let err: String =>
             _log(Error) and _log.log(
               "error parsing " + syntax_path.path + ": " + err)
@@ -890,8 +899,8 @@ actor EohippusAnalyzer is Analyzer
 
     let syntax_tree =
       match _get_syntax_tree(src_file)
-      | let st: ast.SyntaxTree val =>
-        st
+      | let node: ast.Node =>
+        node
       else
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to get syntax tree for " +
@@ -910,7 +919,7 @@ actor EohippusAnalyzer is Analyzer
         be lint_completed(
           lint': linter.Linter,
           task_id': USize,
-          tree': ast.SyntaxTree iso,
+          tree': ast.Node,
           issues': ReadSeq[linter.Issue] val,
           errors': ReadSeq[ast.TraverseError] val)
         =>
@@ -919,7 +928,7 @@ actor EohippusAnalyzer is Analyzer
         be linter_failed(task_id': USize, message': String) =>
           self._lint_failed(task_id', canonical_path, message')
       end)
-    lint.lint(src_file.task_id, ast.SyntaxTree(syntax_tree.root))
+    lint.lint(src_file.task_id, syntax_tree)
 
   be _linted_file(
     task_id: USize,

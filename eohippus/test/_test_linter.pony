@@ -26,7 +26,7 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
         be lint_completed(
           lint: linter.Linter,
           task_id: USize,
-          tree: ast.SyntaxTree iso,
+          tree: ast.Node,
           issues: ReadSeq[linter.Issue] val,
           errors: ReadSeq[ast.TraverseError] val)
         =>
@@ -63,10 +63,10 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let sf = v(0)? as ast.NodeWith[ast.SrcFile]
-
+            (let root, _, _) = ast.SyntaxTree.add_line_info(v(0)?)
+            let sf = root as ast.NodeWith[ast.SrcFile]
             let lint = linter.Linter(linter.EditorConfig.default(), notify)
-            lint.lint(0, ast.SyntaxTree(sf))
+            lint.lint(0, sf)
           else
             h.fail("result value was not a NodeWith[SrcFile]")
             h.complete(false)
@@ -86,7 +86,8 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
     let setup = _TestSetup(name())
     let source =
       recover val
-        // 1         2                    3           4
+        // 0  1          2                    3            (lines)
+        // 1         2                    3           4    (issues)
         [ " \nclass A  \n  new create() =>\t\n    None " ]
       end
 
@@ -408,22 +409,22 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
         be lint_completed(
           lint: linter.Linter,
           task_id: USize,
-          tree: ast.SyntaxTree iso,
+          tree: ast.Node,
           issues: ReadSeq[linter.Issue] val,
           errors: ReadSeq[ast.TraverseError] val)
         =>
-          h.log("ORIGINAL:\n" + tree.root.get_json().string())
+          h.log("ORIGINAL:\n" + tree.get_json().string())
 
           if not h.assert_eq[USize](4, issues.size(), "should be 4 issues") then
             h.complete(false)
           else
-            lint.fix(0, consume tree, issues)
+            lint.fix(0, tree, issues)
           end
 
         be fix_completed(
           lint: linter.Linter,
           task_id: USize,
-          tree: ast.SyntaxTree iso,
+          tree: ast.Node,
           issues: ReadSeq[linter.Issue] val,
           errors: ReadSeq[ast.TraverseError] val)
         =>
@@ -433,10 +434,13 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           end
           h.assert_eq[USize](0, issues.size(), "should be 0 unfixed issues")
 
-          let actual_json = tree.root.get_json()
-          h.log("ACTUAL:\n" + actual_json.string())
-
+          let actual_json = tree.get_json()
           (let sub, let msg) = json.Subsumes(expected_json, actual_json)
+          if not sub then
+            h.log("EXPECTED:\n" + expected_json.string())
+            h.log("ACTUAL:\n" + actual_json.string())
+          end
+
           h.assert_true(sub, msg)
           h.complete(true)
 
@@ -454,8 +458,9 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let sf = v(0)? as ast.NodeWith[ast.SrcFile]
-            lint.lint(0, ast.SyntaxTree(sf))
+            (let root, _, _) = ast.SyntaxTree.add_line_info(v(0)?)
+            let sf = root as ast.NodeWith[ast.SrcFile]
+            lint.lint(0, sf)
           else
             h.fail("result value was not a NodeWith[SrcFile]")
             h.complete(false)

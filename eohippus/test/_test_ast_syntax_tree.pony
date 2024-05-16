@@ -29,21 +29,25 @@ class iso _TestAstSyntaxTreeLineBeginnings is UnitTest
             h.assert_eq[USize](1, v.size(), "should have one result value")
           then
             try
-              let st = ast.SyntaxTree(v(0)?)
+              var node = v(0)?
+              (node, let line_beginnings, let errors) =
+                ast.SyntaxTree.add_line_info(node)
+
+              succeeded = succeeded and h.assert_eq[USize](0, errors.size())
 
               succeeded = succeeded and
                 h.assert_eq[USize](
-                  4, st.line_beginnings.size(), "bad # of lines")
+                  4, line_beginnings.size(), "bad # of lines")
 
-              var pos = st.line_beginnings(0)?.index()
+              var pos = line_beginnings(0)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](0, pos, "wrong pos for line 0")
 
-              pos = st.line_beginnings(1)?.index()
+              pos = line_beginnings(1)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](8, pos, "wrong pos for line 1")
 
-              pos = st.line_beginnings(2)?.index()
+              pos = line_beginnings(2)?.index()
               succeeded = succeeded and
                 h.assert_eq[USize](20, pos, "wrong pos for line 2")
             else
@@ -82,9 +86,12 @@ class iso _TestAstSyntaxTreeLineNumbers is UnitTest
         match r
         | let success: parser.Success =>
           try
-            let st = ast.SyntaxTree(v(0)?)
+            var root = v(0)?
+            (root, _, let errors) = ast.SyntaxTree.add_line_info(root)
 
-            let src_file = st.root as ast.NodeWith[ast.SrcFile]
+            h.assert_eq[USize](0, errors.size())
+
+            let src_file = root as ast.NodeWith[ast.SrcFile]
             match (src_file.src_info().line, src_file.src_info().column)
             | (let line: USize, let column: USize) =>
               h.assert_eq[USize](0, line, "starting line")

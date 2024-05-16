@@ -15,10 +15,8 @@ class val TrimTrailingWhitespace is lint.Rule
       false
     end
 
-  fun val analyze(tree: ast.SyntaxTree iso, issues: Seq[lint.Issue] iso)
-    : ( ast.SyntaxTree iso^,
-        Seq[lint.Issue] iso^,
-        ReadSeq[ast.TraverseError] val)
+  fun val analyze(tree: ast.Node, issues: Seq[lint.Issue] iso)
+    : (ast.Node, Seq[lint.Issue] iso^, ReadSeq[ast.TraverseError] val)
   =>
     let ws_seen = Array[ast.Path]
     let rule = this
@@ -49,24 +47,23 @@ class val TrimTrailingWhitespace is lint.Rule
             end
           end
         end
-    fn(tree.root, per.Cons[ast.Node](tree.root, per.Nil[ast.Node]))
+    fn(tree, per.Cons[ast.Node](tree, per.Nil[ast.Node]))
     for issue in issues'.values() do
       issues.push(issue)
     end
-    (consume tree, consume issues, recover val Array[ast.TraverseError] end)
+    (tree, consume issues, [])
 
-  fun val fix(tree: ast.SyntaxTree iso, issues: ReadSeq[lint.Issue] val)
-    : ( ast.SyntaxTree iso^,
-        ReadSeq[lint.Issue] val,
-        ReadSeq[ast.TraverseError] val )
+  fun val fix(tree: ast.Node, issues: ReadSeq[lint.Issue] val)
+    : (ast.Node, ReadSeq[lint.Issue] val, ReadSeq[ast.TraverseError] val)
   =>
-    var root: ast.Node = tree.root
+    var root: ast.Node = tree
     let unfixed: Array[lint.Issue] trn = Array[lint.Issue]
     let all_errors: Array[ast.TraverseError] trn = Array[ast.TraverseError]
     for issue in issues.values() do
       if issue.rule.name() == this.name() then
         let visitor = _TrailingWhitespaceVisitor(issue)
-        (let new_root, let errors) = tree.traverse[None](consume visitor, root)
+        (let new_root, let errors) =
+          ast.SyntaxTree.traverse[None](consume visitor, root)
         if new_root is root then
           unfixed.push(issue)
           all_errors.push((root, "tree was unchanged by " + this.name()))
@@ -79,12 +76,14 @@ class val TrimTrailingWhitespace is lint.Rule
       end
     end
 
-    if root is tree.root then
-      (consume tree, consume unfixed, consume all_errors)
+    if root is tree then
+      (tree, consume unfixed, consume all_errors)
     else
-      ( recover iso ast.SyntaxTree(root) end,
-        consume unfixed,
-        consume all_errors )
+      (root, _, let errors) = ast.SyntaxTree.add_line_info(root)
+      for err in errors.values() do
+        all_errors.push(err)
+      end
+      (root, consume unfixed, consume all_errors)
     end
 
 class _TrailingWhitespaceVisitor is ast.Visitor[None]
