@@ -61,7 +61,7 @@ primitive StringUtil
         ( (ch >= 'a') and (ch <= 'z') ) or
         ( (ch >= 'A') and (ch <= 'Z') ) or
         ( (ch >= '0') and (ch <= '9') ) or
-        ( ch == '/' ) or (ch == '_')
+        ( ch == '/' ) or (ch == '_') or (ch == '-') or (ch == '.')
       then
         result.push(ch)
       else

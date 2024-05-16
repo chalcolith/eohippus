@@ -5,7 +5,7 @@ param(
 
   [Parameter(HelpMessage="The target(s) to build or test (test, eohippus-lsp)")]
   [string]
-  $Target = 'test,eohippus_lsp',
+  $Target = 'test,parser-perf,eohippus_lsp',
 
   [Parameter(HelpMessage="The build configuration (Release, Debug).")]
   [string]
@@ -93,6 +93,9 @@ function Build
 
   if ($targets -like 'test') {
     Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test`"")
+  }
+  if ($targets -like 'parser-perf') {
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test\parser-perf`"")
   }
   if ($targets -like 'eohippus-lsp') {
     Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus-lsp`"")
