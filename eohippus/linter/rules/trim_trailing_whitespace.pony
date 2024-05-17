@@ -63,7 +63,7 @@ class val TrimTrailingWhitespace is lint.Rule
       if issue.rule.name() == this.name() then
         let visitor = _TrailingWhitespaceVisitor(issue)
         (let new_root, let errors) =
-          ast.SyntaxTree.traverse[None](consume visitor, root)
+          ast.SyntaxTree.traverse[None](consume visitor, None, root)
         if new_root is root then
           unfixed.push(issue)
           all_errors.push((root, "tree was unchanged by " + this.name()))
@@ -95,6 +95,7 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     _issue = issue
 
   fun ref visit_pre(
+    parent_state: None,
     node: ast.Node,
     path: ast.Path,
     errors: Array[ast.TraverseError] iso)
@@ -103,13 +104,14 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     (None, consume errors)
 
   fun ref visit_post(
-    pre_state: None,
+    parent_state: None,
+    node_state: None,
     node: ast.Node,
     path: ast.Path,
     errors: Array[ast.TraverseError] iso,
     new_children: (ast.NodeSeq | None) = None,
     update_map: (ast.ChildUpdateMap | None) = None)
-    : ((ast.Node | None), Array[ast.TraverseError] iso^)
+    : (None, (ast.Node | None), Array[ast.TraverseError] iso^)
   =>
     // check for trailing whitespace
     if _issue.match_start(node) then
@@ -125,7 +127,7 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
       | let t: ast.NodeWith[ast.Trivia] if
           (t.data().kind is ast.WhiteSpaceTrivia)
       =>
-        return (None, consume errors)
+        return (None, None, consume errors)
       end
     end
 
@@ -137,4 +139,4 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
       else
         node
       end
-    (new_node, consume errors)
+    (None, new_node, consume errors)
