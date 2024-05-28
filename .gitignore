@@ -11,3 +11,4 @@ version.pony
 *.exe
 *.ilk
 *.pdb
+eohippus-vscode/test_folder/.vscode/settings.json
