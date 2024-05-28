@@ -507,7 +507,7 @@ actor EohippusServer is Server
     task_id: USize,
     canonical_path: String,
     syntax_tree: (ast.Node | None),
-    file_scope: (analyzer.SrcFileScope | None),
+    file_scope: (analyzer.Scope val | None),
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)

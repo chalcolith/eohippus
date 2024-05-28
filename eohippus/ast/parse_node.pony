@@ -27,9 +27,25 @@ primitive ParseNode
           else
             return "src_info.column must be an integer"
           end
+        let next_line' =
+          match try src_info_obj("next_line")? end
+          | let n: I128 =>
+            n
+          else
+            return "src_info.next_line must be an integer"
+          end
+        let next_column' =
+          match try src_info_obj("next_column")? end
+          | let n: I128 =>
+            n
+          else
+            return "src_info.next_column must be an integer"
+          end
         SrcInfo(locator where
           line' = USize.from[I128](line'),
-          column' = USize.from[I128](column'))
+          column' = USize.from[I128](column'),
+          next_line' = USize.from[I128](next_line'),
+          next_column' = USize.from[I128](next_column'))
       else
         SrcInfo(locator)
       end
@@ -127,53 +143,53 @@ primitive ParseNode
       | "ErrorSection" =>
         ParseNode~_ctor[ErrorSection](ParseErrorSection~apply(obj, children))
       | "ExpArray" =>
-        ParseNode~_ctor[ExpArray](ParseExpArray~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpArray~apply(obj, children))
       | "ExpAtom" =>
-        ParseNode~_ctor[ExpAtom](ParseExpAtom~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpAtom~apply(obj, children))
       | "ExpCall" =>
-        ParseNode~_ctor[ExpCall](ParseExpCall~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpCall~apply(obj, children))
       | "ExpConsume" =>
-        ParseNode~_ctor[ExpConsume](ParseExpConsume~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpConsume~apply(obj, children))
       | "ExpDecl" =>
-        ParseNode~_ctor[ExpDecl](ParseExpDecl~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpDecl~apply(obj, children))
       | "ExpFfi" =>
-        ParseNode~_ctor[ExpFfi](ParseExpFfi~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpFfi~apply(obj, children))
       | "ExpFor" =>
-        ParseNode~_ctor[ExpFor](ParseExpFor~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpFor~apply(obj, children))
       | "ExpGeneric" =>
-        ParseNode~_ctor[ExpGeneric](ParseExpGeneric~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpGeneric~apply(obj, children))
       | "ExpHash" =>
-        ParseNode~_ctor[ExpHash](ParseExpHash~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpHash~apply(obj, children))
       | "ExpIf" =>
-        ParseNode~_ctor[ExpIf](ParseExpIf~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpIf~apply(obj, children))
       | "IfCondition" =>
         ParseNode~_ctor[IfCondition](ParseIfCondition~apply(obj, children))
       | "ExpJump" =>
-        ParseNode~_ctor[ExpJump](ParseExpJump~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpJump~apply(obj, children))
       | "ExpLambda" =>
-        ParseNode~_ctor[ExpLambda](ParseExpLambda~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpLambda~apply(obj, children))
       | "ExpMatch" =>
-        ParseNode~_ctor[ExpMatch](ParseExpMatch~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpMatch~apply(obj, children))
       | "MatchCase" =>
         ParseNode~_ctor[MatchCase](ParseMatchCase~apply(obj, children))
       | "ExpObject" =>
-        ParseNode~_ctor[ExpObject](ParseExpObject~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpObject~apply(obj, children))
       | "ExpOperation" =>
-        ParseNode~_ctor[ExpOperation](ParseExpOperation~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpOperation~apply(obj, children))
       | "ExpRecover" =>
-        ParseNode~_ctor[ExpRecover](ParseExpRecover~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpRecover~apply(obj, children))
       | "ExpRepeat" =>
-        ParseNode~_ctor[ExpRepeat](ParseExpRepeat~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpRepeat~apply(obj, children))
       | "ExpSequence" =>
-        ParseNode~_ctor[ExpSequence](ParseExpSequence~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpSequence~apply(obj, children))
       | "ExpTry" =>
-        ParseNode~_ctor[ExpTry](ParseExpTry~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpTry~apply(obj, children))
       | "ExpTuple" =>
-        ParseNode~_ctor[ExpTuple](ParseExpTuple~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpTuple~apply(obj, children))
       | "ExpWhile" =>
-        ParseNode~_ctor[ExpWhile](ParseExpWhile~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpWhile~apply(obj, children))
       | "ExpWith" =>
-        ParseNode~_ctor[ExpWith](ParseExpWith~apply(obj, children))
+        ParseNode~_ctor[Expression](ParseExpWith~apply(obj, children))
       | "WithElement" =>
         ParseNode~_ctor[WithElement](ParseWithElement~apply(obj, children))
       | "Identifier" =>
@@ -186,6 +202,15 @@ primitive ParseNode
         ParseNode~_ctor[LiteralChar](ParseLiteralChar~apply(obj, children))
       | "LiteralFloat" =>
         ParseNode~_ctor[LiteralFloat](ParseLiteralFloat~apply(obj, children))
+      | "LiteralInteger" =>
+        ParseNode~_ctor[LiteralInteger](ParseLiteralInteger~apply(
+          obj, children))
+      | "LiteralString" =>
+        ParseNode~_ctor[LiteralString](ParseLiteralString~apply(obj, children))
+      | "MethodParam" =>
+        ParseNode~_ctor[MethodParam](ParseMethodParam~apply(obj, children))
+      | "MethodParams" =>
+        ParseNode~_ctor[MethodParams](ParseMethodParams~apply(obj, children))
       | "Span" =>
         ParseNode~_ctor[Span](ParseSpan~apply(obj, children))
       | "SrcFile" =>
@@ -199,23 +224,25 @@ primitive ParseNode
       | "TypeArgs" =>
         ParseNode~_ctor[TypeArgs](ParseTypeArgs~apply(obj, children))
       | "TypeArrow" =>
-        ParseNode~_ctor[TypeArrow](ParseTypeArrow~apply(obj, children))
+        ParseNode~_ctor[TypeType](ParseTypeArrow~apply(obj, children))
       | "TypeAtom" =>
-        ParseNode~_ctor[TypeAtom](ParseTypeAtom~apply(obj, children))
+        ParseNode~_ctor[TypeType](ParseTypeAtom~apply(obj, children))
+      | "TypeInfix" =>
+        ParseNode~_ctor[TypeType](ParseTypeInfix~apply(obj, children))
       | "TypeLambda" =>
-        ParseNode~_ctor[TypeLambda](ParseTypeLambda~apply(obj, children))
+        ParseNode~_ctor[TypeType](ParseTypeLambda~apply(obj, children))
       | "TypeNominal" =>
-        ParseNode~_ctor[TypeNominal](ParseTypeNominal~apply(obj, children))
+        ParseNode~_ctor[TypeType](ParseTypeNominal~apply(obj, children))
       | "TypeParams" =>
         ParseNode~_ctor[TypeParams](ParseTypeParams~apply(obj, children))
       | "TypeParam" =>
         ParseNode~_ctor[TypeParam](ParseTypeParam~apply(obj, children))
       | "TypeTuple" =>
-        ParseNode~_ctor[TypeTuple](ParseTypeTuple~apply(obj, children))
+        ParseNode~_ctor[TypeType](ParseTypeTuple~apply(obj, children))
       | "TypedefAlias" =>
-        ParseNode~_ctor[TypedefAlias](ParseTypedefAlias~apply(obj, children))
+        ParseNode~_ctor[Typedef](ParseTypedefAlias~apply(obj, children))
       | "TypedefClass" =>
-        ParseNode~_ctor[TypedefClass](ParseTypedefClass~apply(obj, children))
+        ParseNode~_ctor[Typedef](ParseTypedefClass~apply(obj, children))
       | "TypedefField" =>
         ParseNode~_ctor[TypedefField](ParseTypedefField~apply(obj, children))
       | "TypedefMembers" =>
@@ -224,8 +251,11 @@ primitive ParseNode
       | "TypedefMethod" =>
         ParseNode~_ctor[TypedefMethod](ParseTypedefMethod~apply(obj, children))
       | "TypedefPrimitive" =>
-        ParseNode~_ctor[TypedefPrimitive](ParseTypedefPrimitive~apply(
-          obj, children))
+        ParseNode~_ctor[Typedef](ParseTypedefPrimitive~apply(obj, children))
+      | "UsingFFI" =>
+        ParseNode~_ctor[Using](ParseUsingFFI~apply(obj, children))
+      | "UsingPony" =>
+        ParseNode~_ctor[Using](ParseUsingPony~apply(obj, children))
       end
     match ctor
     | let ctor': _NodeConstructor =>
@@ -276,6 +306,8 @@ primitive ParseNode
       match try children(USize.from[I128](i))? end
       | let node: NodeWith[D] =>
         node
+      | let node': Node =>
+        help + "; got a " + node'.name()
       else
         help
       end

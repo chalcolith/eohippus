@@ -22,7 +22,7 @@ interface tag AnalyzerNotify
     task_id: USize,
     canonical_path: String,
     syntax_tree: (ast.Node | None),
-    file_scope: (SrcFileScope | None),
+    file_scope: (Scope val | None),
     parse_errors: ReadSeq[AnalyzerError] val,
     lint_errors: ReadSeq[AnalyzerError] val,
     analyze_errors: ReadSeq[AnalyzerError] val)

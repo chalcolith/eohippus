@@ -4,18 +4,27 @@ use ast = "../ast"
 use parser = "../parser"
 
 primitive AnalysisStart
-primitive AnalysisNeedsParse
+  fun apply(): USize => 0
+
 primitive AnalysisParsing
-primitive AnalysisNeedsLint
+  fun apply(): USize => 1
+
+primitive AnalysisScoping
+  fun apply(): USize => 2
+
 primitive AnalysisLinting
+  fun apply(): USize => 3
+
 primitive AnalysisUpToDate
+  fun apply(): USize => 1000
+
 primitive AnalysisError
+  fun apply(): USize => USize.max_value()
 
 type SrcItemState is
   ( AnalysisStart
-  | AnalysisNeedsParse
   | AnalysisParsing
-  | AnalysisNeedsLint
+  | AnalysisScoping
   | AnalysisLinting
   | AnalysisUpToDate
   | AnalysisError )
@@ -34,6 +43,7 @@ class SrcItem
   var schedule: (I64, I64) = (0, 0)
   var parse: (parser.Parser | None) = None
   var syntax_tree: (ast.Node | None) = None
+  var scope: (Scope | None) = None
 
   new create(
     canonical_path': String,

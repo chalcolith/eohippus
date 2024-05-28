@@ -1,35 +1,39 @@
 // line comment
 /* block comment */
 
+use "package2"
+
 actor Main
+  """An actor in the test_folder package"""
+
   new create(env: Env) =>
-    'c' // character literal
-    '\'' // string literal
-    "string \" literal"
-    """triple string"""
+    "Main constructor"
 
-    addressof foo
+    let ch = 'c'
+    let str = """triple string"""
 
-    env.out.print("Hello, world!")
-
+    var foo = Foo
     for i in Range(1, 123) do
-      foo
+      foo.do(i)
     end
 
-    let y = 3.14e-12 + a
-    let z = 0x1ef_dec + false
-    let b = 0b1000_101_1
+  be behavior() =>
+    "Main behavior"
+    None
 
-    this.bar(where n = 1.3)
+  fun function() =>
+    "Main method"
+    None
 
-    let x = true
+trait MainTrait
+  "A trait in the test_folder package"
+  fun trait_fun() => None
 
-  be behavior()
+interface MainInterface
+  "An interface in the test_folder package"
 
-  fun function()
+struct MainStruct
+  "A struct in the test_folder package"
 
-trait Trait
-
-interface Interface
-
-struct Struct
+primitive MainPrimitive
+  "A primitive in the test_folder package"

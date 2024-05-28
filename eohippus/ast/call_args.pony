@@ -38,7 +38,8 @@ primitive ParseCallArgs
         obj,
         children,
         "positional",
-        "CallArgs.positional must refer to Expressions")
+        "CallArgs.positional must refer to Expressions",
+        false)
       | let seq: NodeSeqWith[Expression] =>
         seq
       | let err: String =>
@@ -49,7 +50,8 @@ primitive ParseCallArgs
         obj,
         children,
         "named",
-        "CallArgs.named must refer to Expressions")
+        "CallArgs.named must refer to Expressions",
+        false)
       | let seq: NodeSeqWith[Expression] =>
         seq
       | let err: String =>
