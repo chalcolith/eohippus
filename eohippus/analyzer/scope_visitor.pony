@@ -34,6 +34,36 @@ class ScopeVisitor is ast.Visitor[ScopeState]
     end
 
     match node
+    | let using: ast.NodeWith[ast.Using] =>
+      match using.data()
+      | let using_pony: ast.UsingPony =>
+        let identifier =
+          match using_pony.identifier
+          | let id: ast.NodeWith[ast.Identifier] =>
+            let identifier' = id.data().string
+            scope.add_definition(
+              identifier', using.src_info(), using.doc_strings())
+            identifier'
+          else
+            ""
+          end
+        let path' = using_pony.path.data().value()
+        scope.imports.push((identifier, path'))
+      | let using_ffi: ast.UsingFFI =>
+        let identifier =
+          match using_ffi.identifier
+          | let id: ast.NodeWith[ast.Identifier] =>
+            id.data().string
+          else
+            match using_ffi.fun_name
+            | let id': ast.NodeWith[ast.Identifier] =>
+              id'.data().string
+            | let ls: ast.NodeWith[ast.LiteralString] =>
+              ls.data().value()
+            end
+          end
+        scope.add_definition(identifier, using.src_info(), using.doc_strings())
+      end
     | let td: ast.NodeWith[ast.Typedef] =>
       (let identifier, let need_new) =
         match td.data()

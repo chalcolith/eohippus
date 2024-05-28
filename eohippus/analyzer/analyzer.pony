@@ -31,7 +31,7 @@ actor EohippusAnalyzer is Analyzer
   let _src_items: Map[String, SrcItem] = _src_items.create()
   let _src_item_queue: Queue[SrcItem] = _src_item_queue.create()
 
-  var _analysis_task_id: USize = 0
+  var _analysis_task_id: USize = 10000
   var _analysis_in_progress: Bool = false
 
   let _workspace_errors: Map[String, Array[AnalyzerError]] =
@@ -249,6 +249,8 @@ actor EohippusAnalyzer is Analyzer
     match _pony_packages_path
     | let pp: FilePath =>
       _log(Fine) and _log.log("pony_packages_path is " + pp.path)
+      analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
+      _analysis_task_id = _analysis_task_id + 1
     else
       _log(Fine) and _log.log("pony_packages_path is None")
     end
@@ -256,8 +258,14 @@ actor EohippusAnalyzer is Analyzer
     // if we are in a workspace, start analyzing
     match _workspace
     | let workspace_path: FilePath =>
-      analyze(0, workspace_path.path)
+      analyze(_analysis_task_id, workspace_path.path)
+      _analysis_task_id = _analysis_task_id + 1
     end
+
+  fun ref _get_next_task_id(): USize =>
+    let result = _analysis_task_id
+    _analysis_task_id = _analysis_task_id + 1
+    result
 
   be analyze(task_id: USize, canonical_path: String) =>
     if _disposing then return end
@@ -707,8 +715,6 @@ actor EohippusAnalyzer is Analyzer
       | let syntax_tree: ast.Node =>
         _collect_error_sections(src_file.canonical_path, syntax_tree)
         src_file.syntax_tree = syntax_tree
-
-        _write_syntax_tree(src_file, syntax_tree)
       else
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to load syntax for " +
@@ -1040,7 +1046,6 @@ actor EohippusAnalyzer is Analyzer
 
       let scope': Scope ref = consume scope
       src_file.scope = scope'
-      _write_scope(src_file)
 
       match src_file.parent_package
       | let package: SrcItem =>
@@ -1051,12 +1056,79 @@ actor EohippusAnalyzer is Analyzer
         end
       end
 
+      _process_imports(canonical_path, scope')
+      _write_scope(src_file)
+
       src_file.state = AnalysisLinting
       _src_item_queue.push(src_file)
       _process_src_item_queue()
     else
       _log(Error) and _log.log(
         task_id.string() + ": scoped unknown file " + canonical_path)
+    end
+
+  fun ref _process_imports(canonical_path: String, scope: Scope) =>
+    (let base_path, _) = Path.split(scope.name)
+
+    var i: USize = 0
+    while i < scope.imports.size() do
+      try
+        (let alias, let import_path) = scope.imports(i)?
+        match _try_analyze_import(base_path, import_path)
+        | let canonical_import_path: String =>
+          try scope.imports.update(i, (alias, canonical_import_path))? end
+          i = i + 1
+          continue
+        else
+          var found = false
+          for pp in _pony_path.values() do
+            match _try_analyze_import(pp.path, import_path)
+            | let canonical_import_path: String =>
+              try scope.imports.update(i, (alias, canonical_import_path))? end
+              found = true
+              break
+            end
+          end
+
+          if found then
+            i = i + 1
+            continue
+          else
+            match _pony_packages_path
+            | let ppp: FilePath =>
+              match _try_analyze_import(ppp.path, import_path)
+              | let canonical_import_path: String =>
+                try scope.imports.update(i, (alias, canonical_import_path))? end
+                i = i + 1
+                continue
+              end
+            end
+          end
+        end
+        _log(Error) and _log.log(
+          "unable to resolve package " + import_path + " for " + canonical_path)
+      end
+      i = i + 1
+    end
+
+  fun ref _try_analyze_import(base_path: String, import_path: String)
+    : (String | None)
+  =>
+    let combined_path = FilePath(_auth, Path.join(base_path, import_path))
+    if combined_path.exists() then
+      let canonical_path =
+        try
+          combined_path.canonical()?
+        else
+          combined_path
+        end
+      if not _src_items.contains(canonical_path.path) then
+        analyze(_get_next_task_id(), canonical_path.path)
+      else
+        _log(Fine) and _log.log(
+          "not analyzing existing import " + canonical_path.path)
+      end
+      return canonical_path.path
     end
 
   be scope_failed(

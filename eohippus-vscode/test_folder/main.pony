@@ -1,6 +1,7 @@
 // line comment
 /* block comment */
 
+use col = "collections"
 use "package2"
 
 actor Main
