@@ -37,6 +37,7 @@ interface tag Server is analyzer.AnalyzerNotify
     params: rpc_data.DidChangeTextDocumentParams)
   be notification_did_close_text_document(
     params: rpc_data.DidCloseTextDocumentParams)
+  be request_definition(request_id: String, params: rpc_data.DefinitionParams)
   be request_shutdown(message: rpc_data.RequestMessage)
   be notification_exit()
 
@@ -75,3 +76,12 @@ interface tag Server is analyzer.AnalyzerNotify
     task_id: USize,
     canonical_path: String,
     errors: ReadSeq[analyzer.AnalyzerError] val)
+  be definition_found(
+    analyze: analyzer.Analyzer,
+    task_id: USize,
+    canonical_path: String,
+    range: (USize, USize, USize, USize))
+  be definition_failed(
+    analyze: analyzer.Analyzer,
+    task_id: USize,
+    message: String)

@@ -29,12 +29,13 @@ type SrcItemState is
   | AnalysisUpToDate
   | AnalysisError )
 
-class SrcItem
+type SrcItem is (SrcFileItem | SrcPackageItem)
+
+class SrcFileItem
   let canonical_path: String
-  let is_package: Bool
 
   var storage_prefix: String = ""
-  var parent_package: (SrcItem | None) = None
+  var parent_package: (SrcPackageItem | None) = None
   let dependencies: Array[SrcItem] = []
 
   var task_id: USize = 0
@@ -45,9 +46,24 @@ class SrcItem
   var syntax_tree: (ast.Node | None) = None
   var scope: (Scope | None) = None
 
-  new create(
-    canonical_path': String,
-    is_package': Bool = false)
-  =>
+  new create(canonical_path': String) =>
     canonical_path = canonical_path'
-    is_package = is_package'
+
+  fun state_value(): USize => state()
+
+class SrcPackageItem
+  let canonical_path: String
+
+  var storage_prefix: String = ""
+  var is_workspace: Bool = false
+  var parent_package: (SrcPackageItem | None) = None
+  let dependencies: Array[SrcItem] = []
+
+  var task_id: USize = 0
+  var state: SrcItemState = AnalysisStart
+  var scope: (Scope | None) = None
+
+  new create(canonical_path': String) =>
+    canonical_path = canonical_path'
+
+  fun state_value(): USize => state()

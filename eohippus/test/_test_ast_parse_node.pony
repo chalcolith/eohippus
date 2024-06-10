@@ -18,7 +18,9 @@ class iso _TestAstParseNodeAnnotation is UnitTest
           "name": "Annotation",
           "src_info": {
             "line": 4,
-            "column": 8
+            "column": 8,
+            "next_line": 4,
+            "next_column": 13
           },
           "doc_strings": [],
           "pre_trivia": [],

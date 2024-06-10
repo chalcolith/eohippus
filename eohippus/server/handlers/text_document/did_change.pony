@@ -22,7 +22,7 @@ class DidChange
     : ((ServerState | None), (I32 | None))
   =>
     _log(Fine) and _log.log(
-      task_id.string() + "notification : textDocument/didChange")
+      task_id.string() + ": notification : textDocument/didChange")
     let uri = params.textDocument().uri()
     try
       let info = src_files.by_client_uri(uri)?

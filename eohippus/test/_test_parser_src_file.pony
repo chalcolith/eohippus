@@ -152,7 +152,7 @@ class iso _TestParserSrcFileUsingPony is UnitTest
               "string": " "
             },
             {
-              "name": "Using",
+              "name": "UsingPony",
               "path": 1,
               "define": 3,
               "children": [
@@ -246,7 +246,7 @@ class iso _TestParserSrcFileUsingPony is UnitTest
               ]
             },
             {
-              "name": "Using",
+              "name": "UsingPony",
               "identifier": 1,
               "path": 3,
               "def_true": false,
@@ -695,7 +695,7 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
               "string": "\n"
             },
             {
-              "name": "Using",
+              "name": "UsingPony",
               "path": 1,
               "children": [
                 {
@@ -779,7 +779,7 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
               ]
             },
             {
-              "name": "Using",
+              "name": "UsingPony",
               "path": 1,
               "children": [
                 {

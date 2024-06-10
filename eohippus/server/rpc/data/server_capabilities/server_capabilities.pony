@@ -15,7 +15,7 @@ interface val ServerCapabilities is ResultData
   // fun val signatureHelpProvider(): (SignatureHelpOptions | None) => None
   // fun val declarationProvider():
   //   (Bool | DeclarationOptions | DeclarationRegistrationOptions | None) => None
-  // fun val definitionProvider(): (Bool | DefinitionOptions | None) => None
+  fun val definitionProvider(): (Bool | DefinitionOptions | None) => None
   // fun val typeDefinitionProvider():
   //   (Bool | TypeDefinitionOptions | TypeDefinitionRegistrationOptions | None)
   // =>
@@ -91,6 +91,12 @@ interface val ServerCapabilities is ResultData
       props.push(("textDocumentSync", tdso.get_json()))
     | let tdsk: TextDocumentSyncKind =>
       props.push(("textDocumentSync", TextDocumentSyncKindJson(tdsk)))
+    end
+    match definitionProvider()
+    | let bool: Bool =>
+      props.push(("definitionProvider", bool))
+    | let def: DefinitionOptions =>
+      props.push(("definitionProvider", def.get_json()))
     end
     match notebookDocumentSync()
     | let data: ResultData =>

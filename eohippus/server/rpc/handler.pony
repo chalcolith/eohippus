@@ -313,6 +313,8 @@ actor EohippusHandler is Handler
         _handle_text_document_did_change(params)
       | "textDocument/didClose" =>
         _handle_text_document_did_close(params)
+      | "textDocument/definition" =>
+        _handle_text_document_definition(id, params)
       | "exit" =>
         _server.notification_exit()
       else
@@ -412,6 +414,30 @@ actor EohippusHandler is Handler
     else
       _log(Warn) and
         _log.log("textDocument/didClose params should be an object")
+    end
+
+  fun _handle_text_document_definition(
+    request_id: (I128 | String),
+    params_item: (json.Object val | json.Sequence val | None))
+  =>
+    match params_item
+    | let params_obj: json.Object val =>
+      match rpc_data.ParseDefinitionParams(params_obj)
+      | let dp: rpc_data.DefinitionParams =>
+        let req_str =
+          match request_id
+          | let n: I128 =>
+            n.string()
+          | let s: String =>
+            s
+          end
+        _server.request_definition(req_str, dp)
+      | let err: String =>
+        _log(Warn) and _log.log("textDocument/definition: " + err)
+      end
+    else
+      _log(Warn) and _log.log(
+        "textDocument/definition params should be an object")
     end
 
   fun _handle_shutdown(message_id: (I128 | String)) =>

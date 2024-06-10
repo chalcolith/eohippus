@@ -52,9 +52,12 @@ actor EohippusServer is Server
   let _handle_initialize: handlers.Initialize
   let _handle_shutdown: handlers.Shutdown
 
+  let _pending_requests: Map[USize, String]
+
   let _handle_text_document_did_open: handle_text_document.DidOpen
   let _handle_text_document_did_change: handle_text_document.DidChange
   let _handle_text_document_did_close: handle_text_document.DidClose
+  let _handle_text_document_definition: handle_text_document.Definition
 
   var _next_task_id: USize = 1
 
@@ -91,6 +94,8 @@ actor EohippusServer is Server
     _workspaces = Workspaces(_log, this, _parser_grammar)
     _src_files = SrcFiles
 
+    _pending_requests = Map[USize, String]
+
     _handle_initialize = handlers.Initialize(_log, this)
     _handle_shutdown = handlers.Shutdown(_log, this)
     _handle_text_document_did_open = handle_text_document.DidOpen(
@@ -98,6 +103,8 @@ actor EohippusServer is Server
     _handle_text_document_did_change = handle_text_document.DidChange(
       _log, _config)
     _handle_text_document_did_close = handle_text_document.DidClose(
+      _log, _config)
+    _handle_text_document_definition = handle_text_document.Definition(
       _log, _config)
 
   fun ref _get_next_task_id(): USize =>
@@ -298,6 +305,17 @@ actor EohippusServer is Server
       _src_files,
       _get_next_task_id(),
       params))
+
+  be request_definition(
+    request_id: String,
+    params: rpc_data.DefinitionParams)
+  =>
+    let cp = _get_canonical_path(params.textDocument().uri()).path
+    let task_id = _get_next_task_id()
+    _pending_requests.update(task_id, request_id)
+    _handle_request(
+      _handle_text_document_definition(
+        FileAuth(_env.root), _workspaces, task_id, params, cp))
 
   be notification_exit() =>
     _log(Fine) and _log.log("notification: exit")
@@ -606,3 +624,58 @@ actor EohippusServer is Server
   =>
     _log(Fine) and _log.log(
       task_id.string() + ": analyze failed: " + canonical_path)
+
+  fun ref _get_request_id(task_id: USize): (I128 | String | None) =>
+    let result =
+      try
+        let req_str = _pending_requests(task_id)?
+        try
+          req_str.i128()?
+        else
+          req_str
+        end
+      end
+    try _pending_requests.remove(task_id)? end
+    result
+
+  be definition_found(
+    analyze: analyzer.Analyzer,
+    task_id: USize,
+    canonical_path: String,
+    range: (USize, USize, USize, USize))
+  =>
+    let request_id = _get_request_id(task_id)
+    let start' =
+      object val is rpc_data.Position
+        fun val line(): I128 => I128.from[USize](range._1)
+        fun val character(): I128 => I128.from[USize](range._2)
+      end
+    let endd' =
+      object val is rpc_data.Position
+        fun val line(): I128 => I128.from[USize](range._3)
+        fun val character(): I128 => I128.from[USize](range._4)
+      end
+    let range' =
+      object val is rpc_data.Range
+        fun val start(): rpc_data.Position => start'
+        fun val endd(): rpc_data.Position => endd'
+      end
+    let result_data =
+      object val is rpc_data.Location
+        fun val uri(): rpc_data.DocumentUri => canonical_path
+        fun val range(): rpc_data.Range => range'
+      end
+    let response =
+      object val is rpc_data.ResponseMessage
+        fun val id(): (I128 | String | None) => request_id
+        fun val result(): (rpc_data.ResultData | None) => result_data
+      end
+    _rpc_handler.respond(response)
+
+  be definition_failed(
+    analyze: analyzer.Analyzer,
+    task_id: USize,
+    message: String)
+  =>
+    let request_id = _get_request_id(task_id)
+    _rpc_handler.respond_error(request_id, 1, message)

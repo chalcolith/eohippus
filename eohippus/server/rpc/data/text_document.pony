@@ -204,3 +204,7 @@ primitive ParseTextDocumentContentChangeEvent
       fun val rangeLength(): (I128 | None) => rangeLength'
       fun val text(): String => text'
     end
+
+interface val TextDocumentPositionParams is RequestParams
+  fun val textDocument(): TextDocumentIdentifier
+  fun val position(): Position

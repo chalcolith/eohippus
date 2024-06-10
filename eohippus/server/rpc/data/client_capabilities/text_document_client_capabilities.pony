@@ -3,12 +3,27 @@ use json = "../../../../json"
 use ".."
 
 interface val TextDocumentClientCapabilities
+  fun val definition(): (DefinitionClientCapabilities | None)
   fun val publishDiagnostics(): (PublishDiagnosticsClientCapabilities | None)
 
 primitive ParseTextDocumentClientCapabilities
   fun apply(obj: json.Object val)
     : (TextDocumentClientCapabilities | String)
   =>
+    let definition' =
+      try
+        match obj("definition")?
+        | let d_obj: json.Object val =>
+          match ParseDefinitionClientCapabilities(d_obj)
+          | let d: DefinitionClientCapabilities =>
+            d
+          | let err: String =>
+            return err
+          end
+        else
+          return "textDocument.definition must be a JSON object"
+        end
+      end
     let publishDiagnostics' =
       try
         match obj("publishDiagnostics")?
@@ -24,6 +39,7 @@ primitive ParseTextDocumentClientCapabilities
         end
       end
     object val is TextDocumentClientCapabilities
+      fun val definition(): (DefinitionClientCapabilities | None) => definition'
       fun val publishDiagnostics()
         : (PublishDiagnosticsClientCapabilities | None)
       =>

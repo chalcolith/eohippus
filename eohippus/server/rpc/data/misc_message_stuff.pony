@@ -26,7 +26,7 @@ interface val ResponseMessage is Message
 
 interface val ResponseError
   fun val code(): I128
-  fun val message(): String val
+  fun val message(): String
   fun val data(): (json.Item | None) => None
 
 interface val ResultData is SendData

@@ -71,6 +71,10 @@ class Initialize
             : (s_caps.TextDocumentSyncOptions | None)
           =>
             text_document_sync_options'
+          fun val definitionProvider()
+            : (Bool | s_caps.DefinitionOptions | None)
+          =>
+            true
         end
       let result' =
         object val is rpc_data.InitializeResult

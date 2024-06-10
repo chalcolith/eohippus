@@ -32,3 +32,14 @@ interface tag AnalyzerNotify
     task_id: USize,
     canonical_path: String,
     errors: ReadSeq[AnalyzerError] val)
+
+  be definition_found(
+    analyze: Analyzer,
+    task_id: USize,
+    canonical_path: String,
+    range: (USize, USize, USize, USize))
+
+  be definition_failed(
+    analyze: Analyzer,
+    task_id: USize,
+    message: String)
