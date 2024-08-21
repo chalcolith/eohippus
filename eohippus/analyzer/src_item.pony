@@ -44,11 +44,12 @@ class SrcFileItem
   var schedule: (I64, I64) = (0, 0)
   var parse: (parser.Parser | None) = None
   var syntax_tree: (ast.Node | None) = None
-  var scope: (Scope | None) = None
+  var scope: (Scope val | None) = None
 
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
+  fun path(): String => canonical_path
   fun state_value(): USize => state()
 
 class SrcPackageItem
@@ -61,9 +62,9 @@ class SrcPackageItem
 
   var task_id: USize = 0
   var state: SrcItemState = AnalysisStart
-  var scope: (Scope | None) = None
 
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
+  fun path(): String => canonical_path
   fun state_value(): USize => state()

@@ -33,13 +33,14 @@ interface tag AnalyzerNotify
     canonical_path: String,
     errors: ReadSeq[AnalyzerError] val)
 
-  be definition_found(
-    analyze: Analyzer,
+interface tag AnalyzerRequestNotify
+  be request_succeeded(
     task_id: USize,
     canonical_path: String,
-    range: (USize, USize, USize, USize))
+    syntax_tree: (ast.Node | None),
+    scope: Scope val)
 
-  be definition_failed(
-    analyze: Analyzer,
+  be request_failed(
     task_id: USize,
+    canonical_path: String,
     message: String)

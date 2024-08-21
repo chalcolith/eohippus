@@ -381,7 +381,7 @@ actor EohippusServer is Server
           pony_packages_path = None,
           notify = this)
       let workspace = WorkspaceInfo(
-        name, client_uri, canonical_path.path, analyze)
+        name, client_uri, canonical_path.path, this, analyze)
       _workspaces.by_client_uri.update(client_uri, workspace)
       _workspaces.by_canonical_path.update(canonical_path.path, workspace)
       _workspaces.by_analyzer.update(analyze, workspace)
@@ -639,10 +639,9 @@ actor EohippusServer is Server
     result
 
   be definition_found(
-    analyze: analyzer.Analyzer,
     task_id: USize,
     canonical_path: String,
-    range: (USize, USize, USize, USize))
+    range: analyzer.SrcRange)
   =>
     let request_id = _get_request_id(task_id)
     let start' =
@@ -673,7 +672,6 @@ actor EohippusServer is Server
     _rpc_handler.respond(response)
 
   be definition_failed(
-    analyze: analyzer.Analyzer,
     task_id: USize,
     message: String)
   =>

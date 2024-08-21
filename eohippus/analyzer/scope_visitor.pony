@@ -18,7 +18,12 @@ class ScopeVisitor is ast.Visitor[ScopeState]
     parent: (Scope | None))
   =>
     _log = log
-    file_scope = Scope(FileScope, canonical_path, parent)
+    file_scope = Scope(
+      FileScope,
+      canonical_path,
+      canonical_path,
+      (0, 0, USize.max_value(), USize.max_value()),
+      parent)
 
   fun ref visit_pre(
     parent_state: ScopeState,
@@ -29,8 +34,17 @@ class ScopeVisitor is ast.Visitor[ScopeState]
   =>
     var scope = parent_state.current_scope
 
+    let si = node.src_info()
+    let range: SrcRange =
+      match (si.line, si.column, si.next_line, si.next_column)
+      | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
+        (l, c, nl, nc)
+      else
+        (0, 0, 0, 0)
+      end
+
     if scope.kind is QualifierScope then
-      scope = Scope(BlockScope, "", scope)
+      scope = Scope(BlockScope, "", scope.canonical_path, range, scope)
     end
 
     match node
@@ -74,16 +88,17 @@ class ScopeVisitor is ast.Visitor[ScopeState]
         | let tda: ast.TypedefAlias =>
           (tda.identifier.data().string, false)
         end
-      let si = td.src_info()
       scope.add_definition(identifier, si, td.doc_strings())
 
       if need_new then
-        let new_scope = Scope(ClassScope, identifier, scope)
+        let new_scope = Scope(
+          ClassScope, identifier, scope.canonical_path, range, scope)
         return (ScopeState(new_scope), consume errors)
       end
     | let meth: ast.NodeWith[ast.TypedefMethod] =>
       let identifier = meth.data().identifier.data().string
-      let new_scope = Scope(MethodScope, identifier, scope)
+      let new_scope = Scope(
+        MethodScope, identifier, scope.canonical_path, range, scope)
       return (ScopeState(new_scope), consume errors)
     | let exp: ast.NodeWith[ast.Expression] =>
       match exp.data()
@@ -96,15 +111,18 @@ class ScopeVisitor is ast.Visitor[ScopeState]
         | ast.ExpFor
         | ast.ExpWith )
       =>
-        let new_scope = Scope(BlockScope, "", scope)
+        let new_scope = Scope(
+          BlockScope, "", scope.canonical_path, range, scope)
         return (ScopeState(new_scope), consume errors)
       | let _: ast.ExpObject =>
-        let new_scope = Scope(ClassScope, "", scope)
+        let new_scope = Scope(
+          ClassScope, "object", scope.canonical_path, range, scope)
         return (ScopeState(new_scope), consume errors)
       | let decl: ast.ExpDecl =>
         let identifier = decl.identifier.data().string
         scope.add_definition(identifier, exp.src_info(), exp.doc_strings())
-        let new_scope = Scope(BlockScope, identifier, scope)
+        let new_scope = Scope(
+          BlockScope, identifier, scope.canonical_path, range, scope)
         let new_state = ScopeState(new_scope)
         return (new_state, consume errors)
       | let op: ast.ExpOperation =>
@@ -112,13 +130,15 @@ class ScopeVisitor is ast.Visitor[ScopeState]
         | let token: ast.NodeWith[ast.Token]
           if token.data().string == ast.Tokens.dot()
         =>
-          let new_scope = Scope(QualifierScope, "", scope)
+          let new_scope = Scope(
+            QualifierScope, "qualifier", scope.canonical_path, range, scope)
           let new_state = ScopeState(new_scope)
           return (new_state, consume errors)
         end
       end
     | let case: ast.NodeWith[ast.MatchCase] =>
-      let new_scope = Scope(BlockScope, "", scope)
+      let new_scope = Scope(
+        BlockScope, "case", scope.canonical_path, range, scope)
       return (ScopeState(new_scope), consume errors)
     | let mp: ast.NodeWith[ast.MethodParam] =>
       let identifier = mp.data().identifier.data().string
@@ -131,12 +151,6 @@ class ScopeVisitor is ast.Visitor[ScopeState]
           scope.add_definition(identifier, id.src_info(), id.doc_strings())
         end
       end
-    | let id: ast.NodeWith[ast.Identifier] =>
-      let identifier = id.data().string
-      scope.add_content(
-        identifier,
-        id.src_info(),
-        id.doc_strings())
     end
 
     let new_state = ScopeState(scope)

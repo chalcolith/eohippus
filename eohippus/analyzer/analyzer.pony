@@ -1,5 +1,6 @@
 use "collections"
 use "files"
+use "itertools"
 use "logger"
 use "time"
 
@@ -13,8 +14,8 @@ interface tag Analyzer
   be open_file(task_id: USize, canonical_path: String, parse: parser.Parser)
   be update_file(task_id: USize, canonical_path: String, parse: parser.Parser)
   be close_file(task_id: USize, canonical_path: String)
-  be find_definition(
-    task_id: USize, canonical_path: String, line: USize, column: USize)
+  be request_info(
+    task_id: USize, canonical_path: String, notify: AnalyzerRequestNotify)
   be dispose()
 
 actor EohippusAnalyzer is Analyzer
@@ -42,6 +43,9 @@ actor EohippusAnalyzer is Analyzer
     _lint_errors.create()
   let _analyze_errors: Map[String, Array[AnalyzerError]] =
     _analyze_errors.create()
+
+  let _pending_requests: Map[String, MapIs[AnalyzerRequestNotify, Set[USize]]] =
+    _pending_requests.create()
 
   var _disposing: Bool = false
 
@@ -290,7 +294,6 @@ actor EohippusAnalyzer is Analyzer
               first = false
             end
             package.task_id = task_id
-            package.scope = Scope(PackageScope, package_path)
 
             (let parent, let dir_name) = Path.split(dir_path.path)
             try
@@ -408,10 +411,34 @@ actor EohippusAnalyzer is Analyzer
       src_file.is_open = false
     end
 
-  be find_definition(
-    task_id: USize, canonical_path: String, line: USize, column: USize)
+  be request_info(
+    task_id: USize, canonical_path: String, notify: AnalyzerRequestNotify)
   =>
-    None
+    if not _src_items.contains(canonical_path) then
+      analyze(task_id, canonical_path)
+    end
+
+    let notifys =
+      match try _pending_requests(canonical_path)? end
+      | let notifys': MapIs[AnalyzerRequestNotify, Set[USize]] =>
+        notifys'
+      else
+        let notifys' = MapIs[AnalyzerRequestNotify, Set[USize]]
+        _pending_requests.update(canonical_path, notifys')
+        notifys'
+      end
+    let task_ids =
+      match try notifys(notify)? end
+      | let task_ids': Set[USize] =>
+        task_ids'
+      else
+        let task_ids = Set[USize]
+        notifys.update(notify, task_ids)
+        task_ids
+      end
+    task_ids.set(task_id)
+
+    _process_src_item_queue()
 
   be dispose() =>
     _disposing = true
@@ -489,6 +516,8 @@ actor EohippusAnalyzer is Analyzer
         _process_src_item(src_item)
       end
     end
+
+    _process_pending_requests()
 
     if _src_item_queue.size() > 0 then
       _process_src_item_queue()
@@ -684,13 +713,98 @@ actor EohippusAnalyzer is Analyzer
           _collect_errors(_parse_errors, src_file.canonical_path),
           _collect_errors(_lint_errors, src_file.canonical_path),
           _collect_errors(_analyze_errors, src_file.canonical_path))
-      else
-        // free some memory
-        src_file.syntax_tree = None
       end
     end
     if needs_push then
       _src_item_queue.push(src_file)
+    end
+
+  fun ref _process_pending_requests() =>
+    let paths_done = Array[String]
+
+    for (canonical_path, notifys) in _pending_requests.pairs() do
+      match try _src_items(canonical_path)? end
+      | let file_item: SrcFileItem =>
+        match file_item.state
+        | AnalysisUpToDate =>
+          _pending_request_succeeded(file_item, notifys)
+          paths_done.push(canonical_path)
+        | AnalysisError =>
+          _pending_request_failed(file_item, notifys)
+          paths_done.push(canonical_path)
+        end
+      | let package_item: SrcPackageItem =>
+        let up_to_date = Iter[SrcItem](package_item.dependencies.values())
+          .all({(pi) => pi.state_value() is AnalysisUpToDate()})
+        if up_to_date then
+          _pending_request_succeeded(package_item, notifys)
+          paths_done.push(canonical_path)
+        else
+          let any_errors = Iter[SrcItem](package_item.dependencies.values())
+            .any({(pi) => pi.state_value() is AnalysisError()})
+          if any_errors then
+            _pending_request_failed(package_item, notifys)
+            paths_done.push(canonical_path)
+          end
+        end
+      end
+    end
+
+    for path in paths_done.values() do
+      try
+        _pending_requests.remove(path)?
+      end
+    end
+
+  fun ref _pending_request_succeeded(
+    src_item: (SrcFileItem | SrcPackageItem),
+    notifys: MapIs[AnalyzerRequestNotify, Set[USize]])
+  =>
+    match src_item
+    | let file_item: SrcFileItem =>
+      match (file_item.syntax_tree, file_item.scope)
+      | (let st: ast.Node, let sc: Scope val) =>
+        for (notify, task_ids) in notifys.pairs() do
+          for task_id in task_ids.values() do
+            notify.request_succeeded(task_id, file_item.canonical_path, st, sc)
+          end
+        end
+      end
+    | let package_item: SrcPackageItem =>
+      let package_scope: Scope trn = Scope(
+        PackageScope,
+        package_item.canonical_path,
+        package_item.canonical_path,
+        (0, 0, USize.max_value(), USize.max_value()))
+
+      for dep in package_item.dependencies.values() do
+        match dep
+        | let file_item: SrcFileItem =>
+          match file_item.scope
+          | let child_scope: Scope val =>
+            package_scope.add_child(child_scope)
+          end
+        end
+      end
+
+      let package_scope': Scope val = consume package_scope
+
+      for (notify, task_ids) in notifys.pairs() do
+        for task_id in task_ids.values() do
+          notify.request_succeeded(
+            task_id, package_item.canonical_path, None, package_scope')
+        end
+      end
+    end
+
+  fun ref _pending_request_failed(
+    src_item: (SrcFileItem | SrcPackageItem),
+    notifys: MapIs[AnalyzerRequestNotify, Set[USize]])
+  =>
+    for (notify, task_ids) in notifys.pairs() do
+      for task_id in task_ids.values() do
+        notify.request_failed(task_id, src_item.path(), "analysis failed")
+      end
     end
 
   fun _schedule(millis: U64): (I64, I64) =>
@@ -1075,17 +1189,7 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         task_id.string() + ": scoped " + canonical_path)
 
-      let scope': Scope ref = consume scope
-      src_file.scope = scope'
-
-      match src_file.parent_package
-      | let package: SrcPackageItem =>
-        match package.scope
-        | let pkg_scope: Scope =>
-          pkg_scope.children.push(scope')
-          scope'.parent = pkg_scope
-        end
-      end
+      src_file.scope = consume scope
 
       //_process_imports(canonical_path, scope')
       _write_scope(src_file)
@@ -1201,7 +1305,7 @@ actor EohippusAnalyzer is Analyzer
   fun ref _write_scope(src_file: SrcFileItem) =>
     let scope =
       match src_file.scope
-      | let scope': Scope =>
+      | let scope': Scope val =>
         scope'
       else
         _log(Error) and _log.log(

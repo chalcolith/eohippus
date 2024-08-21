@@ -1,11 +1,12 @@
 use analyzer = "../analyzer"
 use ast = "../ast"
+use c_caps = "rpc/data/client_capabilities"
 use parser = "../parser"
 use rpc = "rpc"
 use rpc_data = "rpc/data"
-use c_caps = "rpc/data/client_capabilities"
+use tasks = "../analyzer/tasks"
 
-interface tag Server is analyzer.AnalyzerNotify
+interface tag Server is (analyzer.AnalyzerNotify & tasks.FindDefinitionNotify)
   be set_rpc_handler(rpc_handler: rpc.Handler)
   be rpc_listening()
   be rpc_connected()
@@ -76,12 +77,12 @@ interface tag Server is analyzer.AnalyzerNotify
     task_id: USize,
     canonical_path: String,
     errors: ReadSeq[analyzer.AnalyzerError] val)
+
+  // FindDefinitionNotify
   be definition_found(
-    analyze: analyzer.Analyzer,
     task_id: USize,
     canonical_path: String,
-    range: (USize, USize, USize, USize))
+    range: analyzer.SrcRange)
   be definition_failed(
-    analyze: analyzer.Analyzer,
     task_id: USize,
     message: String)

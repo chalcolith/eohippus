@@ -16,28 +16,35 @@ type ScopeKind is
   | BlockScope
   | QualifierScope )
 
-type ScopeItem is (String, USize, USize, USize, USize, String)
+type SrcRange is (USize, USize, USize, USize)
+
+type ScopeItem is (String, SrcRange, String)
 
 class Scope
   let kind: ScopeKind
   let name: String
-  var parent: (Scope | None)
+  let canonical_path: String
+  let range: SrcRange
+  var parent: (Scope box | None)
   let imports: Array[(String, String)] = imports.create()
   let definitions: Array[ScopeItem] = definitions.create()
-  let contents: Array[ScopeItem] = contents.create()
-  let children: Array[Scope] = children.create()
+  let children: Array[Scope box] = children.create()
 
   new create(
     kind': ScopeKind,
     name': String,
-    parent': (Scope | None) = None)
+    canonical_path': String,
+    range': SrcRange,
+    parent': (Scope ref | None) = None)
   =>
     kind = kind'
     name = name'
+    canonical_path = canonical_path'
+    range = range'
     parent = parent'
 
-    match parent
-    | let parent_scope: Scope =>
+    match parent'
+    | let parent_scope: Scope ref =>
       parent_scope.children.push(this)
     end
 
@@ -48,18 +55,11 @@ class Scope
   =>
     match (si.line, si.column, si.next_line, si.next_column)
     | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-      definitions.push((identifier, l, c, nl, nc, _get_docstring(docs)))
+      definitions.push((identifier, (l, c, nl, nc), _get_docstring(docs)))
     end
 
-  fun ref add_content(
-    identifier: String,
-    si: ast.SrcInfo,
-    docs: ast.NodeSeqWith[ast.DocString])
-  =>
-    match (si.line, si.column, si.next_line, si.next_column)
-    | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-      contents.push((identifier, l, c, nl, nc, _get_docstring(docs)))
-    end
+  fun ref add_child(child: Scope val) =>
+    children.push(child)
 
   fun _get_docstring(docs: ast.NodeSeqWith[ast.DocString]): String =>
     if docs.size() > 0 then
@@ -94,6 +94,18 @@ class Scope
       end
     props.push(("kind", kind_string))
     props.push(("name", name))
+    if (kind is PackageScope) or (kind is FileScope) then
+      props.push(("canonical_path", canonical_path))
+    end
+    props.push(
+      ( "range",
+        json.Sequence(
+          [ as I128:
+            I128.from[USize](range._1)
+            I128.from[USize](range._2)
+            I128.from[USize](range._3)
+            I128.from[USize](range._4)
+          ])) )
     if imports.size() > 0 then
       let import_items = Array[json.Item]
       for (ident, path) in imports.values() do
@@ -105,7 +117,7 @@ class Scope
     if definitions.size() > 0 then
       let def_items = Array[json.Item]
       for
-        (ident, line, col, next_line, next_col, doc) in definitions.values()
+        (ident, (line, col, next_line, next_col), doc) in definitions.values()
       do
         def_items.push(json.Object(
           [ as (String, json.Item):
@@ -117,20 +129,6 @@ class Scope
             ("doc_string", doc) ]))
       end
       props.push(("definitions", json.Sequence(def_items)))
-    end
-    if contents.size() > 0 then
-      let content_items = Array[json.Item]
-      for (ident, line, col, next_line, next_col, doc) in contents.values() do
-        content_items.push(json.Object(
-          [ as (String, json.Item):
-            ("identifier", ident)
-            ("line", I128.from[USize](line))
-            ("column", I128.from[USize](col))
-            ("next_line", I128.from[USize](next_line))
-            ("next_column", I128.from[USize](next_col))
-            ("doc_string", doc) ]))
-      end
-      props.push(("contents", json.Sequence(content_items)))
     end
     if children.size() > 0 then
       let children_items = Array[json.Item]
@@ -167,9 +165,37 @@ primitive ParseScopeJson
         | let str: String box =>
           str
         else
-          "scope.name must be a string"
+          return "scope.name must be a string"
         end
-      let scope = Scope(kind, name.clone(), parent)
+      let canonical_path =
+        match try scope_obj("canonical_path")? end
+        | let str: String box =>
+          str.clone()
+        else
+          match parent
+          | let parent': Scope =>
+            parent'.canonical_path
+          else
+            ""
+          end
+        end
+      let range =
+        match try scope_obj("range")? end
+        | let seq: json.Sequence box =>
+          match try (seq(0)?, seq(1)?, seq(2)?, seq(3)?) end
+          | (let l: I128, let c: I128, let nl: I128, let nc: I128) =>
+            ( USize.from[I128](l),
+              USize.from[I128](c),
+              USize.from[I128](nl),
+              USize.from[I128](nc) )
+          else
+            return "scope.range must be a sequence of integers"
+          end
+        else
+          return "scope.range must be a sequence of integers"
+        end
+      let scope = Scope(
+        kind, name.clone(), canonical_path, range, parent)
       match try scope_obj("imports")? end
       | let seq: json.Sequence =>
         for item in seq.values() do
@@ -197,35 +223,11 @@ primitive ParseScopeJson
                 , obj("next_column")? as I128
                 , obj("doc_string")? as String box )
               scope.definitions.push(
-                ( ident.clone()
-                , USize.from[I128](l)
-                , USize.from[I128](c)
-                , USize.from[I128](nl)
-                , USize.from[I128](nc)
-                , doc.clone() ))
-            end
-          end
-        end
-      end
-      match try scope_obj("contents")? end
-      | let seq: json.Sequence =>
-        for item in seq.values() do
-          match item
-          | let obj: json.Object =>
-            try
-              (let ident, let l, let c, let nl, let nc, let doc) =
-                ( obj("identifier")? as String box
-                , obj("line")? as I128
-                , obj("column")? as I128
-                , obj("next_line")? as I128
-                , obj("next_column")? as I128
-                , obj("doc_string")? as String box )
-              scope.definitions.push(
-                ( ident.clone()
-                , USize.from[I128](l)
-                , USize.from[I128](c)
-                , USize.from[I128](nl)
-                , USize.from[I128](nc)
+                ( ident.clone(),
+                  ( USize.from[I128](l)
+                  , USize.from[I128](c)
+                  , USize.from[I128](nl)
+                  , USize.from[I128](nc) )
                 , doc.clone() ))
             end
           end
@@ -236,7 +238,8 @@ primitive ParseScopeJson
         for item in seq.values() do
           match ParseScopeJson(item, scope)
           | let child: Scope =>
-            scope.children.push(child)
+            // ctor will add us
+            None
           | let err: String =>
             return err
           end

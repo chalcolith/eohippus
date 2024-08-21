@@ -9,6 +9,7 @@ class WorkspaceInfo
   let name: String
   let client_uri: String
   let canonical_path: String
+  let server: Server
   let analyze: analyzer.Analyzer
 
   let errors: Map[String, Array[analyzer.AnalyzerError]] = errors.create()
@@ -17,11 +18,13 @@ class WorkspaceInfo
     name': String,
     client_uri': String,
     canonical_path': String,
+    server': Server,
     analyze': analyzer.Analyzer)
   =>
     name = name'
     client_uri = client_uri'
     canonical_path = canonical_path'
+    server = server'
     analyze = analyze'
 
 class Workspaces
@@ -73,7 +76,7 @@ class Workspaces
       ponyc,
       None,
       _server)
-    let workspace = WorkspaceInfo(dir, dir, dir, analyze)
+    let workspace = WorkspaceInfo(dir, dir, dir, _server, analyze)
     by_canonical_path.update(dir, workspace)
     by_analyzer.update(analyze, workspace)
     workspace

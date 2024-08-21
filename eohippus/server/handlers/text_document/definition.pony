@@ -2,6 +2,7 @@ use "files"
 use "logger"
 
 use rpc_data = "../../rpc/data"
+use tasks = "../../../analyzer/tasks"
 use "../.."
 
 class Definition
@@ -27,9 +28,14 @@ class Definition
     let uri = params.textDocument().uri()
     let workspace = workspaces.get_workspace(auth, _config, canonical_path)
     let position = params.position()
-    workspace.analyze.find_definition(
+
+    tasks.FindDefinition(
+      _log,
+      workspace.analyze,
       task_id,
       canonical_path,
       USize.from[I128](position.line()),
-      USize.from[I128](position.character()))
+      USize.from[I128](position.character()),
+      workspace.server)
+
     (None, None)

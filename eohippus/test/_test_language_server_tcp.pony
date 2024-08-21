@@ -38,7 +38,7 @@ class iso _TestLanguageServerTcpRequestInitialize is UnitTest
         Logger[String](Error, server_stderr, {(s: String): String => s })
       end
 
-    let port = "63421"
+    let port = "62421"
     let tcp_listener = TCPListener(
       TCPListenAuth(h.env.root),
       object iso is TCPListenNotify
@@ -112,7 +112,7 @@ class iso _TestLanguageServerTcpRequestInitialize is UnitTest
               true
           end
 
-        fun ref not_listening(listen:TCPListener ref) =>
+        fun ref not_listening(listen: TCPListener ref) =>
           h.fail("client: not listening")
           h.complete(false)
       end,
