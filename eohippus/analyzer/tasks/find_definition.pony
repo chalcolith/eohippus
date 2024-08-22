@@ -99,7 +99,9 @@ actor FindDefinition is AnalyzerRequestNotify
             match _find_definition_span(st)
             | let span': String =>
               span = span'
-              _find_definition_location(sc where orig_file = true)
+              if not _find_definition_location(sc where orig_file = true) then
+                notify.definition_failed(task_id, "definition not found")
+              end
             else
               finished = true
               notify.definition_failed(task_id, "span not found")
@@ -124,9 +126,20 @@ actor FindDefinition is AnalyzerRequestNotify
     let si = node.src_info()
     match (si.line, si.column, si.next_line, si.next_column)
     | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
+      // log(Fine) and log.log(
+      //   task_id.string() + ": " + canonical_path + ": is (" + line.string()
+      //   + "," + column.string() + ") in " + node.name() + " (" + l.string()
+      //   + "," + c.string() + ") - (" + nl.string() + "," + nc.string() + ")?")
+
       if _is_in_range(l, c, nl, nc) then
+        // log(Fine) and log.log(
+        //   task_id.string() + ": " + canonical_path + ": yes")
         match node
         | let id: ast.NodeWith[ast.Identifier] =>
+          log(Fine) and log.log(
+            task_id.string() + ": " + canonical_path + ": found "
+            + id.data().string + " (" + l.string() + "," + c.string() + ") - ("
+            + nl.string() + "," + nc.string() + ")")
           return id.data().string
         end
         if node.children().size() > 0 then
@@ -138,37 +151,52 @@ actor FindDefinition is AnalyzerRequestNotify
             end
           end
         end
+      else
+        // log(Fine) and log.log(
+        //   task_id.string() + ": " + canonical_path + ": no")
+        None
       end
     end
+    None
 
   fun _is_in_range(l: USize, c: USize, nl: USize, nc: USize): Bool =>
     if (line >= l) and (line <= nl) then
-      if (line == l) and (line < nl) then
-        column >= c
-      elseif (line > l) and (line <= nl) then
-        true
-      elseif (line > l) and (line == nl) then
-        column <= nc
+      if (line == nl) and (column <= nc) then
+        return true
       elseif (line == l) and (line == nl) then
-        (column >= c) and (column <= nc)
-      else
-        false
+        return (column >= c) and (column < nc)
+      elseif (line == l) and (line < nl) then
+        return true
+      elseif (line > l) and (line < nl) then
+        return true
       end
-    else
-      false
     end
+    false
 
-  fun ref _find_definition_location(scope: Scope val, orig_file: Bool) =>
+  fun ref _find_definition_location(scope: Scope val, orig_file: Bool): Bool =>
     var scope': (Scope val | None) =
       if orig_file then
         _find_child_scope(scope)
       else
+        log(Fine) and log.log(
+          task_id.string() + ": original scope " + scope.name + "("
+          + scope.range._1.string() + "," + scope.range._2.string() + ") - ("
+          + scope.range._3.string() + "," + scope.range._4.string() + ")")
         scope
       end
     while true do
       match scope'
       | let cur_scope: Scope val =>
+        log(Fine) and log.log(
+          task_id.string() + ": search scope " + cur_scope.name + " ("
+          + cur_scope.range._1.string() + "," + cur_scope.range._2.string()
+          + ") - (" + cur_scope.range._3.string() + ","
+          + cur_scope.range._4.string() + ")")
+
         for definition in cur_scope.definitions.values() do
+          log(Fine) and log.log(
+            task_id.string() + ": definition " + definition._1)
+
           if definition._1 == span then
             log(Fine) and log.log(
               task_id.string() + ": found definition for '" + span + "': "
@@ -178,7 +206,7 @@ actor FindDefinition is AnalyzerRequestNotify
             finished = true
             notify.definition_found(
               task_id, cur_scope.canonical_path, definition._2)
-            break
+            return true
           end
         end
         match cur_scope.kind
@@ -191,17 +219,26 @@ actor FindDefinition is AnalyzerRequestNotify
         break
       end
     end
+    false
 
   fun _find_child_scope(scope: Scope val): (Scope val | None) =>
     if
       _is_in_range(
         scope.range._1, scope.range._2, scope.range._3, scope.range._4)
     then
+      log(Fine) and log.log(
+        task_id.string() + ": drill into scope " + scope.name + " ("
+        + scope.range._1.string() + "," + scope.range._2.string() + ") - ("
+        + scope.range._3.string() + "," + scope.range._4.string() + ")")
       for child in scope.children.values() do
         match _find_child_scope(child)
         | let scope': Scope val =>
           return scope'
         end
       end
+      log(Fine) and log.log(
+        task_id.string() + ": found scope " + scope.name + " ("
+        + scope.range._1.string() + "," + scope.range._2.string() + ") - ("
+        + scope.range._3.string() + "," + scope.range._4.string() + ")")
       scope
     end

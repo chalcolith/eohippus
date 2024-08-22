@@ -414,6 +414,8 @@ actor EohippusAnalyzer is Analyzer
   be request_info(
     task_id: USize, canonical_path: String, notify: AnalyzerRequestNotify)
   =>
+    _log(Fine) and _log.log(task_id.string() + ": request " + canonical_path)
+
     if not _src_items.contains(canonical_path) then
       analyze(task_id, canonical_path)
     end
@@ -766,6 +768,9 @@ actor EohippusAnalyzer is Analyzer
       | (let st: ast.Node, let sc: Scope val) =>
         for (notify, task_ids) in notifys.pairs() do
           for task_id in task_ids.values() do
+            _log(Fine) and _log.log(
+              task_id.string() + ": request succeeded: "
+              + file_item.canonical_path)
             notify.request_succeeded(task_id, file_item.canonical_path, st, sc)
           end
         end
@@ -791,6 +796,9 @@ actor EohippusAnalyzer is Analyzer
 
       for (notify, task_ids) in notifys.pairs() do
         for task_id in task_ids.values() do
+          _log(Fine) and _log.log(
+            task_id.string() + ": request succeeded: "
+            + package_item.canonical_path)
           notify.request_succeeded(
             task_id, package_item.canonical_path, None, package_scope')
         end
@@ -803,6 +811,8 @@ actor EohippusAnalyzer is Analyzer
   =>
     for (notify, task_ids) in notifys.pairs() do
       for task_id in task_ids.values() do
+        _log(Fine) and _log.log(
+          task_id.string() + ": request failed: " + src_item.path())
         notify.request_failed(task_id, src_item.path(), "analysis failed")
       end
     end

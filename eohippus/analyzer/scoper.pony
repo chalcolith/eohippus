@@ -32,6 +32,13 @@ actor Scoper
           _notify.scope_failed(task_id, canonical_path, consume errors)
           return
         end
+        (_, _, let nl, let nc) = visitor.file_scope.get_child_range()
+        visitor.file_scope.range =
+          ( visitor.file_scope.range._1
+          , visitor.file_scope.range._2
+          , nl
+          , nc )
         visitor.file_scope
       end
+
     _notify.scoped_file(task_id, canonical_path, consume scope)

@@ -95,6 +95,12 @@ class ScopeVisitor is ast.Visitor[ScopeState]
           ClassScope, identifier, scope.canonical_path, range, scope)
         return (ScopeState(new_scope), consume errors)
       end
+    | let field: ast.NodeWith[ast.TypedefField] =>
+      let id = field.data().identifier
+      scope.add_definition(id.data().string, id.src_info(), field.doc_strings())
+      let new_scope = Scope(
+        BlockScope, id.data().string, scope.canonical_path, range, scope)
+      return (ScopeState(new_scope), consume errors)
     | let meth: ast.NodeWith[ast.TypedefMethod] =>
       let identifier = meth.data().identifier.data().string
       let new_scope = Scope(
@@ -112,7 +118,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
         | ast.ExpWith )
       =>
         let new_scope = Scope(
-          BlockScope, "", scope.canonical_path, range, scope)
+          BlockScope, exp.name(), scope.canonical_path, range, scope)
         return (ScopeState(new_scope), consume errors)
       | let _: ast.ExpObject =>
         let new_scope = Scope(

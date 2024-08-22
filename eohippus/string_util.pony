@@ -90,3 +90,7 @@ primitive StringUtil
       i = i + 1
     end
     consume result
+
+  fun get_client_uri(path: String): String =>
+    let str = path.clone() .> replace("\\", "/")
+    "file:///" + url_encode(consume str)

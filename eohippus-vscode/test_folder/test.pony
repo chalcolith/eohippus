@@ -9,6 +9,7 @@ class One is MainTrait
   new create() =>
     "One constructor"
     let foo = pk2.Foo
+    let bar = one_a
 
 class Two is MainInterface
   "Class Two in the test_folder package"
@@ -18,8 +19,6 @@ class Two is MainInterface
   new create() =>
     "Two constructor"
     let s = MainStruct
-
-!@#$
 
 class Three
   "Class Three in the test_folder package"

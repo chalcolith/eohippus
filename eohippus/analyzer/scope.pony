@@ -24,7 +24,7 @@ class Scope
   let kind: ScopeKind
   let name: String
   let canonical_path: String
-  let range: SrcRange
+  var range: SrcRange
   var parent: (Scope box | None)
   let imports: Array[(String, String)] = imports.create()
   let definitions: Array[ScopeItem] = definitions.create()
@@ -46,6 +46,15 @@ class Scope
     match parent'
     | let parent_scope: Scope ref =>
       parent_scope.children.push(this)
+    end
+
+  fun get_child_range(): SrcRange =>
+    try
+      let first = children(0)?
+      let last = children(children.size() - 1)?
+      (first.range._1, first.range._2, last.range._3, last.range._4)
+    else
+      (0, 0, 0, 0)
     end
 
   fun ref add_definition(

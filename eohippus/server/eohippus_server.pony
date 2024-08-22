@@ -481,9 +481,7 @@ actor EohippusServer is Server
     canonical_path: String,
     errors: Array[analyzer.AnalyzerError])
   =>
-    let path: String iso = canonical_path.clone() .> replace("\\", "/")
-    let client_uri: String val =
-      "file:///" + StringUtil.url_encode(consume path)
+    let client_uri = StringUtil.get_client_uri(canonical_path)
     let diagnostics: Array[rpc_data.Diagnostic] trn = []
     for err in errors.values() do
       let range' = _get_range(err)
@@ -643,6 +641,7 @@ actor EohippusServer is Server
     canonical_path: String,
     range: analyzer.SrcRange)
   =>
+    let client_uri = StringUtil.get_client_uri(canonical_path)
     let request_id = _get_request_id(task_id)
     let start' =
       object val is rpc_data.Position
@@ -661,7 +660,7 @@ actor EohippusServer is Server
       end
     let result_data =
       object val is rpc_data.Location
-        fun val uri(): rpc_data.DocumentUri => canonical_path
+        fun val uri(): rpc_data.DocumentUri => client_uri
         fun val range(): rpc_data.Range => range'
       end
     let response =
