@@ -38,6 +38,5 @@ primitive EditorConfig
 
   fun default(): Config val =>
     recover val
-      Config
-        .> update(ConfigKey.trim_trailing_whitespace(), "true")
+      Config .> update(ConfigKey.trim_trailing_whitespace(), "true")
     end

@@ -26,6 +26,8 @@ actor Main
     "Main method"
     None
 
+ !@#$%%
+
 trait MainTrait
   "A trait in the test_folder package"
   fun trait_fun() => None
