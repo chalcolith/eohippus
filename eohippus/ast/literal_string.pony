@@ -28,3 +28,23 @@ class val LiteralString is NodeDataWithValue[LiteralString, String]
     props.push(("value", _value))
 
   fun value(): String => _value
+
+primitive ParseLiteralString
+  fun apply(obj: json.Object, children: NodeSeq): (LiteralString | String) =>
+    let value =
+      match try obj("value")? end
+      | let str: String box =>
+        str
+      else
+        return "LiteralString.value must be a string"
+      end
+    let kind =
+      match try obj("kind")? end
+      | "StringLiteral" =>
+        StringLiteral
+      | "StringTripleQuote" =>
+        StringTripleQuote
+      else
+        return "LiteralString.kind must be a string"
+      end
+    LiteralString(value.clone(), kind)

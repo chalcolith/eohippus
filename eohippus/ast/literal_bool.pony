@@ -1,12 +1,5 @@
 use json = "../json"
 
-type Literal is
-  ( LiteralBool
-  | LiteralChar
-  | LiteralFloat
-  | LiteralInteger
-  | LiteralString )
-
 class val LiteralBool is NodeDataWithValue[LiteralBool, Bool]
   let _value: Bool
 
@@ -22,3 +15,14 @@ class val LiteralBool is NodeDataWithValue[LiteralBool, Bool]
     props.push(("value", _value))
 
   fun value(): Bool => _value
+
+primitive ParseLiteralBool
+  fun apply(obj: json.Object, children: NodeSeq): (LiteralBool | String) =>
+    let value =
+      match try obj("value")? end
+      | let bool: Bool =>
+        bool
+      else
+        return "LiteralBool.value must be a boolean"
+      end
+    LiteralBool(value)

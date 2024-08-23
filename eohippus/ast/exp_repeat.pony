@@ -31,3 +31,45 @@ class val ExpRepeat is NodeData
     | let else_block': NodeWith[Expression] =>
       props.push(("else_block", node.child_ref(else_block')))
     end
+
+primitive ParseExpRepeat
+  fun apply(obj: json.Object, children: NodeSeq): (ExpRepeat | String) =>
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpRepeat.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpRepeat.body must be an Expression"
+      end
+    let condition =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "condition",
+        "ExpRepeat.condition must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpRepeat.condition must be an Expression"
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpRepeat.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpRepeat(body, condition, else_block)

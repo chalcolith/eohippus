@@ -53,3 +53,44 @@ primitive StringUtil
       end
     end
     consume result
+
+  fun url_encode(str: String box): String =>
+    let result: String trn = String
+    for ch in str.values() do
+      if
+        ( (ch >= 'a') and (ch <= 'z') ) or
+        ( (ch >= 'A') and (ch <= 'Z') ) or
+        ( (ch >= '0') and (ch <= '9') ) or
+        ( ch == '/' ) or (ch == '_') or (ch == '-') or (ch == '.')
+      then
+        result.push(ch)
+      else
+        result.push('%')
+        result.append(Format.int[U8](ch, FormatHexBare where prec = 2))
+      end
+    end
+    consume result
+
+  fun url_decode(str: String): String =>
+    let result: String trn = String
+    var i: USize = 0
+    while i < str.size() do
+      let ch: U8 = try str(i)? else '?' end
+      if (ch == '%') and ((i + 2) < str.size()) then
+        try
+          let hex = str.trim(i + 1, i + 3)
+          result.push(hex.u8(16)?)
+          i = i + 2
+        else
+          result.push(ch)
+        end
+      else
+        result.push(ch)
+      end
+      i = i + 1
+    end
+    consume result
+
+  fun get_client_uri(path: String): String =>
+    let str = path.clone() .> replace("\\", "/")
+    "file:///" + url_encode(consume str)

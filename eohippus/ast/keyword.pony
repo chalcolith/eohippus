@@ -80,3 +80,14 @@ class val Keyword is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("string", string))
+
+primitive ParseKeyword
+  fun apply(obj: json.Object, children: NodeSeq): (Keyword | String) =>
+    let string =
+      match try obj("string")? end
+      | let str: String box =>
+        str
+      else
+        return "Keyword.string must be a string"
+      end
+    Keyword(string.clone())

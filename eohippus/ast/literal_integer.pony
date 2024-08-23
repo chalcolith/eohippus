@@ -29,3 +29,25 @@ class val LiteralInteger is NodeDataWithValue[LiteralInteger, U128]
     props.push(("value", I128.from[U128](_value)))
 
   fun value(): U128 => _value
+
+primitive ParseLiteralInteger
+  fun apply(obj: json.Object, children: NodeSeq): (LiteralInteger | String) =>
+    let value =
+      match try obj("value")? end
+      | let n: I128 =>
+        U128.from[I128](n)
+      else
+        return "LiteralInteger.value must be an integer"
+      end
+    let kind =
+      match try obj("kind")? end
+      | "DecimalInteger" =>
+        DecimalInteger
+      | "HexadecimalInteger" =>
+        HexadecimalInteger
+      | "BinaryInteger" =>
+        BinaryInteger
+      else
+        return "LiteralInteger.kind must be a string"
+      end
+    LiteralInteger(value, kind)

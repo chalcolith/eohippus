@@ -63,7 +63,7 @@ primitive Tokens
 class val Token is NodeData
   let string: String
 
-  new create(string': String) =>
+  new val create(string': String) =>
     string = string'
 
   fun name(): String => "Token"
@@ -73,3 +73,14 @@ class val Token is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("string", string))
+
+primitive ParseToken
+  fun apply(obj: json.Object, children: NodeSeq): (Token | String) =>
+    let string =
+      match try obj("string")? end
+      | let s: String box =>
+        s
+      else
+        return "Token.string must be a string"
+      end
+    Token(string.clone())

@@ -15,3 +15,18 @@ class val Annotation is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("identifiers", node.child_refs(identifiers)))
+
+primitive ParseAnnotation
+  fun apply(obj: json.Object, children: NodeSeq): (Annotation | String) =>
+    let identifiers =
+      match ParseNode._get_seq_with[Identifier](
+        obj,
+        children,
+        "identifiers",
+        "Annotation.identifiers must refer to Identifiers")
+      | let seq: NodeSeqWith[Identifier] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    Annotation(identifiers)

@@ -15,7 +15,8 @@ class val ExpCall is NodeData
   new val create(
     lhs': NodeWith[Expression],
     args': NodeWith[CallArgs],
-    partial': Bool) =>
+    partial': Bool)
+  =>
     lhs = lhs'
     args = args'
     partial = partial'
@@ -34,3 +35,42 @@ class val ExpCall is NodeData
     if partial then
       props.push(("partial", partial))
     end
+
+primitive ParseExpCall
+  fun apply(obj: json.Object, children: NodeSeq): (ExpCall | String) =>
+    let lhs =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "lhs",
+        "ExpCall.lhs must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpCall.lhs must be an Expression"
+      end
+    let args =
+      match ParseNode._get_child_with[CallArgs](
+        obj,
+        children,
+        "args",
+        "ExpCall.args must be a CallArgs")
+      | let node: NodeWith[CallArgs] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpCall.args must be a CallArgs"
+      end
+    let partial =
+      match try obj("partial")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "ExpCall.partial must be a boolean"
+      else
+        false
+      end
+    ExpCall(lhs, args, partial)

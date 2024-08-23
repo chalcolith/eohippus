@@ -29,3 +29,31 @@ class val TypeInfix is NodeData
     if types.size() > 0 then
       props.push(("types", node.child_refs(types)))
     end
+
+primitive ParseTypeInfix
+  fun apply(obj: json.Object, children: NodeSeq): (TypeInfix | String) =>
+    let types =
+      match ParseNode._get_seq_with[TypeType](
+        obj,
+        children,
+        "types",
+        "TypeInfix.types must be a sequence of TypeType",
+        false)
+      | let seq: NodeSeqWith[TypeType] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let op =
+      match ParseNode._get_child_with[Token](
+        obj,
+        children,
+        "op",
+        "TypeInfix.op must be a Token",
+        false)
+      | let node: NodeWith[Token] =>
+        node
+      | let err: String =>
+        return err
+      end
+    TypeInfix(types, op)

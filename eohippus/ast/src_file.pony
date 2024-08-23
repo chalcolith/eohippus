@@ -35,3 +35,38 @@ class val SrcFile is NodeData
     if type_defs.size() > 0 then
       props.push(("type_defs", node.child_refs(type_defs)))
     end
+
+primitive ParseSrcFile
+  fun apply(obj: json.Object, children: NodeSeq): (SrcFile | String) =>
+    let locator =
+      match try obj("locator")? end
+      | let str: String box =>
+        str
+      else
+        return "SrcFile.locator must be a string"
+      end
+    let usings =
+      match ParseNode._get_seq_with[Using](
+        obj,
+        children,
+        "usings",
+        "SrcFile.usings must be a sequence of Using",
+        false)
+      | let seq: NodeSeqWith[Using] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let type_defs =
+      match ParseNode._get_seq_with[Typedef](
+        obj,
+        children,
+        "type_defs",
+        "SrcFile.type_defs must be a sequence of Typedef",
+        false)
+      | let seq: NodeSeqWith[Typedef] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    SrcFile(locator.clone(), usings, type_defs)

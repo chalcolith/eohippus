@@ -16,7 +16,7 @@ class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
   let _value: U32
   let kind: CharLiteralKind
 
-  new val create(value': U32, kind': CharLiteralKind) =>
+  new val create(kind': CharLiteralKind, value': U32) =>
     _value = value'
     kind = kind'
 
@@ -37,3 +37,36 @@ class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
     props.push(("value", str))
 
   fun value(): U32 => _value
+
+primitive ParseLiteralChar
+  fun apply(obj: json.Object, children: NodeSeq): (LiteralChar | String) =>
+    let kind =
+      match try obj("kind")? end
+      | let str: String box =>
+        match str
+        | "CharLiteral" =>
+          CharLiteral
+        | "CharEscaped" =>
+          CharEscaped
+        | "CharUnicode" =>
+          CharUnicode
+        else
+          return "LiteralChar.kind must be " +
+            "(CharLiteral | CharEscaped | CharUnicode)"
+        end
+      else
+        return "LiteralChar.kind must be a string"
+      end
+    let value =
+      match try obj("value")? end
+      | let str: String box =>
+        match try str.utf32(0)? end
+        | (let int: U32, let _: U8) =>
+          int
+        else
+          return "LiteralChar.value must be a valid Unicode character"
+        end
+      else
+        return "LiteralChar.value must be a valid Unicode character"
+      end
+    LiteralChar(kind, value)

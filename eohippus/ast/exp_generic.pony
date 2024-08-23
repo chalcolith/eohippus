@@ -22,3 +22,33 @@ class val ExpGeneric is NodeData
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("lhs", node.child_ref(lhs)))
     props.push(("type_args", node.child_ref(type_args)))
+
+primitive ParseExpGeneric
+  fun apply(obj: json.Object, children: NodeSeq): (ExpGeneric | String) =>
+    let lhs =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "lhs",
+        "ExpGeneric.lhs must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpGeneric.lhs must be an Expression"
+      end
+    let type_args =
+      match ParseNode._get_child_with[TypeArgs](
+        obj,
+        children,
+        "type_args",
+        "ExpGeneric.type_args must be a TypeArgs")
+      | let node: NodeWith[TypeArgs] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpGeneric.type_args must be a TypeArgs"
+      end
+    ExpGeneric(lhs, type_args)

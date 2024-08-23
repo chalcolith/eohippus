@@ -4,15 +4,10 @@ use ".."
 class box Sequence
   embed _items: Array[Item] = _items.create()
 
-  new create(items: Seq[Item] box = Array[Item]) =>
+  new create(items: ReadSeq[this->Item] box = Array[this->Item]) =>
     _items.append(items)
 
-  new from_vals(items: Seq[Item val] box) =>
-    for item in items.values() do
-      _items.push(item)
-    end
-
-  new from_iter(items: Iterator[Item]) =>
+  new from_iter(items: Iterator[this->Item]) =>
     _items.concat(items)
 
   fun size(): USize => _items.size()
@@ -22,7 +17,7 @@ class box Sequence
 
   fun apply(i: USize): this->Item ? => _items.apply(i)?
 
-  fun values(): Iterator[Item] => _items.values()
+  fun values(): Iterator[this->Item] => _items.values()
 
   fun ref update(i: USize, value: Item) ? => _items.update(i, value)?
 

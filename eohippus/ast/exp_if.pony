@@ -47,6 +47,49 @@ class val ExpIf is NodeData
       props.push(("else_block", node.child_ref(block)))
     end
 
+primitive ParseExpIf
+  fun apply(obj: json.Object, children: NodeSeq): (ExpIf | String) =>
+    let kind =
+      match try obj("kind")? end
+      | let str: String box =>
+        match str
+        | "IfExp" =>
+          IfExp
+        | "IfDef" =>
+          IfDef
+        | "IfType" =>
+          IfType
+        else
+          return "ExpIf.kind must be one of (IfExp | IfDef | IfType)"
+        end
+      else
+        return "ExpIf.kind must be a string"
+      end
+    let conditions =
+      match ParseNode._get_seq_with[IfCondition](
+        obj,
+        children,
+        "conditions",
+        "ExpIf.conditions must be a sequence of IfCondition")
+      | let seq: NodeSeqWith[IfCondition] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpIf.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpIf(kind, conditions, else_block)
+
 class val IfCondition is NodeData
   """
     A condition and then-block in an `if` expression (i.e. the initial `if` and
@@ -72,3 +115,33 @@ class val IfCondition is NodeData
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("if_true", node.child_ref(if_true)))
     props.push(("then_block", node.child_ref(then_block)))
+
+primitive ParseIfCondition
+  fun apply(obj: json.Object, children: NodeSeq): (IfCondition | String) =>
+    let if_true =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "if_true",
+        "IfCondition.if_true must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "IfCondition.if_true must be an Expression"
+      end
+    let then_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "then_block",
+        "IfCondition.then_block must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "IfCondition.then_block must be an Expression"
+      end
+    IfCondition(if_true, then_block)

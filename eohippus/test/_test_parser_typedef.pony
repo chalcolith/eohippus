@@ -29,7 +29,7 @@ class iso _TestParserTypedefField is UnitTest
         "kind": 0,
         "identifier": 1,
         "type": 3,
-        "value": 5,
+        "initializer": 5,
         "doc_strings": [
           6
         ],

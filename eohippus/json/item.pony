@@ -15,14 +15,14 @@ primitive Clone
         props.push((k, Clone(v)))
       end
       let props': Seq[(String, Item val)] val = consume props
-      recover Object.from_vals(props') end
+      recover Object(props') end
     | let seq: Sequence =>
       let items: Seq[Item val] trn = Array[Item val]
       for v in items.values() do
         items.push(Clone(v))
       end
       let items': Seq[Item val] val = consume items
-      recover Sequence.from_vals(items') end
+      recover Sequence(items') end
     | let str: String box =>
       str.clone()
     | let int: I128 =>

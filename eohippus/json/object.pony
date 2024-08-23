@@ -5,12 +5,7 @@ use ".."
 class box Object
   embed _items: Array[(String, Item)] = _items.create()
 
-  new create(items: Seq[(String, Item)] box = Array[(String, Item)]) =>
-    for (key, value) in items.values() do
-      _items.push((key, value))
-    end
-
-  new from_vals(items: Seq[(String, Item val)] box) =>
+  new create(items: ReadSeq[(String, Item)] box = Array[(String, Item)]) =>
     for (key, value) in items.values() do
       _items.push((key, value))
     end
@@ -75,11 +70,11 @@ class box Object
         result.append("\"" + key + "\":")
         if pretty then result.append(" ") end
         match value
-        | let obj: Object box =>
+        | let obj: this->Object box =>
           result.append(obj.get_string(pretty, indent'))
-        | let seq: Sequence box =>
+        | let seq: this->Sequence box =>
           result.append(seq.get_string(pretty, indent'))
-        | let str: String box =>
+        | let str: this->String box =>
           result.append("\"" + StringUtil.escape(str) + "\"")
         | let int: I128 =>
           result.append(int.string())

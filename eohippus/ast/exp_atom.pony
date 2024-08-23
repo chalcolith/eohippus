@@ -19,3 +19,20 @@ class val ExpAtom is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("body", node.child_ref(body)))
+
+primitive ParseExpAtom
+  fun apply(obj: json.Object, children: NodeSeq): (ExpAtom | String) =>
+    let body =
+      match ParseNode._get_child(
+        obj,
+        children,
+        "body",
+        "ExpAtom.body must be a Node")
+      | let node: Node =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpAtom.body must be a Node"
+      end
+    ExpAtom(body)

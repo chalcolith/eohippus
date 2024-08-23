@@ -1,5 +1,5 @@
 use json = "../../json"
-use rpc = "../../language_server/rpc"
+use rpc = "../../server/rpc"
 
 actor TestInputStream is InputStream
   var _valid: Bool = false

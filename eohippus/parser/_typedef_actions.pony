@@ -11,7 +11,7 @@ primitive _TypedefActions
   =>
     let s' =
       try
-        _Build.value_with[ast.Literal](b, s, r)?
+        _Build.value_with[ast.LiteralString](b, s, r)?
       else
         return _Build.bind_error(d, r, c, b, "DocString/LiteralString")
       end

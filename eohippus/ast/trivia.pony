@@ -39,3 +39,29 @@ class val Trivia is NodeData
       end
     props.push(("kind", kind_str))
     props.push(("string", string))
+
+primitive ParseTrivia
+  fun apply(obj: json.Object, children: NodeSeq): (Trivia | String) =>
+    let kind: TriviaKind =
+      match try obj("kind")? end
+      | "LineCommentTrivia" =>
+        LineCommentTrivia
+      | "NestedCommentTrivia" =>
+        NestedCommentTrivia
+      | "WhiteSpaceTrivia" =>
+        WhiteSpaceTrivia
+      | "EndOfLineTrivia" =>
+        EndOfLineTrivia
+      | "EndOfFileTrivia" =>
+        EndOfFileTrivia
+      else
+        return "Trivia.kind must be a valid trivia kind"
+      end
+    let string =
+      match try obj("string")? end
+      | let s: String box =>
+        s
+      else
+        return "Trivia.string must be a string"
+      end
+    Trivia(kind, string.clone())

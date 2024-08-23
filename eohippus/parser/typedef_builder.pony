@@ -49,19 +49,61 @@ class TypedefBuilder
   fun error_section(allowed: ReadSeq[NamedRule box], message: String)
     : RuleNode
   =>
+    let eol = _trivia.eol
     let dol = _trivia.dol
     let eof = _trivia.eof
 
     NamedRule(
       "Error_Section",
       Conj(
-        [ Neg(Disj([ Disj(allowed); eof ]))
-          Plus(Conj([ Neg(Disj([ dol; eof ])); Single() ]))
-          Disj([ dol; eof ]) ],
+        [ Neg(Disj([ Disj(allowed); Look(eof) ]))
+          Plus(Conj(
+            [ Neg(Disj([ dol; Look(eof) ]))
+              Disj(
+                [ eol
+                  Single(
+                    [],
+                    {(d, r, c, b) =>
+                      let value = ast.NodeWith[ast.Span](
+                        _Build.info(d, r), c, ast.Span)
+                      (value, b)
+                    }) ]) ]))
+          Disj([ dol; Look(eof) ]) ],
         {(d, r, c, b) =>
+          let new_children: Array[ast.Node] trn = Array[ast.Node]
+          var in_span = false
+          var span_start = r.start
+          var span_next = r.next
+          for child in c.values() do
+            match child
+            | let span: ast.NodeWith[ast.Span] =>
+              if in_span then
+                try span_next = span.src_info().next as Loc end
+              else
+                try
+                  span_start = span.src_info().start as Loc
+                  span_next = span.src_info().next as Loc
+                end
+                in_span = true
+              end
+            else
+              if in_span then
+                new_children.push(ast.NodeWith[ast.Span](
+                  ast.SrcInfo(d.locator, span_start, span_next), [], ast.Span))
+              end
+              new_children.push(child)
+              in_span = false
+            end
+          end
+          if in_span then
+            new_children.push(ast.NodeWith[ast.Span](
+              ast.SrcInfo(d.locator, span_start, span_next), [], ast.Span))
+          end
+
           let value = ast.NodeWith[ast.ErrorSection](
-            _Build.info(d, r), c, ast.ErrorSection(message))
-          (value, b) }))
+            _Build.info(d, r), consume new_children, ast.ErrorSection(message))
+          (value, b)
+        }))
 
   fun ref _build_doc_string() =>
     let s = Variable("s")

@@ -44,3 +44,59 @@ class val ExpFfi is NodeData
     if partial then
       props.push(("partial", partial))
     end
+
+primitive ParseExpFfi
+  fun help_id(): String => "ExpFfi.identifier must be an Identifier or Literal"
+
+  fun apply(obj: json.Object, children: NodeSeq): (ExpFfi | String) =>
+    let identifier =
+      match ParseNode._get_child(obj, children, "identifier", help_id())
+      | let node: Node =>
+        match node
+        | let identifier': NodeWith[Identifier] =>
+          identifier'
+        | let literal': NodeWith[LiteralString] =>
+          literal'
+        else
+          return help_id()
+        end
+      | let err: String =>
+        return err
+      else
+        return help_id()
+      end
+    let type_args =
+      match ParseNode._get_child_with[TypeArgs](
+        obj,
+        children,
+        "type_args",
+        "ExpFfi.type_args must be a TypeArgs",
+        false)
+      | let node: NodeWith[TypeArgs] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let call_args =
+      match ParseNode._get_child_with[CallArgs](
+        obj,
+        children,
+        "call_args",
+        "ExpFfi.call_args must be a CallArgs")
+      | let node: NodeWith[CallArgs] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpFfi.call_args must be a CallArgs"
+      end
+    let partial =
+      match try obj("partial")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "ExpFfi.partial must be a boolean"
+      else
+        false
+      end
+    ExpFfi(identifier, type_args, call_args, partial)

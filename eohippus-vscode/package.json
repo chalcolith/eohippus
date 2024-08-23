@@ -1,0 +1,65 @@
+{
+  "name": "eohippus-vscode",
+  "displayName": "Eohippus Pony Tools",
+  "description": "Tools for the Pony programming language",
+  "license": "MIT",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.88.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Formatters",
+    "Linters"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/chalcolith/eohippus"
+  },
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Eohippus Pony Tools",
+      "properties": {
+        "eohippus-vscode.ponycExecutablePath": {
+          "type": [ "null", "string" ],
+          "description": "Path to the PonyC executable."
+        }
+      }
+    },
+    "languages": [
+      {
+        "id": "pony",
+        "extensions": [
+          ".pony"
+        ],
+        "aliases": [ "Pony" ],
+        "configuration": "./pony-configuration.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "test": "vscode-test"
+  },
+  "dependencies": {
+    "portfinder": "^1.0.32",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.88.0",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "18.x",
+    "@typescript-eslint/eslint-plugin": "^7.4.0",
+    "@typescript-eslint/parser": "^7.4.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.3.3",
+    "@vscode/test-cli": "^0.0.8",
+    "@vscode/test-electron": "^2.3.9"
+  }
+}

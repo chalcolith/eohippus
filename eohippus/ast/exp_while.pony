@@ -31,3 +31,45 @@ class val ExpWhile is NodeData
     | let else_block': NodeWith[Expression] =>
       props.push(("else_block", node.child_ref(else_block')))
     end
+
+primitive ParseExpWhile
+  fun apply(obj: json.Object, children: NodeSeq): (ExpWhile | String) =>
+    let condition =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "condition",
+        "ExpWhile.condition must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpWhile.condition must be an Expression"
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "ExpWhile.body must be an Expression")
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpWhile.body must be an Expression"
+      end
+    let else_block =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "else_block",
+        "ExpWhile.else_block must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpWhile(condition, body, else_block)

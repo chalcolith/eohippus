@@ -149,8 +149,11 @@ class KeywordBuilder
               src_info.next
             end
           let str =
-            recover val
-              String .> concat(src_info.start.values(next))
+            match (src_info.start, next)
+            | (let s': Loc, let n': Loc) =>
+              recover val String .> concat(s'.values(n')) end
+            else
+              ""
             end
           let value = ast.NodeWith[ast.Keyword](
             src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)

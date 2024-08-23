@@ -13,3 +13,7 @@ class val Span is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     None
+
+primitive ParseSpan
+  fun apply(obj: json.Object, children: NodeSeq): (Span | String) =>
+    recover Span end

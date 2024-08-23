@@ -17,3 +17,18 @@ class val ExpSequence is NodeData
 
   fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
     props.push(("expressions", node.child_refs(expressions)))
+
+primitive ParseExpSequence
+  fun apply(obj: json.Object, children: NodeSeq): (ExpSequence | String) =>
+    let expressions =
+      match ParseNode._get_seq_with[Expression](
+        obj,
+        children,
+        "expressions",
+        "ExpSequence.expressions must be a sequence of Expressions")
+      | let seq: NodeSeqWith[Expression] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    ExpSequence(expressions)

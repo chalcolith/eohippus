@@ -36,3 +36,42 @@ class val ExpDecl is NodeData
     | let decl_type': NodeWith[TypeType] =>
       props.push(("decl_type", node.child_ref(decl_type')))
     end
+
+primitive ParseExpDecl
+  fun apply(obj: json.Object, children: NodeSeq): (ExpDecl | String) =>
+    let kind =
+      match ParseNode._get_child_with[Keyword](
+        obj, children, "kind", "ExpDecl.kind must be a Keyword")
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpDecl.kind must be a Keyword"
+      end
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "ExpDecl.identifier must be an Identifier")
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpDecl.identifier must be an Identifier"
+      end
+    let decl_type =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "decl_type",
+        "ExpDecl.decl_type must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpDecl(kind, identifier, decl_type)

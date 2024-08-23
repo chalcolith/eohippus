@@ -29,3 +29,31 @@ class val TypedefMembers is NodeData
     if methods.size() > 0 then
       props.push(("methods", node.child_refs(methods)))
     end
+
+primitive ParseTypedefMembers
+  fun apply(obj: json.Object, children: NodeSeq): (TypedefMembers | String) =>
+    let fields =
+      match ParseNode._get_seq_with[TypedefField](
+        obj,
+        children,
+        "fields",
+        "TypedefMembers.fields must be a sequence of TypedefField",
+        false)
+      | let seq: NodeSeqWith[TypedefField] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    let methods =
+      match ParseNode._get_seq_with[TypedefMethod](
+        obj,
+        children,
+        "methods",
+        "TypedefMembers.methods must be a sequence of TypedefMethod",
+        false)
+      | let seq: NodeSeqWith[TypedefMethod] =>
+        seq
+      | let err: String =>
+        return err
+      end
+    TypedefMembers(fields, methods)

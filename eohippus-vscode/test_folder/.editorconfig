@@ -1,0 +1,3 @@
+# Editor Config
+[*.pony]
+trim_trailing_whitespace = true

@@ -30,3 +30,32 @@ class val ExpJump is NodeData
     | let rhs': Node =>
       props.push(("rhs", node.child_ref(rhs')))
     end
+
+primitive ParseExpJump
+  fun apply(obj: json.Object, children: NodeSeq): (ExpJump | String) =>
+    let keyword =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "keyword",
+        "ExpJump.keyword must be a Keyword")
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "ExpJump.keyword must be a Keyword"
+      end
+    let rhs =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "rhs",
+        "ExpJump.rhs must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    ExpJump(keyword, rhs)

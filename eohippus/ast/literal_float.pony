@@ -15,3 +15,16 @@ class val LiteralFloat is NodeDataWithValue[LiteralFloat, F64]
     props.push(("value", _value))
 
   fun value(): F64 => _value
+
+primitive ParseLiteralFloat
+  fun apply(obj: json.Object, children: NodeSeq): (LiteralFloat | String) =>
+    let value =
+      match try obj("value")? end
+      | let float: F64 =>
+        float
+      | let int: I128 =>
+        F64.from[I128](int)
+      else
+        return "LiteralFloat.value must be a float"
+      end
+    LiteralFloat(value)

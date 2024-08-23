@@ -81,3 +81,120 @@ class val TypedefMethod is NodeData
     | let body': NodeWith[Expression] =>
       props.push(("body", node.child_ref(body')))
     end
+
+primitive ParseTypedefMethod
+  fun apply(obj: json.Object, children: NodeSeq): (TypedefMethod | String) =>
+    let kind =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "kind",
+        "TypedefMethod.kind must be a Keyword")
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefMethod.kind must be a Keyword"
+      end
+    let cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "cap",
+        "TypedefMethod.cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let raw =
+      match try obj("raw")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "TypedefMethod.raw must be a boolean"
+      else
+        false
+      end
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "TypedefMethod.identifier must be an Identifier")
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefMethod.identifier must be an Identifier"
+      end
+    let type_params =
+      match ParseNode._get_child_with[TypeParams](
+        obj,
+        children,
+        "type_params",
+        "TypedefMethod.type_params must be a TypeParams",
+        false)
+      | let node: NodeWith[TypeParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let params =
+      match ParseNode._get_child_with[MethodParams](
+        obj,
+        children,
+        "params",
+        "TypedefMethod.params must be a MethodParams",
+        false)
+      | let node: NodeWith[MethodParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let return_type =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "return_type",
+        "TypedefMethod.return_type must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let partial =
+      match try obj("partial")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "TypedefMethod.partial must be a boolean"
+      else
+        false
+      end
+    let body =
+      match ParseNode._get_child_with[Expression](
+        obj,
+        children,
+        "body",
+        "TypedefMethod.body must be an Expression",
+        false)
+      | let node: NodeWith[Expression] =>
+        node
+      | let err: String =>
+        return err
+      end
+    TypedefMethod(
+      kind,
+      cap,
+      raw,
+      identifier,
+      type_params,
+      params,
+      return_type,
+      partial,
+      body)

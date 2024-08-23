@@ -65,3 +65,90 @@ class val TypedefClass is NodeData
     | let members': NodeWith[TypedefMembers] =>
       props.push(("members", node.child_ref(members')))
     end
+
+primitive ParseTypedefClass
+  fun apply(obj: json.Object, children: NodeSeq): (TypedefClass | String) =>
+    let kind =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "kind",
+        "TypedefClass.kind must be a Keyword")
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefClass.kind must be a Keyword"
+      end
+    let raw =
+      match try obj("raw")? end
+      | let bool: Bool =>
+        bool
+      | let item: json.Item =>
+        return "TypedefClass.raw must be a boolean"
+      else
+        false
+      end
+    let cap =
+      match ParseNode._get_child_with[Keyword](
+        obj,
+        children,
+        "cap",
+        "TypedefClass.cap must be a Keyword",
+        false)
+      | let node: NodeWith[Keyword] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let identifier =
+      match ParseNode._get_child_with[Identifier](
+        obj,
+        children,
+        "identifier",
+        "TypedefClass.identifier must be an Identifier")
+      | let node: NodeWith[Identifier] =>
+        node
+      | let err: String =>
+        return err
+      else
+        return "TypedefClass.identifier must be an Identifier"
+      end
+    let type_params =
+      match ParseNode._get_child_with[TypeParams](
+        obj,
+        children,
+        "type_params",
+        "TypedefClass.type_params must be a TypeParams",
+        false)
+      | let node: NodeWith[TypeParams] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let constraint =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "constraint",
+        "TypedefClass.constraint must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
+    let members =
+      match ParseNode._get_child_with[TypedefMembers](
+        obj,
+        children,
+        "members",
+        "TypedefClass.members must be a TypedefMembers",
+        false)
+      | let node: NodeWith[TypedefMembers] =>
+        node
+      | let err: String =>
+        return err
+      end
+    TypedefClass(kind, raw, cap, identifier, type_params, constraint, members)
