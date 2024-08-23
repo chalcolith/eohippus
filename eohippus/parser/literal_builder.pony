@@ -256,7 +256,18 @@ class LiteralBuilder
               Disj(
                 [ _string_char_uni()
                   _string_char_esc()
-                  _string_char()
+                  Star(
+                    Conj(
+                      [ Neg(delim)
+                        Neg(Single(ast.Tokens.backslash()))
+                        Single()
+                      ]),
+                    1,
+                    {(d, r, c, b) =>
+                      ( ast.NodeWith[ast.Span](
+                        _Build.info(d, r), c, ast.Span)
+                        , b )
+                    })
                 ])
             ]))
         Disj(
@@ -274,9 +285,3 @@ class LiteralBuilder
     Conj(
       [ char_escape ],
       {(d, r, c, b) => (_LiteralActions._char_esc(d, r, r, c, []), b) })
-
-  fun _string_char(): RuleNode =>
-    Single(
-      "",
-      {(d, r, c, b) =>
-        (ast.NodeWith[ast.Span](_Build.info(d, r), c, ast.Span), b) })

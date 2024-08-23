@@ -326,49 +326,9 @@ primitive _LiteralActions
         indented
       end
 
-    // collect child spans
-    let collected_children: Array[ast.Node] trn = Array[ast.Node]
-    var cur_start: (Loc | None) = None
-    var cur_next: (Loc | None) = None
-    for child in c.values() do
-      match child
-      | let span: ast.NodeWith[ast.Span] =>
-        match cur_start
-        | let _: Loc =>
-          cur_next = span.src_info().next
-        else
-          cur_start = span.src_info().next
-          cur_next = span.src_info().next
-        end
-      else
-        match cur_start
-        | let start: Loc =>
-          match cur_next
-          | let next: Loc =>
-            collected_children.push(
-              ast.NodeWith[ast.Span](
-                ast.SrcInfo(d.locator, start, next), [], ast.Span))
-          end
-        end
-        cur_start = None
-        cur_next = None
-
-        collected_children.push(child)
-      end
-    end
-    match cur_start
-    | let start: Loc =>
-      match cur_next
-      | let next: Loc =>
-        collected_children.push(
-          ast.NodeWith[ast.Span](
-            ast.SrcInfo(d.locator, start, next), [], ast.Span))
-      end
-    end
-
     let value = ast.NodeWith[ast.LiteralString](
       _Build.info(d, r),
-      consume collected_children,
+      c,
       ast.LiteralString(outdented, kind)
       where post_trivia' = p)
     (value, b)
