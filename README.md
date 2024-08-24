@@ -1,6 +1,7 @@
 # Eohippus
 
-The Eohippus project contains some functionality for analysis of
+The Eohippus (a [genus of small prehistoric horses](https://en.wikipedia.org/wiki/Eohippus))
+project contains some functionality for analysis of
 [Pony programming language](https://ponylang.io) source code.  It is written
 primarily in Pony itself.
 
