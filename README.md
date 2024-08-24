@@ -26,6 +26,7 @@ The project contains the following parts:
 ## [AST](https://github.com/chalcolith/eohippus/tree/main/eohippus/ast)
 
 Contains data structures for representing Pony code as an abstract syntax tree.
+Start with [NodeWith](https://github.com/chalcolith/eohippus/blob/main/eohippus/ast/node_with.pony).
 
 ## [Parser](https://github.com/chalcolith/eohippus/tree/main/eohippus/parser)
 
@@ -33,18 +34,21 @@ This implements a [Kiuatan](https://github.com/chalcolith/kiuatan) parser for
 parsing Pony source files.  It is a PEG parser (with left-recursion handling)
 and can recover from errors in functions or classes.
 
+Start with [Builder](https://github.com/chalcolith/eohippus/blob/main/eohippus/parser/builder.pony)
+
 > The parser is mostly complete, but fails to parse some of the Pony standard
 > library files.  See #18
 
 ## [Analyzer](https://github.com/chalcolith/eohippus/tree/main/eohippus/analyzer)
 
-Provides an actor that coordinates the analysis (currently parsing, scope
-analysis, and linting) of a workspace containing Pony source files.
+Provides [an actor](https://github.com/chalcolith/eohippus/blob/main/eohippus/analyzer/analyzer.pony)
+that coordinates the analysis (currently parsing, rudimentary scope analysis, and 
+linting) of a workspace containing Pony source files.
 
 ## [Linter](https://github.com/chalcolith/eohippus/tree/main/eohippus/linter)
 
-Provides functionality for detcting formatting problems in Pony ASTs, and
-fixing them.
+Provides [an actor](https://github.com/chalcolith/eohippus/blob/main/eohippus/linter/linter.pony)
+for detcting formatting problems in Pony ASTs, and fixing them.
 
 > Currently the linter only knows about the `.editorconfig` standard rule
 > `trim_trailing_whitespace`.
