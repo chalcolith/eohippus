@@ -29,7 +29,8 @@ Contains data structures for representing Pony code as an abstract syntax tree.
 ## [Parser](https://github.com/chalcolith/eohippus/tree/main/eohippus/parser)
 
 This implements a [Kiuatan](https://github.com/chalcolith/kiuatan) parser for
-parsing Pony source files.
+parsing Pony source files.  It is a PEG parser (with left-recursion handling)
+and can recover from errors in functions or classes.
 
 > The parser is mostly complete, but fails to parse some of the Pony standard
 > library files.  See #18
