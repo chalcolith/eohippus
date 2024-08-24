@@ -857,11 +857,13 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
     let rule = setup.builder.src_file.src_file
 
     let src =
-      """
-        class A
-          new create() => None
-        interface B
-      """
+      recover val
+        """
+          class A
+            new create() => None
+          interface B
+        """.clone() .> replace("\r\n", "\n")
+      end
     let exp =
       """
         {
@@ -912,7 +914,7 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
                     {
                       "name": "Trivia",
                       "kind": "EndOfLineTrivia",
-                      "string": "\r\n"
+                      "string": "\n"
                     },
                     {
                       "name": "Trivia",
@@ -1019,7 +1021,7 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
                                 {
                                   "name": "Trivia",
                                   "kind": "EndOfLineTrivia",
-                                  "string": "\r\n"
+                                  "string": "\n"
                                 }
                               ]
                             }
@@ -1066,7 +1068,7 @@ class iso _TestParserSrcFileTypedefMultiple is UnitTest
                     {
                       "name": "Trivia",
                       "kind": "EndOfLineTrivia",
-                      "string": "\r\n"
+                      "string": "\n"
                     }
                   ]
                 }
@@ -1092,11 +1094,14 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
     let rule = setup.builder.src_file.src_file
 
     let src =
-      """
-        class A
-          new create() =>
-            None
-      """
+      recover val
+        """
+          class A
+            new create() =>
+              None
+        """.clone() .> replace("\r\n", "\n")
+      end
+
     let exp =
       """
         {
@@ -1146,7 +1151,7 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
                     {
                       "name": "Trivia",
                       "kind": "EndOfLineTrivia",
-                      "string": "\r\n"
+                      "string": "\n"
                     },
                     {
                       "name": "Trivia",
@@ -1233,7 +1238,7 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
                             {
                               "name": "Trivia",
                               "kind": "EndOfLineTrivia",
-                              "string": "\r\n"
+                              "string": "\n"
                             },
                             {
                               "name": "Trivia",
@@ -1259,7 +1264,7 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
                                 {
                                   "name": "Trivia",
                                   "kind": "EndOfLineTrivia",
-                                  "string": "\r\n"
+                                  "string": "\n"
                                 }
                               ]
                             }
