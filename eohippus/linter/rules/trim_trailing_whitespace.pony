@@ -104,11 +104,11 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     (None, consume errors)
 
   fun ref visit_post(
-    parent_state: None,
     node_state: None,
     node: ast.Node,
     path: ast.Path,
     errors: Array[ast.TraverseError] iso,
+    child_states: (ReadSeq[None] val | None),
     new_children: (ast.NodeSeq | None) = None,
     update_map: (ast.ChildUpdateMap | None) = None)
     : (None, (ast.Node | None), Array[ast.TraverseError] iso^)

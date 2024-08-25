@@ -11,11 +11,11 @@ interface Visitor[State: Any #read]
       - Call `visit_pre()` on the visitor with a parent state; this returns an
         intermediate state (if some data needs to be saved for later).
       - Build a list of new node children by calling `traverse()` on each old
-        child, passing the parent state (but not the intermediate state).
-      - Call `visit_post()` with the parent state and the intermediate state,
+        child, passing the the intermediate state.
+      - Call `visit_post()` the intermediate state,
+        the list of child states (returned from each child's `visit_post()`)
         the old children of the node, and the new children.
-        `visit_post()` then returns a (possibly modified) parent_state (for
-        passing to the node's further siblings), and the new node.
+        `visit_post()` then returns the intermediate state and the new node.
   """
 
   fun ref visit_pre(
@@ -30,13 +30,13 @@ interface Visitor[State: Any #read]
     """
 
   fun ref visit_post(
-    parent_state: State,
     node_state: State,
     node: Node,
     path: Path,
     errors: Array[TraverseError] iso,
-    new_children: (NodeSeq | None) = None,
-    update_map: (ChildUpdateMap | None) = None)
+    child_states: (ReadSeq[State] val | None),
+    new_children: (NodeSeq | None),
+    update_map: (ChildUpdateMap | None))
     : (State, (Node | None), Array[TraverseError] iso^)
     """
       Returns a new node constructed from the "pre" state (the intermediate

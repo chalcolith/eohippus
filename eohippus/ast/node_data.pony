@@ -1,8 +1,6 @@
 use "collections"
 use json = "../json"
 
-type ChildUpdateMap is MapIs[Node, Node] val
-
 trait val NodeData
   """
     Contains strongly-typed data for various AST nodes.
