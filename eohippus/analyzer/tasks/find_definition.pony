@@ -174,52 +174,53 @@ actor FindDefinition is AnalyzerRequestNotify
     false
 
   fun ref _find_definition_location(scope: Scope val, orig_file: Bool): Bool =>
-    var scope': (Scope val | None) =
-      if orig_file then
-        _find_child_scope(scope)
-      else
-        log(Fine) and log.log(
-          task_id.string() + ": original scope " + scope.name + "("
-          + scope.range._1.string() + "," + scope.range._2.string() + ") - ("
-          + scope.range._3.string() + "," + scope.range._4.string() + ")")
-        scope
-      end
-    while true do
-      match scope'
-      | let cur_scope: Scope val =>
-        log(Fine) and log.log(
-          task_id.string() + ": search scope " + cur_scope.name + " ("
-          + cur_scope.range._1.string() + "," + cur_scope.range._2.string()
-          + ") - (" + cur_scope.range._3.string() + ","
-          + cur_scope.range._4.string() + ")")
-
-        for definition in cur_scope.definitions.values() do
-          log(Fine) and log.log(
-            task_id.string() + ": definition " + definition._1)
-
-          if definition._1 == span then
-            log(Fine) and log.log(
-              task_id.string() + ": found definition for '" + span + "': "
-              + cur_scope.canonical_path + ": " + definition._2._1.string()
-              + ":" + definition._2._2.string() + "-"
-              + definition._2._3.string() + ":" + definition._2._4.string())
-            finished = true
-            notify.definition_found(
-              task_id, cur_scope.canonical_path, definition._2)
-            return true
-          end
-        end
-        match cur_scope.kind
-        | FileScope =>
-          // TODO: add siblings, then imports, then builtin
-          None
-        end
-        scope' = cur_scope.parent
-      else
-        break
-      end
-    end
     false
+    // var scope': (Scope val | None) =
+    //   if orig_file then
+    //     _find_child_scope(scope)
+    //   else
+    //     log(Fine) and log.log(
+    //       task_id.string() + ": original scope " + scope.name + "("
+    //       + scope.range._1.string() + "," + scope.range._2.string() + ") - ("
+    //       + scope.range._3.string() + "," + scope.range._4.string() + ")")
+    //     scope
+    //   end
+    // while true do
+    //   match scope'
+    //   | let cur_scope: Scope val =>
+    //     log(Fine) and log.log(
+    //       task_id.string() + ": search scope " + cur_scope.name + " ("
+    //       + cur_scope.range._1.string() + "," + cur_scope.range._2.string()
+    //       + ") - (" + cur_scope.range._3.string() + ","
+    //       + cur_scope.range._4.string() + ")")
+
+    //     for definition in cur_scope.definitions.values() do
+    //       log(Fine) and log.log(
+    //         task_id.string() + ": definition " + definition._1)
+
+    //       if definition._1 == span then
+    //         log(Fine) and log.log(
+    //           task_id.string() + ": found definition for '" + span + "': "
+    //           + cur_scope.canonical_path + ": " + definition._2._1.string()
+    //           + ":" + definition._2._2.string() + "-"
+    //           + definition._2._3.string() + ":" + definition._2._4.string())
+    //         finished = true
+    //         notify.definition_found(
+    //           task_id, cur_scope.canonical_path, definition._2)
+    //         return true
+    //       end
+    //     end
+    //     match cur_scope.kind
+    //     | FileScope =>
+    //       // TODO: add siblings, then imports, then builtin
+    //       None
+    //     end
+    //     scope' = cur_scope.parent
+    //   else
+    //     break
+    //   end
+    // end
+    // false
 
   fun _find_child_scope(scope: Scope val): (Scope val | None) =>
     if

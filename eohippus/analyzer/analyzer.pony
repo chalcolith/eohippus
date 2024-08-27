@@ -866,10 +866,12 @@ actor EohippusAnalyzer is Analyzer
       | let syntax_tree: ast.Node =>
         _collect_error_sections(src_file.canonical_path, syntax_tree)
         src_file.syntax_tree = syntax_tree
+        src_file.make_indices()
       else
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to load syntax for " +
             src_file.canonical_path)
+        return
       end
 
       src_file.state = AnalysisScoping
@@ -1003,6 +1005,7 @@ actor EohippusAnalyzer is Analyzer
       // _log(Fine) and _log.log(
       //   task_id.string() + ": writing syntax tree for " + canonical_path)
       src_file.syntax_tree = syntax_tree
+      src_file.make_indices()
       _write_syntax_tree(src_file, syntax_tree)
 
       _collect_error_sections(canonical_path, syntax_tree)
@@ -1129,9 +1132,12 @@ actor EohippusAnalyzer is Analyzer
             "error loading " + syntax_path.path + ":" + err.index.string() +
               ": " + err.message)
         end
+      else
+        _log(Error) and _log.log(
+          src_file.task_id.string() + ": error opening " + syntax_path.path)
       end
-      None
     end
+    None
 
   fun ref _scope(src_file: SrcFileItem) =>
     if _disposing then return end
@@ -1160,25 +1166,34 @@ actor EohippusAnalyzer is Analyzer
     let src_file_path = FilePath(_auth, src_file.canonical_path)
     let scope_path = FilePath(_auth, _scope_path(src_file))
     if
-      (not src_file.is_open) and
       scope_path.exists() and
       (not _source_is_newer(src_file_path, scope_path))
     then
       // _log(Fine) and _log.log(
       //   src_file.task_id.string() + ": cache is newer; not scoping " +
       //   src_file.canonical_path)
-      src_file.state = AnalysisLinting
-      _src_item_queue.push(src_file)
-      _process_src_item_queue()
-      return
+      match _get_scope(src_file)
+      | let scope: Scope =>
+        src_file.scope = scope
+        src_file.state = AnalysisLinting
+        _src_item_queue.push(src_file)
+        _process_src_item_queue()
+        return
+      else
+        _log(Error) and _log.log(
+          src_file.task_id.string() + ": unable to load scope for " +
+          src_file.canonical_path)
+        return
+      end
     end
 
     match _get_syntax_tree(src_file)
-    | let st: ast.Node =>
+    | let syntax_tree: ast.Node =>
       _log(Fine) and _log.log(
         src_file.task_id.string() + ": scoping " + src_file.canonical_path)
       let scoper = Scoper(_log, this)
-      scoper.scope_syntax_tree(src_file.task_id, src_file.canonical_path, st)
+      scoper.scope_syntax_tree(
+        src_file.task_id, src_file.canonical_path, syntax_tree)
     else
       _log(Error) and _log.log(
         src_file.task_id.string() + ": failed to get syntax tree for " +
@@ -1186,7 +1201,48 @@ actor EohippusAnalyzer is Analyzer
       src_file.state = AnalysisError
     end
 
-  be scoped_file(task_id: USize, canonical_path: String, scope: Scope iso) =>
+  fun ref _get_scope(src_file: SrcFileItem): (Scope | None) =>
+    match src_file.scope
+    | let scope: Scope =>
+      scope
+    else
+      let scope_path = FilePath(_auth, _scope_path(src_file))
+      match OpenFile(scope_path)
+      | let file: File =>
+        let json_str = recover val file.read_string(file.size()) end
+        match recover val json.Parse(json_str) end
+        | let obj: json.Object val =>
+          let nbi = src_file.nodes_by_index
+          match recover val ParseScopeJson(nbi, obj, None) end
+          | let scope: Scope val =>
+            return scope
+          | let err: String =>
+            _log(Error) and _log.log(
+              src_file.task_id.string() + ": error loading " + scope_path.path +
+              err)
+          end
+        | let item: json.Item val =>
+          _log(Error) and _log.log(
+            src_file.task_id.string() + ": error loading " + scope_path.path +
+            ": a scope file must be an object")
+        | let err: json.ParseError =>
+          _log(Error) and _log.log(
+            src_file.task_id.string() + ": error loading " + scope_path.path +
+            ":" + err.index.string() + ": " + err.message)
+        end
+      else
+        _log(Error) and _log.log(
+          src_file.task_id.string() + ": error opening " + scope_path.path)
+      end
+    end
+    None
+
+  be scoped_file(
+    task_id: USize,
+    canonical_path: String,
+    syntax_tree: ast.Node,
+    scope: Scope val)
+  =>
     match try _src_items(canonical_path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
@@ -1199,7 +1255,8 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         task_id.string() + ": scoped " + canonical_path)
 
-      src_file.scope = consume scope
+      src_file.syntax_tree = syntax_tree
+      src_file.scope = scope
 
       //_process_imports(canonical_path, scope')
       _write_scope(src_file)
@@ -1212,69 +1269,69 @@ actor EohippusAnalyzer is Analyzer
         task_id.string() + ": scoped unknown file " + canonical_path)
     end
 
-  fun ref _process_imports(canonical_path: String, scope: Scope) =>
-    (let base_path, _) = Path.split(scope.name)
+  // fun ref _process_imports(canonical_path: String, scope: Scope) =>
+  //   (let base_path, _) = Path.split(scope.name)
 
-    var i: USize = 0
-    while i < scope.imports.size() do
-      try
-        (let alias, let import_path) = scope.imports(i)?
-        match _try_analyze_import(base_path, import_path)
-        | let canonical_import_path: String =>
-          try scope.imports.update(i, (alias, canonical_import_path))? end
-          i = i + 1
-          continue
-        else
-          var found = false
-          for pp in _pony_path.values() do
-            match _try_analyze_import(pp.path, import_path)
-            | let canonical_import_path: String =>
-              try scope.imports.update(i, (alias, canonical_import_path))? end
-              found = true
-              break
-            end
-          end
+  //   var i: USize = 0
+  //   while i < scope.imports.size() do
+  //     try
+  //       (let alias, let import_path) = scope.imports(i)?
+  //       match _try_analyze_import(base_path, import_path)
+  //       | let canonical_import_path: String =>
+  //         try scope.imports.update(i, (alias, canonical_import_path))? end
+  //         i = i + 1
+  //         continue
+  //       else
+  //         var found = false
+  //         for pp in _pony_path.values() do
+  //           match _try_analyze_import(pp.path, import_path)
+  //           | let canonical_import_path: String =>
+  //             try scope.imports.update(i, (alias, canonical_import_path))? end
+  //             found = true
+  //             break
+  //           end
+  //         end
 
-          if found then
-            i = i + 1
-            continue
-          else
-            match _pony_packages_path
-            | let ppp: FilePath =>
-              match _try_analyze_import(ppp.path, import_path)
-              | let canonical_import_path: String =>
-                try scope.imports.update(i, (alias, canonical_import_path))? end
-                i = i + 1
-                continue
-              end
-            end
-          end
-        end
-        _log(Error) and _log.log(
-          "unable to resolve package " + import_path + " for " + canonical_path)
-      end
-      i = i + 1
-    end
+  //         if found then
+  //           i = i + 1
+  //           continue
+  //         else
+  //           match _pony_packages_path
+  //           | let ppp: FilePath =>
+  //             match _try_analyze_import(ppp.path, import_path)
+  //             | let canonical_import_path: String =>
+  //               try scope.imports.update(i, (alias, canonical_import_path))? end
+  //               i = i + 1
+  //               continue
+  //             end
+  //           end
+  //         end
+  //       end
+  //       _log(Error) and _log.log(
+  //         "unable to resolve package " + import_path + " for " + canonical_path)
+  //     end
+  //     i = i + 1
+  //   end
 
-  fun ref _try_analyze_import(base_path: String, import_path: String)
-    : (String | None)
-  =>
-    let combined_path = FilePath(_auth, Path.join(base_path, import_path))
-    if combined_path.exists() then
-      let canonical_path =
-        try
-          combined_path.canonical()?
-        else
-          combined_path
-        end
-      if not _src_items.contains(canonical_path.path) then
-        analyze(_get_next_task_id(), canonical_path.path)
-      else
-        _log(Fine) and _log.log(
-          "not analyzing existing import " + canonical_path.path)
-      end
-      return canonical_path.path
-    end
+  // fun ref _try_analyze_import(base_path: String, import_path: String)
+  //   : (String | None)
+  // =>
+  //   let combined_path = FilePath(_auth, Path.join(base_path, import_path))
+  //   if combined_path.exists() then
+  //     let canonical_path =
+  //       try
+  //         combined_path.canonical()?
+  //       else
+  //         combined_path
+  //       end
+  //     if not _src_items.contains(canonical_path.path) then
+  //       analyze(_get_next_task_id(), canonical_path.path)
+  //     else
+  //       _log(Fine) and _log.log(
+  //         "not analyzing existing import " + canonical_path.path)
+  //     end
+  //     return canonical_path.path
+  //   end
 
   be scope_failed(
     task_id: USize,
@@ -1338,7 +1395,7 @@ actor EohippusAnalyzer is Analyzer
     match CreateFile(FilePath(_auth, scope_path))
     | let file: File =>
       file.set_length(0)
-      let json_item = scope.get_json()
+      let json_item = scope.get_json(src_file.node_indices)
       let json_str =
         ifdef debug then
           json_item.get_string(true)

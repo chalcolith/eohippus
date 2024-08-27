@@ -6,7 +6,7 @@ use json = "../json"
 use parser = "../parser"
 use ".."
 
-type ChildUpdateMap is MapIs[Node, Node] val
+type ChildUpdateMap is col.MapIs[Node, Node] val
 type Path is per.List[Node]
 type TraverseError is (Node, String)
 
@@ -49,56 +49,62 @@ primitive SyntaxTree
     else
       var new_children: (Array[Node] trn | None) = None
       var update_map: (ChildUpdateMap trn | None) = None
-      let child_states: Array[State] trn = Array[State](node.children().size())
+      let child_states = Array[S](node.children().size())
 
-      for (i, child) in node.children().pairs() do
+      var i: USize = 0
+      for child in node.children().values() do
         (let child_state, let new_child, errors') = _traverse[S](
           visitor, node_state, child, path.prepend(child), consume errors')
 
-        match new_child
-        | let new_child': Node =>
+        if new_child isnt None then
           child_states.push(child_state)
-          match (new_children, update_map)
-          | (let nc: Array[Node] trn, um: ChildUpdateMap trn) =>
+        end
+
+        // we inside-out these matches, because we still want to populate
+        // new_children if there's a None new child, to record that the children
+        // changed
+        match (new_children, update_map)
+        | (let nc: Array[Node] trn, let um: ChildUpdateMap trn) =>
+          match new_child
+          | let new_child': Node =>
             nc.push(new_child')
             um(child) = new_child'
-          else
-            if new_child' isnt child then
-              let sz = node.children().size()
-              let nc: Array[Node] trn = Array[Node](sz)
-              let um: ChildUpdateMap trn = ChildUpdateMap(sz)
+          end
+        | (None, None) if new_child isnt child =>
+          let nc: Array[Node] trn = Array[Node](node.children().size())
+          let um: ChildUpdateMap trn = ChildUpdateMap(node.children().size())
 
-              // if we haven't seen any changes so far, fill up our new_children
-              // with the old ones
-              for j in col.Range(0, i) do
-                try
-                  let old_child = node.children()(j)?
-                  if um.contains(old_child) then
-                    nc.push(old_child)
-                    um(old_child) = old_child
-                  end
-                end
-              end
-
-              nc.push(new_child')
-              um(child) = new_child'
-
-              new_children = consume nc
-              update_map = consume um
+          // if we haven't seen any changes until now, fill up our new_children
+          // with the old ones
+          for j in col.Range(0, i) do
+            try
+              let old_child = node.children()(j)?
+              nc.push(old_child)
+              um(old_child) = old_child
             end
           end
+
+          match new_child
+          | let new_child': Node =>
+            nc.push(new_child')
+            um(child) = new_child'
+          end
+
+          new_children = consume nc
+          update_map = consume um
         end
+        i = i + 1
       end
 
       match (new_children, update_map)
-      | (let arr: Array[Node] trn, let um: ChildUpdateMap trn) =>
+      | (let nc: Array[Node] trn, let um: ChildUpdateMap trn) =>
         (node_state, let new_node, errors') = visitor.visit_post(
             node_state,
             node,
             path,
             consume errors',
-            if child_states.size() > 0 then consume child_states end
-            consume arr,
+            if child_states.size() > 0 then child_states end,
+            consume nc,
             consume um)
         (node_state, new_node, consume errors')
       else
@@ -201,7 +207,7 @@ class _UpdateLineInfoVisitor is Visitor[_UpdateLineState]
     node: Node,
     path: Path,
     errors: Array[TraverseError] iso,
-    child_states: (ReadSeq[_UpdateLineState] val | None),
+    child_states: (ReadSeq[_UpdateLineState] | None),
     new_children: (NodeSeq | None) = None,
     update_map: (ChildUpdateMap | None) = None)
     : (_UpdateLineState^, (Node | None), Array[TraverseError] iso^)
@@ -241,4 +247,4 @@ class _UpdateLineInfoVisitor is Visitor[_UpdateLineState]
         src_info' = src_info,
         new_children' = new_children,
         update_map' = update_map)
-    (parent_state, new_node, consume errors)
+    (node_state, new_node, consume errors)

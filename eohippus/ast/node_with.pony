@@ -1,5 +1,6 @@
 use "itertools"
 
+use analyzer = "../analyzer"
 use json = "../json"
 use parser = "../parser"
 use types = "../types"
@@ -16,6 +17,7 @@ class val NodeWith[D: NodeData val] is Node
   let _post_trivia: NodeSeqWith[Trivia]
   let _error_sections: NodeSeqWith[ErrorSection]
   let _ast_type: (types.AstType | None)
+  let _scope: (analyzer.Scope val | None)
 
   new val create(
     src_info': SrcInfo,
@@ -26,7 +28,8 @@ class val NodeWith[D: NodeData val] is Node
     pre_trivia': NodeSeqWith[Trivia] = [],
     post_trivia': NodeSeqWith[Trivia] = [],
     error_sections': NodeSeqWith[ErrorSection] = [],
-    ast_type': (types.AstType | None) = None)
+    ast_type': (types.AstType | None) = None,
+    scope': (analyzer.Scope | None) = None)
   =>
     _src_info = src_info'
     _children =
@@ -127,6 +130,7 @@ class val NodeWith[D: NodeData val] is Node
         []
       end
     _ast_type = ast_type'
+    _scope = scope'
 
   new val from(
     orig: NodeWith[D],
@@ -138,7 +142,8 @@ class val NodeWith[D: NodeData val] is Node
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
-    ast_type': (types.AstType | None) = None)
+    ast_type': (types.AstType | None) = None,
+    scope': (analyzer.Scope val | None) = None)
   =>
     _src_info =
       match src_info'
@@ -185,6 +190,11 @@ class val NodeWith[D: NodeData val] is Node
       | let at: types.AstType => at
       else orig._ast_type
       end
+    _scope =
+      match scope'
+      | let s: analyzer.Scope val => s
+      else orig._scope
+      end
 
   fun val clone(
     src_info': (SrcInfo | None) = None,
@@ -195,7 +205,8 @@ class val NodeWith[D: NodeData val] is Node
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
-    ast_type': (types.AstType | None) = None): Node
+    ast_type': (types.AstType | None) = None,
+    scope': (analyzer.Scope val | None) = None): Node
   =>
     let data'' =
       match update_map'
@@ -275,7 +286,8 @@ class val NodeWith[D: NodeData val] is Node
       pre_trivia'',
       post_trivia'',
       error_sections'',
-      ast_type')
+      ast_type',
+      scope')
 
   fun val name(): String =>
     """The kind of data that is stored in this node."""

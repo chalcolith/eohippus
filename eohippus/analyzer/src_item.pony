@@ -1,3 +1,4 @@
+use "collections"
 use "files"
 
 use ast = "../ast"
@@ -46,11 +47,41 @@ class SrcFileItem
   var syntax_tree: (ast.Node | None) = None
   var scope: (Scope val | None) = None
 
+  var node_indices: MapIs[ast.Node, USize] val = node_indices.create()
+  var nodes_by_index: Map[USize, ast.Node] val = nodes_by_index.create()
+
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
   fun path(): String => canonical_path
   fun state_value(): USize => state()
+
+  fun ref make_indices() =>
+    match syntax_tree
+    | let node: ast.Node =>
+      (node_indices, nodes_by_index) =
+        recover val
+          let ni = MapIs[ast.Node, USize]
+          let nbi = Map[USize, ast.Node]
+          var next_index: USize = 0
+          _make_indices(
+            node, ni, nbi, { ref () => next_index = next_index + 1 })
+          (ni, nbi)
+        end
+    end
+
+  fun tag _make_indices(
+    node: ast.Node,
+    ni: MapIs[ast.Node, USize],
+    nbi: Map[USize, ast.Node],
+    get_next: { ref (): USize})
+  =>
+    let index = get_next()
+    ni(node) = index
+    nbi(index) = node
+    for child in node.children().values() do
+      _make_indices(child, ni, nbi, get_next)
+    end
 
 class SrcPackageItem
   let canonical_path: String

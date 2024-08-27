@@ -9,6 +9,7 @@
 use "collections"
 use "itertools"
 
+use analyzer = "../analyzer"
 use json = "../json"
 use parser = "../parser"
 use types = "../types"
@@ -25,7 +26,8 @@ trait val Node
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
-    ast_type': (types.AstType | None) = None): Node
+    ast_type': (types.AstType | None) = None,
+    scope': (analyzer.Scope val | None) = None): Node
     """
       Used to clone the node with certain updated properties during AST
       transformation.

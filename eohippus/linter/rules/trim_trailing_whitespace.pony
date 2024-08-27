@@ -108,7 +108,7 @@ class _TrailingWhitespaceVisitor is ast.Visitor[None]
     node: ast.Node,
     path: ast.Path,
     errors: Array[ast.TraverseError] iso,
-    child_states: (ReadSeq[None] val | None),
+    child_states: (ReadSeq[None] | None),
     new_children: (ast.NodeSeq | None) = None,
     update_map: (ast.ChildUpdateMap | None) = None)
     : (None, (ast.Node | None), Array[ast.TraverseError] iso^)

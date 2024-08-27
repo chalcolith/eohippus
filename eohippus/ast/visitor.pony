@@ -12,9 +12,9 @@ interface Visitor[State: Any #read]
         intermediate state (if some data needs to be saved for later).
       - Build a list of new node children by calling `traverse()` on each old
         child, passing the the intermediate state.
-      - Call `visit_post()` the intermediate state,
-        the list of child states (returned from each child's `visit_post()`)
-        the old children of the node, and the new children.
+      - Call `visit_post()` with the intermediate state,
+        the list of child states (returned from each child's `visit_post()`),
+        the new children, and a map from old to new children.
         `visit_post()` then returns the intermediate state and the new node.
   """
 
@@ -34,7 +34,7 @@ interface Visitor[State: Any #read]
     node: Node,
     path: Path,
     errors: Array[TraverseError] iso,
-    child_states: (ReadSeq[State] val | None),
+    child_states: (ReadSeq[State] | None),
     new_children: (NodeSeq | None),
     update_map: (ChildUpdateMap | None))
     : (State, (Node | None), Array[TraverseError] iso^)
