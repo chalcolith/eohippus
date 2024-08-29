@@ -23,7 +23,7 @@ class val ExpMatch is NodeData
       _map[MatchCase](cases, updates),
       _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("expression", node.child_ref(expression)))
     if cases.size() > 0 then
       props.push(("cases", node.child_refs(cases)))
@@ -96,7 +96,7 @@ class val MatchCase is NodeData
       _map_or_none[Expression](condition, updates),
       _map_with[Expression](body, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("pattern", node.child_ref(pattern)))
     match condition
     | let condition': NodeWith[Expression] =>

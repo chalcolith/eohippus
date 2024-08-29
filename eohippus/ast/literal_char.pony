@@ -25,7 +25,7 @@ class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
   fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | CharLiteral => "CharLiteral"

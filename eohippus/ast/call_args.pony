@@ -23,7 +23,7 @@ class val CallArgs is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     CallArgs(_map[Expression](pos, updates), _map[Expression](named, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if pos.size() > 0 then
       props.push(("positional", node.child_refs(pos)))
     end

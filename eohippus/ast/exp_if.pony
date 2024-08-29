@@ -33,7 +33,7 @@ class val ExpIf is NodeData
       _map[IfCondition](conditions, updates),
       _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     let kind_str =
       match kind
       | IfExp => "IfExp"
@@ -112,7 +112,7 @@ class val IfCondition is NodeData
       _map_with[Expression](if_true, updates),
       _map_with[Expression](then_block, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("if_true", node.child_ref(if_true)))
     props.push(("then_block", node.child_ref(then_block)))
 

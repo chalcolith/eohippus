@@ -25,11 +25,12 @@ actor Scoper
   be scope_syntax_tree(
     task_id: USize,
     canonical_path: String,
-    syntax_tree: ast.Node)
+    syntax_tree: ast.Node,
+    node_indices: MapIs[ast.Node, USize] val)
   =>
     (let scope, let node_scopes) =
       recover val
-        let visitor = ScopeVisitor(_log, canonical_path)
+        let visitor = ScopeVisitor(_log, canonical_path, node_indices)
         let state = ScopeState(visitor.file_scope)
         (_, let errors) =
           ast.SyntaxTree.traverse[ScopeState ref](visitor, state, syntax_tree)
@@ -46,30 +47,33 @@ actor Scoper
         (visitor.file_scope, visitor.node_scopes)
       end
 
-    let val_scopes = MapIs[Scope tag, Scope val]
-    _get_val_scopes(scope, val_scopes)
+    let scope_indices = MapIs[Scope tag, USize]
+    var next_index: USize = 0
+    _get_scope_indices(
+      scope, scope_indices, { ref () => next_index = next_index + 1 })
 
-    let scoped_tree = _assign_scopes(syntax_tree, node_scopes, val_scopes)
+    let scoped_tree = _assign_scopes(syntax_tree, node_scopes, scope_indices)
     _notify.scoped_file(task_id, canonical_path, scoped_tree, scope)
 
-  fun tag _get_val_scopes(
+  fun tag _get_scope_indices(
     scope: Scope val,
-    val_scopes: MapIs[Scope tag, Scope val])
+    scope_indices: MapIs[Scope tag, USize],
+    get_next: { ref (): USize })
   =>
-    val_scopes(scope) = scope
+    scope_indices(scope) = get_next()
     for child in scope.children.values() do
-      _get_val_scopes(child, val_scopes)
+      _get_scope_indices(child, scope_indices, get_next)
     end
 
   fun tag _assign_scopes(
     node: ast.Node,
     node_scopes: MapIs[ast.Node, Scope tag] val,
-    val_scopes: MapIs[Scope tag, Scope])
+    scope_indices: MapIs[Scope tag, USize])
     : ast.Node
   =>
-    let scope =
+    let scope_index =
       try
-        val_scopes(node_scopes(node)?)?
+        scope_indices(node_scopes(node)?)?
       end
 
     if node.children().size() > 0 then
@@ -77,16 +81,16 @@ actor Scoper
         Array[ast.Node](node.children().size())
       let update_map: ast.ChildUpdateMap trn = ast.ChildUpdateMap
       for old_child in node.children().values() do
-        let new_child = _assign_scopes(old_child, node_scopes, val_scopes)
+        let new_child = _assign_scopes(old_child, node_scopes, scope_indices)
         update_map(old_child) = new_child
         new_children.push(new_child)
       end
       node.clone(where
-        scope' = scope,
+        scope_index' = scope_index,
         new_children' = consume new_children,
         update_map' = consume update_map)
-    elseif scope isnt None then
-      node.clone(where scope' = scope)
+    elseif scope_index isnt None then
+      node.clone(where scope_index' = scope_index)
     else
       node
     end

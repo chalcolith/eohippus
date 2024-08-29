@@ -32,7 +32,7 @@ class val UsingPony is NodeData
       def_true,
       _map_or_none[Identifier](define, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
       props.push(("identifier", node.child_ref(identifier')))
@@ -140,7 +140,7 @@ class val UsingFFI is NodeData
       def_true,
       _map_or_none[Identifier](define, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
       props.push(("identifier", node.child_ref(identifier')))

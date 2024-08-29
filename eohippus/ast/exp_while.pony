@@ -24,7 +24,7 @@ class val ExpWhile is NodeData
       _map_with[Expression](body, updates),
       _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("condition", node.child_ref(condition)))
     props.push(("body", node.child_ref(body)))
     match else_block

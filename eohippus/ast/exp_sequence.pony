@@ -15,7 +15,7 @@ class val ExpSequence is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpSequence(_map[Expression](expressions, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("expressions", node.child_refs(expressions)))
 
 primitive ParseExpSequence

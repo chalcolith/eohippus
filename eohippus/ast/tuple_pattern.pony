@@ -26,7 +26,7 @@ class val TuplePattern is NodeData
     end
     TuplePattern(consume result)
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if elements.size() > 0 then
       props.push(("elements", node.child_refs(elements)))
     end

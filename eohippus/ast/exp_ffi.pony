@@ -34,7 +34,7 @@ class val ExpFfi is NodeData
       _map_with[CallArgs](call_args, updates),
       partial)
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("identifier", node.child_ref(identifier)))
     match type_args
     | let type_args': NodeWith[TypeArgs] =>

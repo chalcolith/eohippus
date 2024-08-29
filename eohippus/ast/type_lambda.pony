@@ -50,7 +50,7 @@ class val TypeLambda is NodeData
       _map_or_none[Keyword](rcap, updates),
       _map_or_none[Token](reph, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("bare", bare))
     match cap
     | let cap': Node =>

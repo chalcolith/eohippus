@@ -23,7 +23,7 @@ class val ExpArray is NodeData
       _map_or_none[TypeType](array_type, updates),
       _map_with[Expression](body, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match array_type
     | let array_type': NodeWith[TypeType] =>
       props.push(("type", node.child_ref(array_type')))

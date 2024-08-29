@@ -57,7 +57,7 @@ class val ExpOperation is NodeData
       end
     ExpOperation(lhs', op', rhs', partial)
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match lhs
     | let lhs': Node =>
       props.push(("lhs", node.child_ref(lhs')))

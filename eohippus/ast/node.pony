@@ -9,7 +9,6 @@
 use "collections"
 use "itertools"
 
-use analyzer = "../analyzer"
 use json = "../json"
 use parser = "../parser"
 use types = "../types"
@@ -27,38 +26,40 @@ trait val Node
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
-    scope': (analyzer.Scope val | None) = None): Node
+    scope_index': (USize | None) = None): Node
     """
       Used to clone the node with certain updated properties during AST
       transformation.
     """
 
-  fun val name(): String
+  fun name(): String
     """An informative identifier for the kind of data the node stores."""
 
-  fun val src_info(): SrcInfo
+  fun src_info(): SrcInfo
     """Source location information."""
 
-  fun val children(): NodeSeq
+  fun children(): NodeSeq
 
-  fun val annotation(): (NodeWith[Annotation] | None)
+  fun annotation(): (NodeWith[Annotation] | None)
 
-  fun val doc_strings(): NodeSeqWith[DocString]
+  fun doc_strings(): NodeSeqWith[DocString]
 
-  fun val pre_trivia(): NodeSeqWith[Trivia]
+  fun pre_trivia(): NodeSeqWith[Trivia]
 
-  fun val post_trivia(): NodeSeqWith[Trivia]
+  fun post_trivia(): NodeSeqWith[Trivia]
 
-  fun val error_sections(): NodeSeqWith[ErrorSection]
+  fun error_sections(): NodeSeqWith[ErrorSection]
 
-  fun val ast_type(): (types.AstType | None)
+  fun ast_type(): (types.AstType | None)
     """The resolved type of the node."""
 
-  fun val get_json()
+  fun scope_index(): (USize | None)
+
+  fun get_json()
     : json.Object
     """Get a JSON representation of the node."""
 
-  fun val map[D: NodeData val](seq: NodeSeqWith[D], updates: ChildUpdateMap)
+  fun map[D: NodeData val](seq: NodeSeqWith[D], updates: ChildUpdateMap)
     : NodeSeqWith[D]
   =>
     let result: Array[NodeWith[D]] trn = Array[NodeWith[D]](seq.size())
@@ -69,7 +70,7 @@ trait val Node
     end
     consume result
 
-  fun val child_ref(child: Node): json.Item =>
+  fun child_ref(child: Node): json.Item =>
     var i: USize = 0
     while i < children().size() do
       try
@@ -81,14 +82,14 @@ trait val Node
     end
     I128.from[ISize](-1)
 
-  fun val child_refs(childs: NodeSeq): json.Item =>
+  fun child_refs(childs: NodeSeq): json.Item =>
     let items: Array[json.Item] = Array[json.Item](childs.size())
     for child in childs.values() do
       items.push(child_ref(child))
     end
     json.Sequence(consume items)
 
-  fun val string(): String iso^
+  fun string(): String iso^
 
 type NodeSeq is ReadSeq[Node] val
   """A sequence of AST nodes."""

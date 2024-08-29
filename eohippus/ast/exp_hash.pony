@@ -15,7 +15,7 @@ class val ExpHash is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpHash(_map_with[Expression](rhs, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("rhs", node.child_ref(rhs)))
 
 primitive ParseExpHash

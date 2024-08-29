@@ -11,7 +11,7 @@ class val LiteralFloat is NodeDataWithValue[LiteralFloat, F64]
   fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("value", _value))
 
   fun value(): F64 => _value

@@ -49,6 +49,12 @@ primitive ParseNode
       else
         SrcInfo(locator)
       end
+    let scope_index =
+      match try obj("scope")? end
+      | let index: I128 =>
+        USize.from[I128](index)
+      end
+
     let children': Array[Node] trn = Array[Node]
     match try obj("children")? end
     | let children_seq: json.Sequence =>
@@ -266,7 +272,8 @@ primitive ParseNode
         doc_strings,
         pre_trivia,
         post_trivia,
-        error_sections)
+        error_sections,
+        scope_index)
     else
       "unknown node data type " + name
     end
@@ -361,7 +368,8 @@ primitive ParseNode
     doc_strings: NodeSeqWith[DocString],
     pre_trivia: NodeSeqWith[Trivia],
     post_trivia: NodeSeqWith[Trivia],
-    error_sections: NodeSeqWith[ErrorSection])
+    error_sections: NodeSeqWith[ErrorSection],
+    scope_index: (USize | None))
     : (Node | String)
   =>
     let data =
@@ -380,7 +388,9 @@ primitive ParseNode
       doc_strings,
       pre_trivia,
       post_trivia,
-      error_sections)
+      error_sections,
+      None,
+      scope_index)
 
 type _NodeConstructor is
   {(SrcInfo,
@@ -389,5 +399,6 @@ type _NodeConstructor is
     NodeSeqWith[DocString],
     NodeSeqWith[Trivia],
     NodeSeqWith[Trivia],
-    NodeSeqWith[ErrorSection])
+    NodeSeqWith[ErrorSection],
+    (USize | None))
     : (Node | String)} box

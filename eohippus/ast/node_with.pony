@@ -1,6 +1,5 @@
 use "itertools"
 
-use analyzer = "../analyzer"
 use json = "../json"
 use parser = "../parser"
 use types = "../types"
@@ -17,7 +16,7 @@ class val NodeWith[D: NodeData val] is Node
   let _post_trivia: NodeSeqWith[Trivia]
   let _error_sections: NodeSeqWith[ErrorSection]
   let _ast_type: (types.AstType | None)
-  let _scope: (analyzer.Scope val | None)
+  let _scope_index: (USize | None)
 
   new val create(
     src_info': SrcInfo,
@@ -29,7 +28,7 @@ class val NodeWith[D: NodeData val] is Node
     post_trivia': NodeSeqWith[Trivia] = [],
     error_sections': NodeSeqWith[ErrorSection] = [],
     ast_type': (types.AstType | None) = None,
-    scope': (analyzer.Scope | None) = None)
+    scope_index': (USize | None) = None)
   =>
     _src_info = src_info'
     _children =
@@ -130,7 +129,7 @@ class val NodeWith[D: NodeData val] is Node
         []
       end
     _ast_type = ast_type'
-    _scope = scope'
+    _scope_index = scope_index'
 
   new val from(
     orig: NodeWith[D],
@@ -143,7 +142,7 @@ class val NodeWith[D: NodeData val] is Node
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
-    scope': (analyzer.Scope val | None) = None)
+    scope_index': (USize | None) = None)
   =>
     _src_info =
       match src_info'
@@ -190,10 +189,10 @@ class val NodeWith[D: NodeData val] is Node
       | let at: types.AstType => at
       else orig._ast_type
       end
-    _scope =
-      match scope'
-      | let s: analyzer.Scope val => s
-      else orig._scope
+    _scope_index =
+      match scope_index'
+      | let index: USize => index
+      else orig._scope_index
       end
 
   fun val clone(
@@ -206,7 +205,7 @@ class val NodeWith[D: NodeData val] is Node
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
     error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
-    scope': (analyzer.Scope val | None) = None): Node
+    scope_index': (USize | None) = None): Node
   =>
     let data'' =
       match update_map'
@@ -287,42 +286,42 @@ class val NodeWith[D: NodeData val] is Node
       post_trivia'',
       error_sections'',
       ast_type',
-      scope')
+      scope_index')
 
-  fun val name(): String =>
+  fun name(): String =>
     """The kind of data that is stored in this node."""
     _data.name()
 
-  fun val src_info(): SrcInfo =>
+  fun src_info(): SrcInfo =>
     """Source file information for this node."""
     _src_info
 
-  fun val children(): NodeSeq =>
+  fun children(): NodeSeq =>
     """The complete list of children of this node."""
     _children
 
-  fun val data(): D =>
+  fun data(): D =>
     """
       Semantic data associated with this node.  Node references in `data` must
       reference nodes in `children`.
     """
     _data
 
-  fun val doc_strings(): NodeSeqWith[DocString] =>
+  fun doc_strings(): NodeSeqWith[DocString] =>
     """
       Zero or more doc strings associated with this node.  Must be references
       to nodes in `children`.
     """
     _doc_strings
 
-  fun val annotation(): (NodeWith[Annotation] | None) =>
+  fun annotation(): (NodeWith[Annotation] | None) =>
     """
       The node's annotation, if any. Must be a reference to a node in
       `children`.
     """
     _annotation
 
-  fun val pre_trivia(): NodeSeqWith[Trivia] =>
+  fun pre_trivia(): NodeSeqWith[Trivia] =>
     """
       Trivia (whitespace, comments) that appears before the significant content
       of this node. Likely only appears in `SrcFile`. Must be references to
@@ -330,24 +329,27 @@ class val NodeWith[D: NodeData val] is Node
     """
     _pre_trivia
 
-  fun val post_trivia(): NodeSeqWith[Trivia] =>
+  fun post_trivia(): NodeSeqWith[Trivia] =>
     """
       Trivia (whitespace, comments) that appears after the significant content
       of this node. Must be references to nodes in `children`.
     """
     _post_trivia
 
-  fun val error_sections(): NodeSeqWith[ErrorSection] =>
+  fun error_sections(): NodeSeqWith[ErrorSection] =>
     """
       Any error sections that appear in `children`.
     """
     _error_sections
 
-  fun val ast_type(): (types.AstType | None) =>
+  fun ast_type(): (types.AstType | None) =>
     """The resolved type of this node, if any."""
     _ast_type
 
-  fun val get_json()
+  fun scope_index(): (USize | None) =>
+    _scope_index
+
+  fun get_json()
     : json.Object
   =>
     """Get a JSON representation of the node."""
@@ -364,6 +366,10 @@ class val NodeWith[D: NodeData val] is Node
         si_props.push(("next_column", I128.from[USize](nc)))
       end
       props.push(("src_info", json.Object(si_props)))
+    end
+    match _scope_index
+    | let index: USize =>
+      props.push(("scope", I128.from[USize](index)))
     end
     match _annotation
     | let annotation': NodeWith[Annotation] =>
@@ -390,7 +396,7 @@ class val NodeWith[D: NodeData val] is Node
     end
     json.Object(props)
 
-  fun val string(): String iso^ =>
+  fun string(): String iso^ =>
     this.get_json().string()
 
 type NodeSeqWith[D: NodeData val] is ReadSeq[NodeWith[D]] val

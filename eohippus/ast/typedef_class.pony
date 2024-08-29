@@ -43,7 +43,7 @@ class val TypedefClass is NodeData
       _map_or_none[TypeType](constraint, updates),
       _map_or_none[TypedefMembers](members, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("kind", node.child_ref(kind)))
     if raw then
       props.push(("raw", raw))

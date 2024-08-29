@@ -32,7 +32,7 @@ class val TypeNominal is NodeData
       _map_or_none[Keyword](cap, updates),
       _map_or_none[Token](eph, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match lhs
     | let lhs': NodeWith[Identifier] =>
       props.push(("lhs", node.child_ref(lhs')))

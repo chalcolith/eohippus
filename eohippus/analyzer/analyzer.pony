@@ -306,11 +306,7 @@ actor EohippusAnalyzer is Analyzer
             end
 
             for entry in entries.values() do
-              if (entry.size() > 5) and
-                (entry.compare_sub(
-                  ".pony", 5, ISize.from[USize](entry.size() - 5), 0, true) is
-                Equal)
-              then
+              if self._is_pony_file(entry) then
                 let file_canonical_path = Path.join(dir_path.path, entry)
                 let src_file = SrcFileItem(file_canonical_path)
                 src_file.task_id = task_id
@@ -318,6 +314,8 @@ actor EohippusAnalyzer is Analyzer
                 _src_items.update(file_canonical_path, src_file)
                 _src_item_queue.push(src_file)
                 package.dependencies.push(src_file)
+                _log(Fine) and _log.log(
+                  task_id.string() + ": enqueueing " + file_canonical_path)
               end
             end
             _src_items.update(package_path, package)
@@ -341,6 +339,15 @@ actor EohippusAnalyzer is Analyzer
         [ AnalyzerError(
             canonical_path, AnalyzeError, "error opening " + canonical_path) ])
     end
+
+  fun tag _is_pony_file(fname: String): Bool =>
+    let ext_size = ".pony".size()
+    if fname.size() <= ext_size then
+      return false
+    end
+    let index = ISize.from[USize](fname.size() - ext_size)
+    fname.compare_sub(
+      ".pony", ext_size, index where ignore_case = true) is Equal
 
   be open_file(task_id: USize, canonical_path: String, parse: parser.Parser) =>
     if _disposing then return end
@@ -655,17 +662,18 @@ actor EohippusAnalyzer is Analyzer
       else
         src_file.state = AnalysisParsing
       end
+
+      if src_file.state is AnalysisParsing then
+        _log(Fine) and _log.log(
+          src_file.task_id.string() + ": " + src_file.canonical_path +
+          " => Parsing")
+      end
+
       needs_push = true
     | AnalysisParsing =>
       if src_file.is_open then
-        // _log(Fine) and _log.log(
-        //   src_item.task_id.string() + ": parsing in memory " +
-        //   src_item.canonical_path)
         _parse_open_file(src_file)
       else
-        // _log(Fine) and _log.log(
-        //   src_item.task_id.string() + ": parsing on disk " +
-        //   src_item.canonical_path)
         _parse_disk_file(src_file)
       end
     | AnalysisScoping =>
@@ -839,6 +847,10 @@ actor EohippusAnalyzer is Analyzer
   fun ref _parse_open_file(src_file: SrcFileItem) =>
     if _disposing then return end
 
+    _log(Fine) and _log.log(
+      src_file.task_id.string() + ": parsing in memory " +
+      src_file.canonical_path)
+
     let task_id = src_file.task_id
     let canonical_path = src_file.canonical_path
     match src_file.parse
@@ -852,25 +864,28 @@ actor EohippusAnalyzer is Analyzer
   fun ref _parse_disk_file(src_file: SrcFileItem) =>
     if _disposing then return end
 
+    _log(Fine) and _log.log(
+      src_file.task_id.string() + ": parsing on disk " +
+      src_file.canonical_path)
+
     let src_file_path = FilePath(_auth, src_file.canonical_path)
     let syntax_tree_path = FilePath(_auth, _syntax_tree_path(src_file))
     if
       syntax_tree_path.exists() and
       (not _source_is_newer(src_file_path, syntax_tree_path))
     then
-      // _log(Fine) and _log.log(
-      //   src_file.task_id.string() + ": cache is newer; not parsing " +
-      //   src_file.canonical_path)
+      _log(Fine) and _log.log(
+        src_file.task_id.string() + ": cache is newer; not parsing " +
+        src_file.canonical_path)
 
       match _get_syntax_tree(src_file)
       | let syntax_tree: ast.Node =>
         _collect_error_sections(src_file.canonical_path, syntax_tree)
         src_file.syntax_tree = syntax_tree
-        src_file.make_indices()
       else
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to load syntax for " +
-            src_file.canonical_path)
+          src_file.canonical_path)
         return
       end
 
@@ -1002,13 +1017,15 @@ actor EohippusAnalyzer is Analyzer
         return
       end
 
-      // _log(Fine) and _log.log(
-      //   task_id.string() + ": writing syntax tree for " + canonical_path)
       src_file.syntax_tree = syntax_tree
       src_file.make_indices()
-      _write_syntax_tree(src_file, syntax_tree)
-
+      _write_syntax_tree(src_file)
       _collect_error_sections(canonical_path, syntax_tree)
+
+      _log(Fine) and _log.log(
+        src_file.task_id.string() + ": " + src_file.canonical_path +
+        " => Scoping")
+
       src_file.state = AnalysisScoping
       _src_item_queue.push(src_file)
       _process_src_item_queue()
@@ -1058,12 +1075,37 @@ actor EohippusAnalyzer is Analyzer
         where error_sections' = [ error_section ])
       _write_syntax_tree(src_file, node)
 
+      _log(Fine) and _log.log(
+        src_file.task_id.string() + ": " + src_file.canonical_path +
+        " => Error")
+
       src_file.state = AnalysisError
       _src_item_queue.push(src_file)
       _process_src_item_queue()
     end
 
-  fun ref _write_syntax_tree(src_file: SrcFileItem, syntax_tree: ast.Node) =>
+  fun ref _write_syntax_tree(
+    src_file: SrcFileItem,
+    syntax_tree: (ast.Node | None) = None)
+  =>
+    _log(Fine) and _log.log(
+      src_file.task_id.string() + ": writing syntax tree for " +
+      src_file.canonical_path)
+
+    let st =
+      match
+        try
+          syntax_tree as ast.Node
+        else
+          try src_file.syntax_tree as ast.Node end
+        end
+      | let node: ast.Node =>
+        node
+      else
+        _log(Error) and _log.log("unable to get syntax tree to write")
+        return
+      end
+
     let syntax_tree_path = _syntax_tree_path(src_file)
     (let dir, _) = Path.split(syntax_tree_path)
     let dir_path = FilePath(_auth, dir)
@@ -1077,7 +1119,7 @@ actor EohippusAnalyzer is Analyzer
     match CreateFile(FilePath(_auth, syntax_tree_path))
     | let file: File =>
       file.set_length(0)
-      let json_item = syntax_tree.get_json()
+      let json_item = st.get_json()
       let json_str =
         ifdef debug then
           json_item.get_string(true)
@@ -1118,26 +1160,32 @@ actor EohippusAnalyzer is Analyzer
         | let obj: json.Object =>
           match ast.ParseNode(src_file.canonical_path, obj)
           | let node: ast.Node =>
+            _log(Fine) and _log.log(
+              src_file.task_id.string() + ": loaded " + syntax_path.path)
+            src_file.syntax_tree = node
+            src_file.make_indices()
             return node
           | let err: String =>
             _log(Error) and _log.log(
-              "error loading " + syntax_path.path + ": " + err)
+              src_file.task_id.string() + ": error loading " +
+              syntax_path.path + ": " + err)
           end
         | let item: json.Item =>
           _log(Error) and _log.log(
-            "error loading " + syntax_path.path +
-              ": a syntax tree must be an object")
+            src_file.task_id.string() + ": error loading " + syntax_path.path +
+            ": a syntax tree must be an object")
         | let err: json.ParseError =>
           _log(Error) and _log.log(
-            "error loading " + syntax_path.path + ":" + err.index.string() +
-              ": " + err.message)
+            src_file.task_id.string() + ": error loading " + syntax_path.path +
+            ":" + err.index.string() +
+            ": " + err.message)
         end
       else
         _log(Error) and _log.log(
           src_file.task_id.string() + ": error opening " + syntax_path.path)
       end
+      None
     end
-    None
 
   fun ref _scope(src_file: SrcFileItem) =>
     if _disposing then return end
@@ -1163,15 +1211,18 @@ actor EohippusAnalyzer is Analyzer
       return
     end
 
+    _log(Fine) and _log.log(
+      src_file.task_id.string() + ": scoping " + src_file.canonical_path)
+
     let src_file_path = FilePath(_auth, src_file.canonical_path)
     let scope_path = FilePath(_auth, _scope_path(src_file))
     if
       scope_path.exists() and
       (not _source_is_newer(src_file_path, scope_path))
     then
-      // _log(Fine) and _log.log(
-      //   src_file.task_id.string() + ": cache is newer; not scoping " +
-      //   src_file.canonical_path)
+      _log(Fine) and _log.log(
+        src_file.task_id.string() + ": cache is newer; not scoping " +
+        src_file.canonical_path)
       match _get_scope(src_file)
       | let scope: Scope =>
         src_file.scope = scope
@@ -1189,11 +1240,12 @@ actor EohippusAnalyzer is Analyzer
 
     match _get_syntax_tree(src_file)
     | let syntax_tree: ast.Node =>
-      _log(Fine) and _log.log(
-        src_file.task_id.string() + ": scoping " + src_file.canonical_path)
       let scoper = Scoper(_log, this)
       scoper.scope_syntax_tree(
-        src_file.task_id, src_file.canonical_path, syntax_tree)
+        src_file.task_id,
+        src_file.canonical_path,
+        syntax_tree,
+        src_file.node_indices)
     else
       _log(Error) and _log.log(
         src_file.task_id.string() + ": failed to get syntax tree for " +
@@ -1212,9 +1264,12 @@ actor EohippusAnalyzer is Analyzer
         let json_str = recover val file.read_string(file.size()) end
         match recover val json.Parse(json_str) end
         | let obj: json.Object val =>
-          let nbi = src_file.nodes_by_index
-          match recover val ParseScopeJson(nbi, obj, None) end
+          match recover val ParseScopeJson(obj, None) end
           | let scope: Scope val =>
+            _log(Fine) and _log.log(
+              src_file.task_id.string() + ": loaded " + scope_path.path)
+            src_file.scope = scope
+            src_file.make_indices()
             return scope
           | let err: String =>
             _log(Error) and _log.log(
@@ -1234,8 +1289,8 @@ actor EohippusAnalyzer is Analyzer
         _log(Error) and _log.log(
           src_file.task_id.string() + ": error opening " + scope_path.path)
       end
+      None
     end
-    None
 
   be scoped_file(
     task_id: USize,
@@ -1257,9 +1312,15 @@ actor EohippusAnalyzer is Analyzer
 
       src_file.syntax_tree = syntax_tree
       src_file.scope = scope
+      src_file.make_indices()
+
+      _write_syntax_tree(src_file)
+      _write_scope(src_file)
 
       //_process_imports(canonical_path, scope')
-      _write_scope(src_file)
+
+      _log(Fine) and _log.log(
+        task_id.string() + ": " + canonical_path + " => Linting")
 
       src_file.state = AnalysisLinting
       _src_item_queue.push(src_file)
@@ -1370,6 +1431,10 @@ actor EohippusAnalyzer is Analyzer
     end
 
   fun ref _write_scope(src_file: SrcFileItem) =>
+    _log(Fine) and _log.log(
+      src_file.task_id.string() + ": writing scope file for " +
+      src_file.canonical_path)
+
     let scope =
       match src_file.scope
       | let scope': Scope val =>
@@ -1395,7 +1460,7 @@ actor EohippusAnalyzer is Analyzer
     match CreateFile(FilePath(_auth, scope_path))
     | let file: File =>
       file.set_length(0)
-      let json_item = scope.get_json(src_file.node_indices)
+      let json_item = scope.get_json()
       let json_str =
         ifdef debug then
           json_item.get_string(true)
@@ -1508,6 +1573,10 @@ actor EohippusAnalyzer is Analyzer
             canonical_path, AnalyzeError, message, l, c, nl, nc))
         end
       end
+
+      _log(Fine) and _log.log(
+        src_file.task_id.string() + ": " + src_file.canonical_path +
+        " => UpToDate")
 
       src_file.state = AnalysisUpToDate
       _src_item_queue.push(src_file)

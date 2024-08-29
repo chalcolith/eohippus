@@ -19,8 +19,10 @@ type ScopeKind is
   | QualifierScope )
 
 type SrcRange is (USize, USize, USize, USize)
+"""Line, Column, Next line, Next column"""
 
-type ScopeItem is (ast.Node, String, String)
+type ScopeItem is (USize, String, String)
+"""Node index, identifier, path/docstring"""
 
 class val Scope
   let kind: ScopeKind
@@ -54,11 +56,11 @@ class val Scope
       (0, 0, 0, 0)
     end
 
-  fun ref add_import(node: ast.Node, identifier: String, path: String) =>
-    imports.push((node, identifier, path))
+  fun ref add_import(node_index: USize, identifier: String, path: String) =>
+    imports.push((node_index, identifier, path))
 
   fun ref add_definition(
-    node: ast.Node,
+    node_index: USize,
     identifier: String,
     docs: (ast.NodeSeqWith[ast.DocString] | String))
   =>
@@ -72,9 +74,9 @@ class val Scope
       end
     match docs
     | let seq: ast.NodeSeqWith[ast.DocString] =>
-      arr.push((node, identifier, _get_docstring(seq)))
+      arr.push((node_index, identifier, _get_docstring(seq)))
     | let str: String =>
-      arr.push((node, identifier, str))
+      arr.push((node_index, identifier, str))
     end
 
   fun ref add_child(child: Scope box) =>
@@ -94,7 +96,7 @@ class val Scope
       ""
     end
 
-  fun get_json(node_indices: MapIs[ast.Node, USize] val): json.Object =>
+  fun get_json(): json.Object =>
     let props = Array[(String, json.Item)]
     let kind_string =
       match kind
@@ -127,11 +129,10 @@ class val Scope
           ])) )
     if imports.size() > 0 then
       let import_items = Array[json.Item]
-      for (node, identifier, path) in imports.values() do
-        let index = try node_indices(node)? else USize.max_value() end
+      for (node_index, identifier, path) in imports.values() do
         import_items.push(json.Object(
           [ as (String, json.Item):
-            ("node", I128.from[USize](index))
+            ("node", I128.from[USize](node_index))
             ("identifier", identifier)
             ("path", path)
           ]))
@@ -141,11 +142,10 @@ class val Scope
     if definitions.size() > 0 then
       let def_items = Array[json.Item]
       for def_array in definitions.values() do
-        for (node, identifier, doc_string) in def_array.values() do
-          let index = try node_indices(node)? else USize.max_value() end
+        for (node_index, identifier, doc_string) in def_array.values() do
           def_items.push(json.Object(
             [ as (String, json.Item):
-              ("node", I128.from[USize](index))
+              ("node", I128.from[USize](node_index))
               ("identifier", identifier)
               ("doc_string", doc_string) ]))
         end
@@ -155,7 +155,7 @@ class val Scope
     if children.size() > 0 then
       let children_items = Array[json.Item]
       for child in children.values() do
-        children_items.push(child.get_json(node_indices))
+        children_items.push(child.get_json())
       end
       props.push(("children", json.Sequence(children_items)))
     end
@@ -163,7 +163,6 @@ class val Scope
 
 primitive ParseScopeJson
   fun apply(
-    nodes: Map[USize, ast.Node] val,
     scope_item: json.Item,
     parent: (Scope ref | None))
     : (Scope ref | String)
@@ -230,15 +229,10 @@ primitive ParseScopeJson
           match item
           | let obj: json.Object =>
             try
-              let index = USize.from[I128](obj("node")? as I128)
+              let node_index = USize.from[I128](obj("node")? as I128)
               let identifier = obj("identifier")? as String box
               let path = obj("path")? as String box
-              match try nodes(index)? end
-              | let node: ast.Node =>
-                scope.add_import(node, identifier.clone(), path.clone())
-              else
-                return "unknown node index " + index.string()
-              end
+              scope.add_import(node_index, identifier.clone(), path.clone())
             else
               return "scope.imports.N must be an object"
             end
@@ -251,16 +245,11 @@ primitive ParseScopeJson
           match item
           | let obj: json.Object =>
             try
-              let index = USize.from[I128](obj("node")? as I128)
+              let node_index = USize.from[I128](obj("node")? as I128)
               let identifier = obj("identifier")? as String box
               let doc_string = obj("doc_string")? as String box
-              match try nodes(index)? end
-              | let node: ast.Node =>
-                scope.add_definition(
-                  node, identifier.clone(), doc_string.clone())
-              else
-                return "unknown node index " + index.string()
-              end
+              scope.add_definition(
+                node_index, identifier.clone(), doc_string.clone())
             else
               return "scope.definitions.N must be an object"
             end
@@ -270,7 +259,7 @@ primitive ParseScopeJson
       match try scope_obj("children")? end
       | let seq: json.Sequence =>
         for item in seq.values() do
-          match ParseScopeJson(nodes, item, scope)
+          match ParseScopeJson(item, scope)
           | let child: Scope ref =>
             scope.add_child(child)
           | let err: String =>

@@ -24,7 +24,7 @@ class val TypedefAlias is NodeData
       _map_or_none[TypeParams](type_params, updates),
       _map_with[TypeType](type_type, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("identifier", node.child_ref(identifier)))
     match type_params
     | let type_params': NodeWith[TypeParams] =>
