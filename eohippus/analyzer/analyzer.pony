@@ -772,14 +772,17 @@ actor EohippusAnalyzer is Analyzer
   =>
     match src_item
     | let file_item: SrcFileItem =>
-      match (file_item.syntax_tree, file_item.scope)
-      | (let st: ast.Node, let sc: Scope val) =>
+      match (file_item.syntax_tree, file_item.nodes_by_index, file_item.scope)
+      |
+        (let st: ast.Node, let nbi: Map[USize, ast.Node] val, let sc: Scope val)
+      =>
         for (notify, task_ids) in notifys.pairs() do
           for task_id in task_ids.values() do
             _log(Fine) and _log.log(
               task_id.string() + ": request succeeded: "
               + file_item.canonical_path)
-            notify.request_succeeded(task_id, file_item.canonical_path, st, sc)
+            notify.request_succeeded(
+              task_id, file_item.canonical_path, st, nbi, sc)
           end
         end
       end
@@ -808,7 +811,11 @@ actor EohippusAnalyzer is Analyzer
             task_id.string() + ": request succeeded: "
             + package_item.canonical_path)
           notify.request_succeeded(
-            task_id, package_item.canonical_path, None, package_scope')
+            task_id,
+            package_item.canonical_path,
+            None,
+            Map[USize, ast.Node],
+            package_scope')
         end
       end
     end

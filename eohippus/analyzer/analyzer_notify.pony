@@ -1,3 +1,5 @@
+use "collections"
+
 use ast = "../ast"
 use parser = "../parser"
 
@@ -38,6 +40,7 @@ interface tag AnalyzerRequestNotify
     task_id: USize,
     canonical_path: String,
     syntax_tree: (ast.Node | None),
+    nodes_by_index: Map[USize, ast.Node] val,
     scope: Scope val)
 
   be request_failed(
