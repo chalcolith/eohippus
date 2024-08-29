@@ -19,7 +19,7 @@ class val ExpGeneric is NodeData
       _map_with[Expression](lhs, updates),
       _map_with[TypeArgs](type_args, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("lhs", node.child_ref(lhs)))
     props.push(("type_args", node.child_ref(type_args)))
 

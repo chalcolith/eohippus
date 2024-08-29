@@ -52,7 +52,7 @@ class val ExpLambda is NodeData
       _map_with[Expression](body, updates),
       _map_or_none[Keyword](ref_cap, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if bare then
       props.push(("bare", bare))
     end

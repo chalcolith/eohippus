@@ -31,7 +31,7 @@ class val TypedefField is NodeData
       _map_or_none[TypeType](type_type, updates),
       _map_or_none[Expression](initializer, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("kind", node.child_ref(kind)))
     props.push(("identifier", node.child_ref(identifier)))
     match type_type

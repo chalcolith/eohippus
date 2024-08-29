@@ -1,8 +1,6 @@
 use "collections"
 use json = "../json"
 
-type ChildUpdateMap is MapIs[Node, Node] val
-
 trait val NodeData
   """
     Contains strongly-typed data for various AST nodes.
@@ -11,7 +9,7 @@ trait val NodeData
   fun name(): String
     """An informative identifier for the type of data the AST node holds."""
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)])
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)])
     """Add properties to the JSON representation of the AST node."""
 
   fun val clone(update_map: ChildUpdateMap): NodeData

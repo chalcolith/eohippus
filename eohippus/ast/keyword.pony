@@ -78,7 +78,7 @@ class val Keyword is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     this
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("string", string))
 
 primitive ParseKeyword

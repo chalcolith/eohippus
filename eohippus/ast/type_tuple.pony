@@ -12,7 +12,7 @@ class val TypeTuple is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeTuple(_map[TypeType](types, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if types.size() > 0 then
       props.push(("types", node.child_refs(types)))
     end

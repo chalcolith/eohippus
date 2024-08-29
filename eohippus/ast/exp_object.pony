@@ -24,7 +24,7 @@ class val ExpObject is NodeData
       _map_or_none[TypeType](constraint, updates),
       _map_with[TypedefMembers](members, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match cap
     | let cap': NodeWith[Keyword] =>
       props.push(("cap", node.child_ref(cap')))

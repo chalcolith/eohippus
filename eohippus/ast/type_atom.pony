@@ -13,7 +13,7 @@ class val TypeAtom is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeAtom(try updates(body)? else body end)
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("body", node.child_ref(body)))
 
 primitive ParseTypeAtom

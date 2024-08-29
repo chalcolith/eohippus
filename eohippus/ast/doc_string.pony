@@ -13,7 +13,7 @@ class val DocString is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     DocString(try updates(string)? as NodeWith[LiteralString] else string end)
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("string", node.child_ref(string)))
 
 primitive ParseDocString

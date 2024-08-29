@@ -15,7 +15,7 @@ class val MethodParams is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     MethodParams(_map[MethodParam](params, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
       props.push(("params", node.child_refs(params)))
     end
@@ -58,7 +58,7 @@ class val MethodParam is NodeData
       _map_or_none[TypeType](constraint, updates),
       _map_or_none[Expression](initializer, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("identifier", node.child_ref(identifier)))
     match constraint
     | let constraint': NodeWith[TypeType] =>

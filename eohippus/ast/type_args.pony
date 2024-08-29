@@ -15,7 +15,7 @@ class val TypeArgs is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeArgs(_map[TypeType](types, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("types", node.child_refs(types)))
 
 primitive ParseTypeArgs

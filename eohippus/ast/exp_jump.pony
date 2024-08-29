@@ -24,7 +24,7 @@ class val ExpJump is NodeData
       _map_with[Keyword](keyword, updates),
       _map_or_none[Expression](rhs, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("keyword", node.child_ref(keyword)))
     match rhs
     | let rhs': Node =>

@@ -29,7 +29,7 @@ class val ExpDecl is NodeData
       _map_with[Identifier](identifier, updates),
       _map_or_none[TypeType](decl_type, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("kind", node.child_ref(kind)))
     props.push(("identifier", node.child_ref(identifier)))
     match decl_type

@@ -27,7 +27,7 @@ class val SrcFile is NodeData
       _map[Using](usings, updates),
       _map[Typedef](type_defs, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("locator", locator))
     if usings.size() > 0 then
       props.push(("usings", node.child_refs(usings)))

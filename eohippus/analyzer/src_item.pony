@@ -1,3 +1,4 @@
+use "collections"
 use "files"
 
 use ast = "../ast"
@@ -44,13 +45,71 @@ class SrcFileItem
   var schedule: (I64, I64) = (0, 0)
   var parse: (parser.Parser | None) = None
   var syntax_tree: (ast.Node | None) = None
-  var scope: (Scope val | None) = None
+  var scope: (Scope | None) = None
+
+  var node_indices: MapIs[ast.Node, USize] val = node_indices.create()
+  var nodes_by_index: Map[USize, ast.Node] val = nodes_by_index.create()
+
+  var scope_indices: MapIs[Scope, USize] val = scope_indices.create()
+  var scopes_by_index: Map[USize, Scope] val = scopes_by_index.create()
 
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
   fun path(): String => canonical_path
   fun state_value(): USize => state()
+
+  fun ref make_indices() =>
+    match syntax_tree
+    | let node: ast.Node =>
+      (node_indices, nodes_by_index) =
+        recover val
+          let ni = MapIs[ast.Node, USize]
+          let nbi = Map[USize, ast.Node]
+          var next_index: USize = 0
+          _make_node_indices(
+            node, ni, nbi, { ref () => next_index = next_index + 1 })
+          (ni, nbi)
+        end
+    end
+    match scope
+    | let scope': Scope =>
+      (scope_indices, scopes_by_index) =
+        recover val
+          let si = MapIs[Scope, USize]
+          let sbi = Map[USize, Scope]
+          var next_index: USize = 0
+          _make_scope_indices(
+            scope', si, sbi, { ref () => next_index = next_index + 1 })
+          (si, sbi)
+        end
+    end
+
+  fun tag _make_node_indices(
+    node: ast.Node,
+    ni: MapIs[ast.Node, USize],
+    nbi: Map[USize, ast.Node],
+    get_next: { ref (): USize })
+  =>
+    let index = get_next()
+    ni(node) = index
+    nbi(index) = node
+    for child in node.children().values() do
+      _make_node_indices(child, ni, nbi, get_next)
+    end
+
+  fun tag _make_scope_indices(
+    scope': Scope,
+    si: MapIs[Scope, USize],
+    sbi: Map[USize, Scope],
+    get_next: { ref (): USize })
+  =>
+    let index = get_next()
+    si(scope') = index
+    sbi(index) = scope'
+    for child in scope'.children.values() do
+      _make_scope_indices(child, si, sbi, get_next)
+    end
 
 class SrcPackageItem
   let canonical_path: String

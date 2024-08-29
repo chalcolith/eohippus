@@ -21,7 +21,7 @@ class val TypeInfix is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeInfix(_map[TypeType](types, updates), _map_or_none[Token](op, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match op
     | let op': NodeWith[Token] =>
       props.push(("op", node.child_ref(op')))

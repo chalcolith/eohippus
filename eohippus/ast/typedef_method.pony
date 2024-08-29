@@ -48,7 +48,7 @@ class val TypedefMethod is NodeData
       partial,
       _map_or_none[Expression](body, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("kind", node.child_ref(kind)))
     match cap
     | let cap': NodeWith[Keyword] =>

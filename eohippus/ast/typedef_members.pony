@@ -22,7 +22,7 @@ class val TypedefMembers is NodeData
       _map[TypedefField](fields, updates),
       _map[TypedefMethod](methods, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if fields.size() > 0 then
       props.push(("fields", node.child_refs(fields)))
     end

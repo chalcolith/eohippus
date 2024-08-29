@@ -15,5 +15,5 @@ class val _BuiltinNode is ast.NodeData
   fun val clone(updates: ast.ChildUpdateMap): _BuiltinNode =>
     this
 
-  fun add_json_props(node: ast.Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: ast.Node box, props: Array[(String, json.Item)]) =>
     None

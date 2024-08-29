@@ -24,7 +24,7 @@ class val ExpRepeat is NodeData
       _map_with[Expression](condition, updates),
       _map_or_none[Expression](else_block, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("body", node.child_ref(body)))
     props.push(("condition", node.child_ref(condition)))
     match else_block

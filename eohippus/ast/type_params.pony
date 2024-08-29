@@ -13,7 +13,7 @@ class val TypeParams is NodeData
   fun val clone(updates: ChildUpdateMap): NodeData =>
     TypeParams(_map[TypeParam](params, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     if params.size() > 0 then
       props.push(("params", node.child_refs(params)))
     end
@@ -56,7 +56,7 @@ class val TypeParam is NodeData
       _map_or_none[TypeType](constraint, updates),
       _map_or_none[TypeType](initializer, updates))
 
-  fun add_json_props(node: Node, props: Array[(String, json.Item)]) =>
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     match identifier
     | let identifier': NodeWith[Identifier] =>
       props.push(("identifier", node.child_ref(identifier')))
