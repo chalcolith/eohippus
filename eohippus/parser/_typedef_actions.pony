@@ -158,7 +158,9 @@ primitive _TypedefActions
 
   fun tag _primitive(
     id: Variable,
+    tp: Variable,
     ds: Variable,
+    mm: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
@@ -171,10 +173,12 @@ primitive _TypedefActions
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Primitive/Identifier")
       end
+    let tp' = _Build.value_with_or_none[ast.TypeParams](b, tp, r)
     let ds' = _Build.values_with[ast.DocString](b, ds, r)
+    let mm' = _Build.value_with_or_none[ast.TypedefMembers](b, mm, r)
 
     let value = ast.NodeWith[ast.Typedef](
-      _Build.info(d, r), c, ast.TypedefPrimitive(id')
+      _Build.info(d, r), c, ast.TypedefPrimitive(id', tp', mm')
       where doc_strings' = ds')
     (value, b)
 

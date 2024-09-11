@@ -259,15 +259,19 @@ class TypedefBuilder
 
   fun ref _build_typedef_primitive() =>
     let id = Variable("id")
+    let tp = Variable("tp")
     let ds = Variable("ds")
+    let mm = Variable("mm")
 
     typedef_primitive.set_body(
       Conj(
         [ _keyword(ast.Keywords.kwd_primitive())
           Bind(id, _token.identifier)
-          Bind(ds, Ques(doc_string))
+          Ques(Bind(tp, _type_type.params))
+          Ques(Bind(ds, doc_string))
+          Ques(Bind(mm, members))
         ]),
-      _TypedefActions~_primitive(id, ds))
+      _TypedefActions~_primitive(id, tp, ds, mm))
 
   fun ref _build_typedef_alias() =>
     let kwd_type = _keyword(ast.Keywords.kwd_type())

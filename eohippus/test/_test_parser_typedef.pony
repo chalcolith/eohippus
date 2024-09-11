@@ -9,8 +9,10 @@ primitive _TestParserTypedef
   fun apply(test: PonyTest) =>
     test(_TestParserTypedefField)
     test(_TestParserTypedefMethod)
+    test(_TestParserTypedefMethodComplex)
     test(_TestParserTypedefMembers)
     test(_TestParserTypedefPrimitive)
+    test(_TestParserTypedefPrimitiveMethods)
     test(_TestParserTypedefAlias)
     test(_TestParserTypedefClass)
 
@@ -326,6 +328,37 @@ class iso _TestParserTypedefMethod is UnitTest
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
+class iso _TestParserTypedefMethodComplex is UnitTest
+  fun name(): String => "parser/typedef/Method/complex"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.method
+
+    let src =
+      """
+        fun fld[T: (SignedInteger[T, U] val & Signed), U: UnsignedInteger[U] val](x: T, y: T): T =>
+          if (y == T.from[U8](0)) or ((x == T.min_value()) and (y == T.from[I8](-1))) then
+            T.from[U8](0)
+          else
+            _SignedUnsafeArithmetic.fld_unsafe[T, U](x, y)
+          end
+      """
+
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, value) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string())
+          })
+      ])
+
 class iso _TestParserTypedefMembers is UnitTest
   fun name(): String => "parser/typedef/Members"
   fun exclusion_group(): String => "parser/typedef"
@@ -462,6 +495,38 @@ class iso _TestParserTypedefPrimitive is UnitTest
       """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserTypedefPrimitiveMethods is UnitTest
+  fun name(): String => "parser/typedef/Primitive/methods"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.typedef_primitive
+
+    let src =
+      """
+        primitive Foo
+          fun fld[T: (SignedInteger[T, U] val & Signed), U: UnsignedInteger[U] val](x: T, y: T): T =>
+            if (y == T.from[U8](0)) or ((x == T.min_value()) and (y == T.from[I8](-1))) then
+              T.from[U8](0)
+            else
+              _SignedUnsafeArithmetic.fld_unsafe[T, U](x, y)
+            end
+      """
+
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, value) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string())
+          })
+      ])
 
 class iso _TestParserTypedefAlias is UnitTest
   fun name(): String => "parser/typedef/Alias"

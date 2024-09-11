@@ -846,7 +846,8 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
         }
       """
 
-    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+    _Assert.test_all(
+      h, [ _Assert.test_match(h, rule, setup.data, src, exp, true) ])
 
 class iso _TestParserSrcFileTypedefMultiple is UnitTest
   fun name(): String => "parser/src_file/Typedef/Multiple"

@@ -253,7 +253,7 @@ actor EohippusAnalyzer is Analyzer
     match _pony_packages_path
     | let pp: FilePath =>
       _log(Fine) and _log.log("pony_packages_path is " + pp.path)
-      //analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
+      analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
       _analysis_task_id = _analysis_task_id + 1
     else
       _log(Fine) and _log.log("pony_packages_path is None")
