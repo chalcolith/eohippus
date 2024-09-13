@@ -111,8 +111,7 @@ class iso _TestParserTypedefMethod is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.method
 
-    //         0     5     10   15   20   25   30   35    40    45   50
-    let src = "fun \\ann\\ ref name[A](p: B): USize ? \"doc\" => 1 + 2"
+    let src = "fun \\ann\\ ref name[A](p: B): USize ? =>\n \"doc\"\n 1 + 2"
     let exp = """
       {
         "name": "TypedefMethod",
@@ -126,7 +125,7 @@ class iso _TestParserTypedefMethod is UnitTest
         "partial": true,
         "body": 13,
         "doc_strings": [
-          11
+          12
         ],
         "children": [
           {
@@ -253,6 +252,10 @@ class iso _TestParserTypedefMethod is UnitTest
             "string": "?"
           },
           {
+            "name": "Token",
+            "string": "=>"
+          },
+          {
             "name": "DocString",
             "string": 0,
             "children": [
@@ -277,16 +280,11 @@ class iso _TestParserTypedefMethod is UnitTest
                   },
                   {
                     "name": "Trivia",
-                    "kind": "WhiteSpaceTrivia",
-                    "string": " "
+                    "kind": "EndOfLineTrivia"
                   }
                 ]
               }
             ]
-          },
-          {
-            "name": "Token",
-            "string": "=>"
           },
           {
             "name": "ExpOperation",
@@ -345,17 +343,16 @@ class iso _TestParserTypedefMethodComplex is UnitTest
             _SignedUnsafeArithmetic.fld_unsafe[T, U](x, y)
           end
       """
-
     let src_len = src.size()
 
     _Assert.test_all(
       h,
       [ _Assert.test_with(
           h, rule, setup.data, src,
-          {(success, value) =>
+          {(success, values) =>
             let len = success.next.index() - success.start.index()
             ( len == src_len
-            , "expected length " + src_len.string() + ", got " + len.string())
+            , "expected length " + src_len.string() + ", got " + len.string() )
           })
       ])
 

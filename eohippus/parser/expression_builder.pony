@@ -650,7 +650,8 @@ class ExpressionBuilder
     exp_parens.set_body(
       Conj(
         [ oparen
-          Bind(parens_body, seq) ]),
+          Bind(parens_body, seq)
+          cparen ]),
       _ExpActions~_atom(parens_body))
 
     // lambda

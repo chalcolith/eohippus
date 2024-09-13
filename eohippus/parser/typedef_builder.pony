@@ -180,8 +180,8 @@ class TypedefBuilder
       ))
 
     // method <= ('fun' / 'be' / 'new') annotation? (cap / '@')? id type_params?
-    //           '(' method_params ')' (':' type_arrow)? '?'? doc_string?
-    //           ('=>' exp_seq)?
+    //           '(' method_params ')' (':' type_arrow)? '?'?
+    //           ( doc_string? / ('=>' doc_string? exp_seq)? )
     let method_kind = Variable("method_kind")
     let method_ann = Variable("method_ann")
     let method_cap = Variable("method_cap")
@@ -205,8 +205,14 @@ class TypedefBuilder
           cparen
           Ques(Conj([ colon; Bind(method_rtype, _type_type.arrow) ]))
           Ques(Bind(method_partial, ques))
-          Ques(Bind(method_doc_string, doc_string))
-          Ques(Conj([ equal_arrow; Bind(method_body, _expression.seq) ]))
+          Ques(
+            Disj(
+              [ Conj(
+                  [ equal_arrow
+                    Ques(Bind(method_doc_string, doc_string))
+                    Bind(method_body, _expression.seq) ])
+                Bind(method_doc_string, doc_string)
+              ]))
         ]),
       _TypedefActions~_method(
         method_kind,
