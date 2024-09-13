@@ -62,6 +62,7 @@ class TokenBuilder
     _add_rule(ast.Tokens.decimal_point(), t, _tokens)
     _add_rule(ast.Tokens.dot(), t, _tokens)
     _add_rule(ast.Tokens.double_quote(), t, _tokens)
+    _add_rule(ast.Tokens.ellipsis(), t, _tokens)
     _add_rule(ast.Tokens.equals(), t, _tokens)
     _add_rule(ast.Tokens.equal_arrow(), t, _tokens)
     _add_rule(ast.Tokens.equal_equal(), t, _tokens)

@@ -403,7 +403,7 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let src = " use a = @b[None](c: U8) ? "
+    let src = " use a = @b[None](c: U8, ...) ? if not osx"
     let exp = """
       {
         "name": "SrcFile",
@@ -429,6 +429,7 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
             "fun_name": 4,
             "type_args": 5,
             "params": 7,
+            "varargs": true,
             "partial": true,
             "children": [
               {
@@ -608,6 +609,14 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
               },
               {
                 "name": "Token",
+                "string": ","
+              },
+              {
+                "name": "Token",
+                "string": "..."
+              },
+              {
+                "name": "Token",
                 "string": ")",
                 "post_trivia": [
                   1
@@ -652,7 +661,6 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
     """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
-
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Using/error_section"

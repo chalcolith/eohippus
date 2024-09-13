@@ -188,7 +188,9 @@ class SrcFileBuilder
 
   fun ref _build_using_ffi() =>
     let at = _token(ast.Tokens.at())
+    let comma = _token(ast.Tokens.comma())
     let cparen = _token(ast.Tokens.close_paren())
+    let ellipsis = _token(ast.Tokens.ellipsis())
     let equals = _token(ast.Tokens.equals())
     let kwd_if = _keyword(ast.Keywords.kwd_if())
     let kwd_not = _keyword(ast.Keywords.kwd_not())
@@ -200,6 +202,7 @@ class SrcFileBuilder
     let use_name = Variable("use_name")
     let use_targs = Variable("use_targs")
     let use_params = Variable("use_params")
+    let use_ellipsis = Variable("use_ellipsis")
     let use_partial = Variable("use_partial")
     let use_def_not = Variable("use_def_not")
     let use_define = Variable("use_define")
@@ -212,12 +215,20 @@ class SrcFileBuilder
           Bind(use_name, Disj([ _token.identifier; _literal.string ]))
           Bind(use_targs, _type_type.args)
           oparen
-          Ques(Bind(use_params, _typedef.method_params))
+          Ques(
+            Disj(
+              [ Bind(use_ellipsis, ellipsis)
+                Conj(
+                  [ Bind(use_params, _typedef.method_params)
+                    Ques(Conj([ comma; Bind(use_ellipsis, ellipsis) ]))
+                  ])
+              ]))
           cparen
           Ques(Bind(use_partial, ques))
           Ques(
             Conj(
-              [ Ques(Bind(use_def_not, kwd_not))
+              [ kwd_if
+                Ques(Bind(use_def_not, kwd_not))
                 Bind(use_define, _token.identifier)
               ]))
         ]),
@@ -227,6 +238,7 @@ class SrcFileBuilder
           use_name,
           use_targs,
           use_params,
+          use_ellipsis,
           use_partial,
           use_def_not,
           use_define)
@@ -237,6 +249,7 @@ class SrcFileBuilder
     name: Variable,
     targs: Variable,
     params: Variable,
+    ellipsis: Variable,
     partial: Variable,
     def_not: Variable,
     define: Variable,
@@ -264,6 +277,7 @@ class SrcFileBuilder
         return _Build.bind_error(d, r, c, b, "SrcFile/UsingFfi/TypeArgs")
       end
     let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
+    let ellipsis' = b.contains(ellipsis)
     let partial' = b.contains(partial)
     let def_not' = b.contains(def_not)
     let define' = _Build.value_with_or_none[ast.Identifier](b, define, r)
@@ -272,5 +286,12 @@ class SrcFileBuilder
       _Build.info(d, r),
       c,
       ast.UsingFFI(
-        id', name', targs', params', partial', not def_not', define'))
+        id',
+        name',
+        targs',
+        params',
+        ellipsis',
+        partial',
+        not def_not',
+        define'))
     (value, b)
