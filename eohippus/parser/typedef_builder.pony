@@ -266,6 +266,7 @@ class TypedefBuilder
   fun ref _build_typedef_primitive() =>
     let id = Variable("id")
     let tp = Variable("tp")
+    let cs = Variable("cs")
     let ds = Variable("ds")
     let mm = Variable("mm")
 
@@ -274,10 +275,13 @@ class TypedefBuilder
         [ _keyword(ast.Keywords.kwd_primitive())
           Bind(id, _token.identifier)
           Ques(Bind(tp, _type_type.params))
+          Ques(Conj(
+            [ _keyword(ast.Keywords.kwd_is())
+              Bind(cs, _type_type.arrow) ]))
           Ques(Bind(ds, doc_string))
           Ques(Bind(mm, members))
         ]),
-      _TypedefActions~_primitive(id, tp, ds, mm))
+      _TypedefActions~_primitive(id, tp, cs, ds, mm))
 
   fun ref _build_typedef_alias() =>
     let kwd_type = _keyword(ast.Keywords.kwd_type())

@@ -5,15 +5,18 @@ class val TypedefPrimitive is NodeData
 
   let identifier: NodeWith[Identifier]
   let type_params: (NodeWith[TypeParams] | None)
+  let constraint: (NodeWith[TypeType] | None)
   let members: (NodeWith[TypedefMembers] | None)
 
   new val create(
     identifier': NodeWith[Identifier],
     type_params': (NodeWith[TypeParams] | None),
+    constraint': (NodeWith[TypeType] | None),
     members': (NodeWith[TypedefMembers] | None))
   =>
     identifier = identifier'
     type_params = type_params'
+    constraint = constraint'
     members = members'
 
   fun name(): String => "TypedefPrimitive"
@@ -22,6 +25,7 @@ class val TypedefPrimitive is NodeData
     TypedefPrimitive(
       _map_with[Identifier](identifier, updates),
       _map_or_none[TypeParams](type_params, updates),
+      _map_or_none[TypeType](constraint, updates),
       _map_or_none[TypedefMembers](members, updates))
 
   fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
@@ -29,6 +33,10 @@ class val TypedefPrimitive is NodeData
     match type_params
     | let type_params': NodeWith[TypeParams] =>
       props.push(("type_params", node.child_ref(type_params')))
+    end
+    match constraint
+    | let constraint': NodeWith[TypeType] =>
+      props.push(("constraint", node.child_ref(constraint')))
     end
     match members
     | let members': NodeWith[TypedefMembers] =>
@@ -62,6 +70,18 @@ primitive ParseTypedefPrimitive
       | let err: String =>
         return err
       end
+    let constraint =
+      match ParseNode._get_child_with[TypeType](
+        obj,
+        children,
+        "constraint",
+        "TypedefPrimitive.constraint must be a TypeType",
+        false)
+      | let node: NodeWith[TypeType] =>
+        node
+      | let err: String =>
+        return err
+      end
     let members =
       match ParseNode._get_child_with[TypedefMembers](
         obj,
@@ -74,4 +94,4 @@ primitive ParseTypedefPrimitive
       | let err: String =>
         return err
       end
-    TypedefPrimitive(identifier, type_params, members)
+    TypedefPrimitive(identifier, type_params, constraint, members)

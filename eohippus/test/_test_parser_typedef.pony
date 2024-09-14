@@ -550,7 +550,7 @@ class iso _TestParserTypedefPrimitiveMethods is UnitTest
 
     let src =
       """
-        primitive Foo
+        primitive Foo is Stringable
           fun fld[T: (SignedInteger[T, U] val & Signed), U: UnsignedInteger[U] val](x: T, y: T): T =>
             if (y == T.from[U8](0)) or ((x == T.min_value()) and (y == T.from[I8](-1))) then
               T.from[U8](0)
