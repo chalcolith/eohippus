@@ -31,6 +31,10 @@ primitive _Binary
   fun with_underscore(): String =>
     "01_"
 
+primitive _Id
+  fun chars(): String =>
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789'"
+
 class TokenBuilder
   let _context: Context
   let _trivia: TriviaBuilder
@@ -144,7 +148,7 @@ class TokenBuilder
     end
 
   fun ref _build_identifier() =>
-    let id_chars: String = _Letters.with_underscore() + _Digits() + "'"
+    let id_chars = _Id.chars()
     identifier.set_body(
       _Build.with_post[ast.Trivia](
         Disj(

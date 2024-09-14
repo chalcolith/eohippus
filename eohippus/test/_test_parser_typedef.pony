@@ -10,6 +10,7 @@ primitive _TestParserTypedef
     test(_TestParserTypedefField)
     test(_TestParserTypedefMethod)
     test(_TestParserTypedefMethodComplex)
+    test(_TestParserTypedefMethodSequence)
     test(_TestParserTypedefMembers)
     test(_TestParserTypedefPrimitive)
     test(_TestParserTypedefPrimitiveMethods)
@@ -341,6 +342,52 @@ class iso _TestParserTypedefMethodComplex is UnitTest
             T.from[U8](0)
           else
             _SignedUnsafeArithmetic.fld_unsafe[T, U](x, y)
+          end
+      """
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])
+
+class iso _TestParserTypedefMethodSequence is UnitTest
+  fun name(): String => "parser/typedef/Method/sequence"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.method
+
+    let src =
+      """
+        fun _u64(x: U64, neg: Bool): String iso^ =>
+          let table = "0123456789"
+          let base: U64 = 10
+
+          recover
+            var s = String(31)
+            var value = x
+
+            try
+              if value == 0 then
+                s.push(table(0)?)
+              else
+                while value != 0 do
+                  let index = ((value = value / base) - (value * base))
+                  s.push(table(index.usize())?)
+                end
+              end
+            end
+
+            if neg then s.push('-') end
+            s .> reverse_in_place()
           end
       """
     let src_len = src.size()

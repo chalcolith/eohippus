@@ -23,7 +23,8 @@ class iso _TestParserSingleKeyword is UnitTest
 
     _Assert.test_all(
       h,
-      [ _Assert.test_match(h, rule, setup.data, "then", expected) ])
+      [ _Assert.test_match(h, rule, setup.data, "then", expected)
+        _Assert.test_match(h, rule, setup.data, "boxing", None) ])
 
 class iso _TestParserNotKeyword is UnitTest
   fun name(): String => "parser/keyword/notkeyword"
@@ -36,4 +37,5 @@ class iso _TestParserNotKeyword is UnitTest
     _Assert.test_all(
       h,
       [ _Assert.test_match(h, rule, setup.data, "then", None)
-        _Assert.test_match(h, rule, setup.data, "baz", "") ])
+        _Assert.test_match(h, rule, setup.data, "baz", "")
+        _Assert.test_match(h, rule, setup.data, "value", "") ])

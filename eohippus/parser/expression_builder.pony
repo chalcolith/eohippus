@@ -260,7 +260,7 @@ class ExpressionBuilder
           exp_hash
         ]))
 
-    // if <= 'if' cond ('elsif' cond)* ('else' seq)? 'end'
+    // if <= 'if' cond ('elseif' cond)* ('else' seq)? 'end'
     let if_firstif = Variable("if_firstif")
     let if_elseifs = Variable("if_elseifs")
     let if_else_block = Variable("if_else_block")
@@ -268,16 +268,8 @@ class ExpressionBuilder
       Conj(
         [ kwd_if
           Bind(if_firstif, exp_cond)
-          Bind(
-            if_elseifs,
-            Star(
-              Conj(
-                [ kwd_elseif
-                  exp_cond ])))
-          Ques(
-            Conj(
-              [ kwd_else
-                Bind(if_else_block, seq) ]))
+          Bind(if_elseifs, Star(Conj([ kwd_elseif; exp_cond ])))
+          Ques(Conj([ kwd_else; Bind(if_else_block, seq) ]))
           kwd_end ],
         _ExpActions~_if(if_firstif, if_elseifs, if_else_block)))
 
