@@ -565,19 +565,18 @@ class ExpressionBuilder
     //         object / '__loc' / 'this' / literal / (~keyword identifier)
     let atom_body = Variable("atom_body")
     exp_atom.set_body(
-      Bind(atom_body,
-        Disj(
-          [ exp_tuple
-            exp_parens
-            exp_array
-            exp_lambda
-            exp_ffi
-            exp_object
-            kwd_loc
-            kwd_this
-            literal
-            Conj([ not_kwd; id ]) ])),
-      _ExpActions~_atom(atom_body))
+      Disj(
+        [ exp_tuple
+          exp_parens
+          exp_array
+          exp_lambda
+          exp_ffi
+          exp_object
+          Conj(
+            [ Bind(atom_body,
+                Disj([ kwd_loc; kwd_this; literal; Conj([ not_kwd; id ]) ])) ],
+            _ExpActions~_atom(atom_body))
+        ]))
 
     // call_args <= '(' call_args_pos? call_args_named? ')'
     let call_args_posv = Variable("call_args_posv")
@@ -625,16 +624,10 @@ class ExpressionBuilder
     // tuple <= '(' seq (',' seq)+ ')'
     let tuple_seqs = Variable("tuple_seqs")
     exp_tuple.set_body(
-      Bind(
-        tuple_seqs,
-        Conj(
-          [ oparen
-            seq
-            Plus(
-              Conj(
-                [ comma
-                  seq ]))
-            cparen ])),
+      Conj(
+        [ oparen
+          Bind(tuple_seqs, Conj([ seq; Plus(Conj([ comma; seq ])) ]))
+          cparen ]),
       _ExpActions~_tuple(tuple_seqs))
 
     // parens <= '(' seq ')'

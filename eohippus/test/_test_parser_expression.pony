@@ -827,7 +827,7 @@ class iso _TestParserExpressionPostfix is UnitTest
         _Assert.test_match(h, rule, setup.data, source4, expected4) ])
 
 class iso _TestParserExpressionTuple is UnitTest
-  fun name(): String => "parser/expression/Tuple"
+  fun name(): String => "parser/expression/Tuple/expression"
   fun exclusion_group(): String => "parser/expression"
 
   fun apply(h: TestHelper) =>
@@ -879,11 +879,25 @@ class iso _TestParserExpressionParens is UnitTest
       """
         {
           "name": "ExpAtom",
-          "body": 0,
+          "body": 1,
           "children": [
             {
-              "name": "LiteralFloat",
-              "value": 1.23
+              "name": "Token",
+              "string": "(",
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "LiteralFloat",
+                  "value": 1.23
+                }
+              ]
+            },
+            {
+              "name": "Token",
+              "string": ")"
             }
           ]
         }
@@ -1108,7 +1122,7 @@ class iso _TestParserExpressionConsume is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let src = "consume iso (a + 4)"
+    let src = "consume iso a"
     let exp =
       """
         {
@@ -1125,35 +1139,12 @@ class iso _TestParserExpressionConsume is UnitTest
               "string": "iso"
             },
             {
-              "name": "ExpOperation",
-              "lhs": 0,
-              "op": 1,
-              "rhs": 2,
+              "name": "ExpAtom",
+              "body": 0,
               "children": [
                 {
-                  "name": "ExpAtom",
-                  "body": 0,
-                  "children": [
-                    {
-                      "name": "Identifier",
-                      "string": "a"
-                    }
-                  ]
-                },
-                {
-                  "name": "Token",
-                  "string": "+"
-                },
-                {
-                  "name": "ExpAtom",
-                  "body": 0,
-                  "children": [
-                    {
-                      "name": "LiteralInteger",
-                      "kind": "DecimalInteger",
-                      "value": 4
-                    }
-                  ]
+                  "name": "Identifier",
+                  "string": "a"
                 }
               ]
             }

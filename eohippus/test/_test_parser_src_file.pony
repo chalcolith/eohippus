@@ -8,7 +8,7 @@ use ".."
 
 primitive _TestParserSrcFile
   fun apply(test: PonyTest) =>
-    test(_TestParserSrcFileStdlibEnv)
+    test(_TestParserSrcFileStdlibErrorSection)
     test(_TestParserSrcFileTriviaDocstring)
     test(_TestParserSrcFileTypedefMultiple)
     test(_TestParserSrcFileTypedefSingle)
@@ -1308,8 +1308,8 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
-class iso _TestParserSrcFileStdlibEnv is UnitTest
-  fun name(): String => "parser/src_file/stdlib/env"
+class iso _TestParserSrcFileStdlibErrorSection is UnitTest
+  fun name(): String => "parser/src_file/stdlib/error_section"
   fun exclusion_group(): String => "parser/src_file"
 
   fun apply(h: TestHelper) =>
@@ -1318,114 +1318,78 @@ class iso _TestParserSrcFileStdlibEnv is UnitTest
 
     let src =
       """
-        use @pony_os_stdin_setup[Bool]()
-        use @pony_os_stdout_setup[None]()
+use @snprintf[I32](str: Pointer[U8] tag, size: USize, fmt: Pointer[U8] tag, ...)
+if not windows
+use @_snprintf[I32](str: Pointer[U8] tag, count: USize, fmt: Pointer[U8] tag, ...)
+if windows
 
-        class val Env
-          \"\"\"
-          An environment holds the command line and other values injected into the
-          program by default by the runtime.
-          \"\"\"
+primitive _ToString
+\"\"\"
+Worker type providing simple to string conversions for numbers.
+\"\"\"
+fun _u64(x: U64, neg: Bool): String iso^ =>
+let table = "0123456789"
+let base: U64 = 10
+
+recover
+  var s = String(31)
+  var value = x
+
+  try
+    if value == 0 then
+      s.push(table(0)?)
+    else
+      while value != 0 do
+        let index = ((value = value / base) - (value * base))
+        s.push(table(index.usize())?)
+      end
+    end
+  end
+
+  if neg then s.push('-') end
+  s .> reverse_in_place()
+end
+
+fun _u128(x: U128, neg: Bool): String iso^ =>
+let table = "0123456789"
+let base: U128 = 10
+
+recover
+  var s = String(31)
+  var value = x
+
+  try
+    if value == 0 then
+      s.push(table(0)?)
+    else
+      while value != 0 do
+        let index = (value = value / base) - (value * base)
+        s.push(table(index.usize())?)
+      end
+    end
+  end
+
+  if neg then s.push('-') end
+  s .> reverse_in_place()
+end
+
+fun _f64(x: F64): String iso^ =>
+recover
+  var s = String(31)
+  var f = String(31) .> append("%g")
+
+  ifdef windows then
+    @_snprintf(s.cstring(), s.space(), f.cstring(), x)
+  else
+    @snprintf(s.cstring(), s.space(), f.cstring(), x)
+  end
+
+  s .> recalc()
+end
       """
-      //     let root: AmbientAuth
-      //       \"\"\"
-      //       The root capability.
-      //       \"\"\"
-
-      //     let input: InputStream
-      //       \"\"\"
-      //       Stdin represented as an actor.
-      //       \"\"\"
-
-      //     let out: OutStream
-      //       \"\"\"Stdout\"\"\"
-
-      //     let err: OutStream
-      //       \"\"\"Stderr\"\"\"
-
-      //     let args: Array[String] val
-      //       \"\"\"The command line used to start the program.\"\"\"
-
-      //     let vars: Array[String] val
-      //       \"\"\"The program's environment variables.\"\"\"
-
-      //     let exitcode: {(I32)} val
-      //       \"\"\"
-      //       Sets the environment's exit code. The exit code of the root environment will
-      //       be the exit code of the application, which defaults to 0.
-      //       \"\"\"
-
-      //     new _create(
-      //       argc: U32,
-      //       argv: Pointer[Pointer[U8]] val,
-      //       envp: Pointer[Pointer[U8]] val)
-      //     =>
-      //       \"\"\"
-      //       Builds an environment from the command line. This is done before the Main
-      //       actor is created.
-      //       \"\"\"
-      //       root = AmbientAuth._create()
-      //       @pony_os_stdout_setup()
-
-      //       input = Stdin._create(@pony_os_stdin_setup())
-      //       out = StdStream._out()
-      //       err = StdStream._err()
-
-      //       args = _strings_from_pointers(argv, argc.usize())
-      //       vars = _strings_from_pointers(envp, _count_strings(envp))
-
-      //       exitcode = {(code: I32) => @pony_exitcode(code) }
-
-      //     new val create(
-      //       root': AmbientAuth,
-      //       input': InputStream, out': OutStream,
-      //       err': OutStream, args': Array[String] val,
-      //       vars': Array[String] val,
-      //       exitcode': {(I32)} val)
-      //     =>
-      //       \"\"\"
-      //       Build an artificial environment. A root capability must be supplied.
-      //       \"\"\"
-      //       root = root'
-      //       input = input'
-      //       out = out'
-      //       err = err'
-      //       args = args'
-      //       vars = vars'
-      //       exitcode = exitcode'
-
-      //     fun tag _count_strings(data: Pointer[Pointer[U8]] val): USize =>
-      //       if data.is_null() then
-      //         return 0
-      //       end
-
-      //       var i: USize = 0
-
-      //       while
-      //         let entry = data._apply(i)
-      //         not entry.is_null()
-      //       do
-      //         i = i + 1
-      //       end
-      //       i
-
-      //     fun tag _strings_from_pointers(
-      //       data: Pointer[Pointer[U8]] val,
-      //       len: USize)
-      //       : Array[String] iso^
-      //     =>
-      //       let array = recover Array[String](len) end
-      //       var i: USize = 0
-
-      //       while i < len do
-      //         let entry = data._apply(i = i + 1)
-      //         array.push(recover String.copy_cstring(entry) end)
-      //       end
-
-      //       array
-      // """
 
     let src2 = src.clone()
+    src2.replace("\r\n", "\n")
     src2.replace("\\\"", "\"")
 
     let src_len = src2.size()
@@ -1433,7 +1397,7 @@ class iso _TestParserSrcFileStdlibEnv is UnitTest
     _Assert.test_all(
       h,
       [ _Assert.test_with(
-          h, rule, setup.data, consume src,
+          h, rule, setup.data, consume src2,
           {(success, values) =>
             let len = success.next.index() - success.start.index()
             ( len == src_len

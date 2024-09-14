@@ -277,9 +277,9 @@ class SrcFileBuilder
         return _Build.bind_error(d, r, c, b, "SrcFile/UsingFfi/TypeArgs")
       end
     let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
-    let ellipsis' = b.contains(ellipsis)
-    let partial' = b.contains(partial)
-    let def_not' = b.contains(def_not)
+    let ellipsis' = b.contains(ellipsis, r)
+    let partial' = b.contains(partial, r)
+    let def_not' = b.contains(def_not, r)
     let define' = _Build.value_with_or_none[ast.Identifier](b, define, r)
 
     let value = ast.NodeWith[ast.Using](
