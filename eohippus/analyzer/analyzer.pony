@@ -375,17 +375,12 @@ actor EohippusAnalyzer is Analyzer
     _log(Fine) and _log.log(task_id.string() + ": opening " + canonical_path)
     match try _src_items(canonical_path)? end
     | let src_file: SrcFileItem =>
-      let needs_queue =
-        (src_file.state is AnalysisUpToDate) or
-        (src_file.state is AnalysisError)
       src_file.task_id = task_id
       src_file.state = AnalysisStart
       src_file.schedule = _schedule(0)
       src_file.is_open = true
       src_file.parse = parse
-      if needs_queue then
-        _src_item_queue.push(src_file)
-      end
+      _src_item_queue.push(src_file)
     else
       let src_file = SrcFileItem(canonical_path)
       src_file.task_id = task_id
@@ -407,18 +402,13 @@ actor EohippusAnalyzer is Analyzer
     _log(Fine) and _log.log(task_id.string() + ": updating " + canonical_path)
     match try _src_items(canonical_path)? end
     | let src_file: SrcFileItem =>
-      let needs_queue =
-        (src_file.state is AnalysisUpToDate) or
-        (src_file.state is AnalysisError)
       src_file.task_id = task_id
       src_file.state = AnalysisStart
       src_file.schedule = _schedule(300)
       src_file.is_open = true
       src_file.parse = parse
       _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
-      if needs_queue then
-        _src_item_queue.push(src_file)
-      end
+      _src_item_queue.push(src_file)
     else
       let src_file = SrcFileItem(canonical_path)
       src_file.task_id = task_id
