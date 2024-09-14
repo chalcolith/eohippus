@@ -253,7 +253,7 @@ actor EohippusAnalyzer is Analyzer
     match _pony_packages_path
     | let pp: FilePath =>
       _log(Fine) and _log.log("pony_packages_path is " + pp.path)
-      analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
+      //analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
       _analysis_task_id = _analysis_task_id + 1
     else
       _log(Fine) and _log.log("pony_packages_path is None")
@@ -812,7 +812,8 @@ actor EohippusAnalyzer is Analyzer
         PackageScope,
         package_item.canonical_path,
         package_item.canonical_path,
-        (0, 0, USize.max_value(), USize.max_value()))
+        (0, 0, USize.max_value(), USize.max_value()),
+        USize.max_value())
 
       for dep in package_item.dependencies.values() do
         match dep
