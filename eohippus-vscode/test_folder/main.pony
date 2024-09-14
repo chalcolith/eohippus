@@ -19,7 +19,7 @@ actor Main
     end
 
   be behavior() =>
-    "Main behavior"
+    """Main behavior"""
     None
 
   fun function() =>

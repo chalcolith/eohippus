@@ -805,10 +805,26 @@ class iso _TestParserExpressionPostfix is UnitTest
         }
       """
 
+    let source4 = "a .> b(1)"
+    let expected4 =
+      """
+        {
+          "name": "ExpCall",
+          "lhs": 0,
+          "args": 1,
+          "children": [
+            {
+              "name": "ExpOperation"
+            }
+          ]
+        }
+      """
+
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
         _Assert.test_match(h, rule, setup.data, source2, expected2)
-        _Assert.test_match(h, rule, setup.data, source3, expected3) ])
+        _Assert.test_match(h, rule, setup.data, source3, expected3)
+        _Assert.test_match(h, rule, setup.data, source4, expected4) ])
 
 class iso _TestParserExpressionTuple is UnitTest
   fun name(): String => "parser/expression/Tuple"

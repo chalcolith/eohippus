@@ -197,7 +197,9 @@ class TypedefBuilder
       Conj(
         [ Bind(method_kind, Disj([ kwd_fun; kwd_be; kwd_new ]))
           Ques(Bind(method_ann, _expression.annotation))
-          Ques(Disj([ Bind(method_cap, _keyword.cap); Bind(method_raw, at) ]))
+          Ques(Disj(
+            [ Bind(method_cap, _keyword.cap)
+              Bind(method_raw, at) ]))
           Bind(method_id, _token.identifier)
           Ques(Bind(method_tparams, _type_type.params))
           oparen
@@ -209,7 +211,6 @@ class TypedefBuilder
             Disj(
               [ Conj(
                   [ equal_arrow
-                    Ques(Bind(method_doc_string, doc_string))
                     Bind(method_body, _expression.seq) ])
                 Bind(method_doc_string, doc_string)
               ]))

@@ -9,7 +9,9 @@ primitive _TestParserTypedef
   fun apply(test: PonyTest) =>
     test(_TestParserTypedefField)
     test(_TestParserTypedefMethod)
+    test(_TestParserTypedefMethodBare)
     test(_TestParserTypedefMethodComplex)
+    test(_TestParserTypedefMethodNegation)
     test(_TestParserTypedefMethodSequence)
     test(_TestParserTypedefMembers)
     test(_TestParserTypedefPrimitive)
@@ -105,14 +107,20 @@ class iso _TestParserTypedefField is UnitTest
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
 class iso _TestParserTypedefMethod is UnitTest
-  fun name(): String => "parser/typedef/Method"
+  fun name(): String => "parser/typedef/Method/simple"
   fun exclusion_group(): String => "parser/typedef"
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.typedef.method
 
-    let src = "fun \\ann\\ ref name[A](p: B): USize ? =>\n \"doc\"\n 1 + 2"
+    let src =
+      """
+        fun \ann\ ref name[A](p: B): USize ? =>
+          "doc"
+          1 + 2
+          a
+      """
     let exp = """
       {
         "name": "TypedefMethod",
@@ -124,10 +132,7 @@ class iso _TestParserTypedefMethod is UnitTest
         "params": 6,
         "return_type": 9,
         "partial": true,
-        "body": 13,
-        "doc_strings": [
-          12
-        ],
+        "body": 12,
         "children": [
           {
             "name": "Keyword",
@@ -257,65 +262,45 @@ class iso _TestParserTypedefMethod is UnitTest
             "string": "=>"
           },
           {
-            "name": "DocString",
-            "string": 0,
-            "children": [
-              {
-                "name": "LiteralString",
-                "kind": "StringLiteral",
-                "value": "doc",
-                "post_trivia": [
-                  3
-                ],
-                "children": [
-                  {
-                    "name": "Token",
-                    "string": "\""
-                  },
-                  {
-                    "name": "Span"
-                  },
-                  {
-                    "name": "Token",
-                    "string": "\""
-                  },
-                  {
-                    "name": "Trivia",
-                    "kind": "EndOfLineTrivia"
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "name": "ExpOperation",
-            "lhs": 0,
-            "op": 1,
-            "rhs": 2,
+            "name": "ExpSequence",
+            "expressions": [ 0, 1, 2 ],
             "children": [
               {
                 "name": "ExpAtom",
                 "body": 0,
-                "children": [
-                  {
-                    "name": "LiteralInteger",
-                    "kind": "DecimalInteger",
-                    "value": 1
-                  }
-                ]
+                "children": [ { "name": "LiteralString", "value": "doc" } ]
               },
               {
-                "name": "Token",
-                "string": "+"
-              },
-              {
-                "name": "ExpAtom",
-                "body": 0,
+                "name": "ExpOperation",
+                "lhs": 0,
+                "op": 1,
+                "rhs": 2,
                 "children": [
                   {
-                    "name": "LiteralInteger",
-                    "kind": "DecimalInteger",
-                    "value": 2
+                    "name": "ExpAtom",
+                    "body": 0,
+                    "children": [
+                      {
+                        "name": "LiteralInteger",
+                        "kind": "DecimalInteger",
+                        "value": 1
+                      }
+                    ]
+                  },
+                  {
+                    "name": "Token",
+                    "string": "+"
+                  },
+                  {
+                    "name": "ExpAtom",
+                    "body": 0,
+                    "children": [
+                      {
+                        "name": "LiteralInteger",
+                        "kind": "DecimalInteger",
+                        "value": 2
+                      }
+                    ]
                   }
                 ]
               }
@@ -326,6 +311,55 @@ class iso _TestParserTypedefMethod is UnitTest
     """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserTypedefMethodBare is UnitTest
+  fun name(): String => "parser/typedef/Method/bare"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.method
+
+    let src = "be writev(data: ByteSeqIter)\n  \"\"\"\n  Write an iterable collection of ByteSeqs.\n  \"\"\"\n"
+    let exp =
+      """
+        {
+          "name": "TypedefMethod",
+          "kind": 0,
+          "identifier": 1,
+          "params": 3,
+          "doc_strings": [ 5 ]
+        }
+      """
+
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserTypedefMethodNegation is UnitTest
+  fun name(): String => "parser/typedef/Method/negation"
+  fun exclusion_group(): String => "parser/typedef"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.typedef.method
+
+    let src =
+      """
+        fun foo() =>
+          "doc"
+          -123
+      """
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])
 
 class iso _TestParserTypedefMethodComplex is UnitTest
   fun name(): String => "parser/typedef/Method/complex"
