@@ -6,6 +6,7 @@ use "promises"
 use ast = "../ast"
 use json = "../json"
 use parser = "../parser"
+use ".."
 
 interface val _Assertion
   fun apply(node: ast.Node): Bool
@@ -159,6 +160,14 @@ primitive _Assert
         msg.append("; ")
       end
       msg.append(es.data().message)
+      msg.append(": '")
+      let si = es.src_info()
+      match (si.start, si.next)
+      | (let s: parser.Loc, let n: parser.Loc) =>
+        let code = String.>concat(s.values(n))
+        msg.append(StringUtil.escape(code))
+      end
+      msg.append("'")
     end
     for child in node.children().values() do
       _get_error_sections(child, msg)

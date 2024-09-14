@@ -321,7 +321,7 @@ class iso _TestParserLiteralStringTriple is UnitTest
           "name": "LiteralString",
           "kind": "StringTripleQuote",
           "value": "one\ntwo\nthree",
-          "post_trivia": [ 3 ],
+          "post_trivia": [ 10 ],
           "children": [
             {
               "name": "Token",
@@ -329,6 +329,31 @@ class iso _TestParserLiteralStringTriple is UnitTest
             },
             {
               "name": "Span"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            },
+            {
+              "name": "Span"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            },
+            {
+              "name": "Span"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
+            },
+            {
+              "name": "Span"
+            },
+            {
+              "name": "Trivia",
+              "kind": "EndOfLineTrivia"
             },
             {
               "name": "Token",

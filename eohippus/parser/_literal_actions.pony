@@ -1,5 +1,7 @@
 use "itertools"
+
 use ast = "../ast"
+use ".."
 
 primitive _LiteralActions
   fun tag _bool(
@@ -259,6 +261,12 @@ primitive _LiteralActions
       recover val
         let indented' = String
         for child in c.values() do
+          try
+            if child is p(0)? then
+              break
+            end
+          end
+
           match child
           | let ch: ast.NodeWith[ast.LiteralChar] =>
             match ch.data()
@@ -271,6 +279,8 @@ primitive _LiteralActions
             | (let s': Loc, let n': Loc) =>
               indented'.concat(s'.values(n'))
             end
+          | let eol: ast.NodeWith[ast.Trivia] =>
+            indented'.append(eol.data().string)
           end
         end
         indented'
@@ -289,10 +299,7 @@ primitive _LiteralActions
             let fli = Iter[U8](first_line.values())
             // if the first line is all whitespace, then ignore it,
             // and trim prefixes from from subseqent lines
-            if fli.all(
-              {(ch) =>
-                (ch == ' ') or (ch == '\t') or (ch == '\n') or (ch == '\r') })
-            then
+            if fli.all(StringUtil~is_ws()) then
               (start, next) = lines(1)?
               let indent =
                 recover val
@@ -315,6 +322,15 @@ primitive _LiteralActions
                   trimmed.append(indented.trim(s, n - 1))
                 end
                 i = i + 1
+              end
+
+              try
+                while
+                  (trimmed.size() > 0) and
+                  StringUtil.is_ws(trimmed(trimmed.size() - 1)?)
+                do
+                  trimmed.trim_in_place(0, trimmed.size() - 1)
+                end
               end
             end
           end

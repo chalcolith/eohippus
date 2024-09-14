@@ -78,9 +78,7 @@ class SrcFileItem
         recover val
           let si = MapIs[Scope, USize]
           let sbi = Map[USize, Scope]
-          var next_index: USize = 0
-          _make_scope_indices(
-            scope', si, sbi, { ref () => next_index = next_index + 1 })
+          _make_scope_indices(scope', si, sbi)
           (si, sbi)
         end
     end
@@ -101,14 +99,13 @@ class SrcFileItem
   fun tag _make_scope_indices(
     scope': Scope,
     si: MapIs[Scope, USize],
-    sbi: Map[USize, Scope],
-    get_next: { ref (): USize })
+    sbi: Map[USize, Scope])
   =>
-    let index = get_next()
+    let index = scope'.index
     si(scope') = index
     sbi(index) = scope'
     for child in scope'.children.values() do
-      _make_scope_indices(child, si, sbi, get_next)
+      _make_scope_indices(child, si, sbi)
     end
 
 class SrcPackageItem
