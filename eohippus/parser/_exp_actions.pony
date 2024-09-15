@@ -75,7 +75,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(d, r, c, b, "Expression/Binop/RHS")
       end
-    let partial' = b.contains(partial)
+    let partial' = b.contains(partial, r)
 
     let value = ast.NodeWith[ast.Expression](
       _Build.info(d, r), c, ast.ExpOperation(lhs', op', rhs', partial'))
@@ -99,7 +99,7 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let bare' = b.contains(bare)
+    let bare' = b.contains(bare, r)
     let annotation' =
       _Build.value_with_or_none[ast.Annotation](b, annotation, r)
     let this_cap' = _Build.value_with_or_none[ast.Keyword](b, this_cap, r)
@@ -115,7 +115,7 @@ primitive _ExpActions
       end
     let captures' = _Build.value_with_or_none[ast.MethodParams](b, captures, r)
     let ret_type' = _Build.value_with_or_none[ast.TypeType](b, ret_type, r)
-    let partial' = b.contains(partial)
+    let partial' = b.contains(partial, r)
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
@@ -731,7 +731,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(d, r, c, b, "Expression/PostFix/Call/CallArgs")
       end
-    let partial' = b.contains(partial)
+    let partial' = b.contains(partial, r)
 
     let value = ast.NodeWith[ast.Expression](
       _Build.info(d, r), c, ast.ExpCall(lhs', args', partial'))
@@ -768,14 +768,9 @@ primitive _ExpActions
         return _Build.bind_error(d, r, c, b, "Expression/Atom/Body")
       end
 
-    match body'
-    | let exp: ast.NodeWith[ast.Expression] =>
-      (exp, b)
-    else
-      let value = ast.NodeWith[ast.Expression](
-        _Build.info(d, r), c, ast.ExpAtom(body'))
-      (value, b)
-    end
+    let value = ast.NodeWith[ast.Expression](
+      _Build.info(d, r), c, ast.ExpAtom(body'))
+    (value, b)
 
   fun tag _tuple(
     seqs: Variable,
@@ -837,7 +832,7 @@ primitive _ExpActions
       else
         return _Build.bind_error(d, r, c, b, "Expression/FFI/CallArgs")
       end
-    let partial' = b.contains(partial)
+    let partial' = b.contains(partial, r)
 
     let value = ast.NodeWith[ast.Expression](
       _Build.info(d, r),

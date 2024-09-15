@@ -19,6 +19,7 @@ primitive Tokens
   fun decimal_point(): String => "."
   fun dot(): String => "."
   fun double_quote(): String => "\""
+  fun ellipsis(): String => "..."
   fun equals(): String => "="
   fun equal_arrow(): String => "=>"
   fun equal_equal(): String => "=="

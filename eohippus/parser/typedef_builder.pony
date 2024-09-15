@@ -180,8 +180,8 @@ class TypedefBuilder
       ))
 
     // method <= ('fun' / 'be' / 'new') annotation? (cap / '@')? id type_params?
-    //           '(' method_params ')' (':' type_arrow)? '?'? doc_string?
-    //           ('=>' exp_seq)?
+    //           '(' method_params ')' (':' type_arrow)? '?'?
+    //           ( doc_string? / ('=>' doc_string? exp_seq)? )
     let method_kind = Variable("method_kind")
     let method_ann = Variable("method_ann")
     let method_cap = Variable("method_cap")
@@ -197,7 +197,9 @@ class TypedefBuilder
       Conj(
         [ Bind(method_kind, Disj([ kwd_fun; kwd_be; kwd_new ]))
           Ques(Bind(method_ann, _expression.annotation))
-          Ques(Disj([ Bind(method_cap, _keyword.cap); Bind(method_raw, at) ]))
+          Ques(Disj(
+            [ Bind(method_cap, _keyword.cap)
+              Bind(method_raw, at) ]))
           Bind(method_id, _token.identifier)
           Ques(Bind(method_tparams, _type_type.params))
           oparen
@@ -205,8 +207,13 @@ class TypedefBuilder
           cparen
           Ques(Conj([ colon; Bind(method_rtype, _type_type.arrow) ]))
           Ques(Bind(method_partial, ques))
-          Ques(Bind(method_doc_string, doc_string))
-          Ques(Conj([ equal_arrow; Bind(method_body, _expression.seq) ]))
+          Ques(
+            Disj(
+              [ Conj(
+                  [ equal_arrow
+                    Bind(method_body, _expression.seq) ])
+                Bind(method_doc_string, doc_string)
+              ]))
         ]),
       _TypedefActions~_method(
         method_kind,
@@ -259,15 +266,23 @@ class TypedefBuilder
 
   fun ref _build_typedef_primitive() =>
     let id = Variable("id")
+    let tp = Variable("tp")
+    let cs = Variable("cs")
     let ds = Variable("ds")
+    let mm = Variable("mm")
 
     typedef_primitive.set_body(
       Conj(
         [ _keyword(ast.Keywords.kwd_primitive())
           Bind(id, _token.identifier)
-          Bind(ds, Ques(doc_string))
+          Ques(Bind(tp, _type_type.params))
+          Ques(Conj(
+            [ _keyword(ast.Keywords.kwd_is())
+              Bind(cs, _type_type.arrow) ]))
+          Ques(Bind(ds, doc_string))
+          Ques(Bind(mm, members))
         ]),
-      _TypedefActions~_primitive(id, ds))
+      _TypedefActions~_primitive(id, tp, cs, ds, mm))
 
   fun ref _build_typedef_alias() =>
     let kwd_type = _keyword(ast.Keywords.kwd_type())

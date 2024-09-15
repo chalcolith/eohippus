@@ -118,7 +118,7 @@ primitive _TypedefActions
       end
     let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
     let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
-    let raw' = b.contains(raw)
+    let raw' = b.contains(raw, r)
     let id' =
       try
         _Build.value_with[ast.Identifier](b, id, r)?
@@ -128,7 +128,7 @@ primitive _TypedefActions
     let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
     let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
     let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype, r)
-    let partial' = b.contains(partial)
+    let partial' = b.contains(partial, r)
     let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
     let body' = _Build.value_with_or_none[ast.Expression](b, body, r)
 
@@ -158,7 +158,10 @@ primitive _TypedefActions
 
   fun tag _primitive(
     id: Variable,
+    tp: Variable,
+    cs: Variable,
     ds: Variable,
+    mm: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
@@ -171,10 +174,13 @@ primitive _TypedefActions
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Primitive/Identifier")
       end
+    let tp' = _Build.value_with_or_none[ast.TypeParams](b, tp, r)
+    let cs' = _Build.value_with_or_none[ast.TypeType](b, cs, r)
     let ds' = _Build.values_with[ast.DocString](b, ds, r)
+    let mm' = _Build.value_with_or_none[ast.TypedefMembers](b, mm, r)
 
     let value = ast.NodeWith[ast.Typedef](
-      _Build.info(d, r), c, ast.TypedefPrimitive(id')
+      _Build.info(d, r), c, ast.TypedefPrimitive(id', tp', cs', mm')
       where doc_strings' = ds')
     (value, b)
 
@@ -232,7 +238,7 @@ primitive _TypedefActions
         return _Build.bind_error(d, r, c, b, "Typedef/Class/Kind")
       end
     let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
-    let raw' = b.contains(raw)
+    let raw' = b.contains(raw, r)
     let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
     let id' =
       try

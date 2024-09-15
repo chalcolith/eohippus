@@ -34,8 +34,8 @@ class KeywordBuilder
       ast.Keywords.kwd_continue()
       ast.Keywords.kwd_digestof()
       ast.Keywords.kwd_do()
-      ast.Keywords.kwd_else()
       ast.Keywords.kwd_elseif()
+      ast.Keywords.kwd_else()
       ast.Keywords.kwd_embed()
       ast.Keywords.kwd_end()
       ast.Keywords.kwd_error()
@@ -47,13 +47,13 @@ class KeywordBuilder
       ast.Keywords.kwd_hash_read()
       ast.Keywords.kwd_hash_send()
       ast.Keywords.kwd_hash_share()
-      ast.Keywords.kwd_if()
-      ast.Keywords.kwd_ifdef()
       ast.Keywords.kwd_iftype()
-      ast.Keywords.kwd_in()
+      ast.Keywords.kwd_ifdef()
+      ast.Keywords.kwd_if()
       ast.Keywords.kwd_interface()
-      ast.Keywords.kwd_is()
+      ast.Keywords.kwd_in()
       ast.Keywords.kwd_iso()
+      ast.Keywords.kwd_is()
       ast.Keywords.kwd_let()
       ast.Keywords.kwd_loc()
       ast.Keywords.kwd_match()
@@ -138,7 +138,7 @@ class KeywordBuilder
 
     kwd.set_body(
       _Build.with_post[ast.Trivia](
-        Disj(literals),
+        Conj([ Disj(literals); Neg(Single(_Id.chars())) ]),
         _trivia.trivia,
         {(d, r, c, b, p) =>
           let src_info = _Build.info(d, r)

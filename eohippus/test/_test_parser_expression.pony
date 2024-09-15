@@ -12,6 +12,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionAssignment)
     test(_TestParserExpressionIf)
     test(_TestParserExpressionIfDef)
+    test(_TestParserExpressionIfExpression)
     test(_TestParserExpressionSequence)
     test(_TestParserExpressionJump)
     test(_TestParserExpressionInfix)
@@ -282,14 +283,23 @@ class iso _TestParserExpressionInfix is UnitTest
         _Assert.test_match(h, rule, setup.data, source2, expected2) ])
 
 class iso _TestParserExpressionIf is UnitTest
-  fun name(): String => "parser/expression/If"
+  fun name(): String => "parser/expression/If/simple"
   fun exclusion_group(): String => "parser/expression"
 
   fun apply(h: TestHelper) =>
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let src = "if true then foo elseif false then bar else baz end"
+    let src =
+      """
+        if true then
+          foo
+        elseif false then
+          bar
+        else
+          baz
+        end
+      """
     let exp =
       """
         {
@@ -359,6 +369,95 @@ class iso _TestParserExpressionIf is UnitTest
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
+class iso _TestParserExpressionIfExpression is UnitTest
+  fun name(): String => "parser/expression/If/expression"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src =
+      """
+        if value == 1 then
+          true
+        end
+      """
+    let exp =
+      """
+        {
+          "name": "ExpIf",
+          "kind": "IfExp",
+          "conditions": [ 1 ],
+          "children": [
+            {
+              "name": "Keyword",
+              "string": "if"
+            },
+            {
+              "name": "IfCondition",
+              "if_true": 0,
+              "then_block": 2,
+              "children": [
+                {
+                  "name": "ExpOperation",
+                  "lhs": 0,
+                  "op": 1,
+                  "rhs": 2,
+                  "children": [
+                    {
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [
+                        {
+                          "name": "Identifier",
+                          "string": "value"
+                        }
+                      ]
+                    },
+                    {
+                      "name": "Token",
+                      "string": "=="
+                    },
+                    {
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [
+                        {
+                          "name": "LiteralInteger",
+                          "kind": "DecimalInteger",
+                          "value": 1
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "name": "Keyword",
+                  "string": "then"
+                },
+                {
+                  "name": "ExpAtom",
+                  "body": 0,
+                  "children": [
+                    {
+                      "name": "LiteralBool",
+                      "value": true
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Keyword",
+              "string": "end"
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
 class iso _TestParserExpressionIfDef is UnitTest
   fun name(): String => "parser/expression/IfDef"
   fun exclusion_group(): String => "parser/expression"
@@ -367,7 +466,16 @@ class iso _TestParserExpressionIfDef is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let src = "ifdef windows then foo elseif unix then bar else baz end"
+    let src =
+      """
+        ifdef windows then
+          foo
+        elseif unix then
+          bar
+        else
+          baz
+        end
+      """
     let exp =
       """
         {
@@ -697,13 +805,29 @@ class iso _TestParserExpressionPostfix is UnitTest
         }
       """
 
+    let source4 = "a .> b(1)"
+    let expected4 =
+      """
+        {
+          "name": "ExpCall",
+          "lhs": 0,
+          "args": 1,
+          "children": [
+            {
+              "name": "ExpOperation"
+            }
+          ]
+        }
+      """
+
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
         _Assert.test_match(h, rule, setup.data, source2, expected2)
-        _Assert.test_match(h, rule, setup.data, source3, expected3) ])
+        _Assert.test_match(h, rule, setup.data, source3, expected3)
+        _Assert.test_match(h, rule, setup.data, source4, expected4) ])
 
 class iso _TestParserExpressionTuple is UnitTest
-  fun name(): String => "parser/expression/Tuple"
+  fun name(): String => "parser/expression/Tuple/expression"
   fun exclusion_group(): String => "parser/expression"
 
   fun apply(h: TestHelper) =>
@@ -755,11 +879,25 @@ class iso _TestParserExpressionParens is UnitTest
       """
         {
           "name": "ExpAtom",
-          "body": 0,
+          "body": 1,
           "children": [
             {
-              "name": "LiteralFloat",
-              "value": 1.23
+              "name": "Token",
+              "string": "(",
+            },
+            {
+              "name": "ExpAtom",
+              "body": 0,
+              "children": [
+                {
+                  "name": "LiteralFloat",
+                  "value": 1.23
+                }
+              ]
+            },
+            {
+              "name": "Token",
+              "string": ")"
             }
           ]
         }
@@ -984,7 +1122,7 @@ class iso _TestParserExpressionConsume is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.expression.item
 
-    let src = "consume iso (a + 4)"
+    let src = "consume iso a"
     let exp =
       """
         {
@@ -1001,35 +1139,12 @@ class iso _TestParserExpressionConsume is UnitTest
               "string": "iso"
             },
             {
-              "name": "ExpOperation",
-              "lhs": 0,
-              "op": 1,
-              "rhs": 2,
+              "name": "ExpAtom",
+              "body": 0,
               "children": [
                 {
-                  "name": "ExpAtom",
-                  "body": 0,
-                  "children": [
-                    {
-                      "name": "Identifier",
-                      "string": "a"
-                    }
-                  ]
-                },
-                {
-                  "name": "Token",
-                  "string": "+"
-                },
-                {
-                  "name": "ExpAtom",
-                  "body": 0,
-                  "children": [
-                    {
-                      "name": "LiteralInteger",
-                      "kind": "DecimalInteger",
-                      "value": 4
-                    }
-                  ]
+                  "name": "Identifier",
+                  "string": "a"
                 }
               ]
             }

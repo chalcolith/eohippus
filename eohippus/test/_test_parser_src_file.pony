@@ -8,12 +8,13 @@ use ".."
 
 primitive _TestParserSrcFile
   fun apply(test: PonyTest) =>
+    test(_TestParserSrcFileStdlibErrorSection)
     test(_TestParserSrcFileTriviaDocstring)
+    test(_TestParserSrcFileTypedefMultiple)
+    test(_TestParserSrcFileTypedefSingle)
     test(_TestParserSrcFileUsingPony)
     test(_TestParserSrcFileUsingFfi)
     test(_TestParserSrcFileUsingErrorSection)
-    test(_TestParserSrcFileTypedefMultiple)
-    test(_TestParserSrcFileTypedefSingle)
 
 class iso _TestParserSrcFileTriviaDocstring is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Trivia+Docstring"
@@ -75,9 +76,9 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
                 {
                   "name": "LiteralString",
                   "kind": "StringTripleQuote",
-                  "value": "This is a doc string\n",
+                  "value": "This is a doc string",
                   "post_trivia": [
-                    3
+                    6
                   ],
                   "children": [
                     {
@@ -88,6 +89,17 @@ class iso _TestParserSrcFileTriviaDocstring is UnitTest
                           "name": "Span"
                         }
                       ]
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia"
+                    },
+                    {
+                      "name": "Span"
+                    },
+                    {
+                      "name": "Trivia",
+                      "kind": "EndOfLineTrivia"
                     },
                     {
                       "name": "Span"
@@ -403,7 +415,7 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
     let setup = _TestSetup(name())
     let rule = setup.builder.src_file.src_file
 
-    let src = " use a = @b[None](c: U8) ? "
+    let src = " use a = @b[None](c: U8, ...) ? if not osx"
     let exp = """
       {
         "name": "SrcFile",
@@ -429,6 +441,7 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
             "fun_name": 4,
             "type_args": 5,
             "params": 7,
+            "varargs": true,
             "partial": true,
             "children": [
               {
@@ -608,6 +621,14 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
               },
               {
                 "name": "Token",
+                "string": ","
+              },
+              {
+                "name": "Token",
+                "string": "..."
+              },
+              {
+                "name": "Token",
                 "string": ")",
                 "post_trivia": [
                   1
@@ -652,7 +673,6 @@ class iso _TestParserSrcFileUsingFfi is UnitTest
     """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
-
 
 class iso _TestParserSrcFileUsingErrorSection is UnitTest
   fun name(): String => "parser/src_file/SrcFile/Using/error_section"
@@ -846,7 +866,8 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
         }
       """
 
-    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+    _Assert.test_all(
+      h, [ _Assert.test_match(h, rule, setup.data, src, exp, true) ])
 
 class iso _TestParserSrcFileTypedefMultiple is UnitTest
   fun name(): String => "parser/src_file/Typedef/Multiple"
@@ -1286,3 +1307,100 @@ class iso _TestParserSrcFileTypedefSingle is UnitTest
       """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserSrcFileStdlibErrorSection is UnitTest
+  fun name(): String => "parser/src_file/stdlib/error_section"
+  fun exclusion_group(): String => "parser/src_file"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.src_file.src_file
+
+    let src =
+      """
+        use @snprintf[I32](str: Pointer[U8] tag, size: USize, fmt: Pointer[U8] tag, ...)
+          if not windows
+        use @_snprintf[I32](str: Pointer[U8] tag, count: USize, fmt: Pointer[U8] tag, ...)
+          if windows
+
+        primitive _ToString
+          \"\"\"
+          Worker type providing simple to string conversions for numbers.
+          \"\"\"
+          fun _u64(x: U64, neg: Bool): String iso^ =>
+            let table = "0123456789"
+            let base: U64 = 10
+
+            recover
+              var s = String(31)
+              var value = x
+
+              try
+                if value == 0 then
+                  s.push(table(0)?)
+                else
+                  while value != 0 do
+                    let index = ((value = value / base) - (value * base))
+                    s.push(table(index.usize())?)
+                  end
+                end
+              end
+
+              if neg then s.push('-') end
+              s .> reverse_in_place()
+            end
+
+          fun _u128(x: U128, neg: Bool): String iso^ =>
+            let table = "0123456789"
+            let base: U128 = 10
+
+            recover
+              var s = String(31)
+              var value = x
+
+              try
+                if value == 0 then
+                  s.push(table(0)?)
+                else
+                  while value != 0 do
+                    let index = (value = value / base) - (value * base)
+                    s.push(table(index.usize())?)
+                  end
+                end
+              end
+
+              if neg then s.push('-') end
+              s .> reverse_in_place()
+            end
+
+          fun _f64(x: F64): String iso^ =>
+            recover
+              var s = String(31)
+              var f = String(31) .> append("%g")
+
+              ifdef windows then
+                @_snprintf(s.cstring(), s.space(), f.cstring(), x)
+              else
+                @snprintf(s.cstring(), s.space(), f.cstring(), x)
+              end
+
+              s .> recalc()
+            end
+      """
+
+    let src2 = src.clone()
+    src2.replace("\r\n", "\n")
+    src2.replace("\\\"", "\"")
+
+    let src_len = src2.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, consume src2,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])

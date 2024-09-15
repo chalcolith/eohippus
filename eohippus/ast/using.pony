@@ -103,6 +103,7 @@ class val UsingFFI is NodeData
   let fun_name: (NodeWith[Identifier] | NodeWith[LiteralString])
   let type_args: NodeWith[TypeArgs]
   let params: (NodeWith[MethodParams] | None)
+  let varargs: Bool
   let partial: Bool
   let def_true: Bool
   let define: (NodeWith[Identifier] | None)
@@ -112,6 +113,7 @@ class val UsingFFI is NodeData
     fun_name': (NodeWith[Identifier] | NodeWith[LiteralString]),
     type_args': NodeWith[TypeArgs],
     params': (NodeWith[MethodParams] | None),
+    varargs': Bool,
     partial': Bool,
     def_true': Bool,
     define': (NodeWith[Identifier] | None))
@@ -120,6 +122,7 @@ class val UsingFFI is NodeData
     fun_name = fun_name'
     type_args = type_args'
     params = params'
+    varargs = varargs'
     partial = partial'
     def_true = def_true'
     define = define'
@@ -136,6 +139,7 @@ class val UsingFFI is NodeData
       end,
       _map_with[TypeArgs](type_args, updates),
       _map_or_none[MethodParams](params, updates),
+      varargs,
       partial,
       def_true,
       _map_or_none[Identifier](define, updates))
@@ -150,6 +154,9 @@ class val UsingFFI is NodeData
     match params
     | let params': NodeWith[MethodParams] =>
       props.push(("params", node.child_ref(params')))
+    end
+    if varargs then
+      props.push(("varargs", varargs))
     end
     if partial then
       props.push(("partial", partial))
@@ -216,6 +223,15 @@ primitive ParseUsingFFI
       | let err: String =>
         return err
       end
+    let varargs =
+      match try obj("varargs")? end
+      | let bool: Bool =>
+        bool
+      | let _: json.Item =>
+        return "UsingFFI.varargs must be a boolean"
+      else
+        false
+      end
     let partial =
       match try obj("partial")? end
       | let bool: Bool =>
@@ -246,4 +262,12 @@ primitive ParseUsingFFI
       | let err: String =>
         return err
       end
-    UsingFFI(identifier, fun_name, type_args, params, partial, def_true, define)
+    UsingFFI(
+      identifier,
+      fun_name,
+      type_args,
+      params,
+      varargs,
+      partial,
+      def_true,
+      define)

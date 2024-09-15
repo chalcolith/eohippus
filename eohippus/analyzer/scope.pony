@@ -29,6 +29,7 @@ class val Scope
   let name: String
   let canonical_path: String
   var range: SrcRange
+  let index: USize
   var parent: (Scope box | None)
   let imports: Array[ScopeItem] = imports.create()
   let definitions: Map[String, Array[ScopeItem]] = definitions.create()
@@ -39,12 +40,14 @@ class val Scope
     name': String,
     canonical_path': String,
     range': SrcRange,
+    index': USize,
     parent': (Scope box | None) = None)
   =>
     kind = kind'
     name = name'
     canonical_path = canonical_path'
     range = range'
+    index = index'
     parent = parent'
 
   fun get_child_range(): SrcRange =>
@@ -97,7 +100,8 @@ class val Scope
     end
 
   fun get_json(): json.Object =>
-    let props = Array[(String, json.Item)]
+    let props = [ as (String, json.Item): ("index", I128.from[USize](index)) ]
+
     let kind_string =
       match kind
       | PackageScope =>
@@ -221,7 +225,16 @@ primitive ParseScopeJson
           return "scope.range must be a sequence of integers"
         end
 
-      let scope = Scope(kind, name.clone(), canonical_path, range, parent)
+      let index =
+        match try scope_obj("index")? end
+        | let n: I128 =>
+          USize.from[I128](n)
+        else
+          return "scope.index must be an integer"
+        end
+
+      let scope = Scope(
+        kind, name.clone(), canonical_path, range, index, parent)
 
       match try scope_obj("imports")? end
       | let seq: json.Sequence =>

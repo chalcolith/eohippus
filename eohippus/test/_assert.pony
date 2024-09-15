@@ -6,6 +6,7 @@ use "promises"
 use ast = "../ast"
 use json = "../json"
 use parser = "../parser"
+use ".."
 
 interface val _Assertion
   fun apply(node: ast.Node): Bool
@@ -31,7 +32,8 @@ primitive _Assert
     rule: parser.NamedRule val,
     data: parser.Data,
     source: String,
-    expected: (String | None))
+    expected: (String | None),
+    ignore_error_sections: Bool = false)
     : Promise[Bool]
   =>
     let promise = Promise[Bool]
@@ -50,32 +52,39 @@ primitive _Assert
               if expected_str.size() == 0 then
                 test_succeeded = h.assert_true(v.size() == 0)
               else
-                try
-                  let actual_json = v(0)?.get_json()
-                  match json.Parse(expected_str)
-                  | let expected_json: json.Item =>
-                    if v.size() != 1 then
+                (let es_ok, let es_msg) = _Assert._check_error_sections(v)
+                if (not ignore_error_sections) and (not es_ok) then
+                  h.fail("Error sections found: " + es_msg)
+                  test_succeeded = false
+                else
+                  try
+                    let actual_json = v(0)?.get_json()
+                    match json.Parse(expected_str)
+                    | let expected_json: json.Item =>
+                      if v.size() != 1 then
+                        h.fail(
+                          "Expected exactly one action value; got " +
+                          v.size().string())
+                        test_succeeded = false
+                      else
+                        (let res, let err) =
+                          json.Subsumes(expected_json, actual_json)
+                        test_succeeded = h.assert_true(
+                          res,
+                          "EXPECTED\n" + expected_json.string() +
+                          "\n\nACTUAL\n" + actual_json.string() + "\n: " + err)
+                      end
+                    | let parse_error: json.ParseError =>
                       h.fail(
-                        "Expected exactly one action value; got "
-                          + v.size().string())
+                        "Could not parse JSON '" + expected_str + "' (" +
+                        parse_error.index.string() + "): " +
+                        parse_error.message)
                       test_succeeded = false
-                    else
-                      (let res, let err) =
-                        json.Subsumes(expected_json, actual_json)
-                      test_succeeded = h.assert_true(
-                        res,
-                        "EXPECTED\n" + expected_json.string() + "\n\nACTUAL\n"
-                          + actual_json.string() + "\n: " + err)
                     end
-                  | let parse_error: json.ParseError =>
-                    h.fail(
-                      "Could not parse JSON '" + expected_str + "' ("
-                        + parse_error.index.string() + "): " + parse_error.message)
+                  else
+                    h.fail("Unable to get action value!")
                     test_succeeded = false
                   end
-                else
-                  h.fail("Unable to get action value!")
-                  test_succeeded = false
                 end
               end
             else
@@ -101,7 +110,8 @@ primitive _Assert
     rule: parser.NamedRule val,
     data: parser.Data,
     source: String,
-    assertion: {(parser.Success, ast.NodeSeq): (Bool, String)} val)
+    assertion: {(parser.Success, ast.NodeSeq): (Bool, String)} val,
+    ignore_error_sections: Bool = false)
     : Promise[Bool]
   =>
     let promise = Promise[Bool]
@@ -113,17 +123,52 @@ primitive _Assert
         {(r: (parser.Success | parser.Failure), v: ast.NodeSeq) =>
           match r
           | let success: parser.Success =>
-            (let succeeded, let message) = assertion(success, v)
-            if succeeded then
-              promise(true)
-            else
-              h.fail("Assertion failed: " + message)
+            (let es_ok, let es_msg) = _Assert._check_error_sections(v)
+            if (not ignore_error_sections) and (not es_ok) then
+              h.fail("Error sections found: " + es_msg)
               promise(false)
+            else
+              (let succeeded, let message) = assertion(success, v)
+              if succeeded then
+                promise(true)
+              else
+                h.fail("Assertion failed: " + message)
+                promise(false)
+              end
             end
           | let failure: parser.Failure =>
             h.fail("Test failed: " + failure.get_message())
             promise(false)
-          end }
+          end
+        }
       end
     pony_parser.parse(rule, data, callback)
     promise
+
+  fun _check_error_sections(nodes: ast.NodeSeq): (Bool, String) =>
+    recover
+      let msg = String
+      for node in nodes.values() do
+        _get_error_sections(node, msg)
+      end
+      (msg.size() == 0, msg)
+    end
+
+  fun _get_error_sections(node: ast.Node, msg: String ref) =>
+    for es in node.error_sections().values() do
+      if msg.size() > 0 then
+        msg.append("; ")
+      end
+      msg.append(es.data().message)
+      msg.append(": '")
+      let si = es.src_info()
+      match (si.start, si.next)
+      | (let s: parser.Loc, let n: parser.Loc) =>
+        let code = String.>concat(s.values(n))
+        msg.append(StringUtil.escape(code))
+      end
+      msg.append("'")
+    end
+    for child in node.children().values() do
+      _get_error_sections(child, msg)
+    end

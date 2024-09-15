@@ -254,11 +254,13 @@ class LiteralBuilder
           Conj(
             [ Neg(delim)
               Disj(
-                [ _string_char_uni()
+                [ _trivia.eol
+                  _string_char_uni()
                   _string_char_esc()
                   Star(
                     Conj(
                       [ Neg(delim)
+                        Neg(_trivia.eol)
                         Neg(Single(ast.Tokens.backslash()))
                         Single()
                       ]),

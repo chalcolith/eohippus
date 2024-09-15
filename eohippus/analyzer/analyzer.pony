@@ -287,6 +287,32 @@ actor EohippusAnalyzer is Analyzer
         var first = true
         fp.walk(
           {(dir_path: FilePath, entries: Array[String]) =>
+            // skip directories starting with '.'
+            let to_remove = Array[USize]
+            for (i, entry) in entries.pairs() do
+              try
+                if entry(0)? == '.' then
+                  to_remove.unshift(i)
+                end
+              end
+            end
+            for index in to_remove.values() do
+              entries.remove(index, 1)
+            end
+
+            // skip directories without Pony source files
+            var has_pony_source = false
+            for entry in entries.values() do
+              if self._is_pony_file(entry) then
+                has_pony_source = true
+                break
+              end
+            end
+            if not has_pony_source then
+              return
+            end
+
+            // enqueue package item
             let package_path = dir_path.path
             let package = SrcPackageItem(package_path)
             if first then
@@ -295,16 +321,10 @@ actor EohippusAnalyzer is Analyzer
             end
             package.task_id = task_id
 
-            (let parent, let dir_name) = Path.split(dir_path.path)
-            try
-              if dir_name(0)? == '.' then return end
-            end
-            match try _src_items(parent)? end
-            | let parent_package: SrcPackageItem =>
-              parent_package.dependencies.push(package)
-              package.parent_package = parent_package
-            end
+            _log(Fine) and _log.log(
+              task_id.string() + ": enqueueing " + package_path)
 
+            // enqueue source file items
             for entry in entries.values() do
               if self._is_pony_file(entry) then
                 let file_canonical_path = Path.join(dir_path.path, entry)
@@ -318,6 +338,7 @@ actor EohippusAnalyzer is Analyzer
                   task_id.string() + ": enqueueing " + file_canonical_path)
               end
             end
+
             _src_items.update(package_path, package)
             _src_item_queue.push(package)
           })
@@ -354,17 +375,12 @@ actor EohippusAnalyzer is Analyzer
     _log(Fine) and _log.log(task_id.string() + ": opening " + canonical_path)
     match try _src_items(canonical_path)? end
     | let src_file: SrcFileItem =>
-      let needs_queue =
-        (src_file.state is AnalysisUpToDate) or
-        (src_file.state is AnalysisError)
       src_file.task_id = task_id
       src_file.state = AnalysisStart
       src_file.schedule = _schedule(0)
       src_file.is_open = true
       src_file.parse = parse
-      if needs_queue then
-        _src_item_queue.push(src_file)
-      end
+      _src_item_queue.push(src_file)
     else
       let src_file = SrcFileItem(canonical_path)
       src_file.task_id = task_id
@@ -386,18 +402,13 @@ actor EohippusAnalyzer is Analyzer
     _log(Fine) and _log.log(task_id.string() + ": updating " + canonical_path)
     match try _src_items(canonical_path)? end
     | let src_file: SrcFileItem =>
-      let needs_queue =
-        (src_file.state is AnalysisUpToDate) or
-        (src_file.state is AnalysisError)
       src_file.task_id = task_id
       src_file.state = AnalysisStart
       src_file.schedule = _schedule(300)
       src_file.is_open = true
       src_file.parse = parse
       _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
-      if needs_queue then
-        _src_item_queue.push(src_file)
-      end
+      _src_item_queue.push(src_file)
     else
       let src_file = SrcFileItem(canonical_path)
       src_file.task_id = task_id
@@ -791,7 +802,8 @@ actor EohippusAnalyzer is Analyzer
         PackageScope,
         package_item.canonical_path,
         package_item.canonical_path,
-        (0, 0, USize.max_value(), USize.max_value()))
+        (0, 0, USize.max_value(), USize.max_value()),
+        USize.max_value())
 
       for dep in package_item.dependencies.values() do
         match dep

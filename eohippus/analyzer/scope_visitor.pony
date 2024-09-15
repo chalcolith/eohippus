@@ -16,7 +16,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
   let _node_indices: MapIs[ast.Node, USize] val
 
   let file_scope: Scope ref
-  let node_scopes: MapIs[ast.Node, Scope tag] = node_scopes.create()
+  var _next_index: USize = 0
 
   new create(
     log: Logger[String],
@@ -31,7 +31,11 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       canonical_path,
       canonical_path,
       (0, 0, USize.max_value(), USize.max_value()),
+      _next_index = _next_index + 1,
       None)
+
+  fun ref _scope_index(): USize =>
+    _next_index = _next_index + 1
 
   fun _range(node: ast.Node): SrcRange =>
     let si = node.src_info()
@@ -75,7 +79,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
 
     (ScopeState(scope), consume errors)
 
-  fun _handle_using_node(scope: Scope ref, using: ast.NodeWith[ast.Using])
+  fun ref _handle_using_node(scope: Scope ref, using: ast.NodeWith[ast.Using])
     : Scope ref
   =>
     match using.data()
@@ -120,14 +124,24 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       let id = tdc.identifier
       scope.add_definition(_node_index(id), id.data().string, td.doc_strings())
       let child = Scope(
-        ClassScope, id.data().string, scope.canonical_path, _range(td), scope)
+        ClassScope,
+        id.data().string,
+        scope.canonical_path,
+        _range(td),
+        _scope_index(),
+        scope)
       scope.add_child(child)
       child
     | let tdp: ast.TypedefPrimitive =>
       let id = tdp.identifier
       scope.add_definition(_node_index(id), id.data().string, td.doc_strings())
       let child = Scope(
-        ClassScope, id.data().string, scope.canonical_path, _range(td), scope)
+        ClassScope,
+        id.data().string,
+        scope.canonical_path,
+        _range(td),
+        _scope_index(),
+        scope)
       scope.add_child(child)
       child
     | let tda: ast.TypedefAlias =>
@@ -136,7 +150,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       scope
     end
 
-  fun _handle_field_node(
+  fun ref _handle_field_node(
     scope: Scope ref,
     field: ast.NodeWith[ast.TypedefField])
     : Scope ref
@@ -145,7 +159,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
     scope .> add_definition(
       _node_index(id), id.data().string, field.doc_strings())
 
-  fun _handle_method_node(
+  fun ref _handle_method_node(
     scope: Scope ref,
     method: ast.NodeWith[ast.TypedefMethod])
     : Scope ref
@@ -157,11 +171,12 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       id.data().string,
       scope.canonical_path,
       _range(method),
+      _scope_index(),
       scope)
     scope.add_child(child)
     child
 
-  fun _handle_method_param_node(
+  fun ref _handle_method_param_node(
     scope: Scope ref,
     mp: ast.NodeWith[ast.MethodParam])
     : Scope ref
@@ -169,14 +184,20 @@ class ScopeVisitor is ast.Visitor[ScopeState]
     let id = mp.data().identifier
     scope .> add_definition(_node_index(id), id.data().string, mp.doc_strings())
 
-  fun _handle_match_case_node(
+  fun ref _handle_match_case_node(
     scope: Scope ref,
     case: ast.NodeWith[ast.MatchCase])
     : Scope ref
   =>
-    Scope(BlockScope, "case", scope.canonical_path, _range(case), scope)
+    Scope(
+      BlockScope,
+      "case",
+      scope.canonical_path,
+      _range(case),
+      _scope_index(),
+      scope)
 
-  fun _handle_exp_node(scope: Scope ref, exp: ast.NodeWith[ast.Expression])
+  fun ref _handle_exp_node(scope: Scope ref, exp: ast.NodeWith[ast.Expression])
     : Scope ref
   =>
     match exp.data()
@@ -191,12 +212,24 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       | ast.ExpSequence )
     =>
       let child =
-        Scope(BlockScope, exp.name(), scope.canonical_path, _range(exp), scope)
+        Scope(
+          BlockScope,
+          exp.name(),
+          scope.canonical_path,
+          _range(exp),
+          _scope_index(),
+          scope)
       scope.add_child(child)
       child
     | let _: ast.ExpObject =>
       let child =
-        Scope(ClassScope, "object", scope.canonical_path, _range(exp), scope)
+        Scope(
+          ClassScope,
+          "object",
+          scope.canonical_path,
+          _range(exp),
+          _scope_index(),
+          scope)
       scope.add_child(child)
       child
     | let decl: ast.ExpDecl =>
@@ -208,7 +241,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
       scope
     end
 
-  fun _handle_tuple_pattern_node(
+  fun ref _handle_tuple_pattern_node(
     scope: Scope ref, tp: ast.NodeWith[ast.TuplePattern])
     : Scope ref
   =>
@@ -237,5 +270,8 @@ class ScopeVisitor is ast.Visitor[ScopeState]
     update_map: (ast.ChildUpdateMap | None))
     : (ScopeState, (ast.Node | None), Array[ast.TraverseError] iso^)
   =>
-    node_scopes(node) = node_state.node_scope
-    (node_state, node, consume errors)
+    let new_node = node.clone(where
+      new_children' = new_children,
+      update_map' = update_map,
+      scope_index' = node_state.node_scope.index)
+    (node_state, new_node, consume errors)
