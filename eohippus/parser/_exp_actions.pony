@@ -660,7 +660,7 @@ primitive _ExpActions
         return _Build.bind_error(d, r, c, b, "Expression/Prefix/RHS")
       end
 
-    let value = ast.NodeWith[ast.ExpOperation](
+    let value = ast.NodeWith[ast.Expression](
       _Build.info(d, r), c, ast.ExpOperation(None, op', rhs'))
     (value, b)
 

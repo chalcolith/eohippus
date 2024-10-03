@@ -13,6 +13,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionIf)
     test(_TestParserExpressionIfDef)
     test(_TestParserExpressionIfExpression)
+    test(_TestParserExpressionIfComplex)
     test(_TestParserExpressionSequence)
     test(_TestParserExpressionJump)
     test(_TestParserExpressionInfix)
@@ -451,6 +452,59 @@ class iso _TestParserExpressionIfExpression is UnitTest
             {
               "name": "Keyword",
               "string": "end"
+            }
+          ]
+        }
+      """
+
+    _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserExpressionIfComplex is UnitTest
+  fun name(): String => "parser/expression/If/complex"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src =
+      """
+        if a and not b then
+          c
+        end
+      """
+    let exp =
+      """
+        {
+          "name": "ExpIf",
+          "conditions": [ 1 ],
+          "children": [
+            { "name": "Keyword", "string": "if" },
+            {
+              "name": "IfCondition",
+              "if_true": 0,
+              "then_block": 2,
+              "children": [
+                {
+                  "name": "ExpOperation",
+                  "lhs": 0,
+                  "op": 1,
+                  "rhs": 2,
+                  "children": [
+                    { "name": "ExpAtom" },
+                    { "name": "Keyword", "string": "and" },
+                    {
+                      "name": "ExpOperation",
+                      "op": 0,
+                      "rhs": 1,
+                      "children": [
+                        { "name": "Keyword", "string": "not" },
+                        { "name": "ExpAtom" }
+                      ]
+                    }
+                  ]
+                }
+              ]
             }
           ]
         }
