@@ -25,7 +25,6 @@ class iso _TestAstParseNodeAnnotation is UnitTest
           "doc_strings": [],
           "pre_trivia": [],
           "post_trivia": [ 3 ],
-          "error_sections": [],
           "identifiers": [ 1 ],
           "children": [
             { "name": "Token", "string": "/" },

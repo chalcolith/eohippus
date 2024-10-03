@@ -14,7 +14,6 @@ class val NodeWith[D: NodeData val] is Node
   let _doc_strings: NodeSeqWith[DocString]
   let _pre_trivia: NodeSeqWith[Trivia]
   let _post_trivia: NodeSeqWith[Trivia]
-  let _error_sections: NodeSeqWith[ErrorSection]
   let _ast_type: (types.AstType | None)
   let _scope_index: (USize | None)
 
@@ -26,7 +25,6 @@ class val NodeWith[D: NodeData val] is Node
     doc_strings': NodeSeqWith[DocString] = [],
     pre_trivia': NodeSeqWith[Trivia] = [],
     post_trivia': NodeSeqWith[Trivia] = [],
-    error_sections': NodeSeqWith[ErrorSection] = [],
     ast_type': (types.AstType | None) = None,
     scope_index': (USize | None) = None)
   =>
@@ -111,23 +109,6 @@ class val NodeWith[D: NodeData val] is Node
       else
         []
       end
-    _error_sections =
-      if (error_sections'.size() == 0) or
-        Iter[NodeWith[ErrorSection]](error_sections'.values())
-          .any(
-            {(n) =>
-              match (n.src_info().start, n.src_info().next)
-              | (let s': parser.Loc, let n': parser.Loc) =>
-                s' < n'
-              else
-                true
-              end
-            })
-      then
-        error_sections'
-      else
-        []
-      end
     _ast_type = ast_type'
     _scope_index = scope_index'
 
@@ -140,7 +121,6 @@ class val NodeWith[D: NodeData val] is Node
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
-    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
     scope_index': (USize | None) = None)
   =>
@@ -179,11 +159,6 @@ class val NodeWith[D: NodeData val] is Node
       | let pt: NodeSeqWith[Trivia] => pt
       else orig._post_trivia
       end
-    _error_sections =
-      match error_sections'
-      | let es: NodeSeqWith[ErrorSection] => es
-      else orig._error_sections
-      end
     _ast_type =
       match ast_type'
       | let at: types.AstType => at
@@ -203,7 +178,6 @@ class val NodeWith[D: NodeData val] is Node
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
-    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
     scope_index': (USize | None) = None): Node
   =>
@@ -262,18 +236,6 @@ class val NodeWith[D: NodeData val] is Node
           _post_trivia
         end
       end
-    let error_sections'' =
-      match error_sections'
-      | let es: NodeSeqWith[ErrorSection] =>
-        es
-      else
-        match update_map'
-        | let um: ChildUpdateMap =>
-          map[ErrorSection](_error_sections, um)
-        else
-          _error_sections
-        end
-      end
 
     NodeWith[D].from(
       this,
@@ -284,7 +246,6 @@ class val NodeWith[D: NodeData val] is Node
       doc_strings'',
       pre_trivia'',
       post_trivia'',
-      error_sections'',
       ast_type',
       scope_index')
 
@@ -336,12 +297,6 @@ class val NodeWith[D: NodeData val] is Node
     """
     _post_trivia
 
-  fun error_sections(): NodeSeqWith[ErrorSection] =>
-    """
-      Any error sections that appear in `children`.
-    """
-    _error_sections
-
   fun ast_type(): (types.AstType | None) =>
     """The resolved type of this node, if any."""
     _ast_type
@@ -376,9 +331,6 @@ class val NodeWith[D: NodeData val] is Node
       props.push(("annotation", child_ref(annotation')))
     end
     _data.add_json_props(this, props)
-    if _error_sections.size() > 0 then
-      props.push(("error_sections", child_refs(_error_sections)))
-    end
     if _doc_strings.size() > 0 then
       props.push(("doc_strings", child_refs(_doc_strings)))
     end

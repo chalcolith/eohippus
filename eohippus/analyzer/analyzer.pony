@@ -1090,8 +1090,7 @@ actor EohippusAnalyzer is Analyzer
       let node = ast.NodeWith[ast.SrcFile](
         ast.SrcInfo(canonical_path),
         [ error_section ],
-        ast.SrcFile(canonical_path, [], [])
-        where error_sections' = [ error_section ])
+        ast.SrcFile(canonical_path, [], []))
       _write_syntax_tree(src_file, node)
 
       _log(Fine) and _log.log(

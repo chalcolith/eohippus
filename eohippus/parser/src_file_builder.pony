@@ -102,19 +102,16 @@ class SrcFileBuilder
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    ( let es': ast.NodeSeqWith[ast.ErrorSection],
-      let t1': ast.NodeSeqWith[ast.Trivia],
+    ( let t1': ast.NodeSeqWith[ast.Trivia],
       let ds': ast.NodeSeqWith[ast.DocString],
       let us': ast.NodeSeqWith[ast.Using],
       let td': ast.NodeSeqWith[ast.Typedef] )
     =
       recover val
-        let errs = Array[ast.NodeWith[ast.ErrorSection]]
-        ( errs,
-          _Build.values_and_errors[ast.Trivia](b, t1, r, errs),
-          _Build.values_and_errors[ast.DocString](b, ds, r, errs),
-          _Build.values_and_errors[ast.Using](b, us, r, errs),
-          _Build.values_and_errors[ast.Typedef](b, td, r, errs) )
+        ( _Build.values_and_errors[ast.Trivia](b, t1, r),
+          _Build.values_and_errors[ast.DocString](b, ds, r),
+          _Build.values_and_errors[ast.Using](b, us, r),
+          _Build.values_and_errors[ast.Typedef](b, td, r) )
       end
 
     let pt' = _Build.values_with[ast.Trivia](b, pt, r)
@@ -124,7 +121,6 @@ class SrcFileBuilder
       where
         pre_trivia' = t1',
         doc_strings' = ds',
-        error_sections' = es',
         post_trivia' = pt')
     (value, b)
 

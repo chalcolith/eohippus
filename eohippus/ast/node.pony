@@ -24,7 +24,6 @@ trait val Node
     doc_strings': (NodeSeqWith[DocString] | None) = None,
     pre_trivia': (NodeSeqWith[Trivia] | None) = None,
     post_trivia': (NodeSeqWith[Trivia] | None) = None,
-    error_sections': (NodeSeqWith[ErrorSection] | None) = None,
     ast_type': (types.AstType | None) = None,
     scope_index': (USize | None) = None): Node
     """
@@ -47,8 +46,6 @@ trait val Node
   fun pre_trivia(): NodeSeqWith[Trivia]
 
   fun post_trivia(): NodeSeqWith[Trivia]
-
-  fun error_sections(): NodeSeqWith[ErrorSection]
 
   fun ast_type(): (types.AstType | None)
     """The resolved type of the node."""

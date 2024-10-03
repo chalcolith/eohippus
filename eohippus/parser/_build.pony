@@ -93,8 +93,7 @@ primitive _Build
   fun values_and_errors[D: ast.NodeData val](
     b: Bindings,
     v: Variable,
-    r: Success,
-    e: Array[ast.NodeWith[ast.ErrorSection]] ref)
+    r: Success)
     : ast.NodeSeqWith[D]
   =>
     """
@@ -108,8 +107,6 @@ primitive _Build
         match vval
         | let node: ast.NodeWith[D] =>
           rvals.push(node)
-        | let err: ast.NodeWith[ast.ErrorSection] =>
-          e.push(err)
         end
       end
     end

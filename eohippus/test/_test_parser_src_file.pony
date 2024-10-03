@@ -693,9 +693,6 @@ class iso _TestParserSrcFileUsingErrorSection is UnitTest
             2,
             4
           ],
-          "error_sections": [
-            3
-          ],
           "pre_trivia": [
             0,
             1
