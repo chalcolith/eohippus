@@ -116,7 +116,6 @@ primitive _Assert
   =>
     let promise = Promise[Bool]
     let segments = Cons[parser.Segment](source, Nil[parser.Segment])
-    let start = parser.Loc(segments, 0)
     let pony_parser = parser.Parser(segments)
     let callback =
       recover val
@@ -155,7 +154,8 @@ primitive _Assert
     end
 
   fun _get_error_sections(node: ast.Node, msg: String ref) =>
-    for es in node.error_sections().values() do
+    match node
+    | let es: ast.NodeWith[ast.ErrorSection] =>
       if msg.size() > 0 then
         msg.append("; ")
       end

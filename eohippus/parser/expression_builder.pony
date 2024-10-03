@@ -591,12 +591,7 @@ class ExpressionBuilder
 
     // call_args_pos <= seq (',' seq)*
     call_args_pos.set_body(
-      Conj(
-        [ seq
-          Star(
-            Conj(
-              [ comma
-                seq ])) ]))
+      Conj([ seq; Star(Conj([ comma; seq ])) ]))
 
     // call_args_named <= 'where' call_arg_named
     //                    (',' call_arg_named)*
@@ -713,9 +708,9 @@ class ExpressionBuilder
       Conj(
         [ at
           Bind(ffi_identifier, Disj([ id; literal_string ]))
-          Ques(Bind(ffi_type_args, type_args))
+          Bind(ffi_type_args, Ques(type_args))
           Bind(ffi_call_args, call_args)
-          Bind(ffi_partial, ques) ]),
+          Bind(ffi_partial, Ques(ques)) ]),
       _ExpActions~_ffi(
         ffi_identifier, ffi_type_args, ffi_call_args, ffi_partial))
 
