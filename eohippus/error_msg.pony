@@ -7,6 +7,9 @@ primitive ErrorMsg
   fun tag internal_ast_pass_clone(): String =>
     "Internal error: invalid node_data when cloning"
 
+  fun tag expression_block_empty(): String =>
+    "Expected an expression sequence"
+
   fun tag literal_integer_hex_empty(): String =>
     "You must supply some hexadecimal digits here"
 

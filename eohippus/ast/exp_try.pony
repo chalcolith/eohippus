@@ -3,11 +3,11 @@ use json = "../json"
 class val ExpTry is NodeData
   """A `try` block."""
 
-  let body: NodeWith[Expression]
+  let body: (NodeWith[Expression] | None)
   let else_block: (NodeWith[Expression] | None)
 
   new val create(
-    body': NodeWith[Expression],
+    body': (NodeWith[Expression] | None),
     else_block': (NodeWith[Expression] | None))
   =>
     body = body'
@@ -17,11 +17,14 @@ class val ExpTry is NodeData
 
   fun val clone(updates: ChildUpdateMap): NodeData =>
     ExpTry(
-      _map_with[Expression](body, updates),
+      _map_or_none[Expression](body, updates),
       _map_or_none[Expression](else_block, updates))
 
   fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
-    props.push(("body", node.child_ref(body)))
+    match body
+    | let body': NodeWith[Expression] =>
+      props.push(("body", node.child_ref(body')))
+    end
     match else_block
     | let else_block': NodeWith[Expression] =>
       props.push(("else_block", node.child_ref(else_block')))
@@ -39,8 +42,6 @@ primitive ParseExpTry
         node
       | let err: String =>
         return err
-      else
-        return "ExpTry.body must be an Expression"
       end
     let else_block =
       match ParseNode._get_child_with[Expression](

@@ -125,18 +125,6 @@ primitive ParseNode
       | let err: String =>
         return err
       end
-    let error_sections =
-      match _get_seq_with[ErrorSection](
-        obj,
-        children,
-        "error_sections",
-        "error_sections must refer to ErrorSections",
-        false)
-      | let seq: NodeSeqWith[ErrorSection] =>
-        seq
-      | let err: String =>
-        return err
-      end
 
     let ctor: (_NodeConstructor | None) =
       match name
@@ -272,7 +260,6 @@ primitive ParseNode
         doc_strings,
         pre_trivia,
         post_trivia,
-        error_sections,
         scope_index)
     else
       "unknown node data type " + name
@@ -368,7 +355,6 @@ primitive ParseNode
     doc_strings: NodeSeqWith[DocString],
     pre_trivia: NodeSeqWith[Trivia],
     post_trivia: NodeSeqWith[Trivia],
-    error_sections: NodeSeqWith[ErrorSection],
     scope_index: (USize | None))
     : (Node | String)
   =>
@@ -388,7 +374,6 @@ primitive ParseNode
       doc_strings,
       pre_trivia,
       post_trivia,
-      error_sections,
       None,
       scope_index)
 
@@ -399,6 +384,5 @@ type _NodeConstructor is
     NodeSeqWith[DocString],
     NodeSeqWith[Trivia],
     NodeSeqWith[Trivia],
-    NodeSeqWith[ErrorSection],
     (USize | None))
     : (Node | String)} box

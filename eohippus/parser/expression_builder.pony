@@ -379,7 +379,7 @@ class ExpressionBuilder
     match_case.set_body(
       Conj(
         [ bar
-          Bind(match_case_pattern, Disj([ exp_decl; exp_atom ]))
+          Bind(match_case_pattern, Disj([ exp_decl; exp_prefix; exp_hash ]))
           Ques(Conj([ kwd_if; Bind(match_case_condition, seq) ]))
           equal_arrow
           Bind(match_case_body, seq) ]),
@@ -474,7 +474,7 @@ class ExpressionBuilder
     exp_try.set_body(
       Conj(
         [ kwd_try
-          Bind(try_body, seq)
+          Bind(try_body, Ques(seq))
           Ques(Conj([ kwd_else; Bind(try_else_block, seq) ]))
           kwd_end ]),
       _ExpActions~_try(try_body, try_else_block))
@@ -591,12 +591,7 @@ class ExpressionBuilder
 
     // call_args_pos <= seq (',' seq)*
     call_args_pos.set_body(
-      Conj(
-        [ seq
-          Star(
-            Conj(
-              [ comma
-                seq ])) ]))
+      Conj([ seq; Star(Conj([ comma; seq ])) ]))
 
     // call_args_named <= 'where' call_arg_named
     //                    (',' call_arg_named)*
@@ -713,9 +708,9 @@ class ExpressionBuilder
       Conj(
         [ at
           Bind(ffi_identifier, Disj([ id; literal_string ]))
-          Ques(Bind(ffi_type_args, type_args))
+          Bind(ffi_type_args, Ques(type_args))
           Bind(ffi_call_args, call_args)
-          Bind(ffi_partial, ques) ]),
+          Bind(ffi_partial, Ques(ques)) ]),
       _ExpActions~_ffi(
         ffi_identifier, ffi_type_args, ffi_call_args, ffi_partial))
 

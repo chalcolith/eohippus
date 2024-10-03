@@ -36,13 +36,10 @@ and can recover from errors in functions or classes.
 
 Start with [Builder](https://github.com/chalcolith/eohippus/blob/main/eohippus/parser/builder.pony)
 
-> The parser is mostly complete, but fails to parse some of the Pony standard
-> library files.  See #18
-
 ## [Analyzer](https://github.com/chalcolith/eohippus/tree/main/eohippus/analyzer)
 
 Provides [an actor](https://github.com/chalcolith/eohippus/blob/main/eohippus/analyzer/analyzer.pony)
-that coordinates the analysis (currently parsing, rudimentary scope analysis, and 
+that coordinates the analysis (currently parsing, rudimentary scope analysis, and
 linting) of a workspace containing Pony source files.
 
 ## [Linter](https://github.com/chalcolith/eohippus/tree/main/eohippus/linter)
