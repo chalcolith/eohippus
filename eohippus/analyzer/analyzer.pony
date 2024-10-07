@@ -250,20 +250,22 @@ actor EohippusAnalyzer is Analyzer
         end
       end
     end
-    match _pony_packages_path
-    | let pp: FilePath =>
-      _log(Fine) and _log.log("pony_packages_path is " + pp.path)
-      //analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
-      _analysis_task_id = _analysis_task_id + 1
-    else
-      _log(Fine) and _log.log("pony_packages_path is None")
-    end
 
     // if we are in a workspace, start analyzing
     match _workspace
     | let workspace_path: FilePath =>
       analyze(_analysis_task_id, workspace_path.path)
       _analysis_task_id = _analysis_task_id + 1
+
+      // make sure we have pony packages
+      match _pony_packages_path
+      | let pp: FilePath =>
+        _log(Fine) and _log.log("pony_packages_path is " + pp.path)
+        analyze(_analysis_task_id, Path.join(pp.path, "builtin"))
+        _analysis_task_id = _analysis_task_id + 1
+      else
+        _log(Fine) and _log.log("pony_packages_path is None")
+      end
     end
 
   fun ref _get_next_task_id(): USize =>
