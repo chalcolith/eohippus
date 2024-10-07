@@ -379,7 +379,7 @@ class ExpressionBuilder
     match_case.set_body(
       Conj(
         [ bar
-          Bind(match_case_pattern, Disj([ exp_decl; exp_atom ]))
+          Bind(match_case_pattern, Disj([ exp_decl; exp_prefix; exp_hash ]))
           Ques(Conj([ kwd_if; Bind(match_case_condition, seq) ]))
           equal_arrow
           Bind(match_case_body, seq) ]),
@@ -474,7 +474,7 @@ class ExpressionBuilder
     exp_try.set_body(
       Conj(
         [ kwd_try
-          Bind(try_body, seq)
+          Bind(try_body, Ques(seq))
           Ques(Conj([ kwd_else; Bind(try_else_block, seq) ]))
           kwd_end ]),
       _ExpActions~_try(try_body, try_else_block))

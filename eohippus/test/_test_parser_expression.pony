@@ -23,6 +23,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionParens)
     test(_TestParserExpressionRecover)
     test(_TestParserExpressionTry)
+    test(_TestParserExpressionTryEmpty)
     test(_TestParserExpressionArray)
     test(_TestParserExpressionConsume)
     test(_TestParserExpressionWhile)
@@ -30,6 +31,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionTuplePattern)
     test(_TestParserExpressionFor)
     test(_TestParserExpressionMatch)
+    test(_TestParserExpressionMatchNegative)
     test(_TestParserExpressionDecl)
     test(_TestParserExpressionWith)
     test(_TestParserExpressionFfi)
@@ -1035,6 +1037,32 @@ class iso _TestParserExpressionTry is UnitTest
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
 
+class iso _TestParserExpressionTryEmpty is UnitTest
+  fun name(): String => "parser/expression/Try/empty"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src = "try end"
+    let exp =
+      """
+        {
+          "name": "ExpTry",
+          "children": [
+            { "name": "Keyword", "string": "try" },
+            { "name": "ErrorSection" },
+            { "name": "Keyword", "string": "end" }
+          ]
+        }
+      """
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_match(
+        h, rule, setup.data, src, exp where ignore_error_sections = true) ])
+
 class iso _TestParserExpressionArray is UnitTest
   fun name(): String => "parser/expression/Array"
   fun exclusion_group(): String => "parser/expression"
@@ -1790,6 +1818,35 @@ class iso _TestParserExpressionMatch is UnitTest
       """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserExpressionMatchNegative is UnitTest
+  fun name(): String => "parser/expression/Match/negative"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src =
+      """
+        match a
+        | -1 => b
+        | let c: U32 => d
+        end
+      """
+
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])
 
 class iso _TestParserExpressionDecl is UnitTest
   fun name(): String => "parser/expression/Decl"

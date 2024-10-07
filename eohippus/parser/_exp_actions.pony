@@ -1,6 +1,7 @@
 use "itertools"
 
 use ast = "../ast"
+use ".."
 
 primitive _ExpActions
   fun tag _annotation(
@@ -554,17 +555,41 @@ primitive _ExpActions
     b: Bindings)
     : ((ast.Node | None), Bindings)
   =>
-    let body' =
-      try
-        _Build.value_with[ast.Expression](b, body, r)?
-      else
-        return _Build.bind_error(d, r, c, b, "Expression/Try/Body")
-      end
+    let body' = _Build.value_with_or_none[ast.Expression](b, body, r)
     let else_block' = _Build.value_with_or_none[ast.Expression](
       b, else_block, r)
 
+    let children =
+      match body'
+      | None =>
+        try
+          let c': Array[ast.Node] trn = Array[ast.Node](c.size() + 1)
+          let si =
+            if c.size() > 0 then
+              let first = c(0)?
+              c'.push(first)
+              ast.SrcInfo(
+                d.locator, first.src_info().next, first.src_info().next)
+            else
+              ast.SrcInfo(d.locator, r.start, r.next)
+            end
+          c'.push(ast.NodeWith[ast.ErrorSection](
+            si, [], ast.ErrorSection(ErrorMsg.expression_block_empty())))
+          var i: USize = 1
+          while i < c.size() do
+            c'.push(c(i)?)
+            i = i + 1
+          end
+          consume c'
+        else
+          c
+        end
+      else
+        c
+      end
+
     let value = ast.NodeWith[ast.Expression](
-      _Build.info(d, r), c, ast.ExpTry(body', else_block'))
+      _Build.info(d, r), children, ast.ExpTry(body', else_block'))
     (value, b)
 
   fun tag _recover(
