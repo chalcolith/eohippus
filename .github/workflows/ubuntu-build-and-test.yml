@@ -18,7 +18,7 @@ jobs:
           wget -q https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/corral-x86-64-unknown-linux.tar.gz
           tar xzf corral-x86-64-unknown-linux.tar.gz --directory corral --strip-components=1
           export PATH=`pwd`/ponyc:`pwd`/corral:$PATH
-          make fetch
+          corral fetch
           make cli config=${{ matrix.config }}
           make fmt config=${{ matrix.config }}
           make lsp config=${{ matrix.config }}
