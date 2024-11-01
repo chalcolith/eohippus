@@ -1,7 +1,7 @@
 name: PR Synchronize Build and Test
 on:
   pull_request:
-    types: [synchronize]
+    types: [opened,reopened,synchronize]
 jobs:
   call_windows_build_and_test:
     uses: ./.github/workflows/windows-build-and-test.yml
