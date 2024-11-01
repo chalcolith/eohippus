@@ -43,12 +43,13 @@ jobs:
           echo Site stylesheets before
           ls ./chalcolith.github.io/eohippus/assets/stylesheets/
           cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
-          echo Stylesheets after
+          echo Site stylesheets after
           ls ./chalcolith.github.io/eohippus/assets/stylesheets/
       - name: Commit
         run: |
-          cd ./chalcolith.github.io/eohippus
+          cd ./chalcolith.github.io
           git config user.name "Eohippus GitHub Actions"
           git config user.email "<>"
-          git commit -a -m "Updated Eohippus documentation on `date`"
+          git add .
+          git commit -m "Updated Eohippus documentation on `date`"
           git push
