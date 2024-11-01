@@ -21,3 +21,17 @@ jobs:
           corral fetch
           PONYC=./ponyc/bin/ponyc make test
           PONYC=./ponyc/bin/ponyc make docs
+          cd build/eohippus-docs
+          python -m mkdocs build
+      - name: Checkout Docs Site
+        uses: actions/checkout@v4
+        with:
+          repository: chalcolith/chalcolith.github.io
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: main
+          path: chalcolith.github.io
+          fetch-depth: 0
+      - name: Copy Files
+        run: |
+          pwd
+          ls -al
