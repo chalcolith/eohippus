@@ -4,7 +4,7 @@ on:
 jobs:
   windows_build_and_test:
     name: Build and Test
-    runs-on: windows-latest
+    runs-on: windows-2022
     strategy:
       matrix:
         config: [debug, release]

@@ -9,3 +9,6 @@ jobs:
   call_ubuntu_build_and_test:
     name: Ubuntu
     uses: ./.github/workflows/ubuntu-build-and-test.yml
+  call_macos_build_and_test:
+    name: MacOS
+    uses: ./.github/workflows/macos-build-and-test.yml
