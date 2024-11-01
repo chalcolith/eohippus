@@ -38,12 +38,13 @@ jobs:
           fetch-depth: 0
       - name: Copy Files
         run: |
-          rm -rf ./chalcolith.github.io/eohippus/*
-          echo Stylesheets before
+          echo Generated stylesheets
           ls ./build/eohippus-docs/site/assets/stylesheets/
+          echo Site stylesheets before
+          ls ./chalcolith.github.io/eohippus/assets/stylesheets/
           cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
           echo Stylesheets after
-          ls ./build/eohippus-docs/site/assets/stylesheets/
+          ls ./chalcolith.github.io/eohippus/assets/stylesheets/
       - name: Commit
         run: |
           cd ./chalcolith.github.io/eohippus
