@@ -3,6 +3,7 @@ on:
   workflow_call:
 jobs:
   windows_build_and_test:
+    name: Build and Test
     runs-on: windows-latest
     strategy:
       matrix:

@@ -3,6 +3,7 @@ on:
   workflow_call:
 jobs:
   ubuntu_build_and_test:
+    name: Build and Test
     runs-on: ubuntu-22.04
     strategy:
       matrix:
