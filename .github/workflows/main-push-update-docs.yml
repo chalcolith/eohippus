@@ -29,7 +29,8 @@ jobs:
           export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
           PONYC=./ponyc/bin/ponyc make docs
           cd build/eohippus-docs
-          python -m mkdocs build
+          echo "site_description: Eohippus `cat ../../VERSION`-`git rev-parse --short --verify HEAD`" >> mkdocs.yml
+          python -m mkdocs build --quiet
       - name: Checkout Docs Site
         uses: actions/checkout@v4
         with:
@@ -40,5 +41,12 @@ jobs:
           fetch-depth: 0
       - name: Copy Files
         run: |
-          pwd
-          ls -al
+          rm -rf ./chalcolith.github.io/eohippus/*
+          cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+      - name: Commit
+        run: |
+          cd ./chalcolith.github.io/eohippus
+          git config user.name "GitHub Actions"
+          git config user.email "<>"
+          git commit -a -m "Updated Eohippus docs on `date`"
+          git push
