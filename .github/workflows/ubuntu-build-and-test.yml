@@ -11,13 +11,15 @@ jobs:
       - uses: actions/checkout@v4
       - name: Ubuntu Build and Test (${{ matrix.config }})
         run: |
-          mkdir -p ponyc
+          mkdir -p ./ponyc
           wget -q https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/ponyc-x86-64-unknown-linux-ubuntu22.04.tar.gz
-          tar xzf ponyc-x86-64-unknown-linux-ubuntu22.04.tar.gz --directory ponyc --strip-components=1
-          mkdir -p corral
+          tar xzf ponyc-x86-64-unknown-linux-ubuntu22.04.tar.gz --directory ./ponyc --strip-components=1
+          mkdir -p ./corral
           wget -q https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/corral-x86-64-unknown-linux.tar.gz
-          tar xzf corral-x86-64-unknown-linux.tar.gz --directory corral --strip-components=1
+          tar xzf corral-x86-64-unknown-linux.tar.gz --directory ./corral --strip-components=1
           export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
+          ponyc --version
+          corral version
           corral fetch
           make cli config=${{ matrix.config }}
           make fmt config=${{ matrix.config }}
