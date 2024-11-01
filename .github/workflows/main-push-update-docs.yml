@@ -43,6 +43,7 @@ jobs:
           git add .
           cd ..
           cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+          cd ./chalcolith.github.io
           git config user.name "Eohippus GitHub Actions"
           git config user.email "<>"
           git add .
