@@ -39,9 +39,10 @@ jobs:
       - name: Copy Files and Commit
         run: |
           cd ./chalcolith.github.io
-          git rm -r ./eohippus/*
+          git rm -r -f --quiet ./eohippus/
           cd ..
-          cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+          mkdir -p ./chalcolith.github.io/eohippus
+          cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus
           cd ./chalcolith.github.io
           git add .
           git config user.name "Eohippus GitHub Actions"
