@@ -1,5 +1,7 @@
 # Eohippus
 
+![CI Status](https://github.com/chalcolith/eohippus/actions/workflows/main-push-build-and-test.yml/badge.svg?branch=main&event=push)
+
 The Eohippus (a [genus of small prehistoric horses](https://en.wikipedia.org/wiki/Eohippus))
 project contains some functionality for analysis of
 [Pony programming language](https://ponylang.io) source code.  It is written
