@@ -44,9 +44,12 @@ jobs:
           rm -rf ./chalcolith.github.io/eohippus/*
           cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
       - name: Commit
+        env:
+          SITE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd ./chalcolith.github.io/eohippus
           git config user.name "GitHub Actions"
           git config user.email "<>"
+          git remote set-url --push origin https://chalcolith:$SITE_TOKEN@github.com/chalcolith/chalcolith.github.io
           git commit -a -m "Updated Eohippus docs on `date`"
           git push
