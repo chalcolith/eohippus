@@ -18,6 +18,15 @@
       "console": "internalConsole",
     },
     {
+      "name": "Debug CLI (Windows)",
+      "type": "cppvsdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/build/debug/eohippus-cli.exe",
+      "cwd": "${workspaceFolder}/eohippus-vscode/test_folder",
+      "environment": [],
+      "console": "internalConsole"
+    },
+    {
       "name": "Debug Language Server",
       "type": "cppvsdbg",
       "request": "attach",

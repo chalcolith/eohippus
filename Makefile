@@ -8,14 +8,16 @@ COMPILE_WITH := corral run -- ponyc
 BUILD_DIR ?= build/$(config)
 SRC_DIR := $(PACKAGE)
 TESTS_DIR := $(PACKAGE)/test
+CLI_DIR := eohippus-cli
 LSP_DIR := eohippus-lsp
 FMT_DIR := eohippus-fmt
 EXAMPLES_DIR := examples
 
 binary := $(BUILD_DIR)/$(PACKAGE)
 tests_binary := $(BUILD_DIR)/test
-lsp_binary := $(BUILD_DIR)/eohippus-lsp
-fmt_binary := $(BUILD_DIR)/eohippus-fmt
+cli_binary := $(BUILD_DIR)/$(CLI_DIR)
+lsp_binary := $(BUILD_DIR)/$(LSP_DIR)
+fmt_binary := $(BUILD_DIR)/$(FMT_DIR)
 docs_dir := build/$(PACKAGE)-docs
 
 ifdef config
@@ -37,6 +39,7 @@ else
 endif
 
 SOURCE_FILES := $(shell find $(SRC_DIR) -name *.pony)
+CLI_FILES := $(shell find $(CLI_DIR) -name *.pony)
 LSP_FILES := $(shell find $(LSP_DIR) -name *.pony)
 FMT_FILES := $(shell find $(FMT_DIR) -name *.pony)
 VERSION := "$(tag) [$(config)]"
@@ -54,6 +57,8 @@ test: unit-tests # build-examples
 unit-tests: $(tests_binary)
 	$^ --exclude=integration --sequential
 
+cli: $(cli_binary)
+
 lsp: $(lsp_binary)
 
 fmt: $(fmt_binary)
@@ -65,6 +70,10 @@ $(binary): $(GEN_FILES) $(SOURCE_FILES) | $(BUILD_DIR)
 $(tests_binary): $(GEN_FILES) $(SOURCE_FILES) | $(BUILD_DIR)
 	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(TESTS_DIR)
+
+$(cli_binary): $(GEN_FILES) $(SOURCE_FILES) $(CLI_FILES) | $(BUILD_DIR)
+	$(GET_DEPENDENCIES_WITH)
+	$(PONYC) -o $(BUILD_DIR) $(CLI_DIR)
 
 $(lsp_binary): $(GEN_FILES) $(SOURCE_FILES) $(LSP_FILES) | $(BUILD_DIR)
 	$(GET_DEPENDENCIES_WITH)
@@ -101,4 +110,4 @@ all: test
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-.PHONY: all build-examples clean TAGS test lsp fmt
+.PHONY: all build-examples clean TAGS test cli lsp fmt

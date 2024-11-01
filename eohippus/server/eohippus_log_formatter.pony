@@ -2,7 +2,7 @@ use "format"
 use "logger"
 use "time"
 
-class _LogFormatter is LogFormatter
+class EohippusLogFormatter is LogFormatter
   fun apply(message: String, loc: SourceLoc): String =>
     (let seconds, let nanos) = Time.now()
     let millis =
