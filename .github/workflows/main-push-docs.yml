@@ -19,4 +19,5 @@ jobs:
           tar xzf corral-x86-64-unknown-linux.tar.gz --directory ./corral --strip-components=1
           export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
           corral fetch
+          PONYC=./ponyc/bin/ponyc make test
           PONYC=./ponyc/bin/ponyc make docs
