@@ -1,9 +1,10 @@
 config ?= release
 
 PACKAGE := eohippus
+PONYC ?= ponyc
 GET_DEPENDENCIES_WITH := corral fetch
 CLEAN_DEPENDENCIES_WITH := corral clean
-COMPILE_WITH := corral run -- ponyc
+COMPILE_WITH := corral run -- $(PONYC)
 
 BUILD_DIR ?= build/$(config)
 SRC_DIR := $(PACKAGE)
@@ -64,23 +65,18 @@ lsp: $(lsp_binary)
 fmt: $(fmt_binary)
 
 $(binary): $(GEN_FILES) $(SOURCE_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(SRC_DIR)
 
 $(tests_binary): $(GEN_FILES) $(SOURCE_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(TESTS_DIR)
 
 $(cli_binary): $(GEN_FILES) $(SOURCE_FILES) $(CLI_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(CLI_DIR)
 
 $(lsp_binary): $(GEN_FILES) $(SOURCE_FILES) $(LSP_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(LSP_DIR)
 
 $(fmt_binary): $(GEN_FILES) $(SOURCE_FILES) $(FMT_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(FMT_DIR)
 
 %.pony: %.pony.in
@@ -89,7 +85,6 @@ $(fmt_binary): $(GEN_FILES) $(SOURCE_FILES) $(FMT_FILES) | $(BUILD_DIR)
 build-examples: $(EXAMPLES_BINARIES)
 
 $(EXAMPLES_BINARIES): $(BUILD_DIR)/%: $(SOURCE_FILES) $(EXAMPLES_SOURCE_FILES) | $(BUILD_DIR)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) -o $(BUILD_DIR) $(EXAMPLES_DIR)/$*
 
 clean:
@@ -97,7 +92,6 @@ clean:
 	rm -rf $(BUILD_DIR)
 
 $(docs_dir): $(SOURCE_FILES)
-	$(GET_DEPENDENCIES_WITH)
 	$(PONYC) --docs-public --pass=expr --output build $(SRC_DIR)
 
 docs: $(docs_dir)
