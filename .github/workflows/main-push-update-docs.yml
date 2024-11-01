@@ -39,7 +39,7 @@ jobs:
       - name: Copy Files and Commit
         run: |
           cd ./chalcolith.github.io
-          git rm ./eohippus/*
+          git rm -r ./eohippus/*
           cd ..
           cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
           cd ./chalcolith.github.io
