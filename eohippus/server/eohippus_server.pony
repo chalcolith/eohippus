@@ -363,13 +363,13 @@ actor EohippusServer is Server
     _log(Fine) and _log.log("open workspace " + name + " " + client_uri)
     if not _workspaces.by_client_uri.contains(client_uri) then
       let canonical_path = _get_canonical_path(client_uri)
-      let pony_path = _get_pony_path()
+      let pony_path = ServerUtils.get_pony_path(_env)
       let ponyc_executable =
         match _config.ponyc_executable
         | let str: String =>
           FilePath(FileAuth(_env.root), str)
         else
-          _find_ponyc()
+          ServerUtils.find_ponyc(_env)
         end
       let analyze = analyzer.EohippusAnalyzer(
         _log, FileAuth(_env.root), _parser_grammar
@@ -388,55 +388,6 @@ actor EohippusServer is Server
     else
       _log(Warn) and _log.log("workspace " + client_uri + " already open")
     end
-
-  fun _find_ponyc(): (FilePath | None) =>
-    for env_var in _env.vars.values() do
-      if env_var.compare_sub("PATH", 4 where ignore_case = true) is Equal then
-        try
-          let index = env_var.find("=")?
-          for path_path in
-            Path.split_list(env_var.substring(index + 1)).values()
-          do
-            let ponyc_path =
-              ifdef windows then
-                Path.join(path_path, "ponyc.exe")
-              else
-                Path.join(path_path, "ponyc")
-              end
-            let ponyc_file_path = FilePath(FileAuth(_env.root), ponyc_path)
-            if ponyc_file_path.exists() then
-              return
-                try
-                  ponyc_file_path.canonical()?
-                else
-                  ponyc_file_path
-                end
-            end
-          end
-        end
-      end
-    end
-
-  fun _get_pony_path(): ReadSeq[FilePath] val =>
-    let pony_path: Array[FilePath] trn = []
-    for env_var in _env.vars.values() do
-      if
-        env_var.compare_sub("PONYPATH", 8 where ignore_case = true) is Equal
-      then
-        try
-          let index = env_var.find("=")?
-          for
-            dir_path in Path.split_list(env_var.substring(index + 1)).values()
-          do
-            let fp = FilePath(FileAuth(_env.root), dir_path)
-            if fp.exists() then
-              pony_path.push(fp)
-            end
-          end
-        end
-      end
-    end
-    consume pony_path
 
   fun _clear_errors(
     canonical_path: String,

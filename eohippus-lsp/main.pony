@@ -28,10 +28,10 @@ actor Main
     let logger =
       ifdef debug then
         Logger[String](
-          Fine, env.err, {(s: String): String => s }, _LogFormatter)
+          Fine, env.err, {(s: String): String => s }, ls.EohippusLogFormatter)
       else
         Logger[String](
-          Error, env.err, {(s: String): String => s }, _LogFormatter)
+          Error, env.err, {(s: String): String => s }, ls.EohippusLogFormatter)
       end
 
     let config = recover val ls.ServerConfig(options.ponyc_executable) end
