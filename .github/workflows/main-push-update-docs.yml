@@ -17,15 +17,16 @@ jobs:
           mkdir -p ./corral
           wget -q https://dl.cloudsmith.io/public/ponylang/releases/raw/versions/latest/corral-x86-64-unknown-linux.tar.gz
           tar xzf corral-x86-64-unknown-linux.tar.gz --directory ./corral --strip-components=1
-          export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
           pip install mkdocs
           pip install mkdocs-material
       - name: Run Tests
         run: |
+          export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
           corral fetch
           PONYC=./ponyc/bin/ponyc make test
       - name: Build Docs
         run: |
+          export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
           PONYC=./ponyc/bin/ponyc make docs
           cd build/eohippus-docs
           python -m mkdocs build
