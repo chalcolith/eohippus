@@ -38,14 +38,13 @@ jobs:
           fetch-depth: 0
       - name: Copy Files and Commit
         run: |
-          rm -rf ./chalcolith.github.io/eohippus/*
           cd ./chalcolith.github.io
-          git add .
+          git rm ./eohippus/*
           cd ..
           cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+          git add .
           cd ./chalcolith.github.io
           git config user.name "Eohippus GitHub Actions"
           git config user.email "<>"
-          git add .
           git commit -m "Updated Eohippus documentation on `date`"
           git push
