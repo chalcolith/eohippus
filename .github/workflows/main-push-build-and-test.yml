@@ -6,3 +6,5 @@ on:
 jobs:
   call_windows_build_and_test:
     uses: ./.github/workflows/windows-build-and-test.yml
+  call_ubuntu_build_and_test:
+    uses: ./.github/workflows/ubuntu-build-and-test.yml
