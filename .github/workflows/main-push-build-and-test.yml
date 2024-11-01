@@ -4,5 +4,5 @@ on:
     branches:
       - main
 jobs:
-  call-windows-build-and-test:
+  call_windows_build_and_test:
     uses: ./.github/workflows/windows-build-and-test.yml
