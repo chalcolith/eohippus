@@ -39,7 +39,11 @@ jobs:
       - name: Copy Files
         run: |
           rm -rf ./chalcolith.github.io/eohippus/*
-          cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+          echo Stylesheets before
+          ls ./build/eohippus-docs/site/assets/stylesheets/
+          cp -R ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
+          echo Stylesheets after
+          ls ./build/eohippus-docs/site/assets/stylesheets/
       - name: Commit
         run: |
           cd ./chalcolith.github.io/eohippus
