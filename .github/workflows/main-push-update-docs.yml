@@ -19,14 +19,10 @@ jobs:
           tar xzf corral-x86-64-unknown-linux.tar.gz --directory ./corral --strip-components=1
           pip install mkdocs
           pip install mkdocs-material
-      - name: Run Tests
-        run: |
-          export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
-          corral fetch
-          PONYC=./ponyc/bin/ponyc make test
       - name: Build Docs
         run: |
           export PATH=`pwd`/ponyc/bin:`pwd`/corral/bin:$PATH
+          corral fetch
           PONYC=./ponyc/bin/ponyc make docs
           cd build/eohippus-docs
           echo "site_description: Eohippus `cat ../../VERSION`-`git rev-parse --short --verify HEAD`" >> mkdocs.yml
@@ -45,7 +41,7 @@ jobs:
           cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
       - name: Commit
         env:
-          SITE_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SITE_TOKEN: ${{ secrets.DOCS_SITE_ACCESS_TOKEN }}
         run: |
           cd ./chalcolith.github.io/eohippus
           git config user.name "GitHub Actions"

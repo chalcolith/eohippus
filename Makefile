@@ -91,7 +91,7 @@ clean:
 	$(CLEAN_DEPENDENCIES_WITH)
 	rm -rf $(BUILD_DIR)
 
-$(docs_dir): $(SOURCE_FILES)
+$(docs_dir): $(GEN_FILES) $(SOURCE_FILES)
 	$(PONYC) --docs-public --pass=expr --output build $(SRC_DIR)
 
 docs: $(docs_dir)
