@@ -104,4 +104,4 @@ all: test
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-.PHONY: all build-examples clean TAGS test cli lsp fmt
+.PHONY: all build-examples clean docs TAGS test cli lsp fmt
