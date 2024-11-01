@@ -31,7 +31,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: chalcolith/chalcolith.github.io
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.DOCS_SITE_ACCESS_TOKEN }}
           ref: main
           path: chalcolith.github.io
           fetch-depth: 0
@@ -40,12 +40,9 @@ jobs:
           rm -rf ./chalcolith.github.io/eohippus/*
           cp -a ./build/eohippus-docs/site/* ./chalcolith.github.io/eohippus/
       - name: Commit
-        env:
-          SITE_TOKEN: ${{ secrets.DOCS_SITE_ACCESS_TOKEN }}
         run: |
           cd ./chalcolith.github.io/eohippus
-          git config user.name "GitHub Actions"
+          git config user.name "Eohippus GitHub Actions"
           git config user.email "<>"
-          git remote set-url --push origin https://chalcolith:$SITE_TOKEN@github.com/chalcolith/chalcolith.github.io.git
-          git commit -a -m "Updated Eohippus docs on `date`"
+          git commit -a -m "Updated Eohippus documentation on `date`"
           git push
