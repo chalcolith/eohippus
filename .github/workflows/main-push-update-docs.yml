@@ -25,7 +25,8 @@ jobs:
           corral fetch
           PONYC=./ponyc/bin/ponyc make docs
           cd build/eohippus-docs
-          echo "site_description: Eohippus `cat ../../VERSION`-`git rev-parse --short --verify HEAD`" >> mkdocs.yml
+          export SITE_NAME="Eohippus `cat ../../VERSION`-`git rev-parse --short --verify HEAD`"
+          sed -i "s/site_name:.*/site_name: $SITE_NAME/" mkdocs.yml
           python -m mkdocs build --quiet
       - name: Checkout Docs Site
         uses: actions/checkout@v4
