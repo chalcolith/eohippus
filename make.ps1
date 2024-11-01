@@ -41,7 +41,7 @@ else
 
 if (($Version -eq "") -and (Test-Path -Path "$rootDir\VERSION"))
 {
-  $Version = (Get-Content "$rootDir\VERSION") + "-" + (& git 'rev-parse' '--short' '--verify' 'HEAD^')
+  $Version = (Get-Content "$rootDir\VERSION") + "-" + (& git rev-parse --short --verify HEAD)
 }
 
 $ponyArgs = "--define openssl_0.9.0"
