@@ -684,7 +684,7 @@ class ExpressionBuilder
       Conj(
         [ osquare
           Ques(Conj([ kwd_as; Bind(array_type, type_arrow); colon ]))
-          Bind(array_body, seq)
+          Ques(Bind(array_body, seq))
           csquare ]),
       _ExpActions~_array(array_type, array_body))
 

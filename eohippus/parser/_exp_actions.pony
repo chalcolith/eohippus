@@ -816,12 +816,7 @@ primitive _ExpActions
     : ((ast.Node | None), Bindings)
   =>
     let array_type' = _Build.value_with_or_none[ast.TypeType](b, array_type, r)
-    let body' =
-      try
-        _Build.value_with[ast.Expression](b, body, r)?
-      else
-        return _Build.bind_error(d, r, c, b, "Expression/Array/Body")
-      end
+    let body' = _Build.value_with_or_none[ast.Expression](b, body, r)
 
     let value = ast.NodeWith[ast.Expression](
       _Build.info(d, r), c, ast.ExpArray(array_type', body'))

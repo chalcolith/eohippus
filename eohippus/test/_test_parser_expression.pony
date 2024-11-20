@@ -1193,9 +1193,26 @@ class iso _TestParserExpressionArray is UnitTest
         }
       """
 
+    let source3 = "[]"
+    let expected3 =
+      """
+        {
+          "name": "ExpArray",
+          "children": [
+            {
+              "name": "Token", "string": "["
+            },
+            {
+              "name": "Token", "string": "]"
+            }
+          ]
+        }
+      """
+
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
-        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+        _Assert.test_match(h, rule, setup.data, source2, expected2)
+        _Assert.test_match(h, rule, setup.data, source3, expected3) ])
 
 class iso _TestParserExpressionConsume is UnitTest
   fun name(): String => "parser/expression/Consume"
