@@ -7,7 +7,7 @@ class val ExpLambda is NodeData
   let this_cap: (NodeWith[Keyword] | None)
   let identifier: (NodeWith[Identifier] | None)
   let type_params: (NodeWith[TypeParams] | None)
-  let params: NodeWith[MethodParams]
+  let params: (NodeWith[MethodParams] | None)
   let captures: (NodeWith[MethodParams] | None)
   let ret_type: (NodeWith[TypeType] | None)
   let partial: Bool
@@ -19,7 +19,7 @@ class val ExpLambda is NodeData
     this_cap': (NodeWith[Keyword] | None),
     identifier': (NodeWith[Identifier] | None),
     type_params': (NodeWith[TypeParams] | None),
-    params': NodeWith[MethodParams],
+    params': (NodeWith[MethodParams] | None),
     captures': (NodeWith[MethodParams] | None),
     ret_type': (NodeWith[TypeType] | None),
     partial': Bool,
@@ -45,7 +45,7 @@ class val ExpLambda is NodeData
       _map_or_none[Keyword](this_cap, updates),
       _map_or_none[Identifier](identifier, updates),
       _map_or_none[TypeParams](type_params, updates),
-      _map_with[MethodParams](params, updates),
+      _map_or_none[MethodParams](params, updates),
       _map_or_none[MethodParams](captures, updates),
       _map_or_none[TypeType](ret_type, updates),
       partial,
@@ -68,7 +68,10 @@ class val ExpLambda is NodeData
     | let type_params': NodeWith[TypeParams] =>
       props.push(("type_params", node.child_ref(type_params')))
     end
-    props.push(("params", node.child_ref(params)))
+    match params
+    | let params': NodeWith[MethodParams] =>
+      props.push(("params", node.child_ref(params')))
+    end
     match captures
     | let captures': NodeWith[MethodParams] =>
       props.push(("captures", node.child_ref(captures')))
@@ -143,8 +146,6 @@ primitive ParseExpLambda
         node
       | let err: String =>
         return err
-      else
-        return "ExpLambda.params must be a MethodParams"
       end
     let captures =
       match ParseNode._get_child_with[MethodParams](

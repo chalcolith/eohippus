@@ -568,11 +568,11 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
 
     _iteration = _iteration + 1
-    if (_iteration % 100) == 0 then
-      _log(Fine) and _log.log(
-        "iteration " + _iteration.string() + "; " +
-        _src_item_queue.size().string() + " items in queue")
-    end
+    // if (_iteration % 100) == 0 then
+    //   _log(Fine) and _log.log(
+    //     "iteration " + _iteration.string() + "; " +
+    //     _src_item_queue.size().string() + " items in queue")
+    // end
 
     if _src_item_queue.size() > 0 then
       try

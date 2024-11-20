@@ -108,12 +108,7 @@ primitive _ExpActions
       _Build.value_with_or_none[ast.Identifier](b, identifier, r)
     let type_params' =
       _Build.value_with_or_none[ast.TypeParams](b, type_params, r)
-    let params' =
-      try
-        _Build.value_with[ast.MethodParams](b, params, r)?
-      else
-        return _Build.bind_error(d, r, c, b, "Expression/Lambda/Params")
-      end
+    let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
     let captures' = _Build.value_with_or_none[ast.MethodParams](b, captures, r)
     let ret_type' = _Build.value_with_or_none[ast.TypeType](b, ret_type, r)
     let partial' = b.contains(partial, r)
