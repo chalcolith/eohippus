@@ -7,7 +7,7 @@ class LiteralBuilder
   let _token: TokenBuilder
   let _keyword: KeywordBuilder
 
-  let literal: NamedRule = NamedRule("a literal")
+  let literal: NamedRule = NamedRule("a literal" where memoize' = true)
   let bool: NamedRule = NamedRule("a literal Bool")
   let integer: NamedRule = NamedRule("an integer literal")
   let integer_dec: NamedRule = NamedRule("a decimal integer literal")

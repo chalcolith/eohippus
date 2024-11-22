@@ -13,8 +13,8 @@ class TypedefBuilder
   let method_params: NamedRule
   let members: NamedRule
   let field: NamedRule = NamedRule("a field")
-  let method: NamedRule = NamedRule("a method")
-  let typedef: NamedRule = NamedRule("a type definition")
+  let method: NamedRule = NamedRule("a method" where memoize' = true)
+  let typedef: NamedRule = NamedRule("a type definition" where memoize' = true)
   let typedef_primitive: NamedRule = NamedRule("a primitive type definition")
   let typedef_alias: NamedRule = NamedRule("a type alias")
   let typedef_class: NamedRule = NamedRule("a type definition")

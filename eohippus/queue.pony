@@ -24,7 +24,7 @@ class Queue[A]
     let index = (_start + i) % _array.size()
     _array(index)?
 
-  fun ref shift(): A ? =>
+  fun ref pop(): A ? =>
     if _size == 0 then
       error
     end
@@ -53,3 +53,19 @@ class Queue[A]
         _size = _size + 1
       end
     end
+
+  fun values(): _QueueIterator[A, this->Queue[A]] =>
+    _QueueIterator[A, this->Queue[A]](this)
+
+class _QueueIterator[A, B: Queue[A] #read] is Iterator[B->A]
+  let _queue: B
+  var _cur: USize = 0
+
+  new create(queue: B) =>
+    _queue = queue
+
+  fun has_next(): Bool =>
+    _cur < _queue.size()
+
+  fun ref next(): B->A ? =>
+    _queue(_cur = _cur + 1)?

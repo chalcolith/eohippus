@@ -10,7 +10,7 @@ class KeywordBuilder
   let _trivia: TriviaBuilder
 
   let _keywords: Map[String, NamedRule]
-  let kwd: NamedRule = NamedRule("a keyword")
+  let kwd: NamedRule = NamedRule("a keyword" where memoize' = true)
   let not_kwd: NamedRule = NamedRule("something other than a keyword")
   let cap: NamedRule = NamedRule("a reference capability")
   let gencap: NamedRule = NamedRule("a generic capability")
@@ -114,8 +114,7 @@ class KeywordBuilder
             let value = ast.NodeWith[ast.Keyword](
               src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
               where post_trivia' = p)
-            (value, b) })
-        where memoize_failures' = false)
+            (value, b) }))
     m.insert(str, rule)
 
   fun apply(str: String): NamedRule box =>

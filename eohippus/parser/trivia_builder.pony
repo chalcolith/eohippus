@@ -6,7 +6,7 @@ class TriviaBuilder
   let _context: Context
 
   let trivia: NamedRule = NamedRule("trivia")
-  let comment: NamedRule = NamedRule("a comment")
+  let comment: NamedRule = NamedRule("a comment" where memoize' = true)
   let comment_line: NamedRule = NamedRule("a line comment")
   let comment_nested: NamedRule = NamedRule("a nested comment")
   let ws: NamedRule = NamedRule("whitespace")

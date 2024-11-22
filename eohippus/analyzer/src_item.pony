@@ -7,13 +7,13 @@ use parser = "../parser"
 primitive AnalysisStart
   fun apply(): USize => 0
 
-primitive AnalysisParsing
+primitive AnalysisParse
   fun apply(): USize => 1
 
-primitive AnalysisScoping
+primitive AnalysisScope
   fun apply(): USize => 2
 
-primitive AnalysisLinting
+primitive AnalysisLint
   fun apply(): USize => 3
 
 primitive AnalysisUpToDate
@@ -24,9 +24,9 @@ primitive AnalysisError
 
 type SrcItemState is
   ( AnalysisStart
-  | AnalysisParsing
-  | AnalysisScoping
-  | AnalysisLinting
+  | AnalysisParse
+  | AnalysisScope
+  | AnalysisLint
   | AnalysisUpToDate
   | AnalysisError )
 
@@ -41,6 +41,7 @@ class SrcFileItem
 
   var task_id: USize = 0
   var state: SrcItemState = AnalysisStart
+
   var is_open: Bool = false
   var schedule: (I64, I64) = (0, 0)
   var parse: (parser.Parser | None) = None
@@ -56,8 +57,9 @@ class SrcFileItem
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
-  fun path(): String => canonical_path
-  fun state_value(): USize => state()
+  fun get_canonical_path(): String => canonical_path
+  fun get_state(): SrcItemState => state
+  fun ref set_state(state': SrcItemState) => state = state'
 
   fun ref make_indices() =>
     match syntax_tree
@@ -108,6 +110,14 @@ class SrcFileItem
       _make_scope_indices(child, si, sbi)
     end
 
+  fun ref compact() =>
+    syntax_tree = None
+    scope = None
+    node_indices = node_indices.create()
+    nodes_by_index = nodes_by_index.create()
+    scope_indices = scope_indices.create()
+    scopes_by_index = scopes_by_index.create()
+
 class SrcPackageItem
   let canonical_path: String
 
@@ -122,5 +132,6 @@ class SrcPackageItem
   new create(canonical_path': String) =>
     canonical_path = canonical_path'
 
-  fun path(): String => canonical_path
-  fun state_value(): USize => state()
+  fun get_canonical_path(): String => canonical_path
+  fun get_state(): SrcItemState => state
+  fun ref set_state(state': SrcItemState) => state = state'

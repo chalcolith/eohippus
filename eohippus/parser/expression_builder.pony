@@ -13,9 +13,9 @@ class ExpressionBuilder
   let _literal: LiteralBuilder
   let _type_type: TypeBuilder
 
-  let annotation: NamedRule = NamedRule("an annotation")
-  let item: NamedRule = NamedRule("an expression")
-  let infix: NamedRule = NamedRule("an infix expression")
+  let annotation: NamedRule = NamedRule("an annotation" where memoize' = true)
+  let item: NamedRule = NamedRule("an expression" where memoize' = true)
+  let infix: NamedRule = NamedRule("an infix expression" where memoize' = true)
   let seq: NamedRule = NamedRule("an expression sequence")
   let tuple_pattern: NamedRule = NamedRule("a tuple destructuring pattern")
   let _method_params: NamedRule

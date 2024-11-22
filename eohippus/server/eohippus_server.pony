@@ -555,12 +555,14 @@ actor EohippusServer is Server
 
       if _client_data.text_document_publish_diagnostics() then
         if workspace.errors.contains(canonical_path) then
-          try
-            _log(Fine) and _log.log(
-              task_id.string() + ": sending diagnostics for " + canonical_path)
-            _notify_file_diagnostics(
-              canonical_path, workspace.errors(canonical_path)?)
-          end
+          _log(Fine) and _log.log(task_id.string() + ": sending diagnostics")
+          _notify_workspace_diagnostics(workspace.errors)
+          // try
+          //   _log(Fine) and _log.log(
+          //     task_id.string() + ": sending diagnostics for " + canonical_path)
+          //   _notify_file_diagnostics(
+          //     canonical_path, workspace.errors(canonical_path)?)
+          // end
         end
       end
     end
