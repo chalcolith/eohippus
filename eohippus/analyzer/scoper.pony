@@ -1,4 +1,5 @@
 use "collections"
+use "files"
 use "logger"
 
 use ast = "../ast"
@@ -6,12 +7,12 @@ use ast = "../ast"
 interface tag _ScoperNotify
   be scoped_file(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     syntax_tree: ast.Node,
     scope: Scope val)
   be scope_failed(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     errors: ReadSeq[ast.TraverseError] val)
 
 actor Scoper
@@ -24,7 +25,7 @@ actor Scoper
 
   be scope_syntax_tree(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     syntax_tree: ast.Node,
     node_indices: MapIs[ast.Node, USize] val)
   =>

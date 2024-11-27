@@ -1,4 +1,5 @@
 use "collections"
+use "files"
 use "logger"
 
 use ast = "../../ast"
@@ -7,20 +8,20 @@ use ".."
 interface tag FindDefinitionNotify
   be definition_found(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     range: SrcRange)
   be definition_failed(
     task_id: USize,
     message: String)
 
 class SearchFileItem
-  let canonical_path: String
+  let canonical_path: FilePath
   let syntax_tree: (ast.Node | None)
   let nodes_by_index: Map[USize, ast.Node] val
   let scope: Scope
 
   new create(
-    canonical_path': String,
+    canonical_path': FilePath,
     syntax_tree': (ast.Node | None),
     nodes_by_index': Map[USize, ast.Node] val,
     scope': Scope)
@@ -36,13 +37,13 @@ actor FindDefinition is AnalyzerRequestNotify
   let log: Logger[String]
   let analyzer: Analyzer
   let task_id: USize
-  let canonical_path: String
+  let canonical_path: FilePath
   let line: USize
   let column: USize
   let notify: FindDefinitionNotify
 
   var span: String = "!INVALID!"
-  let paths_to_search: Array[(String, (SearchFileItem | None))] =
+  let paths_to_search: Array[(FilePath, (SearchFileItem | None))] =
     paths_to_search.create()
   var finished: Bool = false
 
@@ -50,7 +51,7 @@ actor FindDefinition is AnalyzerRequestNotify
     log': Logger[String],
     analyzer': Analyzer,
     task_id': USize,
-    canonical_path': String,
+    canonical_path': FilePath,
     line': USize,
     column': USize,
     notify': FindDefinitionNotify)
@@ -68,14 +69,14 @@ actor FindDefinition is AnalyzerRequestNotify
 
   be request_succeeded(
     task_id': USize,
-    canonical_path': String,
+    canonical_path': FilePath,
     syntax_tree': (ast.Node | None),
     nodes_by_index': Map[USize, ast.Node] val,
     scope': Scope val)
   =>
     // find array index and update data
     for (i, pending) in paths_to_search.pairs() do
-      if pending._1 == canonical_path' then
+      if pending._1.path == canonical_path'.path then
         try
           let item = SearchFileItem(
             canonical_path',
@@ -90,14 +91,14 @@ actor FindDefinition is AnalyzerRequestNotify
 
   be request_failed(
     task_id': USize,
-    canonical_path': String,
+    canonical_path': FilePath,
     message': String)
   =>
     log(Error) and log.log(
       task_id'.string() + ": analysis request failed: " + message')
 
     for (i, pending) in paths_to_search.pairs() do
-      if canonical_path' == pending._1 then
+      if canonical_path'.path == pending._1.path then
         try paths_to_search.delete(i)? end
         break
       end
@@ -115,8 +116,8 @@ actor FindDefinition is AnalyzerRequestNotify
     if not finished then
       // is there data in the first item in the array?
       match try paths_to_search(0)? end
-      | (let cp: String, let sfi: SearchFileItem) =>
-        if cp == canonical_path then
+      | (let cp: FilePath, let sfi: SearchFileItem) =>
+        if cp.path == canonical_path.path then
           match sfi.syntax_tree
           | let st: ast.Node =>
             // this is our original file
@@ -131,7 +132,7 @@ actor FindDefinition is AnalyzerRequestNotify
           else
             finished = true
             notify.definition_failed(
-              task_id, "no syntax tree for " + canonical_path)
+              task_id, "no syntax tree for " + canonical_path.path)
           end
         else
           // we're in a sibling, or import, or builtin

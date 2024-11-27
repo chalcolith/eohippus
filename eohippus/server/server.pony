@@ -1,3 +1,5 @@
+use "files"
+
 use analyzer = "../analyzer"
 use ast = "../ast"
 use c_caps = "rpc/data/client_capabilities"
@@ -52,7 +54,7 @@ interface tag Server is (analyzer.AnalyzerNotify & tasks.FindDefinitionNotify)
   be parsed_file(
       analyze: analyzer.Analyzer,
       task_id: USize,
-      canonical_name: String,
+      canonical_name: FilePath,
       syntax_tree: ast.Node,
       line_beginnings: ReadSeq[parser.Loc] val)
 
@@ -66,7 +68,7 @@ interface tag Server is (analyzer.AnalyzerNotify & tasks.FindDefinitionNotify)
   be analyzed_file(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     syntax_tree: (ast.Node | None),
     file_scope: (analyzer.Scope val | None),
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
@@ -75,13 +77,13 @@ interface tag Server is (analyzer.AnalyzerNotify & tasks.FindDefinitionNotify)
   be analyze_failed(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     errors: ReadSeq[analyzer.AnalyzerError] val)
 
   // FindDefinitionNotify
   be definition_found(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     range: analyzer.SrcRange)
   be definition_failed(
     task_id: USize,

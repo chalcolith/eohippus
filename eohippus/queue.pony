@@ -24,6 +24,16 @@ class Queue[A]
     let index = (_start + i) % _array.size()
     _array(index)?
 
+  fun ref clear() =>
+    _array.clear()
+    _array.compact()
+    _size = 0
+    _start = 0
+    _next = 0
+
+  fun ref compact() =>
+    _array.compact()
+
   fun ref pop(): A ? =>
     if _size == 0 then
       error

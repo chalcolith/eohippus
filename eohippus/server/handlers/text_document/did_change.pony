@@ -23,21 +23,27 @@ class DidChange
   =>
     _log(Fine) and _log.log(
       task_id.string() + ": notification : textDocument/didChange")
+
     let uri = params.textDocument().uri()
     try
       let info = src_files.by_client_uri(uri)?
-      info.did_change(
-        task_id,
-        params.textDocument(),
-        params.contentChanges())
-      let workspace = workspaces.get_workspace(
-        auth, _config, info.canonical_path.path)
-      match info.parse
-      | let parse': parser.Parser =>
-        workspace.analyze.update_file(task_id, info.canonical_path.path, parse')
+      try
+        info.did_change(
+          task_id,
+          params.textDocument(),
+          params.contentChanges())
+        let workspace = workspaces.get_workspace(
+          auth, _config, info.canonical_path)?
+        match info.parse
+        | let parse': parser.Parser =>
+          workspace.analyze.update_file(task_id, info.canonical_path, parse')
+        end
+      else
+        _log(Error) and _log.log(task_id.string() + ": error getting workspace")
       end
     else
       _log(Error) and _log.log(
         task_id.string() +  ": no open info found for " + uri)
     end
+
     (None, None)
