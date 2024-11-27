@@ -76,7 +76,7 @@ actor Main
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
-    print_errors(workspace_errors)
+    print_errors(workspace_errors, None)
 
   be analyzed_file(
     analyze: analyzer.Analyzer,
@@ -88,9 +88,9 @@ actor Main
     lint_errors: ReadSeq[analyzer.AnalyzerError] val,
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
-    print_errors(parse_errors)
-    print_errors(analyze_errors)
-    print_errors(lint_errors)
+    print_errors(parse_errors, canonical_path)
+    print_errors(analyze_errors, canonical_path)
+    print_errors(lint_errors, canonical_path)
 
   be analyze_failed(
     analyze: analyzer.Analyzer,
@@ -98,10 +98,20 @@ actor Main
     canonical_path: String,
     errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
-    print_errors(errors)
+    print_errors(errors, canonical_path)
 
-  fun print_errors(errors: ReadSeq[analyzer.AnalyzerError] val) =>
+  fun print_errors(
+    errors: ReadSeq[analyzer.AnalyzerError] val,
+    path: (String | None))
+  =>
     for e in errors.values() do
+      match path
+      | let path': String =>
+        if e.canonical_path != path' then
+          continue
+        end
+      end
+
       let kind =
         match e.severity
         | analyzer.AnalyzeError =>

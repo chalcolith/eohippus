@@ -6,7 +6,7 @@ class TypeBuilder
   let _keyword: KeywordBuilder
 
   let args: NamedRule = NamedRule("type arguments")
-  let arrow: NamedRule = NamedRule("a type")
+  let arrow: NamedRule = NamedRule("a type" where memoize' = true)
   let atom: NamedRule = NamedRule("a basic type")
   let infix: NamedRule = NamedRule("an algebraic type expression")
   let lambda: NamedRule = NamedRule("a lambda type")

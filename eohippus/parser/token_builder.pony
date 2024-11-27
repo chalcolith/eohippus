@@ -135,8 +135,7 @@ class TokenBuilder
             let value = ast.NodeWith[ast.Token](
               src_info, _Build.span_and_post(src_info, c, p), ast.Token(string)
               where post_trivia' = p)
-            (value, b) })
-        where memoize_failures' = false)
+            (value, b) }))
     m.insert(str, rule)
 
   fun apply(str: String): NamedRule box =>

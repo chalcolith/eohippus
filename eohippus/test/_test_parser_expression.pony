@@ -36,6 +36,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionWith)
     test(_TestParserExpressionFfi)
     test(_TestParserExpressionLambda)
+    test(_TestParserExpressionLambda2)
     test(_TestParserExpressionObject)
 
 class iso _TestParserExpressionIdentifier is UnitTest
@@ -1192,9 +1193,26 @@ class iso _TestParserExpressionArray is UnitTest
         }
       """
 
+    let source3 = "[]"
+    let expected3 =
+      """
+        {
+          "name": "ExpArray",
+          "children": [
+            {
+              "name": "Token", "string": "["
+            },
+            {
+              "name": "Token", "string": "]"
+            }
+          ]
+        }
+      """
+
     _Assert.test_all(h,
       [ _Assert.test_match(h, rule, setup.data, source1, expected1)
-        _Assert.test_match(h, rule, setup.data, source2, expected2) ])
+        _Assert.test_match(h, rule, setup.data, source2, expected2)
+        _Assert.test_match(h, rule, setup.data, source3, expected3) ])
 
 class iso _TestParserExpressionConsume is UnitTest
   fun name(): String => "parser/expression/Consume"
@@ -2189,6 +2207,28 @@ class iso _TestParserExpressionFfi is UnitTest
       """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserExpressionLambda2 is UnitTest
+  fun name(): String => "parser/expression/Lambda2"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src = "{ () ? => one }"
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])
 
 class iso _TestParserExpressionLambda is UnitTest
   fun name(): String => "parser/expression/Lambda"

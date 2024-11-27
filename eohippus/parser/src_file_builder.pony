@@ -12,7 +12,7 @@ class SrcFileBuilder
   var _typedef: TypedefBuilder
 
   let src_file: NamedRule = NamedRule("a Pony source file")
-  let using: NamedRule = NamedRule("a using declaration")
+  let using: NamedRule = NamedRule("a using declaration" where memoize' = true)
   let using_pony: NamedRule = NamedRule("a Pony package using declaration")
   let using_ffi: NamedRule = NamedRule("an FFI using declaration")
 

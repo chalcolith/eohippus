@@ -13,9 +13,9 @@ class ExpressionBuilder
   let _literal: LiteralBuilder
   let _type_type: TypeBuilder
 
-  let annotation: NamedRule = NamedRule("an annotation")
-  let item: NamedRule = NamedRule("an expression")
-  let infix: NamedRule = NamedRule("an infix expression")
+  let annotation: NamedRule = NamedRule("an annotation" where memoize' = true)
+  let item: NamedRule = NamedRule("an expression" where memoize' = true)
+  let infix: NamedRule = NamedRule("an infix expression" where memoize' = true)
   let seq: NamedRule = NamedRule("an expression sequence")
   let tuple_pattern: NamedRule = NamedRule("a tuple destructuring pattern")
   let _method_params: NamedRule
@@ -655,17 +655,10 @@ class ExpressionBuilder
           Ques(Bind(lambda_id, id))
           Ques(Bind(lambda_type_params, type_params))
           oparen
-          Bind(lambda_params, _method_params)
+          Ques(Bind(lambda_params, _method_params))
           cparen
-          Ques(
-            Conj(
-              [ oparen
-                Bind(lambda_captures, _method_params)
-                cparen ]))
-          Ques(
-            Conj(
-              [ colon
-                Bind(lambda_ret_type, type_arrow) ]))
+          Ques(Conj([ oparen; Bind(lambda_captures, _method_params); cparen ]))
+          Ques(Conj([ colon; Bind(lambda_ret_type, type_arrow) ]))
           Ques(Bind(lambda_partial, ques))
           equal_arrow
           Bind(lambda_body, seq)
@@ -690,12 +683,8 @@ class ExpressionBuilder
     exp_array.set_body(
       Conj(
         [ osquare
-          Ques(
-            Conj(
-              [ kwd_as
-                Bind(array_type, type_arrow)
-                colon ]))
-          Bind(array_body, seq)
+          Ques(Conj([ kwd_as; Bind(array_type, type_arrow); colon ]))
+          Ques(Bind(array_body, seq))
           csquare ]),
       _ExpActions~_array(array_type, array_body))
 
