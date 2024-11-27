@@ -164,6 +164,8 @@ primitive ParseNode
         ParseNode~_ctor[Expression](ParseExpLambda~apply(obj, children))
       | "ExpMatch" =>
         ParseNode~_ctor[Expression](ParseExpMatch~apply(obj, children))
+      | "MatchPattern" =>
+        ParseNode~_ctor[MatchPattern](ParseMatchPattern~apply(obj, children))
       | "MatchCase" =>
         ParseNode~_ctor[MatchCase](ParseMatchCase~apply(obj, children))
       | "ExpObject" =>

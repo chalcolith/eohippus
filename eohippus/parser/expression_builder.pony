@@ -91,6 +91,7 @@ class ExpressionBuilder
     let exp_while: NamedRule = NamedRule("a while loop")
     let exp_with: NamedRule = NamedRule("a with expression")
     let match_case: NamedRule = NamedRule("a match case")
+    let match_pattern: NamedRule = NamedRule("a match pattern")
     let with_elem: NamedRule = NamedRule("a with element")
 
     let amp = _token(ast.Tokens.amp())
@@ -372,19 +373,30 @@ class ExpressionBuilder
           kwd_end ]),
       _ExpActions~_match(match_exp, match_cases, match_else_block))
 
-    // match_case <= '|' item ('if' seq)? '=>' seq
-    let match_case_pattern = Variable("match_case_pattern")
-    let match_case_condition = Variable("match_case_condition")
+    // match_pattern <= '|' item ('if' seq)?
+    let match_pattern_pattern = Variable("match_pattern_pattern")
+    let match_pattern_condition = Variable("match_pattern_condition")
+    match_pattern.set_body(
+      Conj(
+        [ bar
+          Bind(
+            match_pattern_pattern,
+            Disj([ exp_decl; exp_prefix; exp_hash ]))
+          Ques(Conj([ kwd_if; Bind(match_pattern_condition, seq) ]))
+        ]),
+      _ExpActions~_match_pattern(
+        match_pattern_pattern, match_pattern_condition))
+
+    // match_case <= match_case_pattern+ '=>' seq
+    let match_case_patterns = Variable("match_case_patterns")
     let match_case_body = Variable("match_case_body")
     match_case.set_body(
       Conj(
-        [ bar
-          Bind(match_case_pattern, Disj([ exp_decl; exp_prefix; exp_hash ]))
-          Ques(Conj([ kwd_if; Bind(match_case_condition, seq) ]))
+        [ Bind(match_case_patterns, Star(match_pattern, 1))
           equal_arrow
-          Bind(match_case_body, seq) ]),
-      _ExpActions~_match_case(
-        match_case_pattern, match_case_condition, match_case_body))
+          Bind(match_case_body, seq)
+        ]),
+      _ExpActions~_match_case(match_case_patterns, match_case_body))
 
     // while <= 'while' seq 'do' seq ('else' seq)? 'end'
     let while_cond = Variable("while_cond")

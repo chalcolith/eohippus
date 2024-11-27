@@ -31,6 +31,7 @@ primitive _TestParserExpression
     test(_TestParserExpressionTuplePattern)
     test(_TestParserExpressionFor)
     test(_TestParserExpressionMatch)
+    test(_TestParserExpressionMatchFallThrough)
     test(_TestParserExpressionMatchNegative)
     test(_TestParserExpressionDecl)
     test(_TestParserExpressionWith)
@@ -1698,10 +1699,7 @@ class iso _TestParserExpressionMatch is UnitTest
         {
           "name": "ExpMatch",
           "expression": 1,
-          "cases": [
-            2,
-            3
-          ],
+          "cases": [ 2, 3 ],
           "else_block": 5,
           "children": [
             {
@@ -1720,96 +1718,60 @@ class iso _TestParserExpressionMatch is UnitTest
             },
             {
               "name": "MatchCase",
-              "pattern": 1,
-              "condition": 3,
-              "body": 5,
+              "patterns": [ 0 ],
+              "body": 2,
               "children": [
                 {
-                  "name": "Token",
-                  "string": "|"
-                },
-                {
-                  "name": "ExpAtom",
-                  "body": 0,
+                  "name": "MatchPattern",
+                  "pattern": 1,
+                  "condition": 3,
                   "children": [
+                    { "name": "Token", "string": "|" },
                     {
-                      "name": "Identifier",
-                      "string": "b"
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [ { "name": "Identifier", "string": "b" } ]
+                    },
+                    { "name": "Keyword", "string": "if" },
+                    {
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [ { "name": "Identifier", "string": "c" } ]
                     }
                   ]
                 },
                 {
-                  "name": "Keyword",
-                  "string": "if"
+                  "name": "Token", "string": "=>"
                 },
                 {
                   "name": "ExpAtom",
                   "body": 0,
-                  "children": [
-                    {
-                      "name": "Identifier",
-                      "string": "c"
-                    }
-                  ]
-                },
-                {
-                  "name": "Token",
-                  "string": "=>"
-                },
-                {
-                  "name": "ExpAtom",
-                  "body": 0,
-                  "children": [
-                    {
-                      "name": "Identifier",
-                      "string": "d"
-                    }
-                  ]
+                  "children": [ { "name": "Identifier", "string": "d" } ]
                 }
               ]
             },
             {
               "name": "MatchCase",
-              "pattern": 1,
-              "body": 3,
+              "patterns": [ 0 ],
+              "body": 2,
               "children": [
                 {
-                  "name": "Token",
-                  "string": "|"
-                },
-                {
-                  "name": "ExpAtom",
-                  "body": 0,
+                  "name": "MatchPattern",
+                  "pattern": 1,
                   "children": [
+                    { "name": "Token", "string": "|" },
                     {
-                      "name": "LiteralInteger",
-                      "kind": "DecimalInteger",
-                      "value": 2
+                      "name": "ExpAtom",
+                      "body": 0,
+                      "children": [ { "name": "LiteralInteger", "value": 2 } ]
                     }
                   ]
                 },
-                {
-                  "name": "Token",
-                  "string": "=>"
-                },
+                { "name": "Token", "string": "=>" },
                 {
                   "name": "ExpAtom",
                   "body": 0,
-                  "children": [
-                    {
-                      "name": "LiteralBool",
-                      "value": true,
-                      "children": [
-                        {
-                          "name": "Span"
-                        },
-                        {
-                          "name": "Keyword",
-                          "string": "true"
-                        }
-                      ]
-                    }
-                  ]
+                  "children": [ { "name": "LiteralBool", "value": true } ]
                 }
               ]
             },
@@ -1836,6 +1798,34 @@ class iso _TestParserExpressionMatch is UnitTest
       """
 
     _Assert.test_all(h, [ _Assert.test_match(h, rule, setup.data, src, exp) ])
+
+class iso _TestParserExpressionMatchFallThrough is UnitTest
+  fun name(): String => "parser/expression/Match/fallthrough"
+  fun exclusion_group(): String => "parser/expression"
+
+  fun apply(h: TestHelper) =>
+    let setup = _TestSetup(name())
+    let rule = setup.builder.expression.item
+
+    let src =
+      """
+        match foo
+        | ';' | '#' =>
+          continue
+        end
+      """
+    let src_len = src.size()
+
+    _Assert.test_all(
+      h,
+      [ _Assert.test_with(
+          h, rule, setup.data, src,
+          {(success, values) =>
+            let len = success.next.index() - success.start.index()
+            ( len == src_len
+            , "expected length " + src_len.string() + ", got " + len.string() )
+          })
+      ])
 
 class iso _TestParserExpressionMatchNegative is UnitTest
   fun name(): String => "parser/expression/Match/negative"
