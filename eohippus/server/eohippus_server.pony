@@ -1,3 +1,4 @@
+use "appdirs"
 use "collections"
 use "files"
 use "logger"
@@ -310,12 +311,12 @@ actor EohippusServer is Server
     request_id: String,
     params: rpc_data.DefinitionParams)
   =>
-    let cp = _get_canonical_path(params.textDocument().uri()).path
+    let canonical_path = _get_canonical_path(params.textDocument().uri())
     let task_id = _get_next_task_id()
     _pending_requests.update(task_id, request_id)
     _handle_request(
       _handle_text_document_definition(
-        FileAuth(_env.root), _workspaces, task_id, params, cp))
+        FileAuth(_env.root), _workspaces, task_id, params, canonical_path))
 
   be notification_exit() =>
     _log(Fine) and _log.log("notification: exit")
@@ -360,41 +361,116 @@ actor EohippusServer is Server
     _client_data.rootPath = rootPath
 
   be open_workspace(name: String, client_uri: String) =>
-    _log(Fine) and _log.log("open workspace " + name + " " + client_uri)
+    _log(Fine) and _log.log("opening workspace " + name + " " + client_uri)
     if not _workspaces.by_client_uri.contains(client_uri) then
-      let canonical_path = _get_canonical_path(client_uri)
-      let pony_path = ServerUtils.get_pony_path(_env)
-      let ponyc_executable =
+      let auth = FileAuth(_env.root)
+
+      let workspace_path = _get_canonical_path(client_uri)
+      if not workspace_path.exists() then
+        _log(Error) and _log.log(
+          "workspace does not exist: " + workspace_path.path)
+        return
+      end
+      _log(Fine) and _log.log("workspace_path: " + workspace_path.path)
+
+      let workspace_cache = FilePath(
+        auth, Path.join(workspace_path.path, ".eohippus"))
+      if not _check_cache(workspace_cache, "workspace cache") then
+        return
+      end
+      _log(Fine) and _log.log("workspace_cache: " + workspace_cache.path)
+
+      let appdirs = AppDirs(_env.vars, "eohippus")
+      let global_cache =
+        try
+          FilePath(auth, appdirs.user_cache_dir()?)
+        else
+          _log(Error) and _log.log("unable to get user cache dir")
+          return
+        end
+      if not _check_cache(global_cache, "global_cache") then
+        return
+      end
+      _log(Fine) and _log.log("global_cache: " + global_cache.path)
+
+      let pony_path_dirs = ServerUtils.get_pony_path_dirs(_env)
+      _log(Fine) and _log.log("pony_path_dirs:")
+      for path in pony_path_dirs.values() do
+        _log(Fine) and _log.log("  " + path.path)
+      end
+
+      let ponyc =
         match _config.ponyc_executable
-        | let str: String =>
-          FilePath(FileAuth(_env.root), str)
+        | let ponyc_path: FilePath =>
+          if ponyc_path.exists() then
+            ponyc_path
+          end
         else
           ServerUtils.find_ponyc(_env)
         end
-      let analyze = analyzer.EohippusAnalyzer(
-        _log, FileAuth(_env.root), _parser_grammar
-        where
-          workspace = canonical_path,
-          storage_path = None,
-          pony_path = pony_path,
-          ponyc_executable = ponyc_executable,
-          pony_packages_path = None,
-          notify = this)
+      match ponyc
+      | let ponyc_path: FilePath =>
+        _log(Fine) and _log.log("ponyc_path: " + ponyc_path.path)
+      else
+        _log(Fine) and _log.log("ponyc_path: None")
+      end
+
+      let pony_packages = ServerUtils.find_pony_packages(_env, ponyc)
+      match pony_packages
+      | let pony_packages_path: FilePath =>
+        _log(Fine) and _log.log(
+          "pony_packages_path: " + pony_packages_path.path)
+      else
+        _log(Fine) and _log.log("pony_packages_path: None")
+      end
+
+      let analyzer_context = analyzer.AnalyzerContext(
+        auth,
+        workspace_path,
+        workspace_cache,
+        global_cache,
+        pony_path_dirs,
+        ponyc,
+        pony_packages,
+        _parser_grammar)
+
+      let analyze = analyzer.EohippusAnalyzer(_log, analyzer_context, this)
+      analyze.analyze()
+
       let workspace = WorkspaceInfo(
-        name, client_uri, canonical_path.path, this, analyze)
+        name, client_uri, workspace_path, this, analyze)
       _workspaces.by_client_uri.update(client_uri, workspace)
-      _workspaces.by_canonical_path.update(canonical_path.path, workspace)
+      _workspaces.by_canonical_path.update(workspace_path.path, workspace)
       _workspaces.by_analyzer.update(analyze, workspace)
     else
       _log(Warn) and _log.log("workspace " + client_uri + " already open")
     end
 
+  fun _check_cache(path: FilePath, name: String): Bool =>
+    try
+      if (not path.exists()) and (not path.mkdir()) then
+        _log(Error) and _log.log("unable to create " + name + ": " + path.path)
+        return false
+      end
+      let info = FileInfo(path)?
+      if not info.directory then
+        _log(Error) and _log.log(name + " is not a directory: " + path.path)
+        return false
+      end
+    else
+      _log(Error) and _log.log("unable to access " + name + ": " + path.path)
+      return false
+    end
+    true
+
   fun _clear_errors(
-    canonical_path: String,
+    canonical_path: FilePath,
     dest: Map[String, Array[analyzer.AnalyzerError]])
   =>
     try
-      dest(canonical_path)?.clear()
+      let map = dest(canonical_path.path)?
+      map.clear()
+      map.compact()
     end
 
   fun _add_errors(
@@ -404,10 +480,10 @@ actor EohippusServer is Server
     for err in src.values() do
       let arr =
         try
-          dest(err.canonical_path)?
+          dest(err.canonical_path.path)?
         else
           let arr' = Array[analyzer.AnalyzerError]
-          dest(err.canonical_path) = arr'
+          dest(err.canonical_path.path) = arr'
           arr'
         end
       arr.push(err)
@@ -429,10 +505,10 @@ actor EohippusServer is Server
     end
 
   fun _notify_file_diagnostics(
-    canonical_path: String,
+    canonical_path_str: String,
     errors: Array[analyzer.AnalyzerError])
   =>
-    let client_uri = StringUtil.get_client_uri(canonical_path)
+    let client_uri = StringUtil.get_client_uri(canonical_path_str)
     let diagnostics: Array[rpc_data.Diagnostic] trn = []
     for err in errors.values() do
       let range' = _get_range(err)
@@ -471,9 +547,10 @@ actor EohippusServer is Server
     errors: Map[String, Array[analyzer.AnalyzerError]])
   =>
     var num_sent: USize = 0
-    for canonical_path in errors.keys() do
+    for canonical_path_str in errors.keys() do
       try
-        _notify_file_diagnostics(canonical_path, errors(canonical_path)?)
+        _notify_file_diagnostics(
+          canonical_path_str, errors(canonical_path_str)?)
       end
       num_sent = num_sent + 1
     end
@@ -483,18 +560,19 @@ actor EohippusServer is Server
   be parsed_file(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     syntax_tree: ast.Node,
     line_beginnings: ReadSeq[parser.Loc] val)
   =>
-    match try _src_files.by_canonical_path(canonical_path)? end
+    match try _src_files.by_canonical_path(canonical_path.path)? end
     | let src_file: SrcFileInfo =>
-      _log(Fine) and _log.log(task_id.string() + ": parsed " + canonical_path)
+      _log(Fine) and _log.log(
+        task_id.string() + ": parsed " + canonical_path.path)
       src_file.syntax_tree = syntax_tree
       src_file.set_line_beginnings(line_beginnings)
     else
       _log(Fine) and _log.log(
-        task_id.string() + " parsed unknown " + canonical_path)
+        task_id.string() + " parsed unknown " + canonical_path.path)
     end
 
   be analyzed_workspace(
@@ -524,7 +602,7 @@ actor EohippusServer is Server
   be analyzed_file(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     syntax_tree: (ast.Node | None),
     file_scope: (analyzer.Scope val | None),
     parse_errors: ReadSeq[analyzer.AnalyzerError] val,
@@ -532,7 +610,7 @@ actor EohippusServer is Server
     analyze_errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
     _log(Fine) and _log.log(
-      task_id.string() + ": file analyzed: " + canonical_path)
+      task_id.string() + ": file analyzed: " + canonical_path.path)
     if parse_errors.size() > 0 then
       _log(Fine) and _log.log(
         "  " + parse_errors.size().string() + " parse errors")
@@ -554,15 +632,12 @@ actor EohippusServer is Server
       _add_errors(analyze_errors, workspace.errors)
 
       if _client_data.text_document_publish_diagnostics() then
-        if workspace.errors.contains(canonical_path) then
-          _log(Fine) and _log.log(task_id.string() + ": sending diagnostics")
-          _notify_workspace_diagnostics(workspace.errors)
-          // try
-          //   _log(Fine) and _log.log(
-          //     task_id.string() + ": sending diagnostics for " + canonical_path)
-          //   _notify_file_diagnostics(
-          //     canonical_path, workspace.errors(canonical_path)?)
-          // end
+        try
+          _log(Fine) and _log.log(
+            task_id.string() + ": sending diagnostics for " +
+            canonical_path.path)
+          _notify_file_diagnostics(
+            canonical_path.path, workspace.errors(canonical_path.path)?)
         end
       end
     end
@@ -570,11 +645,11 @@ actor EohippusServer is Server
   be analyze_failed(
     analyze: analyzer.Analyzer,
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     errors: ReadSeq[analyzer.AnalyzerError] val)
   =>
     _log(Fine) and _log.log(
-      task_id.string() + ": analyze failed: " + canonical_path)
+      task_id.string() + ": analyze failed: " + canonical_path.path)
 
   fun ref _get_request_id(task_id: USize): (I128 | String | None) =>
     let result =
@@ -591,10 +666,10 @@ actor EohippusServer is Server
 
   be definition_found(
     task_id: USize,
-    canonical_path: String,
+    canonical_path: FilePath,
     range: analyzer.SrcRange)
   =>
-    let client_uri = StringUtil.get_client_uri(canonical_path)
+    let client_uri = StringUtil.get_client_uri(canonical_path.path)
     let request_id = _get_request_id(task_id)
     let start' =
       object val is rpc_data.Position

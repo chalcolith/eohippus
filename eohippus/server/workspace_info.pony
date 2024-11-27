@@ -8,7 +8,7 @@ use parser = "../parser"
 class WorkspaceInfo
   let name: String
   let client_uri: String
-  let canonical_path: String
+  let canonical_path: FilePath
   let server: Server
   let analyze: analyzer.Analyzer
 
@@ -17,7 +17,7 @@ class WorkspaceInfo
   new create(
     name': String,
     client_uri': String,
-    canonical_path': String,
+    canonical_path': FilePath,
     server': Server,
     analyze': analyzer.Analyzer)
   =>
@@ -51,32 +51,45 @@ class Workspaces
   fun ref get_workspace(
     auth: FileAuth,
     config: ServerConfig,
-    canonical_path: String)
-    : WorkspaceInfo
+    canonical_path: FilePath)
+    : WorkspaceInfo?
   =>
+    // TODO: refine this to handle multiple workspaces
     for (ws_path, workspace) in by_canonical_path.pairs() do
-      if canonical_path.compare_sub(ws_path, ws_path.size()) is Equal then
-        return workspace
-      end
+      return workspace
     end
-    (let dir, _) = Path.split(canonical_path)
-    _log(Fine) and _log.log("creating ad-hoc workspace for " + dir)
-    let ponyc =
-      match config.ponyc_executable
-      | let path: String =>
-        FilePath(auth, path)
-      end
-    let analyze = analyzer.EohippusAnalyzer(
-      _log,
-      auth,
-      _grammar,
-      FilePath(auth, dir),
-      None,
-      [],
-      ponyc,
-      None,
-      _server)
-    let workspace = WorkspaceInfo(dir, dir, dir, _server, analyze)
-    by_canonical_path.update(dir, workspace)
-    by_analyzer.update(analyze, workspace)
-    workspace
+    error
+
+    // for (ws_path, workspace) in by_canonical_path.pairs() do
+    //   if canonical_path.compare_sub(ws_path, ws_path.size()) is Equal then
+    //     return workspace
+    //   end
+    // end
+
+    // let workspace_path = FilePath(auth, Path.split(canonical_path)._1)
+    // _log(Fine) and _log.log(
+    //   "creating ad-hoc workspace for " + workspace_path.path)
+
+    // let analyzer_context = analyzer.AnalyzerContext(
+
+    // )
+
+    // let ponyc =
+    //   match config.ponyc_executable
+    //   | let path: String =>
+    //     FilePath(auth, path)
+    //   end
+    // let analyze = analyzer.EohippusAnalyzer(
+    //   _log,
+    //   auth,
+    //   _grammar,
+    //   FilePath(auth, dir),
+    //   None,
+    //   [],
+    //   ponyc,
+    //   None,
+    //   _server)
+    // let workspace = WorkspaceInfo(dir, dir, dir, _server, analyze)
+    // by_canonical_path.update(dir, workspace)
+    // by_analyzer.update(analyze, workspace)
+    // workspace

@@ -1,3 +1,5 @@
+use "files"
+
 primitive AnalyzeError
 primitive AnalyzeWarning
 primitive AnalyzeInfo
@@ -7,7 +9,7 @@ type AnalyzeSeverity is
   (AnalyzeError | AnalyzeWarning | AnalyzeInfo | AnalyzeHint)
 
 class val AnalyzerError
-  let canonical_path: String
+  let canonical_path: FilePath
   let severity: AnalyzeSeverity
   let message: String
   let line: USize
@@ -16,7 +18,7 @@ class val AnalyzerError
   let next_column: USize
 
   new val create(
-    canonical_path': String,
+    canonical_path': FilePath,
     severity': AnalyzeSeverity,
     message': String,
     line': USize = 0,

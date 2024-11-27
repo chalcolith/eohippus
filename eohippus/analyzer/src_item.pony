@@ -17,7 +17,7 @@ primitive AnalysisLint
   fun apply(): USize => 3
 
 primitive AnalysisUpToDate
-  fun apply(): USize => 1000
+  fun apply(): USize => 4
 
 primitive AnalysisError
   fun apply(): USize => USize.max_value()
@@ -30,12 +30,17 @@ type SrcItemState is
   | AnalysisUpToDate
   | AnalysisError )
 
-type SrcItem is (SrcFileItem | SrcPackageItem)
+trait SrcItem
+  fun get_canonical_path(): FilePath
+  fun get_state(): SrcItemState
+  fun ref set_state(state': SrcItemState)
 
-class SrcFileItem
-  let canonical_path: String
+class SrcFileItem is SrcItem
+  let canonical_path: FilePath
 
-  var storage_prefix: String = ""
+  let cache_path: FilePath
+  var cache_prefix: String = ""
+
   var parent_package: (SrcPackageItem | None) = None
   let dependencies: Array[SrcItem] = []
 
@@ -54,10 +59,11 @@ class SrcFileItem
   var scope_indices: MapIs[Scope, USize] val = scope_indices.create()
   var scopes_by_index: Map[USize, Scope] val = scopes_by_index.create()
 
-  new create(canonical_path': String) =>
+  new create(canonical_path': FilePath, cache_path': FilePath) =>
     canonical_path = canonical_path'
+    cache_path = cache_path'
 
-  fun get_canonical_path(): String => canonical_path
+  fun get_canonical_path(): FilePath => canonical_path
   fun get_state(): SrcItemState => state
   fun ref set_state(state': SrcItemState) => state = state'
 
@@ -118,10 +124,12 @@ class SrcFileItem
     scope_indices = scope_indices.create()
     scopes_by_index = scopes_by_index.create()
 
-class SrcPackageItem
-  let canonical_path: String
+class SrcPackageItem is SrcItem
+  let canonical_path: FilePath
 
-  var storage_prefix: String = ""
+  let cache_path: FilePath
+  var cache_prefix: String = ""
+
   var is_workspace: Bool = false
   var parent_package: (SrcPackageItem | None) = None
   let dependencies: Array[SrcItem] = []
@@ -129,9 +137,10 @@ class SrcPackageItem
   var task_id: USize = 0
   var state: SrcItemState = AnalysisStart
 
-  new create(canonical_path': String) =>
+  new create(canonical_path': FilePath, cache_path': FilePath) =>
     canonical_path = canonical_path'
+    cache_path = cache_path'
 
-  fun get_canonical_path(): String => canonical_path
+  fun get_canonical_path(): FilePath => canonical_path
   fun get_state(): SrcItemState => state
   fun ref set_state(state': SrcItemState) => state = state'

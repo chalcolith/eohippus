@@ -61,9 +61,13 @@ class DidOpen
         task_id,
         params.textDocument().version(),
         params.textDocument().text())
-      let workspace = workspaces.get_workspace(
-        auth, _config, sfi.canonical_path.path)
-      workspace.analyze.open_file(task_id, sfi.canonical_path.path, parse)
+      try
+        let workspace = workspaces.get_workspace(
+          auth, _config, sfi.canonical_path)?
+        workspace.analyze.open_file(task_id, sfi.canonical_path, parse)
+      else
+        _log(Error) and _log.log("unable to get workspace")
+      end
     else
       _log(Error) and _log.log("unable to open " + params.textDocument().uri())
     end

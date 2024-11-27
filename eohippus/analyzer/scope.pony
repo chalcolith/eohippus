@@ -1,4 +1,5 @@
 use "collections"
+use "files"
 
 use ast = "../ast"
 use json = "../json"
@@ -27,7 +28,7 @@ type ScopeItem is (USize, String, String)
 class val Scope
   let kind: ScopeKind
   let name: String
-  let canonical_path: String
+  let canonical_path: FilePath
   var range: SrcRange
   let index: USize
   var parent: (Scope box | None)
@@ -38,7 +39,7 @@ class val Scope
   new create(
     kind': ScopeKind,
     name': String,
-    canonical_path': String,
+    canonical_path': FilePath,
     range': SrcRange,
     index': USize,
     parent': (Scope box | None) = None)
@@ -120,7 +121,7 @@ class val Scope
     props.push(("kind", kind_string))
     props.push(("name", name))
     if (kind is PackageScope) or (kind is FileScope) then
-      props.push(("canonical_path", canonical_path))
+      props.push(("canonical_path", canonical_path.path))
     end
     props.push(
       ( "range",
@@ -167,6 +168,7 @@ class val Scope
 
 primitive ParseScopeJson
   fun apply(
+    auth: FileAuth,
     scope_item: json.Item,
     parent: (Scope ref | None))
     : (Scope ref | String)
@@ -200,13 +202,13 @@ primitive ParseScopeJson
       let canonical_path =
         match try scope_obj("canonical_path")? end
         | let str: String box =>
-          str.clone()
+          FilePath(auth, str.clone())
         else
           match parent
           | let parent': Scope box =>
             parent'.canonical_path
           else
-            ""
+            FilePath(auth, "")
           end
         end
       let range =
@@ -272,7 +274,7 @@ primitive ParseScopeJson
       match try scope_obj("children")? end
       | let seq: json.Sequence =>
         for item in seq.values() do
-          match ParseScopeJson(item, scope)
+          match ParseScopeJson(auth, item, scope)
           | let child: Scope ref =>
             scope.add_child(child)
           | let err: String =>

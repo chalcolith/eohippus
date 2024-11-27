@@ -1,4 +1,5 @@
 use "collections"
+use "files"
 use "logger"
 
 use ast = "../ast"
@@ -20,7 +21,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
 
   new create(
     log: Logger[String],
-    canonical_path: String,
+    canonical_path: FilePath,
     node_indices: MapIs[ast.Node, USize] val)
   =>
     _log = log
@@ -28,7 +29,7 @@ class ScopeVisitor is ast.Visitor[ScopeState]
 
     file_scope = Scope(
       FileScope,
-      canonical_path,
+      canonical_path.path,
       canonical_path,
       (0, 0, USize.max_value(), USize.max_value()),
       _next_index = _next_index + 1,

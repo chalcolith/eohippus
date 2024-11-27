@@ -1,3 +1,4 @@
+use "files"
 use "logger"
 use "net"
 
@@ -34,7 +35,15 @@ actor Main
           Error, env.err, {(s: String): String => s }, ls.EohippusLogFormatter)
       end
 
-    let config = recover val ls.ServerConfig(options.ponyc_executable) end
+    let config =
+      recover val
+        let ponyc_path =
+          match options.ponyc_executable
+          | let path_str: String =>
+            FilePath(FileAuth(env.root), path_str)
+          end
+        ls.ServerConfig(ponyc_path)
+      end
 
     match options.command
     | StdioCommand =>

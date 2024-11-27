@@ -18,24 +18,28 @@ class Definition
     workspaces: Workspaces,
     task_id: USize,
     params: rpc_data.DefinitionParams,
-    canonical_path: String)
+    canonical_path: FilePath)
     : ((ServerState | None), (I32 | None))
   =>
     _log(Fine) and _log.log(
       task_id.string() + ": request definition: " +
       params.textDocument().uri() + ":" + params.position().line().string() +
       ":" + params.position().character().string())
-    let uri = params.textDocument().uri()
-    let workspace = workspaces.get_workspace(auth, _config, canonical_path)
-    let position = params.position()
+    try
+      let uri = params.textDocument().uri()
+      let workspace = workspaces.get_workspace(auth, _config, canonical_path)?
+      let position = params.position()
 
-    tasks.FindDefinition(
-      _log,
-      workspace.analyze,
-      task_id,
-      canonical_path,
-      USize.from[I128](position.line()),
-      USize.from[I128](position.character()),
-      workspace.server)
+      tasks.FindDefinition(
+        _log,
+        workspace.analyze,
+        task_id,
+        canonical_path,
+        USize.from[I128](position.line()),
+        USize.from[I128](position.character()),
+        workspace.server)
+    else
+      _log(Error) and _log.log(task_id.string() + ": error getting workspace")
+    end
 
     (None, None)
