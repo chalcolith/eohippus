@@ -19,11 +19,11 @@ class iso _TestQueueInsertFew is UnitTest
     q.push(3)
 
     try
-      h.assert_eq[USize](1, q.shift()?)
+      h.assert_eq[USize](1, q.pop()?)
       q.push(4)
-      h.assert_eq[USize](2, q.shift()?)
-      h.assert_eq[USize](3, q.shift()?)
-      h.assert_eq[USize](4, q.shift()?)
+      h.assert_eq[USize](2, q.pop()?)
+      h.assert_eq[USize](3, q.pop()?)
+      h.assert_eq[USize](4, q.pop()?)
     else
       h.fail("queue error")
     end
@@ -45,7 +45,7 @@ class iso _TestQueueInsertMany is UnitTest
     try
       i = 0
       while i < (space / 2) do
-        h.assert_eq[USize](i, q.shift()?)
+        h.assert_eq[USize](i, q.pop()?)
         i = i + 1
       end
     else
@@ -61,7 +61,7 @@ class iso _TestQueueInsertMany is UnitTest
 
       i = space / 2
       while q.size() > 0 do
-        h.assert_eq[USize](i, q.shift()?)
+        h.assert_eq[USize](i, q.pop()?)
         i = i + 1
       end
     else
