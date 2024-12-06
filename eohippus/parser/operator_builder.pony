@@ -5,9 +5,12 @@ class OperatorBuilder
   let _token: TokenBuilder
   let _keyword: KeywordBuilder
 
-  let prefix_op: NamedRule = NamedRule("a prefix operator")
-  let binary_op: NamedRule = NamedRule("a binary operator")
-  let postfix_op: NamedRule = NamedRule("a postfix operator")
+  let prefix_op: NamedRule =
+    NamedRule("a prefix operator" where memoize' = true)
+  let binary_op: NamedRule =
+    NamedRule("a binary operator" where memoize' = true)
+  let postfix_op: NamedRule =
+    NamedRule("a postfix operator" where memoize' = true)
 
   new create(
     trivia: TriviaBuilder,

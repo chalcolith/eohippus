@@ -80,23 +80,23 @@ actor EohippusAnalyzer is Analyzer
 
     _analyze_dir(task_id, true, workspace_path, workspace_cache, _schedule(0))
 
-    var schedule = _schedule(250)
-    for pony_path in _context.pony_path_dirs.values() do
-      try
-        let info = FileInfo(pony_path)?
-        if info.directory then
-          task_id = _get_next_task_id()
-          _analyze_dir(task_id, false, pony_path, global_cache, schedule)
-        end
-      end
-    end
+    // var schedule = _schedule(250)
+    // for pony_path in _context.pony_path_dirs.values() do
+    //   try
+    //     let info = FileInfo(pony_path)?
+    //     if info.directory then
+    //       task_id = _get_next_task_id()
+    //       _analyze_dir(task_id, false, pony_path, global_cache, schedule)
+    //     end
+    //   end
+    // end
 
-    schedule = _schedule(500)
-    match _context.pony_packages_path
-    | let pony_packages_path: FilePath =>
-      task_id = _get_next_task_id()
-      _analyze_dir(task_id, false, pony_packages_path, global_cache, schedule)
-    end
+    // schedule = _schedule(500)
+    // match _context.pony_packages_path
+    // | let pony_packages_path: FilePath =>
+    //   task_id = _get_next_task_id()
+    //   _analyze_dir(task_id, false, pony_packages_path, global_cache, schedule)
+    // end
 
   be _analyze_dir(
     task_id: USize,
