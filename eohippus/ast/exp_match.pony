@@ -73,28 +73,23 @@ primitive ParseExpMatch
       end
     ExpMatch(expression, cases, else_block)
 
-class val MatchCase is NodeData
-  """A case in a `match` expression."""
+class val MatchPattern is NodeData
   let pattern: NodeWith[Expression]
   let condition: (NodeWith[Expression] | None)
-  let body: NodeWith[Expression]
 
   new val create(
     pattern': NodeWith[Expression],
-    condition': (NodeWith[Expression] | None),
-    body': NodeWith[Expression])
+    condition': (NodeWith[Expression] | None))
   =>
     pattern = pattern'
     condition = condition'
-    body = body'
 
-  fun name(): String => "MatchCase"
+  fun name(): String => "MatchPattern"
 
   fun val clone(updates: ChildUpdateMap): NodeData =>
-    MatchCase(
+    MatchPattern(
       _map_with[Expression](pattern, updates),
-      _map_or_none[Expression](condition, updates),
-      _map_with[Expression](body, updates))
+      _map_or_none[Expression](condition, updates))
 
   fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
     props.push(("pattern", node.child_ref(pattern)))
@@ -102,32 +97,71 @@ class val MatchCase is NodeData
     | let condition': NodeWith[Expression] =>
       props.push(("condition", node.child_ref(condition')))
     end
-    props.push(("body", node.child_ref(body)))
 
-primitive ParseMatchCase
-  fun apply(obj: json.Object, children: NodeSeq): (MatchCase | String) =>
+primitive ParseMatchPattern
+  fun apply(obj: json.Object, children: NodeSeq): (MatchPattern | String) =>
     let pattern =
       match ParseNode._get_child_with[Expression](
         obj,
         children,
         "pattern",
-        "MatchCase.pattern must be an Expression")
+        "MatchPattern.pattern must be an Expression")
       | let node: NodeWith[Expression] =>
         node
       | let err: String =>
         return err
       else
-        return "MatchCase.pattern must be an Expression"
+        return "MatchPattern.pattern must be an Expression"
       end
     let condition =
       match ParseNode._get_child_with[Expression](
         obj,
         children,
         "condition",
-        "MatchCase.condition must be an Expression",
-        false)
+        "MatchPattern.condition must be an Expression")
       | let node: NodeWith[Expression] =>
         node
+      | let err: String =>
+        return err
+      end
+    MatchPattern(pattern, condition)
+
+class val MatchCase is NodeData
+  """A case in a `match` expression."""
+  let patterns: NodeSeqWith[MatchPattern]
+  let body: NodeWith[Expression]
+
+  new val create(
+    patterns': NodeSeqWith[MatchPattern],
+    body': NodeWith[Expression])
+  =>
+    patterns = patterns'
+    body = body'
+
+  fun name(): String => "MatchCase"
+
+  fun val clone(updates: ChildUpdateMap): NodeData =>
+    MatchCase(
+      _map[MatchPattern](patterns, updates),
+      _map_with[Expression](body, updates))
+
+  fun add_json_props(node: Node box, props: Array[(String, json.Item)]) =>
+    if patterns.size() > 0 then
+      props.push(("patterns", node.child_refs(patterns)))
+    end
+    props.push(("body", node.child_ref(body)))
+
+primitive ParseMatchCase
+  fun apply(obj: json.Object, children: NodeSeq): (MatchCase | String) =>
+    let patterns =
+      match ParseNode._get_seq_with[MatchPattern](
+        obj,
+        children,
+        "patterns",
+        "MatchCase.patterns must refer to MatchCasePatterns",
+        false)
+      | let seq: NodeSeqWith[MatchPattern] =>
+        seq
       | let err: String =>
         return err
       end
@@ -144,4 +178,4 @@ primitive ParseMatchCase
       else
         return "MatchCase.body must be an Expression"
       end
-    MatchCase(pattern, condition, body)
+    MatchCase(patterns, body)

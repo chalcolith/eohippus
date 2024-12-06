@@ -4,12 +4,12 @@
   ],
   "deps": [
     {
-      "locator": "github.com/ponylang/appdirs.git",
-      "version": "0.1.5"
+      "locator": "github.com/chalcolith/kiuatan.git",
+      "version": "1.5.5"
     },
     {
-      "locator": "github.com/chalcolith/kiuatan.git",
-      "version": "1.5.2"
+      "locator": "github.com/ponylang/appdirs.git",
+      "version": "0.1.5"
     },
     {
       "locator": "github.com/ponylang/logger.git",

@@ -42,9 +42,9 @@ actor Main
             {(result: parser.Result, values: ast.NodeSeq) =>
               match result
               | let success: parser.Success =>
-                env.err.print(arg + " succeeded")
-              else
-                env.err.print(arg + " failed")
+                _env.out.print(arg + " succeeded")
+              | let failure: parser.Failure =>
+                _env.out.print(arg + " failed: " + failure.get_message())
               end
               self.print_time()
             })

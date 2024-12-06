@@ -9,10 +9,10 @@ class TypedefBuilder
   let _type_type: TypeBuilder
   let _expression: ExpressionBuilder
 
-  let doc_string: NamedRule = NamedRule("a doc string")
+  let doc_string: NamedRule = NamedRule("a doc string" where memoize' = true)
   let method_params: NamedRule
   let members: NamedRule
-  let field: NamedRule = NamedRule("a field")
+  let field: NamedRule = NamedRule("a field" where memoize' = true)
   let method: NamedRule = NamedRule("a method" where memoize' = true)
   let typedef: NamedRule = NamedRule("a type definition" where memoize' = true)
   let typedef_primitive: NamedRule = NamedRule("a primitive type definition")

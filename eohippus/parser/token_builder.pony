@@ -40,7 +40,7 @@ class TokenBuilder
   let _trivia: TriviaBuilder
 
   let _tokens: Map[String, NamedRule]
-  let identifier: NamedRule = NamedRule("an identifier")
+  let identifier: NamedRule = NamedRule("an identifier" where memoize' = true)
 
   new create(context: Context, trivia: TriviaBuilder) =>
     _context = context

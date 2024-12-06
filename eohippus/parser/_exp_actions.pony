@@ -343,10 +343,9 @@ primitive _ExpActions
       _Build.info(d, r), c, ast.ExpMatch(exp', cases', else_block'))
     (value, b)
 
-  fun tag _match_case(
+  fun tag _match_pattern(
     pattern: Variable,
     condition: Variable,
-    body: Variable,
     d: Data,
     r: Success,
     c: ast.NodeSeq,
@@ -357,9 +356,24 @@ primitive _ExpActions
       try
         _Build.value_with[ast.Expression](b, pattern, r)?
       else
-        return _Build.bind_error(d, r, c, b, "Expression/MatchCase/Pattern")
+        return _Build.bind_error(d, r, c, b, "Expression/MatchPattern/Pattern")
       end
     let condition' = _Build.value_with_or_none[ast.Expression](b, condition, r)
+
+    let value = ast.NodeWith[ast.MatchPattern](
+      _Build.info(d, r), c, ast.MatchPattern(pattern', condition'))
+    (value, b)
+
+  fun tag _match_case(
+    patterns: Variable,
+    body: Variable,
+    d: Data,
+    r: Success,
+    c: ast.NodeSeq,
+    b: Bindings)
+    : ((ast.Node | None), Bindings)
+  =>
+    let patterns' = _Build.values_with[ast.MatchPattern](b, patterns, r)
     let body' =
       try
         _Build.value_with[ast.Expression](b, body, r)?
@@ -368,7 +382,7 @@ primitive _ExpActions
       end
 
     let value = ast.NodeWith[ast.MatchCase](
-      _Build.info(d, r), c, ast.MatchCase(pattern', condition', body'))
+      _Build.info(d, r), c, ast.MatchCase(patterns', body'))
     (value, b)
 
   fun tag _while(

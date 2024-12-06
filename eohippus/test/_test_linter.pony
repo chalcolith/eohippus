@@ -76,7 +76,7 @@ class iso _TestLinterAnalyzeTrimTrailingWhitespace is UnitTest
           h.complete(false)
         end
       })
-    h.long_test(2_000_000_000)
+    h.long_test(10_000_000_000)
 
 class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
   fun name(): String => "linter/fix/trim_trailing_whitespace"
@@ -470,4 +470,4 @@ class iso _TestLinterFixTrimTrailingWhitespace is UnitTest
           h.complete(false)
         end
       })
-    h.long_test(2_000_000_000)
+    h.long_test(10_000_000_000)
