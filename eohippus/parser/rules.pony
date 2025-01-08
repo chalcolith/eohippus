@@ -28,9 +28,9 @@ type Action is k.Action[U8, Data, ast.Node]
 type Bindings is k.Bindings[U8, Data, ast.Node]
 
 primitive Ques
-  fun apply(body: RuleNode box, action: (Action | None) = None): RuleNode ref =>
+  fun apply(body: RuleNode, action: (Action | None) = None): RuleNode =>
     Star(body, 0, action, 1)
 
 primitive Plus
-  fun apply(body: RuleNode box, action: (Action | None) = None): RuleNode ref =>
+  fun apply(body: RuleNode, action: (Action | None) = None): RuleNode =>
     Star(body, 1, action)

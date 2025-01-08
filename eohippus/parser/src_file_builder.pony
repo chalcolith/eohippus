@@ -38,7 +38,7 @@ class SrcFileBuilder
     _build_using_pony()
     _build_using_ffi()
 
-  fun ref err_sec(allowed: ReadSeq[NamedRule], message: String): RuleNode =>
+  fun ref err_sec(allowed: Array[RuleNode], message: String): RuleNode =>
     _typedef.error_section(allowed, message)
 
   fun ref _build_src_file() =>
@@ -100,29 +100,26 @@ class SrcFileBuilder
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     ( let t1': ast.NodeSeqWith[ast.Trivia],
       let ds': ast.NodeSeqWith[ast.DocString],
       let us': ast.NodeSeqWith[ast.Using],
       let td': ast.NodeSeqWith[ast.Typedef] )
     =
-      recover val
-        ( _Build.values_and_errors[ast.Trivia](b, t1, r),
-          _Build.values_and_errors[ast.DocString](b, ds, r),
-          _Build.values_and_errors[ast.Using](b, us, r),
-          _Build.values_and_errors[ast.Typedef](b, td, r) )
-      end
+      ( _Build.values_with[ast.Trivia](b, t1),
+        _Build.values_with[ast.DocString](b, ds),
+        _Build.values_with[ast.Using](b, us),
+        _Build.values_with[ast.Typedef](b, td) )
 
-    let pt' = _Build.values_with[ast.Trivia](b, pt, r)
+    let pt' = _Build.values_with[ast.Trivia](b, pt)
 
-    let value = ast.NodeWith[ast.SrcFile](
+    ast.NodeWith[ast.SrcFile](
       _Build.info(d, r), c, ast.SrcFile(d.locator, us', td')
       where
         pre_trivia' = t1',
         doc_strings' = ds',
         post_trivia' = pt')
-    (value, b)
 
   fun ref _build_using() =>
     using.set_body(
@@ -164,23 +161,22 @@ class SrcFileBuilder
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let id' = _Build.value_with_or_none[ast.Identifier](b, id, r)
+    let id' = _Build.value_with_or_none[ast.Identifier](b, id)
 
     let pt' =
       try
-        _Build.value_with[ast.LiteralString](b, pt, r)?
+        _Build.value_with[ast.LiteralString](b, pt)?
       else
         return _Build.bind_error(d, r, c, b, "SrcFile/UsingPony/LiteralString")
       end
 
-    let def_true = try _Build.result(b, fl, r)? end is None
-    let df' = _Build.value_with_or_none[ast.Identifier](b, df, r)
+    let def_true = try _Build.result(b, fl)? end is None
+    let df' = _Build.value_with_or_none[ast.Identifier](b, df)
 
-    let value = ast.NodeWith[ast.Using](
+    ast.NodeWith[ast.Using](
       _Build.info(d, r), c, ast.UsingPony(id', pt', def_true, df'))
-    (value, b)
 
   fun ref _build_using_ffi() =>
     let at = _token(ast.Tokens.at())
@@ -253,32 +249,32 @@ class SrcFileBuilder
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let id' = _Build.value_with_or_none[ast.Identifier](b, id, r)
+    let id' = _Build.value_with_or_none[ast.Identifier](b, id)
     let name' =
       try
-        _Build.value_with[ast.Identifier](b, name, r)?
+        _Build.value_with[ast.Identifier](b, name)?
       else
         try
-          _Build.value_with[ast.LiteralString](b, name, r)?
+          _Build.value_with[ast.LiteralString](b, name)?
         else
           return _Build.bind_error(d, r, c, b, "SrcFile/UsingFfi/Name")
         end
       end
     let targs' =
       try
-        _Build.value_with[ast.TypeArgs](b, targs, r)?
+        _Build.value_with[ast.TypeArgs](b, targs)?
       else
         return _Build.bind_error(d, r, c, b, "SrcFile/UsingFfi/TypeArgs")
       end
-    let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
-    let ellipsis' = b.contains(ellipsis, r)
-    let partial' = b.contains(partial, r)
-    let def_not' = b.contains(def_not, r)
-    let define' = _Build.value_with_or_none[ast.Identifier](b, define, r)
+    let params' = _Build.value_with_or_none[ast.MethodParams](b, params)
+    let ellipsis' = b.contains(ellipsis)
+    let partial' = b.contains(partial)
+    let def_not' = b.contains(def_not)
+    let define' = _Build.value_with_or_none[ast.Identifier](b, define)
 
-    let value = ast.NodeWith[ast.Using](
+    ast.NodeWith[ast.Using](
       _Build.info(d, r),
       c,
       ast.UsingFFI(
@@ -290,4 +286,3 @@ class SrcFileBuilder
         partial',
         not def_not',
         define'))
-    (value, b)

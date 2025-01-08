@@ -351,5 +351,5 @@ class val NodeWith[D: NodeData val] is Node
   fun string(): String iso^ =>
     this.get_json().string()
 
-type NodeSeqWith[D: NodeData val] is ReadSeq[NodeWith[D]] val
+type NodeSeqWith[D: NodeData val] is Array[NodeWith[D]] val
   """A sequence of AST nodes with a given node data type."""

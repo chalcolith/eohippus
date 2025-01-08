@@ -40,9 +40,9 @@ class TriviaBuilder
           Look(Disj([ eol; eof ])) ]),
       {(d, r, c, b) =>
         let str = recover val String .> concat(r.start.values(r.next)) end
-        let value = ast.NodeWith[ast.Trivia](
+        ast.NodeWith[ast.Trivia](
           _Build.info(d, r), c, ast.Trivia(ast.LineCommentTrivia, str))
-        (value, b) })
+      })
 
   fun ref _build_comment_nested() =>
     // '/*' (!'*/' .)* '*/'
@@ -53,18 +53,18 @@ class TriviaBuilder
           Literal("*/") ]),
       {(d, r, c, b) =>
         let str = recover val String .> concat(r.start.values(r.next)) end
-        let value = ast.NodeWith[ast.Trivia](
+        ast.NodeWith[ast.Trivia](
           _Build.info(d, r), c, ast.Trivia(ast.NestedCommentTrivia, str))
-        (value, b) })
+      })
 
   fun ref _build_ws() =>
     ws.set_body(
       Plus(Single(" \t")),
       {(d, r, c, b) =>
         let str = recover val String .> concat(r.start.values(r.next)) end
-        let value = ast.NodeWith[ast.Trivia](
+        ast.NodeWith[ast.Trivia](
           _Build.info(d, r), c, ast.Trivia(ast.WhiteSpaceTrivia, str))
-        (value, b) })
+      })
 
   fun ref _build_eol() =>
     eol.set_body(
@@ -74,9 +74,9 @@ class TriviaBuilder
           Literal("\r") ]),
         {(d, r, c, b) =>
           let str = recover val String .> concat(r.start.values(r.next)) end
-          let value = ast.NodeWith[ast.Trivia](
+          ast.NodeWith[ast.Trivia](
             _Build.info(d, r), c, ast.Trivia(ast.EndOfLineTrivia, str))
-          (value, b) })
+        })
 
   fun ref _build_dol() =>
     dol.set_body(Star(Conj([ eol; Ques(ws) ]), 2))
@@ -85,6 +85,6 @@ class TriviaBuilder
     eof.set_body(
       Neg(Single),
       {(d, r, c, b) =>
-        let value = ast.NodeWith[ast.Trivia](
+        ast.NodeWith[ast.Trivia](
           _Build.info(d, r), c, ast.Trivia(ast.EndOfFileTrivia, ""))
-        (value, b) })
+      })

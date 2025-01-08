@@ -46,7 +46,7 @@ class TypedefBuilder
     _build_typedef_alias()
     _build_typedef_class()
 
-  fun error_section(allowed: ReadSeq[NamedRule box], message: String)
+  fun ref error_section(allowed: Array[RuleNode], message: String)
     : RuleNode
   =>
     let eol = _trivia.eol
@@ -63,12 +63,13 @@ class TypedefBuilder
                 [ eol
                   Single(
                     [],
-                    {(d, r, c, b) =>
-                      let value = ast.NodeWith[ast.Span](
-                        _Build.info(d, r), c, ast.Span)
-                      (value, b)
-                    }) ]) ]))
-          Disj([ dol; Look(eof) ]) ],
+                    {(d, r, c, _) =>
+                      ast.NodeWith[ast.Span](_Build.info(d, r), c, ast.Span)
+                    })
+                ])
+            ]))
+          Disj([ dol; Look(eof) ])
+        ],
         {(d, r, c, b) =>
           let new_children: Array[ast.Node] trn = Array[ast.Node]
           var in_span = false
@@ -100,9 +101,8 @@ class TypedefBuilder
               ast.SrcInfo(d.locator, span_start, span_next), [], ast.Span))
           end
 
-          let value = ast.NodeWith[ast.ErrorSection](
+          ast.NodeWith[ast.ErrorSection](
             _Build.info(d, r), consume new_children, ast.ErrorSection(message))
-          (value, b)
         }))
 
   fun ref _build_doc_string() =>
@@ -265,6 +265,7 @@ class TypedefBuilder
         ]))
 
   fun ref _build_typedef_primitive() =>
+    let an = Variable("an")
     let id = Variable("id")
     let tp = Variable("tp")
     let cs = Variable("cs")
@@ -274,6 +275,7 @@ class TypedefBuilder
     typedef_primitive.set_body(
       Conj(
         [ _keyword(ast.Keywords.kwd_primitive())
+          Ques(Bind(an, _expression.annotation))
           Bind(id, _token.identifier)
           Ques(Bind(tp, _type_type.params))
           Ques(Conj(
@@ -282,12 +284,13 @@ class TypedefBuilder
           Ques(Bind(ds, doc_string))
           Ques(Bind(mm, members))
         ]),
-      _TypedefActions~_primitive(id, tp, cs, ds, mm))
+      _TypedefActions~_primitive(an, id, tp, cs, ds, mm))
 
   fun ref _build_typedef_alias() =>
     let kwd_type = _keyword(ast.Keywords.kwd_type())
     let kwd_is = _keyword(ast.Keywords.kwd_is())
 
+    let alias_ann = Variable("alias_ann")
     let alias_id = Variable("alias_id")
     let alias_tparams = Variable("alias_tparams")
     let alias_type = Variable("alias_type")
@@ -295,6 +298,7 @@ class TypedefBuilder
     typedef_alias.set_body(
       Conj(
         [ kwd_type
+          Ques(Bind(alias_ann, _expression.annotation))
           Bind(alias_id, _token.identifier)
           Ques(Bind(alias_tparams, _type_type.params))
           kwd_is
@@ -302,7 +306,7 @@ class TypedefBuilder
           Ques(Bind(alias_doc_string, doc_string))
         ]),
       _TypedefActions~_alias(
-        alias_id, alias_tparams, alias_type, alias_doc_string))
+        alias_ann, alias_id, alias_tparams, alias_type, alias_doc_string))
 
   fun ref _build_typedef_class() =>
     let at = _token(ast.Tokens.at())

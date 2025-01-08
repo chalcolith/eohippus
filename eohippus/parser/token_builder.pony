@@ -132,13 +132,13 @@ class TokenBuilder
                 String .> concat(r.start.values(next))
               end
 
-            let value = ast.NodeWith[ast.Token](
+            ast.NodeWith[ast.Token](
               src_info, _Build.span_and_post(src_info, c, p), ast.Token(string)
               where post_trivia' = p)
-            (value, b) }))
+          }))
     m.insert(str, rule)
 
-  fun apply(str: String): NamedRule box =>
+  fun ref apply(str: String): NamedRule =>
     try
       _tokens(str)?
     else
@@ -168,9 +168,9 @@ class TokenBuilder
             end
           let string = recover val String .> concat(r.start.values(next)) end
 
-          let value = ast.NodeWith[ast.Identifier](
+          ast.NodeWith[ast.Identifier](
             src_info,
             _Build.span_and_post(src_info, c, p),
             ast.Identifier(string)
             where post_trivia' = p)
-          (value, b) }))
+        }))

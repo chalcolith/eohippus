@@ -111,26 +111,28 @@ class KeywordBuilder
           t,
           {(d, r, c, b, p) =>
             let src_info = _Build.info(d, r)
-            let value = ast.NodeWith[ast.Keyword](
+            ast.NodeWith[ast.Keyword](
               src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
               where post_trivia' = p)
-            (value, b) }))
+          }))
     m.insert(str, rule)
 
-  fun apply(str: String): NamedRule box =>
+  fun apply(str: String): this->NamedRule =>
     try
       _keywords(str)?
     else
-      let msg =
-        recover val
-          "INVALID KEYWORD '" + StringUtil.escape(str) +
-            "'; add it to the list in KeywordBuilder"
-        end
-      NamedRule(msg, Error(msg))
+      recover
+        let msg =
+          recover val
+            "INVALID KEYWORD '" + StringUtil.escape(str) +
+            "'; add it to the list in KeywordBuilder if necessary"
+          end
+        NamedRule(msg, Error(msg))
+      end
     end
 
   fun ref _build_kwd() =>
-    let literals = Array[Literal box](_kwd_strings.size())
+    let literals = Array[RuleNode](_kwd_strings.size())
     for str in _kwd_strings.values() do
       literals.push(Literal(str))
     end
@@ -154,10 +156,10 @@ class KeywordBuilder
             else
               ""
             end
-          let value = ast.NodeWith[ast.Keyword](
+          ast.NodeWith[ast.Keyword](
             src_info, _Build.span_and_post(src_info, c, p), ast.Keyword(str)
             where post_trivia' = p)
-          (value, b) }))
+        }))
 
   fun ref _build_not_kwd() =>
     not_kwd.set_body(Neg(kwd))

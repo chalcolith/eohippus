@@ -15,6 +15,7 @@ actor EohippusAnalyzer is Analyzer
 
   let _context: AnalyzerContext
   let _notify: AnalyzerNotify
+  let _include_libs: Bool
 
   let _lint_configs: Map[String, linter.Config val] = _lint_configs.create()
 
@@ -41,11 +42,13 @@ actor EohippusAnalyzer is Analyzer
   new create(
     log: Logger[String],
     context: AnalyzerContext,
-    notify: AnalyzerNotify)
+    notify: AnalyzerNotify,
+    include_libs: Bool = true)
   =>
     _log = log
     _context = context
     _notify = notify
+    _include_libs = include_libs
 
   fun ref _get_next_task_id(): USize =>
     let result = _analysis_task_id
@@ -80,23 +83,25 @@ actor EohippusAnalyzer is Analyzer
 
     _analyze_dir(task_id, true, workspace_path, workspace_cache, _schedule(0))
 
-    // var schedule = _schedule(250)
-    // for pony_path in _context.pony_path_dirs.values() do
-    //   try
-    //     let info = FileInfo(pony_path)?
-    //     if info.directory then
-    //       task_id = _get_next_task_id()
-    //       _analyze_dir(task_id, false, pony_path, global_cache, schedule)
-    //     end
-    //   end
-    // end
+    if _include_libs then
+      var schedule = _schedule(250)
+      for pony_path in _context.pony_path_dirs.values() do
+        try
+          let info = FileInfo(pony_path)?
+          if info.directory then
+            task_id = _get_next_task_id()
+            _analyze_dir(task_id, false, pony_path, global_cache, schedule)
+          end
+        end
+      end
 
-    // schedule = _schedule(500)
-    // match _context.pony_packages_path
-    // | let pony_packages_path: FilePath =>
-    //   task_id = _get_next_task_id()
-    //   _analyze_dir(task_id, false, pony_packages_path, global_cache, schedule)
-    // end
+      schedule = _schedule(500)
+      match _context.pony_packages_path
+      | let pony_packages_path: FilePath =>
+        task_id = _get_next_task_id()
+        _analyze_dir(task_id, false, pony_packages_path, global_cache, schedule)
+      end
+    end
 
   be _analyze_dir(
     task_id: USize,
@@ -375,11 +380,25 @@ actor EohippusAnalyzer is Analyzer
 
   fun ref _enqueue_src_item(
     src_item: SrcItem,
-    new_state: (SrcItemState | None) = None)
+    new_state: (SrcItemState | None) = None,
+    auto_transition: Bool = false)
   =>
     match new_state
     | let new_state': SrcItemState =>
       src_item.set_state(new_state')
+    else
+      if auto_transition then
+        let new_state' =
+          match src_item.get_state()
+          | AnalysisStart => AnalysisParse
+          | AnalysisParse => AnalysisScope
+          | AnalysisScope => AnalysisLint
+          | AnalysisLint => AnalysisUpToDate
+          | AnalysisUpToDate => AnalysisUpToDate
+          | AnalysisError => AnalysisError
+          end
+        src_item.set_state(new_state')
+      end
     end
 
     _src_item_queue.push(src_item)
@@ -630,9 +649,9 @@ actor EohippusAnalyzer is Analyzer
         src_file.canonical_path,
         src_file.syntax_tree,
         None,
-        _collect_errors(_parse_errors),
-        _collect_errors(_lint_errors),
-        _collect_errors(_analyze_errors))
+        _collect_errors(_parse_errors, src_file.canonical_path),
+        _collect_errors(_lint_errors, src_file.canonical_path),
+        _collect_errors(_analyze_errors, src_file.canonical_path))
 
       // try to free up some memory
       if not src_file.is_open then
@@ -953,7 +972,7 @@ actor EohippusAnalyzer is Analyzer
         src_file.task_id.string() + ": " + src_file.canonical_path.path +
         " => Scoping")
 
-      _enqueue_src_item(src_file, AnalysisScope)
+      _enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": parsed untracked source file " +
@@ -1228,7 +1247,7 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         task_id.string() + ": " + canonical_path.path + " => Linting")
 
-      _enqueue_src_item(src_file, AnalysisLint)
+      _enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": scoped unknown file " + canonical_path.path)
@@ -1486,7 +1505,7 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         src_file.task_id.string() + ": " + src_file.canonical_path.path +
         " => UpToDate")
-      _enqueue_src_item(src_file, AnalysisUpToDate)
+      _enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": linted unknown file " + canonical_path.path)

@@ -7,31 +7,29 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let s' =
       try
-        _Build.value_with[ast.LiteralString](b, s, r)?
+        _Build.value_with[ast.LiteralString](b, s)?
       else
         return _Build.bind_error(d, r, c, b, "DocString/LiteralString")
       end
 
-    let value = ast.NodeWith[ast.DocString](
+    ast.NodeWith[ast.DocString](
       _Build.info(d, r), c, ast.DocString(s'))
-    (value, b)
 
   fun tag _method_params(
     d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let params' = _Build.nodes_with[ast.MethodParam](c)
 
-    let value = ast.NodeWith[ast.MethodParams](
+    ast.NodeWith[ast.MethodParams](
       _Build.info(d, r), c, ast.MethodParams(params'))
-    (value, b)
 
   fun tag _method_param(
     identifier: Variable,
@@ -41,21 +39,20 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let identifier' =
       try
-        _Build.value_with[ast.Identifier](b, identifier, r)?
+        _Build.value_with[ast.Identifier](b, identifier)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/MethodParam/Identifier")
       end
-    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
+    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint)
     let initializer' =
-      _Build.value_with_or_none[ast.Expression](b, initializer, r)
+      _Build.value_with_or_none[ast.Expression](b, initializer)
 
-    let value = ast.NodeWith[ast.MethodParam](
+    ast.NodeWith[ast.MethodParam](
       _Build.info(d, r), c, ast.MethodParam(identifier', constraint', initializer'))
-    (value, b)
 
   fun tag _field(
     kind: Variable,
@@ -67,30 +64,29 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let kind' =
       try
-        _Build.value_with[ast.Keyword](b, kind, r)?
+        _Build.value_with[ast.Keyword](b, kind)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Field/Kind")
       end
     let identifier' =
       try
-        _Build.value_with[ast.Identifier](b, identifier, r)?
+        _Build.value_with[ast.Identifier](b, identifier)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Field/Identifier")
       end
-    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
-    let initializer' = _Build.value_with_or_none[ast.Expression](b, initializer, r)
-    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
+    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint)
+    let initializer' = _Build.value_with_or_none[ast.Expression](b, initializer)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string)
 
-    let value = ast.NodeWith[ast.TypedefField](
+    ast.NodeWith[ast.TypedefField](
       _Build.info(d, r),
       c,
       ast.TypedefField(kind', identifier', constraint', initializer')
       where doc_strings' = doc_strings')
-    (value, b)
 
   fun tag _method(
     kind: Variable,
@@ -108,37 +104,36 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let kind' =
       try
-        _Build.value_with[ast.Keyword](b, kind, r)?
+        _Build.value_with[ast.Keyword](b, kind)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Method/Kind")
       end
-    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
-    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
-    let raw' = b.contains(raw, r)
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap)
+    let raw' = b.contains(raw)
     let id' =
       try
-        _Build.value_with[ast.Identifier](b, id, r)?
+        _Build.value_with[ast.Identifier](b, id)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Method/Id")
       end
-    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
-    let params' = _Build.value_with_or_none[ast.MethodParams](b, params, r)
-    let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype, r)
-    let partial' = b.contains(partial, r)
-    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
-    let body' = _Build.value_with_or_none[ast.Expression](b, body, r)
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams)
+    let params' = _Build.value_with_or_none[ast.MethodParams](b, params)
+    let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype)
+    let partial' = b.contains(partial)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string)
+    let body' = _Build.value_with_or_none[ast.Expression](b, body)
 
-    let value = ast.NodeWith[ast.TypedefMethod](
+    ast.NodeWith[ast.TypedefMethod](
       _Build.info(d, r),
       c,
       ast.TypedefMethod(
         kind', cap', raw', id', tparams', params', rtype', partial', body')
       where doc_strings' = doc_strings', annotation' = ann')
-    (value, b)
 
   fun tag _members(
     fields: Variable,
@@ -147,16 +142,16 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let fields' = _Build.values_with[ast.TypedefField](b, fields, r)
-    let methods' = _Build.values_with[ast.TypedefMethod](b, methods, r)
+    let fields' = _Build.values_with[ast.TypedefField](b, fields)
+    let methods' = _Build.values_with[ast.TypedefMethod](b, methods)
 
-    let value = ast.NodeWith[ast.TypedefMembers](
+    ast.NodeWith[ast.TypedefMembers](
       _Build.info(d, r), c, ast.TypedefMembers(fields', methods'))
-    (value, b)
 
   fun tag _primitive(
+    an: Variable,
     id: Variable,
     tp: Variable,
     cs: Variable,
@@ -166,25 +161,26 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
+    let an' = _Build.value_with_or_none[ast.Annotation](b, an)
     let id': ast.NodeWith[ast.Identifier] =
       try
-        _Build.value_with[ast.Identifier](b, id, r)?
+        _Build.value_with[ast.Identifier](b, id)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Primitive/Identifier")
       end
-    let tp' = _Build.value_with_or_none[ast.TypeParams](b, tp, r)
-    let cs' = _Build.value_with_or_none[ast.TypeType](b, cs, r)
-    let ds' = _Build.values_with[ast.DocString](b, ds, r)
-    let mm' = _Build.value_with_or_none[ast.TypedefMembers](b, mm, r)
+    let tp' = _Build.value_with_or_none[ast.TypeParams](b, tp)
+    let cs' = _Build.value_with_or_none[ast.TypeType](b, cs)
+    let ds' = _Build.values_with[ast.DocString](b, ds)
+    let mm' = _Build.value_with_or_none[ast.TypedefMembers](b, mm)
 
-    let value = ast.NodeWith[ast.Typedef](
+    ast.NodeWith[ast.Typedef](
       _Build.info(d, r), c, ast.TypedefPrimitive(id', tp', cs', mm')
-      where doc_strings' = ds')
-    (value, b)
+      where annotation' = an', doc_strings' = ds')
 
   fun tag _alias(
+    ann: Variable,
     id: Variable,
     tparams: Variable,
     type_type: Variable,
@@ -193,27 +189,27 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann)
     let id' =
       try
-        _Build.value_with[ast.Identifier](b, id, r)?
+        _Build.value_with[ast.Identifier](b, id)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Alias/Identifier")
       end
-    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams)
     let type_type' =
       try
-        _Build.value_with[ast.TypeType](b, type_type, r)?
+        _Build.value_with[ast.TypeType](b, type_type)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Alias/Type")
       end
-    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string)
 
-    let value = ast.NodeWith[ast.Typedef](
+    ast.NodeWith[ast.Typedef](
       _Build.info(d, r), c, ast.TypedefAlias(id', tparams', type_type')
-      where doc_strings' = doc_strings')
-    (value, b)
+      where annotation' = ann', doc_strings' = doc_strings')
 
   fun tag _class(
     kind: Variable,
@@ -229,29 +225,29 @@ primitive _TypedefActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let kind' =
       try
-        _Build.value_with[ast.Keyword](b, kind, r)?
+        _Build.value_with[ast.Keyword](b, kind)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Class/Kind")
       end
-    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann, r)
-    let raw' = b.contains(raw, r)
-    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
+    let ann' = _Build.value_with_or_none[ast.Annotation](b, ann)
+    let raw' = b.contains(raw)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap)
     let id' =
       try
-        _Build.value_with[ast.Identifier](b, id, r)?
+        _Build.value_with[ast.Identifier](b, id)?
       else
         return _Build.bind_error(d, r, c, b, "Typedef/Class/Identifier")
       end
-    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
-    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint, r)
-    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string, r)
-    let members' = _Build.value_with_or_none[ast.TypedefMembers](b, members, r)
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams)
+    let constraint' = _Build.value_with_or_none[ast.TypeType](b, constraint)
+    let doc_strings' = _Build.values_with[ast.DocString](b, doc_string)
+    let members' = _Build.value_with_or_none[ast.TypedefMembers](b, members)
 
-    let value = ast.NodeWith[ast.Typedef](
+    ast.NodeWith[ast.Typedef](
       _Build.info(d, r),
       c,
       ast.TypedefClass(
@@ -263,4 +259,3 @@ primitive _TypedefActions
         constraint',
         members')
       where annotation' = ann', doc_strings' = doc_strings')
-    (value, b)
