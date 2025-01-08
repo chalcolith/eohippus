@@ -225,9 +225,8 @@ class LiteralBuilder
                 String .> concat(r.start.values(r.next))
               end
             let span = ast.NodeWith[ast.Span](_Build.info(d, r), [], ast.Span)
-            let value = ast.NodeWith[ast.Token](
+            ast.NodeWith[ast.Token](
               _Build.info(d, r), [ span ], ast.Token(string))
-            (value, b)
           })))
 
   fun ref _build_string_triple() =>
@@ -242,12 +241,11 @@ class LiteralBuilder
                 String .> concat(r.start.values(r.next))
               end
             let span = ast.NodeWith[ast.Span](_Build.info(d, r), [], ast.Span)
-            let value = ast.NodeWith[ast.Token](
+            ast.NodeWith[ast.Token](
               _Build.info(d, r), [ span ], ast.Token(string))
-            (value, b)
           })))
 
-  fun _string_delim(delim: RuleNode): RuleNode =>
+  fun ref _string_delim(delim: RuleNode): RuleNode =>
     Conj(
       [ delim
         Star(
@@ -266,9 +264,8 @@ class LiteralBuilder
                       ]),
                     1,
                     {(d, r, c, b) =>
-                      ( ast.NodeWith[ast.Span](
+                      ast.NodeWith[ast.Span](
                         _Build.info(d, r), c, ast.Span)
-                        , b )
                     })
                 ])
             ]))
@@ -278,12 +275,12 @@ class LiteralBuilder
           ])
       ])
 
-  fun _string_char_uni(): RuleNode =>
+  fun ref _string_char_uni(): RuleNode =>
     Conj(
       [ char_unicode ],
-      {(d, r, c, b) => (_LiteralActions._char_uni(d, r, r, c, []), b) })
+      {(d, r, c, b) => _LiteralActions._char_uni(d, r, r, c, []) })
 
-  fun _string_char_esc(): RuleNode =>
+  fun ref _string_char_esc(): RuleNode =>
     Conj(
       [ char_escape ],
-      {(d, r, c, b) => (_LiteralActions._char_esc(d, r, r, c, []), b) })
+      {(d, r, c, b) => _LiteralActions._char_esc(d, r, r, c, []) })

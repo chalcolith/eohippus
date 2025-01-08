@@ -8,26 +8,24 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let args = _Build.nodes_with[ast.TypeType](c)
 
-    let value = ast.NodeWith[ast.TypeArgs](
+    ast.NodeWith[ast.TypeArgs](
       _Build.info(d, r), c, ast.TypeArgs(args))
-    (value, b)
 
   fun tag _type_params(
     d: Data,
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let params = _Build.nodes_with[ast.TypeParam](c)
 
-    let value = ast.NodeWith[ast.TypeParams](
+    ast.NodeWith[ast.TypeParams](
       _Build.info(d, r), c, ast.TypeParams(params))
-    (value, b)
 
   fun tag _type_param(
     name: Variable,
@@ -37,15 +35,14 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let name' = _Build.value_with_or_none[ast.Identifier](b, name, r)
-    let ctype' = _Build.value_with_or_none[ast.TypeType](b, ctype, r)
-    let tinit' = _Build.value_with_or_none[ast.TypeType](b, tinit, r)
+    let name' = _Build.value_with_or_none[ast.Identifier](b, name)
+    let ctype' = _Build.value_with_or_none[ast.TypeType](b, ctype)
+    let tinit' = _Build.value_with_or_none[ast.TypeType](b, tinit)
 
-    let value = ast.NodeWith[ast.TypeParam](
+    ast.NodeWith[ast.TypeParam](
       _Build.info(d, r), c, ast.TypeParam(name', ctype', tinit'))
-    (value, b)
 
   fun tag _type_arrow(
     lhs: Variable,
@@ -54,11 +51,11 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let lhs' =
       try
-        _Build.value_with[ast.TypeType](b, lhs, r)?
+        _Build.value_with[ast.TypeType](b, lhs)?
       else
         return _Build.bind_error(d, r, c, b, "Type/Arrow/LHS")
       end
@@ -71,7 +68,7 @@ primitive _TypeActions
         "lhs?"
       end
 
-    match _Build.value_with_or_none[ast.TypeType](b, rhs, r)
+    match _Build.value_with_or_none[ast.TypeType](b, rhs)
     | let rhs': ast.NodeWith[ast.TypeType] =>
       let rhs_string =
         match rhs'.data()
@@ -81,11 +78,10 @@ primitive _TypeActions
           "rhs?"
         end
 
-      let value = ast.NodeWith[ast.TypeType](
+      ast.NodeWith[ast.TypeType](
         _Build.info(d, r), c, ast.TypeArrow(lhs', rhs'))
-      (value, b)
     else
-      (lhs', b)
+      lhs'
     end
 
   fun tag _type_atom(
@@ -94,16 +90,15 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     try
-      match _Build.value(b, body, r)?
+      match _Build.value(b, body)?
       | let t': ast.NodeWith[ast.TypeType] =>
-        (t', b)
+        t'
       | let node: ast.Node =>
-        let value = ast.NodeWith[ast.TypeType](
+        ast.NodeWith[ast.TypeType](
           _Build.info(d, r), c, ast.TypeAtom(node))
-        (value, b)
       end
     else
       return _Build.bind_error(d, r, c, b, "Type/Atom/Body")
@@ -114,13 +109,12 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let types = _Build.nodes_with[ast.TypeType](c)
 
-    let value = ast.NodeWith[ast.TypeType](
+    ast.NodeWith[ast.TypeType](
       _Build.info(d, r), c, ast.TypeTuple(types))
-    (value, b)
 
   fun tag _type_infix(
     types: Variable,
@@ -129,20 +123,19 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let types' = _Build.values_with[ast.TypeType](b, types, r)
-    let op' = _Build.value_with_or_none[ast.Token](b, op, r)
+    let types' = _Build.values_with[ast.TypeType](b, types)
+    let op' = _Build.value_with_or_none[ast.Token](b, op)
 
     if types'.size() == 1 then
       try
-        return (types'(0)?, b)
+        return types'(0)?
       end
     end
 
-    let value = ast.NodeWith[ast.TypeType](
+    ast.NodeWith[ast.TypeType](
       _Build.info(d, r), c, ast.TypeInfix(types', op'))
-    (value, b)
 
   fun tag _type_nominal(
     lhs: Variable,
@@ -154,18 +147,18 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
     let lhs' =
       try
-        _Build.value_with[ast.Identifier](b, lhs, r)?
+        _Build.value_with[ast.Identifier](b, lhs)?
       else
         return _Build.bind_error(d, r, c, b, "Type/Nominal/LHS")
       end
-    var rhs' = _Build.value_with_or_none[ast.Identifier](b, rhs, r)
-    let params' = _Build.value_with_or_none[ast.TypeParams](b, params, r)
-    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
-    let eph' = _Build.value_with_or_none[ast.Token](b, eph, r)
+    var rhs' = _Build.value_with_or_none[ast.Identifier](b, rhs)
+    let params' = _Build.value_with_or_none[ast.TypeParams](b, params)
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap)
+    let eph' = _Build.value_with_or_none[ast.Token](b, eph)
 
     let nominal =
       match rhs'
@@ -174,8 +167,7 @@ primitive _TypeActions
       else
         ast.TypeNominal(None, lhs', params', cap', eph')
       end
-    let value = ast.NodeWith[ast.TypeType](_Build.info(d, r), c, nominal)
-    (value, b)
+    ast.NodeWith[ast.TypeType](_Build.info(d, r), c, nominal)
 
   fun tag _type_lambda(
     bare: Variable,
@@ -191,21 +183,20 @@ primitive _TypeActions
     r: Success,
     c: ast.NodeSeq,
     b: Bindings)
-    : ((ast.Node | None), Bindings)
+    : (ast.Node | None)
   =>
-    let bare' = _Build.value_with_or_none[ast.Token](b, bare, r) isnt None
-    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap, r)
-    let name' = _Build.value_with_or_none[ast.Identifier](b, name, r)
-    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams, r)
-    let ptypes' = _Build.values_with[ast.TypeType](b, ptypes, r)
-    let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype, r)
-    let partial' = _Build.value_with_or_none[ast.Token](b, partial, r) isnt None
-    let rcap' = _Build.value_with_or_none[ast.Keyword](b, rcap, r)
-    let reph' = _Build.value_with_or_none[ast.Token](b, reph, r)
+    let bare' = _Build.value_with_or_none[ast.Token](b, bare) isnt None
+    let cap' = _Build.value_with_or_none[ast.Keyword](b, cap)
+    let name' = _Build.value_with_or_none[ast.Identifier](b, name)
+    let tparams' = _Build.value_with_or_none[ast.TypeParams](b, tparams)
+    let ptypes' = _Build.values_with[ast.TypeType](b, ptypes)
+    let rtype' = _Build.value_with_or_none[ast.TypeType](b, rtype)
+    let partial' = _Build.value_with_or_none[ast.Token](b, partial) isnt None
+    let rcap' = _Build.value_with_or_none[ast.Keyword](b, rcap)
+    let reph' = _Build.value_with_or_none[ast.Token](b, reph)
 
-    let value = ast.NodeWith[ast.TypeType](
+    ast.NodeWith[ast.TypeType](
       _Build.info(d, r),
       c,
       ast.TypeLambda(
         bare', cap', name', tparams', ptypes', rtype', partial', rcap', reph'))
-    (value, b)
