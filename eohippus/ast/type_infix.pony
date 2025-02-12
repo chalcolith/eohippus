@@ -31,7 +31,7 @@ class val TypeInfix is NodeData
     end
 
 primitive ParseTypeInfix
-  fun apply(obj: json.Object, children: NodeSeq): (TypeInfix | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeInfix | String) =>
     let types =
       match ParseNode._get_seq_with[TypeType](
         obj,

@@ -32,7 +32,7 @@ class val ExpJump is NodeData
     end
 
 primitive ParseExpJump
-  fun apply(obj: json.Object, children: NodeSeq): (ExpJump | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpJump | String) =>
     let keyword =
       match ParseNode._get_child_with[Keyword](
         obj,

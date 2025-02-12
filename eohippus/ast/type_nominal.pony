@@ -54,7 +54,7 @@ class val TypeNominal is NodeData
     end
 
 primitive ParseTypeNominal
-  fun apply(obj: json.Object, children: NodeSeq): (TypeNominal | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeNominal | String) =>
     let lhs =
       match ParseNode._get_child_with[Identifier](
         obj,

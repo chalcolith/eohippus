@@ -2,12 +2,16 @@ use "collections"
 use "itertools"
 use ".."
 
-class box Object
-  embed _items: Array[(String, Item)] = _items.create()
+class Object
+  embed _items: Array[(String, Item)]
 
-  new create(items: ReadSeq[(String, Item)] box = Array[(String, Item)]) =>
-    for (key, value) in items.values() do
-      _items.push((key, value))
+  new create(items: (ReadSeq[(String, Item)] | None) = None) =>
+    match items
+    | let items': ReadSeq[(String, Item)] =>
+      _items = _items.create(items'.size())
+      _items.append(items')
+    else
+      _items = _items.create()
     end
 
   fun contains(key: (String | USize)): Bool =>
@@ -70,11 +74,11 @@ class box Object
         result.append("\"" + key + "\":")
         if pretty then result.append(" ") end
         match value
-        | let obj: this->Object box =>
+        | let obj: Object box =>
           result.append(obj.get_string(pretty, indent'))
-        | let seq: this->Sequence box =>
+        | let seq: Sequence box =>
           result.append(seq.get_string(pretty, indent'))
-        | let str: this->String box =>
+        | let str: String box =>
           result.append("\"" + StringUtil.escape(str) + "\"")
         | let int: I128 =>
           result.append(int.string())

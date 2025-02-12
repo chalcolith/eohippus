@@ -48,7 +48,7 @@ class val ExpIf is NodeData
     end
 
 primitive ParseExpIf
-  fun apply(obj: json.Object, children: NodeSeq): (ExpIf | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpIf | String) =>
     let kind =
       match try obj("kind")? end
       | let str: String box =>
@@ -117,7 +117,7 @@ class val IfCondition is NodeData
     props.push(("then_block", node.child_ref(then_block)))
 
 primitive ParseIfCondition
-  fun apply(obj: json.Object, children: NodeSeq): (IfCondition | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (IfCondition | String) =>
     let if_true =
       match ParseNode._get_child_with[Expression](
         obj,

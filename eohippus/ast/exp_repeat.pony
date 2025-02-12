@@ -33,7 +33,7 @@ class val ExpRepeat is NodeData
     end
 
 primitive ParseExpRepeat
-  fun apply(obj: json.Object, children: NodeSeq): (ExpRepeat | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpRepeat | String) =>
     let body =
       match ParseNode._get_child_with[Expression](
         obj,

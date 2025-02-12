@@ -28,7 +28,7 @@ class val ExpRecover is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseExpRecover
-  fun apply(obj: json.Object, children: NodeSeq): (ExpRecover | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpRecover | String) =>
     let cap =
       match ParseNode._get_child_with[Keyword](
         obj,

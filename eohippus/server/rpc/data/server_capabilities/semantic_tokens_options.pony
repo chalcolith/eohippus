@@ -42,11 +42,10 @@ interface val SemanticTokensRegistrationOptions is
     end
     match documentSelector()
     | let ds: DocumentSelector =>
-      let items = Array[json.Item]
-      for filter in ds.values() do
-        items.push(filter.get_json())
-      end
-      props.push(("documentSelector", json.Sequence(items)))
+      let seq =
+        json.Sequence.from_iter[DocumentFilter](
+          ds.values(), {(filter) => filter.get_json() })
+      props.push(("documentSelector", seq))
     end
     props.append(get_json_props())
     json.Object(props)
@@ -58,8 +57,8 @@ interface val SemanticTokensLegend
   fun val get_json(): json.Item =>
     json.Object(
       [ as (String, json.Item):
-        ("tokenTypes", json.Sequence(tokenTypes()))
-        ("tokenModifiers", json.Sequence(tokenModifiers())) ])
+        ("tokenTypes", recover val json.Sequence(tokenTypes()) end)
+        ("tokenModifiers", recover val json.Sequence(tokenModifiers()) end) ])
 
 interface val SemanticTokensFullOptions
   fun val delta(): (Bool | None)

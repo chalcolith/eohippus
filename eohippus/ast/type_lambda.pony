@@ -82,7 +82,7 @@ class val TypeLambda is NodeData
     end
 
 primitive ParseTypeLambda
-  fun apply(obj: json.Object, children: NodeSeq): (TypeLambda | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeLambda | String) =>
     let bare =
       match try obj("bare")? end
       | let bool: Bool =>

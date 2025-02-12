@@ -19,7 +19,7 @@ class val TypeParams is NodeData
     end
 
 primitive ParseTypeParams
-  fun apply(obj: json.Object, children: NodeSeq): (TypeParams | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeParams | String) =>
     let params =
       match ParseNode._get_seq_with[TypeParam](
         obj,
@@ -71,7 +71,7 @@ class val TypeParam is NodeData
     end
 
 primitive ParseTypeParam
-  fun apply(obj: json.Object, children: NodeSeq): (TypeParam | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeParam | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,

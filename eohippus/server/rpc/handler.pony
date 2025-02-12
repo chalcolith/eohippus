@@ -57,7 +57,7 @@ actor EohippusHandler is Handler
   let _log: Logger[String]
   let _server: Server
   let _channel: Channel
-  let _json_parser: json.Parser
+  let _json_parser: json.Parser iso
 
   var _state: _HandlerState
   var _current_header_name: String ref
@@ -514,7 +514,7 @@ actor EohippusHandler is Handler
     _state = _NotConnected
     _server.rpc_closed()
 
-  fun ref _write_message(obj: json.Object) =>
+  fun ref _write_message(obj: json.Object box) =>
     let body = recover val obj.get_string(false) end
     let message: String trn = String
     message.append("Content-Length:")

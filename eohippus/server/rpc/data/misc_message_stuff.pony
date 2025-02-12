@@ -11,7 +11,7 @@ interface val Notification is Message
   fun val params(): NotificationParams
 
 interface val NotificationParams
-  fun val get_json(): json.Item val
+  fun val get_json(): json.Item
 
 interface val RequestMessage is Message
   fun val id(): (I128 | String val)
@@ -129,24 +129,20 @@ interface val Location
   fun val range(): Range
 
   fun val get_json(): json.Item =>
-    recover val
-      json.Object(
-        [ as (String, json.Item):
-          ("uri", uri())
-          ("range", range().get_json()) ])
-    end
+    json.Object(
+      [ as (String, json.Item):
+        ("uri", uri())
+        ("range", range().get_json()) ])
 
 interface val Range
   fun val start(): Position
   fun val endd(): Position
 
   fun val get_json(): json.Item =>
-    recover val
-      json.Object(
-        [ as (String, json.Item):
-          ("start", start().get_json())
-          ("end", endd().get_json()) ])
-    end
+    json.Object(
+      [ as (String, json.Item):
+        ("start", start().get_json())
+        ("end", endd().get_json()) ])
 
 primitive ParseRange
   fun apply(obj: json.Object val): (Range | String) =>
@@ -184,12 +180,10 @@ interface val Position
   fun val character(): I128
 
   fun val get_json(): json.Item =>
-    recover val
-      json.Object(
-        [ as (String, json.Item):
-          ("line", line())
-          ("character", character()) ])
-    end
+    json.Object(
+      [ as (String, json.Item):
+        ("line", line())
+        ("character", character()) ])
 
 primitive ParsePosition
   fun apply(obj: json.Object val): (Position | String) =>

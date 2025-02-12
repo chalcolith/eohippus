@@ -19,7 +19,7 @@ class val ExpSequence is NodeData
     props.push(("expressions", node.child_refs(expressions)))
 
 primitive ParseExpSequence
-  fun apply(obj: json.Object, children: NodeSeq): (ExpSequence | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpSequence | String) =>
     let expressions =
       match ParseNode._get_seq_with[Expression](
         obj,

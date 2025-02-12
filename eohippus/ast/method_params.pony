@@ -21,7 +21,7 @@ class val MethodParams is NodeData
     end
 
 primitive ParseMethodParams
-  fun apply(obj: json.Object, children: NodeSeq): (MethodParams | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (MethodParams | String) =>
     let params =
       match ParseNode._get_seq_with[MethodParam](
         obj,
@@ -70,7 +70,7 @@ class val MethodParam is NodeData
     end
 
 primitive ParseMethodParam
-  fun apply(obj: json.Object, children: NodeSeq): (MethodParam | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (MethodParam | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,

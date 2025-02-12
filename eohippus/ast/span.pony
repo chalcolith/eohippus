@@ -15,5 +15,5 @@ class val Span is NodeData
     None
 
 primitive ParseSpan
-  fun apply(obj: json.Object, children: NodeSeq): (Span | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Span | String) =>
     recover Span end

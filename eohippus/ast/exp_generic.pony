@@ -24,7 +24,7 @@ class val ExpGeneric is NodeData
     props.push(("type_args", node.child_ref(type_args)))
 
 primitive ParseExpGeneric
-  fun apply(obj: json.Object, children: NodeSeq): (ExpGeneric | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpGeneric | String) =>
     let lhs =
       match ParseNode._get_child_with[Expression](
         obj,

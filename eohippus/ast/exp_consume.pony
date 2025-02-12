@@ -28,7 +28,7 @@ class val ExpConsume is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseExpConsume
-  fun apply(obj: json.Object, children: NodeSeq): (ExpConsume | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpConsume | String) =>
     let cap =
       match ParseNode._get_child_with[Keyword](
         obj,

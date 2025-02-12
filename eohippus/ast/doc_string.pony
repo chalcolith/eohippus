@@ -17,7 +17,7 @@ class val DocString is NodeData
     props.push(("string", node.child_ref(string)))
 
 primitive ParseDocString
-  fun apply(obj: json.Object, children: NodeSeq): (DocString | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (DocString | String) =>
     let string =
       match ParseNode._get_child_with[LiteralString](
         obj,

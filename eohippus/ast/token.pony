@@ -76,7 +76,7 @@ class val Token is NodeData
     props.push(("string", string))
 
 primitive ParseToken
-  fun apply(obj: json.Object, children: NodeSeq): (Token | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Token | String) =>
     let string =
       match try obj("string")? end
       | let s: String box =>

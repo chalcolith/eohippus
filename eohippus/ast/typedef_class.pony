@@ -67,7 +67,7 @@ class val TypedefClass is NodeData
     end
 
 primitive ParseTypedefClass
-  fun apply(obj: json.Object, children: NodeSeq): (TypedefClass | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypedefClass | String) =>
     let kind =
       match ParseNode._get_child_with[Keyword](
         obj,

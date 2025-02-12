@@ -37,7 +37,7 @@ class val SrcFile is NodeData
     end
 
 primitive ParseSrcFile
-  fun apply(obj: json.Object, children: NodeSeq): (SrcFile | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (SrcFile | String) =>
     let locator =
       match try obj("locator")? end
       | let str: String box =>

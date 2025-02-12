@@ -33,7 +33,7 @@ class val ExpWhile is NodeData
     end
 
 primitive ParseExpWhile
-  fun apply(obj: json.Object, children: NodeSeq): (ExpWhile | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpWhile | String) =>
     let condition =
       match ParseNode._get_child_with[Expression](
         obj,

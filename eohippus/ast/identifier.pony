@@ -15,7 +15,7 @@ class val Identifier is NodeData
     props.push(("string", string))
 
 primitive ParseIdentifier
-  fun apply(obj: json.Object, children: NodeSeq): (Identifier | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Identifier | String) =>
     let string =
       match try obj("string")? end
       | let s: String box =>

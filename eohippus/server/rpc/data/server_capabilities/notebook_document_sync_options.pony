@@ -1,5 +1,6 @@
-use json = "../../../../json"
+use "itertools"
 
+use json = "../../../../json"
 use ".."
 
 interface val NotebookDocumentSyncOptions is SendData
@@ -7,17 +8,20 @@ interface val NotebookDocumentSyncOptions is SendData
   fun val save(): (Bool | None) => None
 
   fun val get_json_props(): Array[(String, json.Item)] =>
-    let selector_values = Array[json.Item]
-    for selector in notebookSelector().values() do
-      let sv = selector.get_json()
-      if sv isnt json.Null then
-        selector_values.push(sv)
-      end
-    end
-
-    let props =
-      [ as (String, json.Item):
-        ("notebookSelector", json.Sequence(selector_values)) ]
+    let seq =
+      json.Sequence(
+        Iter[NotebookSelectorData](notebookSelector().values())
+          .filter_map[json.Item](
+            { (selector) =>
+              let sj = selector.get_json()
+              if sj isnt json.Null then
+                sj
+              else
+                None
+              end
+            })
+          .collect(Array[json.Item]))
+    let props = [ as (String, json.Item): ("notebookSelector", seq) ]
     match save()
     | let s: Bool =>
       props.push(("save", s))
@@ -29,17 +33,16 @@ interface val NotebookDocumentSyncOptions is SendData
 
 interface val NotebookSelectorData is SendData
   fun val notebook(): (String | NotebookDocumentFilter | None) => None
-  fun val cells(): (Array[NotebookCell] | None) => None
+  fun val cells(): (Array[NotebookCell] val | None) => None
 
   fun val get_json(): json.Item =>
     let cells_value =
       match cells()
-      | let arr: Array[NotebookCell] =>
-        let cell_items = Array[json.Item]
-        for cell in arr.values() do
-          cell_items.push(cell.get_json())
+      | let arr: Array[NotebookCell] val =>
+        recover val
+          json.Sequence.from_iter[NotebookCell](
+            arr.values(), {(cell) => cell.get_json() })
         end
-        json.Sequence(cell_items)
       end
 
     let props = Array[(String, json.Item)]
@@ -50,7 +53,7 @@ interface val NotebookSelectorData is SendData
       props.push(("notebook", ndf.get_json()))
     end
     match cells_value
-    | let cv: json.Sequence =>
+    | let cv: json.Sequence val =>
       props.push(("cells", cv))
     end
     if props.size() > 0 then

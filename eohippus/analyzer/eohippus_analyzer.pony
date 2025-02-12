@@ -1101,7 +1101,7 @@ actor EohippusAnalyzer is Analyzer
       | let file: File =>
         let json_str = recover val file.read_string(file.size()) end
         match json.Parse(json_str)
-        | let obj: json.Object =>
+        | let obj: json.Object val =>
           match ast.ParseNode(src_file.canonical_path.path, obj)
           | let node: ast.Node =>
             _log(Fine) and _log.log(
@@ -1114,7 +1114,7 @@ actor EohippusAnalyzer is Analyzer
               src_file.task_id.string() + ": error loading " +
               syntax_path.path + ": " + err)
           end
-        | let item: json.Item =>
+        | let item: json.Item val =>
           _log(Error) and _log.log(
             src_file.task_id.string() + ": error loading " + syntax_path.path +
             ": a syntax tree must be an object")
@@ -1184,7 +1184,7 @@ actor EohippusAnalyzer is Analyzer
       match OpenFile(scope_path)
       | let file: File =>
         let json_str = recover val file.read_string(file.size()) end
-        match recover val json.Parse(json_str) end
+        match json.Parse(json_str)
         | let obj: json.Object val =>
           match recover val ParseScopeJson(_context.file_auth, obj, None) end
           | let scope: Scope val =>

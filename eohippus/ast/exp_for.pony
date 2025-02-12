@@ -40,7 +40,7 @@ class val ExpFor is NodeData
     end
 
 primitive ParseExpFor
-  fun apply(obj: json.Object, children: NodeSeq): (ExpFor | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpFor | String) =>
     let pattern =
       match ParseNode._get_child_with[TuplePattern](
         obj,

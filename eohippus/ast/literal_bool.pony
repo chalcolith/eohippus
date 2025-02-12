@@ -17,7 +17,7 @@ class val LiteralBool is NodeDataWithValue[LiteralBool, Bool]
   fun value(): Bool => _value
 
 primitive ParseLiteralBool
-  fun apply(obj: json.Object, children: NodeSeq): (LiteralBool | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (LiteralBool | String) =>
     let value =
       match try obj("value")? end
       | let bool: Bool =>

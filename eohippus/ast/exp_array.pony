@@ -34,7 +34,7 @@ class val ExpArray is NodeData
     end
 
 primitive ParseExpArray
-  fun apply(obj: json.Object, children: NodeSeq): (ExpArray | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpArray | String) =>
     let array_type =
       match ParseNode._get_child_with[TypeType](
         obj,

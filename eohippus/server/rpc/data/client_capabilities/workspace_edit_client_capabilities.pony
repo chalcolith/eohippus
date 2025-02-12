@@ -11,7 +11,7 @@ interface val WorkspaceEditClientCapabilities
   //   (ChangeAnnotationSupportClientCapability | None)
 
 primitive ParseWorkspaceEditClientCapabilities
-  fun apply(obj: json.Object): (WorkspaceEditClientCapabilities | String) =>
+  fun apply(obj: json.Object val): (WorkspaceEditClientCapabilities | String) =>
     let documentChanges' =
       try
         match obj("documentChanges")?
@@ -24,7 +24,7 @@ primitive ParseWorkspaceEditClientCapabilities
     let resourceOperations': (Array[ResourceOperationKind] val | None)  =
       try
         match obj("resourceOperations")?
-        | let ro_seq: json.Sequence =>
+        | let ro_seq: json.Sequence val =>
           let ops: Array[ResourceOperationKind] trn =
             Array[ResourceOperationKind]
           for item in ro_seq.values() do
@@ -50,7 +50,7 @@ interface val ChangeAnnotationSupportClientCapability
   fun val groupsOnLabel(): (Bool | None)
 
 primitive ParseChangeAnnotationSupportClientCapability
-  fun apply(obj: json.Object):
+  fun apply(obj: json.Object val):
     (ChangeAnnotationSupportClientCapability | String)
   =>
     let groupsOnLabel' =

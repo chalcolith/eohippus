@@ -17,7 +17,7 @@ class val TypeAtom is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseTypeAtom
-  fun apply(obj: json.Object, children: NodeSeq): (TypeAtom | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeAtom | String) =>
     let body =
       match ParseNode._get_child(
         obj,

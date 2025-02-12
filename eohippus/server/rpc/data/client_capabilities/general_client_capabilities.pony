@@ -88,7 +88,7 @@ interface val StaleRequestSupport
   fun val retryOnContentModified(): Array[String] val
 
 primitive ParseStaleRequestSupport
-  fun apply(obj: json.Object): (StaleRequestSupport | String) =>
+  fun apply(obj: json.Object val): (StaleRequestSupport | String) =>
     let cancel' =
       try
         match obj("cancel")?
@@ -103,7 +103,7 @@ primitive ParseStaleRequestSupport
     let retryOnContentModified': Array[String] val =
       try
         match obj("retryOnContentModified")?
-        | let r_seq: json.Sequence =>
+        | let r_seq: json.Sequence val =>
           let reqs: Array[String] trn = Array[String]
           for r_item in r_seq.values() do
             match r_item

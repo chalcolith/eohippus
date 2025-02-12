@@ -38,7 +38,7 @@ class val ExpDecl is NodeData
     end
 
 primitive ParseExpDecl
-  fun apply(obj: json.Object, children: NodeSeq): (ExpDecl | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpDecl | String) =>
     let kind =
       match ParseNode._get_child_with[Keyword](
         obj, children, "kind", "ExpDecl.kind must be a Keyword")
