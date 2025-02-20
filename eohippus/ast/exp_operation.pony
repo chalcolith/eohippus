@@ -69,7 +69,7 @@ class val ExpOperation is NodeData
     end
 
 primitive ParseExpOperation
-  fun apply(obj: json.Object, children: NodeSeq): (ExpOperation | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpOperation | String) =>
     let lhs =
       match ParseNode._get_child(
         obj,

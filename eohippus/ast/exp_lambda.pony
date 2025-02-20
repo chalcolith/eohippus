@@ -90,7 +90,7 @@ class val ExpLambda is NodeData
     end
 
 primitive ParseExpLambda
-  fun apply(obj: json.Object, children: NodeSeq): (ExpLambda | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpLambda | String) =>
     let bare =
       match try obj("bare")? end
       | let bool: Bool =>

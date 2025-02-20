@@ -31,7 +31,7 @@ class val ExpTry is NodeData
     end
 
 primitive ParseExpTry
-  fun apply(obj: json.Object, children: NodeSeq): (ExpTry | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpTry | String) =>
     let body =
       match ParseNode._get_child_with[Expression](
         obj,

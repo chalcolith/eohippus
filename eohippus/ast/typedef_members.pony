@@ -31,7 +31,9 @@ class val TypedefMembers is NodeData
     end
 
 primitive ParseTypedefMembers
-  fun apply(obj: json.Object, children: NodeSeq): (TypedefMembers | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq)
+    : (TypedefMembers | String)
+  =>
     let fields =
       match ParseNode._get_seq_with[TypedefField](
         obj,

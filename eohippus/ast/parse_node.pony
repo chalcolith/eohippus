@@ -2,7 +2,7 @@ use json = "../json"
 use parser = "../parser"
 
 primitive ParseNode
-  fun apply(locator: parser.Locator, obj: json.Object): (Node | String) =>
+  fun apply(locator: parser.Locator, obj: json.Object val): (Node | String) =>
     let name =
       match try obj("name")? end
       | let str: String box =>
@@ -12,7 +12,7 @@ primitive ParseNode
       end
     let src_info =
       match try obj("src_info")? end
-      | let src_info_obj: json.Object box =>
+      | let src_info_obj: json.Object val =>
         let line' =
           match try src_info_obj("line")? end
           | let n: I128 =>
@@ -57,10 +57,10 @@ primitive ParseNode
 
     let children': Array[Node] trn = Array[Node]
     match try obj("children")? end
-    | let children_seq: json.Sequence =>
+    | let children_seq: json.Sequence val =>
       for child_item in children_seq.values() do
         match child_item
-        | let child_obj: json.Object =>
+        | let child_obj: json.Object val =>
           match ParseNode(locator, child_obj)
           | let n: Node =>
             children'.push(n)
@@ -72,7 +72,7 @@ primitive ParseNode
         end
       end
     end
-    let children: Array[Node] val = consume children'
+    let children: ReadSeq[Node] val = consume children'
 
     let annotation =
       match try obj("annotation")? end
@@ -88,7 +88,6 @@ primitive ParseNode
       else
         return "annotation must refer to an Annotation"
       end
-
     let doc_strings =
       match _get_seq_with[DocString](
         obj,
@@ -267,90 +266,8 @@ primitive ParseNode
       "unknown node data type " + name
     end
 
-  fun _get_child(
-    obj: json.Object,
-    children: NodeSeq,
-    key: String,
-    help: String,
-    mandatory: Bool = true)
-    : (Node | String | None)
-  =>
-    match try obj(key)? end
-    | let i: I128 =>
-      match try children(USize.from[I128](i))? end
-      | let node: Node =>
-        node
-      else
-        help
-      end
-    else
-      if mandatory then
-        help
-      end
-    end
-
-  fun _get_child_with[D: NodeData val](
-    obj: json.Object,
-    children: NodeSeq,
-    key: String,
-    help: String,
-    mandatory: Bool = true)
-    : (NodeWith[D] | String | None)
-  =>
-    match try obj(key)? end
-    | let i: I128 =>
-      match try children(USize.from[I128](i))? end
-      | let node: NodeWith[D] =>
-        node
-      | let node': Node =>
-        help + "; got a " + node'.name()
-      else
-        help
-      end
-    | let item: json.Item =>
-      help
-    else
-      if mandatory then
-        help
-      end
-    end
-
-  fun _get_seq_with[D: NodeData val](
-    obj: json.Object,
-    children: NodeSeq,
-    key: String,
-    help: String,
-    mandatory: Bool = true)
-    : (NodeSeqWith[D] | String)
-  =>
-    match try obj(key)? end
-    | let seq: json.Sequence =>
-      let nodes: Array[NodeWith[D]] trn = Array[NodeWith[D]]
-      for item in seq.values() do
-        match item
-        | let n: I128 =>
-          try
-            nodes.push(children(USize.from[I128](n))? as NodeWith[D])
-          else
-            return help
-          end
-        else
-          return help
-        end
-      end
-      consume nodes
-    | let item: json.Item =>
-      help
-    else
-      if mandatory then
-        help
-      else
-        []
-      end
-    end
-
   fun _ctor[D: NodeData val](
-    ctor: {(): (D | String)} box,
+    ctor: {ref (): (D | String)},
     src_info: SrcInfo,
     children: NodeSeq,
     annotation: (NodeWith[Annotation] | None),
@@ -379,12 +296,95 @@ primitive ParseNode
       None,
       scope_index)
 
+  fun _get_child(
+    obj: json.Object val,
+    children: NodeSeq,
+    key: String,
+    help: String,
+    mandatory: Bool = true)
+    : (Node | String | None)
+  =>
+    match try obj(key)? end
+    | let i: I128 =>
+      match try children(USize.from[I128](i))? end
+      | let node: Node =>
+        node
+      else
+        help
+      end
+    else
+      if mandatory then
+        help
+      end
+    end
+
+  fun _get_child_with[D: NodeData val](
+    obj: json.Object val,
+    children: NodeSeq,
+    key: String,
+    help: String,
+    mandatory: Bool = true)
+    : (NodeWith[D] | String | None)
+  =>
+    match try obj(key)? end
+    | let i: I128 =>
+      match try children(USize.from[I128](i))? end
+      | let node: NodeWith[D] =>
+        node
+      | let node': Node =>
+        help + "; got a " + node'.name()
+      else
+        help
+      end
+    | let item: json.Item =>
+      help
+    else
+      if mandatory then
+        help
+      end
+    end
+
+  fun _get_seq_with[D: NodeData val](
+    obj: json.Object val,
+    children: NodeSeq,
+    key: String,
+    help: String,
+    mandatory: Bool = true)
+    : (NodeSeqWith[D] | String)
+  =>
+    match try obj(key)? end
+    | let seq: json.Sequence box =>
+      let nodes: Array[NodeWith[D]] trn = Array[NodeWith[D]]
+      for item in seq.values() do
+        match item
+        | let n: I128 =>
+          try
+            nodes.push(children(USize.from[I128](n))? as NodeWith[D])
+          else
+            return help
+          end
+        else
+          return help
+        end
+      end
+      consume nodes
+    | let item: json.Item =>
+      help
+    else
+      if mandatory then
+        help
+      else
+        []
+      end
+    end
+
 type _NodeConstructor is
-  {(SrcInfo,
-    NodeSeq,
-    (NodeWith[Annotation] | None),
-    NodeSeqWith[DocString],
-    NodeSeqWith[Trivia],
-    NodeSeqWith[Trivia],
-    (USize | None))
-    : (Node | String)} box
+  { ref
+    ( SrcInfo
+    , NodeSeq
+    , (NodeWith[Annotation] | None)
+    , NodeSeqWith[DocString]
+    , NodeSeqWith[Trivia]
+    , NodeSeqWith[Trivia]
+    , (USize | None) )
+    : (Node | String) }

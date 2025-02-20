@@ -19,7 +19,7 @@ class val ExpHash is NodeData
     props.push(("rhs", node.child_ref(rhs)))
 
 primitive ParseExpHash
-  fun apply(obj: json.Object, children: NodeSeq): (ExpHash | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpHash | String) =>
     let rhs =
       match ParseNode._get_child_with[Expression](
         obj,

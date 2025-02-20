@@ -82,7 +82,7 @@ class val Keyword is NodeData
     props.push(("string", string))
 
 primitive ParseKeyword
-  fun apply(obj: json.Object, children: NodeSeq): (Keyword | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Keyword | String) =>
     let string =
       match try obj("string")? end
       | let str: String box =>

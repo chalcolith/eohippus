@@ -33,7 +33,7 @@ class val TypedefAlias is NodeData
     props.push(("type", node.child_ref(type_type)))
 
 primitive ParseTypedefAlias
-  fun apply(obj: json.Object, children: NodeSeq): (TypedefAlias | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypedefAlias | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,

@@ -9,10 +9,11 @@ interface val TextDocumentRegistrationOptions is SendData
     let props = Array[(String, json.Item)]
     match documentSelector()
     | let ds: DocumentSelector =>
-      let items = Array[json.Item]
-      for filter in ds.values() do
-        items.push(filter.get_json())
-      end
-      props.push(("documentSelector", json.Sequence(items)))
+      let seq =
+        recover val
+          json.Sequence.from_iter[DocumentFilter](
+            ds.values(), {(filter) => filter.get_json() })
+        end
+      props.push(("documentSelector", seq))
     end
-    json.Object(props)
+    json.Object(consume props)

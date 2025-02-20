@@ -1,15 +1,15 @@
 
 primitive Parse
-  fun apply(str: String): (Item | ParseError) =>
+  fun apply(str: String): (Item val | ParseError) =>
     let parser = Parser
     for ch in str.values() do
       match parser.parse_char(ch)
-      | let item: (Item | ParseError) =>
+      | let item: (Item val | ParseError) =>
         return item
       end
     end
     match parser.parse_char(0)
-    | let item: (Item | ParseError) =>
+    | let item: (Item val | ParseError) =>
       return item
     end
     ParseError(str.size(), "unknown error")
@@ -51,7 +51,7 @@ type _ParseState is
   | _InFalse
   | _InNull )
 
-type _TempItem is
+type _StackItem is
   ( Object trn
   | Sequence trn
   | String trn
@@ -60,9 +60,9 @@ type _TempItem is
   | Bool
   | Null
   | U32
-  | (String trn, None)
-  | (F64, F64) // frac; floating point, next fractional power of 10
-  | (F64, I32) ) // exp; floating point, exponent (∞ or -∞ to start)
+  | (String, None) // property to be filled
+  | (F64, F64)     // frac; floating point, next fractional power of 10
+  | (F64, I32) )   // exp; floating point, exponent (∞ or -∞ to start)
 
 type _TrnItem is
   ( Object trn
@@ -75,7 +75,7 @@ type _TrnItem is
 
 class Parser
   let _ten: F64 = 10.0
-  let _value_stack: Array[_TempItem] = _value_stack.create()
+  let _value_stack: Array[_StackItem] = _value_stack.create()
   var _state: _ParseState = _ExpectItem
   var _index: USize = 0
   var _line: USize = 1
@@ -316,7 +316,7 @@ class Parser
   fun ref _expect_next(): _ParseState ? =>
     if _value_stack.size() > 0 then
       match _value_stack(_value_stack.size() - 1)?
-      | let _: Object trn =>
+      | let _: Object tag =>
         return _ExpectName
       end
     end
@@ -412,7 +412,8 @@ class Parser
   fun ref _handle_in_string(is_name: Bool): (ParseError | None) ? =>
     if _ch == '"' then
       if is_name then
-        _value_stack.push((_value_stack.pop()? as String trn^, None))
+        let name = _value_stack.pop()? as String trn^
+        _value_stack.push((consume name, None))
         _state = _ExpectColon
       else
         _add_item(_value_stack.pop()? as String trn^)?
@@ -421,7 +422,7 @@ class Parser
     elseif (_ch == '\\') and (not is_name) then
       _state = _InEscape
     else
-      (_value_stack(_value_stack.size() - 1)? as String trn^).push(_ch)
+      (_value_stack(_value_stack.size() - 1)? as String trn).push(_ch)
     end
     None
 
@@ -443,7 +444,7 @@ class Parser
       if _expect_hex > 0 then
         _value_stack.push(cur)
       else
-        (_value_stack(_value_stack.size() - 1)? as String trn^).push_utf32(cur)
+        (_value_stack(_value_stack.size() - 1)? as String trn).push_utf32(cur)
         _state = _InString
       end
     else
@@ -471,7 +472,7 @@ class Parser
         else
           _ch
         end
-      (_value_stack(_value_stack.size() - 1)? as String trn^).push(ch')
+      (_value_stack(_value_stack.size() - 1)? as String trn).push(ch')
       _state = _InString
     end
     None
@@ -580,13 +581,15 @@ class Parser
     if _value_stack.size() == 0 then
       _value_stack.push(consume item)
     else
-      match _value_stack(_value_stack.size() - 1)?
+      let top = _value_stack.pop()?
+      match consume top
       | let seq: Sequence trn =>
         seq.push(consume item)
-      | (let name: String trn, _) =>
-        (_value_stack(_value_stack.size() - 2)? as Object trn)
-          .update(consume name, consume item)
-        _value_stack.pop()?
+        _value_stack.push(consume seq)
+      | (let name: String, _) =>
+        let obj = _value_stack.pop()? as Object trn^
+        obj.update(consume name, consume item)
+        _value_stack.push(consume obj)
       else
         error
       end

@@ -31,7 +31,9 @@ class val LiteralInteger is NodeDataWithValue[LiteralInteger, U128]
   fun value(): U128 => _value
 
 primitive ParseLiteralInteger
-  fun apply(obj: json.Object, children: NodeSeq): (LiteralInteger | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq)
+    : (LiteralInteger | String)
+  =>
     let value =
       match try obj("value")? end
       | let n: I128 =>

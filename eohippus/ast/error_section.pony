@@ -21,7 +21,7 @@ class val ErrorSection is NodeData
     props.push(("message", message))
 
 primitive ParseErrorSection
-  fun apply(obj: json.Object, children: NodeSeq): (ErrorSection | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ErrorSection | String) =>
     let message =
       match try obj("message")? end
       | let message': String box =>

@@ -32,7 +32,7 @@ class val CallArgs is NodeData
     end
 
 primitive ParseCallArgs
-  fun apply(obj: json.Object, children: NodeSeq): (CallArgs | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (CallArgs | String) =>
     let positional =
       match ParseNode._get_seq_with[Expression](
         obj,

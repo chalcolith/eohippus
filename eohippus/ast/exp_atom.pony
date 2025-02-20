@@ -21,7 +21,7 @@ class val ExpAtom is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseExpAtom
-  fun apply(obj: json.Object, children: NodeSeq): (ExpAtom | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpAtom | String) =>
     let body =
       match ParseNode._get_child(
         obj,

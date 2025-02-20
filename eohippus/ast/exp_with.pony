@@ -27,7 +27,7 @@ class val ExpWith is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseExpWith
-  fun apply(obj: json.Object, children: NodeSeq): (ExpWith | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpWith | String) =>
     let elements =
       match ParseNode._get_seq_with[WithElement](
         obj,
@@ -80,7 +80,7 @@ class val WithElement is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseWithElement
-  fun apply(obj: json.Object, children: NodeSeq): (WithElement | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (WithElement | String) =>
     let pattern =
       match ParseNode._get_child_with[TuplePattern](
         obj,

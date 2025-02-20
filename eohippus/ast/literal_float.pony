@@ -17,7 +17,7 @@ class val LiteralFloat is NodeDataWithValue[LiteralFloat, F64]
   fun value(): F64 => _value
 
 primitive ParseLiteralFloat
-  fun apply(obj: json.Object, children: NodeSeq): (LiteralFloat | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (LiteralFloat | String) =>
     let value =
       match try obj("value")? end
       | let float: F64 =>

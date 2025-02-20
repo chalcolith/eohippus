@@ -1,3 +1,5 @@
+use "itertools"
+
 use json = "../../../json"
 
 interface val PublishDiagnosticsParams is NotificationParams
@@ -5,20 +7,19 @@ interface val PublishDiagnosticsParams is NotificationParams
   fun val version(): (I128 | None) => None
   fun val diagnostics(): Array[Diagnostic] val
 
-  fun val get_json(): json.Item val =>
-    recover val
-      let props = [ as (String, json.Item): ("uri", uri()) ]
-      match version()
-      | let n: I128 =>
-        props.push(("version", n))
-      end
-      let diag_items = Array[json.Item val]
-      for diag in diagnostics().values() do
-        diag_items.push(diag.get_json())
-      end
-      props.push(("diagnostics", json.Sequence(diag_items)))
-      json.Object(props)
+  fun val get_json(): json.Item =>
+    let props = [ as (String, json.Item): ("uri", uri()) ]
+    match version()
+    | let n: I128 =>
+      props.push(("version", n))
     end
+    props.push(
+      ( "diagnostics"
+      , recover val
+          json.Sequence.from_iter[Diagnostic](
+            diagnostics().values(), { (diag) => diag.get_json() })
+        end ))
+    json.Object(props)
 
 primitive DiagnosticError
   fun apply(): I128 => 1
@@ -50,13 +51,11 @@ interface val DiagnosticRelatedInformation
   fun val location(): Location
   fun val message(): String
 
-  fun val get_json(): json.Item val =>
-    recover val
-      json.Object(
-        [ as (String, json.Item):
-          ("location", location().get_json())
-          ("message", message()) ])
-    end
+  fun val get_json(): json.Item =>
+    json.Object(
+      [ as (String, json.Item):
+        ("location", location().get_json())
+        ("message", message()) ])
 
 interface val Diagnostic
   fun val range(): Range
@@ -70,55 +69,51 @@ interface val Diagnostic
     : (Array[DiagnosticRelatedInformation] val | None)
   =>
     None
-  fun val data(): (json.Item val | None) => None
+  fun val data(): (json.Item | None) => None
 
-  fun val get_json(): json.Item val =>
-    recover val
-      let props = [ as (String, json.Item): ("range", range().get_json()) ]
-      match severity()
-      | let s: DiagnosticSeverity =>
-        props.push(("severity", s()))
-      end
-      match code()
-      | let item: (I128 | String) =>
-        props.push(("code", item))
-      end
-      match codeDescription()
-      | let cd: CodeDescription =>
-        props.push(("codeDescription", cd.get_json()))
-      end
-      match source()
-      | let str: String =>
-        props.push(("source", str))
-      end
-      props.push(("message", message()))
-      match tags()
-      | let tags_arr: Array[DiagnosticTag] val =>
-        let items = Array[json.Item]
-        for t in tags_arr.values() do
-          items.push(t())
-        end
-        props.push(("tags", json.Sequence(items)))
-      end
-      match relatedInformation()
-      | let ri_arr: Array[DiagnosticRelatedInformation] val =>
-        let items = Array[json.Item]
-        for ri in ri_arr.values() do
-          items.push(ri.get_json())
-        end
-        props.push(("relatedInformation", json.Sequence(items)))
-      end
-      match data()
-      | let d: json.Item =>
-        props.push(("data", d))
-      end
-      json.Object(props)
+  fun val get_json(): json.Item =>
+    let props = [ as (String, json.Item): ("range", range().get_json()) ]
+    match severity()
+    | let s: DiagnosticSeverity =>
+      props.push(("severity", s()))
     end
+    match code()
+    | let item: (I128 | String) =>
+      props.push(("code", item))
+    end
+    match codeDescription()
+    | let cd: CodeDescription =>
+      props.push(("codeDescription", cd.get_json()))
+    end
+    match source()
+    | let str: String =>
+      props.push(("source", str))
+    end
+    props.push(("message", message()))
+    match tags()
+    | let tags_arr: Array[DiagnosticTag] val =>
+      let seq =
+        recover val
+          json.Sequence.from_iter[DiagnosticTag](
+            tags_arr.values(), {(t) => t() })
+        end
+      props.push(("tags", seq))
+    end
+    match relatedInformation()
+    | let ri_arr: Array[DiagnosticRelatedInformation] val =>
+      let seq =
+        json.Sequence.from_iter[DiagnosticRelatedInformation](
+          ri_arr.values(), {(ri) => ri.get_json() })
+      props.push(("relatedInformation", seq))
+    end
+    match data()
+    | let d: json.Item =>
+      props.push(("data", d))
+    end
+    json.Object(props)
 
 interface val CodeDescription
   fun val href(): String
 
-  fun val get_json(): json.Item val =>
-    recover val
-      json.Object([ as (String, json.Item): ("href", href()) ])
-    end
+  fun val get_json(): json.Item =>
+    json.Object([ as (String, json.Item): ("href", href()) ])

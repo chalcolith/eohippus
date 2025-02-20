@@ -41,7 +41,7 @@ class val Trivia is NodeData
     props.push(("string", string))
 
 primitive ParseTrivia
-  fun apply(obj: json.Object, children: NodeSeq): (Trivia | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Trivia | String) =>
     let kind: TriviaKind =
       match try obj("kind")? end
       | "LineCommentTrivia" =>

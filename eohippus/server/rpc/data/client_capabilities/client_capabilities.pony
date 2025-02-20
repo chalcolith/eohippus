@@ -4,7 +4,7 @@ interface val ClientCapabilities
   fun val workspace(): (WorkspaceClientCapabilities | None)
   fun val textDocument(): (TextDocumentClientCapabilities | None)
   fun val general(): (GeneralClientCapabilities | None)
-  fun val experimental(): (json.Item val | None)
+  fun val experimental(): (json.Item | None)
 
 primitive ParseClientCapabilities
   fun apply(obj: json.Object val): (ClientCapabilities | String) =>
@@ -50,11 +50,14 @@ primitive ParseClientCapabilities
           return "clientCapabilities.general must be a JSON object"
         end
       end
-    let experimental' = try json.Clone(obj("experimental")?) end
+    let experimental': (json.Item val | None) =
+      try
+        recover val json.Clone(obj("experimental")?) end
+      end
     object val is ClientCapabilities
       fun val workspace(): (WorkspaceClientCapabilities | None) => workspace'
       fun val textDocument(): (TextDocumentClientCapabilities | None) =>
         textDocument'
       fun val general(): (GeneralClientCapabilities | None) => general'
-      fun val experimental(): (json.Item val | None) => experimental'
+      fun val experimental(): (json.Item | None) => experimental'
     end

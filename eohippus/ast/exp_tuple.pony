@@ -19,7 +19,7 @@ class val ExpTuple is NodeData
     end
 
 primitive ParseExpTuple
-  fun apply(obj: json.Object, children: NodeSeq): (ExpTuple | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpTuple | String) =>
     let sequences =
       match ParseNode._get_seq_with[Expression](
         obj,

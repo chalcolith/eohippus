@@ -17,7 +17,7 @@ class val Annotation is NodeData
     props.push(("identifiers", node.child_refs(identifiers)))
 
 primitive ParseAnnotation
-  fun apply(obj: json.Object, children: NodeSeq): (Annotation | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (Annotation | String) =>
     let identifiers =
       match ParseNode._get_seq_with[Identifier](
         obj,

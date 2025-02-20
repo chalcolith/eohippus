@@ -18,7 +18,7 @@ class val TypeTuple is NodeData
     end
 
 primitive ParseTypeTuple
-  fun apply(obj: json.Object, children: NodeSeq): (TypeTuple | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeTuple | String) =>
     let types =
       match ParseNode._get_seq_with[TypeType](
         obj,

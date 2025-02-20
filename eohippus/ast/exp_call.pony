@@ -37,7 +37,7 @@ class val ExpCall is NodeData
     end
 
 primitive ParseExpCall
-  fun apply(obj: json.Object, children: NodeSeq): (ExpCall | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpCall | String) =>
     let lhs =
       match ParseNode._get_child_with[Expression](
         obj,

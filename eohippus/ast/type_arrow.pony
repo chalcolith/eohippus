@@ -28,7 +28,7 @@ class val TypeArrow is NodeData
     end
 
 primitive ParseTypeArrow
-  fun apply(obj: json.Object, children: NodeSeq): (TypeArrow | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeArrow | String) =>
     let lhs =
       match ParseNode._get_child(
         obj,

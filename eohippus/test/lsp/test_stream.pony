@@ -22,9 +22,9 @@ actor TestInputStream is InputStream
     if not _valid then return end
     match _notify
     | let notify: InputNotify iso =>
-      match data
-      | let str: String =>
-        notify(str.clone().iso_array())
+      match consume data
+      | let str: String iso =>
+        notify((consume str).iso_array())
       | let arr: Array[U8] iso =>
         notify(consume arr)
       end

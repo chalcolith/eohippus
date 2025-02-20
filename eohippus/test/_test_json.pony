@@ -132,6 +132,7 @@ class iso _TestJsonSubsumes is UnitTest
 
       let exp5 = json.Object(
         [ as (String, json.Item):
-          ("foo", json.Sequence([ as json.Item: I128(1); I128(2) ])) ])
+          ( "foo"
+          , recover val json.Sequence([ as json.Item: I128(1); I128(2) ]) end) ])
       let source5 = """{"foo":[1,2]}"""
       _test(h, source5, exp5)

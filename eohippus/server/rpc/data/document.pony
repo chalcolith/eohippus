@@ -21,4 +21,4 @@ interface val DocumentFilter is SendData
     end
     json.Object(props)
 
-type DocumentSelector is Seq[DocumentFilter]
+type DocumentSelector is Seq[DocumentFilter] val

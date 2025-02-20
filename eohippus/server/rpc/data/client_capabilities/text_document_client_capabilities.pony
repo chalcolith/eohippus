@@ -115,7 +115,7 @@ primitive ParseTagSupport
     let valueSet': Array[DiagnosticTag] val =
       try
         match obj("valueSet")?
-        | let vs_seq: json.Sequence =>
+        | let vs_seq: json.Sequence val =>
           let values: Array[DiagnosticTag] trn = Array[DiagnosticTag]
           for item in vs_seq.values() do
             values.push(

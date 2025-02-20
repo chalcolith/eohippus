@@ -35,11 +35,11 @@ primitive ParseTuplePattern
   fun _help(): String => "TuplePattern.elements must be a sequence of " +
     "(Identifier | TuplePattern)"
 
-  fun apply(obj: json.Object, children: NodeSeq): (TuplePattern | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TuplePattern | String) =>
     let elements: Array[(NodeWith[Identifier] | NodeWith[TuplePattern])] trn =
       Array[(NodeWith[Identifier] | NodeWith[TuplePattern])]
     match try obj("elements")? end
-    | let seq: json.Sequence =>
+    | let seq: json.Sequence val =>
       for item in seq.values() do
         match item
         | let i: I128 =>

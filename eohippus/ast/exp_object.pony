@@ -36,7 +36,7 @@ class val ExpObject is NodeData
     props.push(("members", node.child_ref(members)))
 
 primitive ParseExpObject
-  fun apply(obj: json.Object, children: NodeSeq): (ExpObject | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpObject | String) =>
     let cap =
       match ParseNode._get_child_with[Keyword](
         obj,

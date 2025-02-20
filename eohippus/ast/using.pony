@@ -47,7 +47,7 @@ class val UsingPony is NodeData
     end
 
 primitive ParseUsingPony
-  fun apply(obj: json.Object, children: NodeSeq): (UsingPony | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (UsingPony | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,
@@ -170,7 +170,7 @@ class val UsingFFI is NodeData
     end
 
 primitive ParseUsingFFI
-  fun apply(obj: json.Object, children: NodeSeq): (UsingFFI | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (UsingFFI | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,

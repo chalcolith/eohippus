@@ -34,7 +34,7 @@ class val ExpMatch is NodeData
     end
 
 primitive ParseExpMatch
-  fun apply(obj: json.Object, children: NodeSeq): (ExpMatch | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpMatch | String) =>
     let expression =
       match ParseNode._get_child_with[Expression](
         obj,
@@ -99,7 +99,7 @@ class val MatchPattern is NodeData
     end
 
 primitive ParseMatchPattern
-  fun apply(obj: json.Object, children: NodeSeq): (MatchPattern | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (MatchPattern | String) =>
     let pattern =
       match ParseNode._get_child_with[Expression](
         obj,
@@ -152,7 +152,7 @@ class val MatchCase is NodeData
     props.push(("body", node.child_ref(body)))
 
 primitive ParseMatchCase
-  fun apply(obj: json.Object, children: NodeSeq): (MatchCase | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (MatchCase | String) =>
     let patterns =
       match ParseNode._get_seq_with[MatchPattern](
         obj,

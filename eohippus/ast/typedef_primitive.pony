@@ -44,7 +44,7 @@ class val TypedefPrimitive is NodeData
     end
 
 primitive ParseTypedefPrimitive
-  fun apply(obj: json.Object, children: NodeSeq): (TypedefPrimitive | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypedefPrimitive | String) =>
     let identifier =
       match ParseNode._get_child_with[Identifier](
         obj,

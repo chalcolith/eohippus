@@ -63,40 +63,44 @@ primitive SyntaxTree
         // we inside-out these matches, because we still want to populate
         // new_children if there's a None new child, to record that the children
         // changed
-        match (new_children, update_map)
-        | (let nc: Array[Node] trn, let um: ChildUpdateMap trn) =>
-          match new_child
-          | let new_child': Node =>
-            nc.push(new_child')
-            um(child) = new_child'
-          end
-        | (None, None) if new_child isnt child =>
-          let nc: Array[Node] trn = Array[Node](node.children().size())
-          let um: ChildUpdateMap trn = ChildUpdateMap(node.children().size())
-
-          // if we haven't seen any changes until now, fill up our new_children
-          // with the old ones
-          for j in col.Range(0, i) do
-            try
-              let old_child = node.children()(j)?
-              nc.push(old_child)
-              um(old_child) = old_child
+        (new_children, update_map) =
+          match (consume new_children, consume update_map)
+          | (let nc: Array[Node] trn, let um: ChildUpdateMap trn) =>
+            match new_child
+            | let new_child': Node =>
+              nc.push(new_child')
+              um.update(child, new_child')
             end
-          end
+            (consume nc, consume um)
+          | (None, None) if new_child isnt child =>
+            let nc: Array[Node] trn = Array[Node](node.children().size())
+            let um: ChildUpdateMap trn = ChildUpdateMap(node.children().size())
 
-          match new_child
-          | let new_child': Node =>
-            nc.push(new_child')
-            um(child) = new_child'
-          end
+            // if we haven't seen any changes until now, fill up our new_children
+            // with the old ones
+            for j in col.Range(0, i) do
+              try
+                let old_child = node.children()(j)?
+                nc.push(old_child)
+                um(old_child) = old_child
+              end
+            end
 
-          new_children = consume nc
-          update_map = consume um
-        end
+            match new_child
+            | let new_child': Node =>
+              nc.push(new_child')
+              um(child) = new_child'
+            end
+            (consume nc, consume um)
+          | ( let nc: (Array[Node] trn | None)
+            , let um: (ChildUpdateMap trn | None))
+          =>
+            (consume nc, consume um)
+          end
         i = i + 1
       end
 
-      match (new_children, update_map)
+      match (consume new_children, consume update_map)
       | (let nc: Array[Node] trn, let um: ChildUpdateMap trn) =>
         (node_state, let new_node, errors') = visitor.visit_post(
             node_state,

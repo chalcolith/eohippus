@@ -30,7 +30,9 @@ class val LiteralString is NodeDataWithValue[LiteralString, String]
   fun value(): String => _value
 
 primitive ParseLiteralString
-  fun apply(obj: json.Object, children: NodeSeq): (LiteralString | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq)
+    : (LiteralString | String)
+  =>
     let value =
       match try obj("value")? end
       | let str: String box =>

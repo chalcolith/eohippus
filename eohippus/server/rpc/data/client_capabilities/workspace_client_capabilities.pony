@@ -19,7 +19,7 @@ interface val WorkspaceClientCapabilities
   // fun val diagnostics(): (DiagnosticWorkspaceClientCapabilities | None)
 
 primitive ParseWorkspaceClientCapabilities
-  fun apply(obj: json.Object): (WorkspaceClientCapabilities | String) =>
+  fun apply(obj: json.Object val): (WorkspaceClientCapabilities | String) =>
     let applyEdit' =
       try
         match obj("applyEdit")?
@@ -32,7 +32,7 @@ primitive ParseWorkspaceClientCapabilities
     let workspaceEdit' =
       try
         match obj("workspaceEdit")?
-        | let we_obj: json.Object =>
+        | let we_obj: json.Object val =>
           match ParseWorkspaceEditClientCapabilities(we_obj)
           | let we: WorkspaceEditClientCapabilities =>
             we

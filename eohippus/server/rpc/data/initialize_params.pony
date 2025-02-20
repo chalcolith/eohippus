@@ -55,7 +55,7 @@ primitive ParseInitializeParams
     let locale': (String | None) =
       try
         match obj("locale")?
-        | let str: String =>
+        | let str: String val =>
           str.clone()
         else
           return "initializeParams.locale must be of type string"
@@ -64,7 +64,7 @@ primitive ParseInitializeParams
     let rootPath': (String | None) =
       try
         match obj("rootPath")?
-        | let str: String =>
+        | let str: String val =>
           str.clone()
         | json.Null =>
           None
@@ -75,7 +75,7 @@ primitive ParseInitializeParams
     let rootUri': (String | None) =
       try
         match obj("rootUri")?
-        | let str: String =>
+        | let str: String val =>
           str.clone()
         | json.Null =>
           None
@@ -87,7 +87,7 @@ primitive ParseInitializeParams
       end
     let initializationOptions': (json.Item val | None) =
       try
-        json.Clone(obj("initializationOptions")?)
+        recover val json.Clone(obj("initializationOptions")?) end
       end
     let capabilities' =
       try
@@ -96,7 +96,7 @@ primitive ParseInitializeParams
           match c_caps.ParseClientCapabilities(cap_obj)
           | let client_caps: c_caps.ClientCapabilities =>
             client_caps
-          | let err: String =>
+          | let err: String val =>
             return err
           end
         else
@@ -112,7 +112,7 @@ primitive ParseInitializeParams
           match ParseTraceValue(str)
           | let tv: TraceValue =>
             tv
-          | let err: String =>
+          | let err: String val =>
             return err
           end
         else
@@ -149,7 +149,7 @@ primitive ParseInitializeParams
       fun val locale(): (String | None) => locale'
       fun val rootPath(): (String | None) => rootPath'
       fun val rootUri(): (DocumentUri | None) => rootUri'
-      fun val initializationOptions(): (json.Item val | None) =>
+      fun val initializationOptions(): (json.Item | None) =>
         initializationOptions'
       fun val capabilities(): c_caps.ClientCapabilities => capabilities'
       fun val trace(): (TraceValue | None) => trace'
@@ -197,7 +197,7 @@ primitive TraceVerbose
 type TraceValue is (TraceOff | TraceMessages | TraceVerbose)
 
 primitive ParseTraceValue
-  fun apply(item: json.Item): (TraceValue | String) =>
+  fun apply(item: json.Item val): (TraceValue | String) =>
     match item
     | "off" =>
       TraceOff

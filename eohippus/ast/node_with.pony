@@ -304,9 +304,7 @@ class val NodeWith[D: NodeData val] is Node
   fun scope_index(): (USize | None) =>
     _scope_index
 
-  fun get_json()
-    : json.Object
-  =>
+  fun get_json() : json.Object =>
     """Get a JSON representation of the node."""
     let props = [ as (String, json.Item): ("name", name()) ]
     match (_src_info.line, _src_info.column)
@@ -341,9 +339,9 @@ class val NodeWith[D: NodeData val] is Node
       props.push(("post_trivia", child_refs(_post_trivia)))
     end
     if _children.size() > 0 then
-      let child_json = json.Sequence.from_iter(
-        Iter[Node](_children.values()).map[json.Item](
-          {(child) => child.get_json()}))
+      let child_json =
+        json.Sequence.from_iter[Node](
+          children().values(), {(child) => child.get_json() })
       props.push(("children", child_json))
     end
     json.Object(props)

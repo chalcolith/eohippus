@@ -48,7 +48,7 @@ class val ExpFfi is NodeData
 primitive ParseExpFfi
   fun help_id(): String => "ExpFfi.identifier must be an Identifier or Literal"
 
-  fun apply(obj: json.Object, children: NodeSeq): (ExpFfi | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (ExpFfi | String) =>
     let identifier =
       match ParseNode._get_child(obj, children, "identifier", help_id())
       | let node: Node =>

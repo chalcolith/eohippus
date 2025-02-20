@@ -52,8 +52,7 @@ trait val Node
 
   fun scope_index(): (USize | None)
 
-  fun get_json()
-    : json.Object
+  fun get_json() : json.Object
     """Get a JSON representation of the node."""
 
   fun map[D: NodeData val](seq: NodeSeqWith[D], updates: ChildUpdateMap)
@@ -80,11 +79,11 @@ trait val Node
     I128.from[ISize](-1)
 
   fun child_refs(childs: NodeSeq): json.Item =>
-    let items: Array[json.Item] = Array[json.Item](childs.size())
+    let seq = Array[json.Item](childs.size())
     for child in childs.values() do
-      items.push(child_ref(child))
+      seq.push(child_ref(child))
     end
-    json.Sequence(consume items)
+    json.Sequence(seq)
 
   fun string(): String iso^
 

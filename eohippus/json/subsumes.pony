@@ -65,10 +65,10 @@ primitive Subsumes
       if a_str == b_str then
         return (true, "")
       else
-        return (
-          false,
-          "'" + StringUtil.escape(a_str) + "' at " + p + " != '" +
-            StringUtil.escape(b_str) + "'")
+        return
+          ( false
+          , "'" + StringUtil.escape(a_str) + "' at " + p + " != '" +
+              StringUtil.escape(b_str) + "'" )
       end
     end
     (false, "rhs at " + p + " is not a string")

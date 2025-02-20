@@ -11,7 +11,7 @@ primitive ParseRegularExpressionsClientCapabilities
     let engine': String =
       try
         match obj("engine")?
-        | let e: String =>
+        | let e: String val =>
           e.clone()
         else
           return "regularExpressions.engine must be of type string"
@@ -22,7 +22,7 @@ primitive ParseRegularExpressionsClientCapabilities
     let version': (String | None) =
       try
         match obj("version")?
-        | let v: String =>
+        | let v: String val =>
           v.clone()
         else
           return "regularExpressions.version must be of type string"

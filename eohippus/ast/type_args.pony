@@ -19,7 +19,7 @@ class val TypeArgs is NodeData
     props.push(("types", node.child_refs(types)))
 
 primitive ParseTypeArgs
-  fun apply(obj: json.Object, children: NodeSeq): (TypeArgs | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (TypeArgs | String) =>
     let types =
       match ParseNode._get_seq_with[TypeType](
         obj,

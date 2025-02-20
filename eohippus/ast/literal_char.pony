@@ -39,7 +39,7 @@ class val LiteralChar is NodeDataWithValue[LiteralChar, U32]
   fun value(): U32 => _value
 
 primitive ParseLiteralChar
-  fun apply(obj: json.Object, children: NodeSeq): (LiteralChar | String) =>
+  fun apply(obj: json.Object val, children: NodeSeq): (LiteralChar | String) =>
     let kind =
       match try obj("kind")? end
       | let str: String box =>

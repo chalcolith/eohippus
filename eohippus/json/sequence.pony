@@ -1,14 +1,22 @@
 use "collections"
+use "itertools"
 use ".."
 
-class box Sequence
-  embed _items: Array[Item] = _items.create()
+class Sequence
+  embed _items: Array[Item]
 
-  new create(items: ReadSeq[this->Item] box = Array[this->Item]) =>
-    _items.append(items)
+  new create(items: (ReadSeq[Item] | None) = None) =>
+    match items
+    | let items': ReadSeq[Item] =>
+      _items = _items.create(items'.size())
+      _items.append(items')
+    else
+      _items = Array[Item](0)
+    end
 
-  new from_iter(items: Iterator[this->Item]) =>
-    _items.concat(items)
+  new from_iter[T](items: Iterator[T], f: {(T!): Item } box) =>
+    _items = Array[Item]
+    Iter[T](items).map[Item](f).collect(_items)
 
   fun size(): USize => _items.size()
 
@@ -44,11 +52,11 @@ class box Sequence
         end
         if pretty then result.append(indent') end
         match item
-        | let obj: this->Object box =>
+        | let obj: Object box =>
           result.append(obj.get_string(pretty, indent'))
-        | let seq: this->Sequence box =>
+        | let seq: Sequence box =>
           result.append(seq.get_string(pretty, indent'))
-        | let str: this->String box =>
+        | let str: String box =>
           result.append("\"" + StringUtil.escape(str) + "\"")
         | let int: I128 =>
           result.append(int.string())

@@ -1,5 +1,6 @@
 use "collections"
 use "files"
+use "itertools"
 
 use ast = "../ast"
 use json = "../json"
@@ -102,7 +103,6 @@ class val Scope
 
   fun get_json(): json.Object =>
     let props = [ as (String, json.Item): ("index", I128.from[USize](index)) ]
-
     let kind_string =
       match kind
       | PackageScope =>
@@ -124,23 +124,26 @@ class val Scope
       props.push(("canonical_path", canonical_path.path))
     end
     props.push(
-      ( "range",
-        json.Sequence(
+      ( "range"
+      , json.Sequence(
           [ as I128:
             I128.from[USize](range._1)
             I128.from[USize](range._2)
             I128.from[USize](range._3)
             I128.from[USize](range._4)
-          ])) )
+          ]) ))
     if imports.size() > 0 then
       let import_items = Array[json.Item]
       for (node_index, identifier, path) in imports.values() do
-        import_items.push(json.Object(
-          [ as (String, json.Item):
-            ("node", I128.from[USize](node_index))
-            ("identifier", identifier)
-            ("path", path)
-          ]))
+        import_items.push(
+          recover val
+            json.Object(
+              [ as (String, json.Item):
+                ("node", I128.from[USize](node_index))
+                ("identifier", identifier)
+                ("path", path)
+              ])
+          end)
       end
       props.push(("imports", json.Sequence(import_items)))
     end
@@ -148,33 +151,34 @@ class val Scope
       let def_items = Array[json.Item]
       for def_array in definitions.values() do
         for (node_index, identifier, doc_string) in def_array.values() do
-          def_items.push(json.Object(
-            [ as (String, json.Item):
-              ("node", I128.from[USize](node_index))
-              ("identifier", identifier)
-              ("doc_string", doc_string) ]))
+          def_items.push(
+            json.Object(
+              [ as (String, json.Item):
+                ("node", I128.from[USize](node_index))
+                ("identifier", identifier)
+                ("doc_string", doc_string) ]))
         end
       end
       props.push(("definitions", json.Sequence(def_items)))
     end
     if children.size() > 0 then
-      let children_items = Array[json.Item]
-      for child in children.values() do
-        children_items.push(child.get_json())
-      end
-      props.push(("children", json.Sequence(children_items)))
+      let child_items =
+        Iter[Scope box](children.values())
+          .map[json.Item]({(child) => child.get_json() })
+          .collect(Array[json.Item](children.size()))
+      props.push(("children", json.Sequence(child_items)))
     end
-    json.Object(consume props)
+    json.Object(props)
 
 primitive ParseScopeJson
   fun apply(
     auth: FileAuth,
-    scope_item: json.Item,
+    scope_item: json.Item val,
     parent: (Scope ref | None))
     : (Scope ref | String)
   =>
     match scope_item
-    | let scope_obj: json.Object =>
+    | let scope_obj: json.Object val =>
       let kind =
         match try scope_obj("kind")? end
         | "PackageScope" =>
@@ -194,14 +198,14 @@ primitive ParseScopeJson
         end
       let name =
         match try scope_obj("name")? end
-        | let str: String box =>
+        | let str: String val =>
           str
         else
           return "scope.name must be a string"
         end
       let canonical_path =
         match try scope_obj("canonical_path")? end
-        | let str: String box =>
+        | let str: String val =>
           FilePath(auth, str.clone())
         else
           match parent
@@ -213,7 +217,7 @@ primitive ParseScopeJson
         end
       let range =
         match try scope_obj("range")? end
-        | let seq: json.Sequence box =>
+        | let seq: json.Sequence val =>
           match try (seq(0)?, seq(1)?, seq(2)?, seq(3)?) end
           | (let l: I128, let c: I128, let nl: I128, let nc: I128) =>
             ( USize.from[I128](l),
@@ -239,10 +243,10 @@ primitive ParseScopeJson
         kind, name.clone(), canonical_path, range, index, parent)
 
       match try scope_obj("imports")? end
-      | let seq: json.Sequence =>
+      | let seq: json.Sequence val =>
         for item in seq.values() do
           match item
-          | let obj: json.Object =>
+          | let obj: json.Object val =>
             try
               let node_index = USize.from[I128](obj("node")? as I128)
               let identifier = obj("identifier")? as String box
@@ -255,10 +259,10 @@ primitive ParseScopeJson
         end
       end
       match try scope_obj("definitions")? end
-      | let seq: json.Sequence =>
+      | let seq: json.Sequence val =>
         for item in seq.values() do
           match item
-          | let obj: json.Object =>
+          | let obj: json.Object val =>
             try
               let node_index = USize.from[I128](obj("node")? as I128)
               let identifier = obj("identifier")? as String box
@@ -272,7 +276,7 @@ primitive ParseScopeJson
         end
       end
       match try scope_obj("children")? end
-      | let seq: json.Sequence =>
+      | let seq: json.Sequence val =>
         for item in seq.values() do
           match ParseScopeJson(auth, item, scope)
           | let child: Scope ref =>

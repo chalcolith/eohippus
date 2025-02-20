@@ -35,7 +35,7 @@ class iso _TestAstParseNodeAnnotation is UnitTest
         }
       """
     match json.Parse(src)
-    | let obj: json.Object =>
+    | let obj: json.Object val =>
       match ast.ParseNode(name(), obj)
       | let ann: ast.NodeWith[ast.Annotation] =>
         h.assert_is[(USize | None)](4, ann.src_info().line, "line")
