@@ -24,14 +24,7 @@ actor EohippusAnalyzer is Analyzer
   var _process_queued: Bool = false
 
   var _analysis_task_id: USize = 0
-  let _workspace_errors: Map[String, Array[AnalyzerError]] =
-    _workspace_errors.create()
-  let _parse_errors: Map[String, Array[AnalyzerError]] =
-    _parse_errors.create()
-  let _lint_errors: Map[String, Array[AnalyzerError]] =
-    _lint_errors.create()
-  let _analyze_errors: Map[String, Array[AnalyzerError]] =
-    _analyze_errors.create()
+  let _errors: AnalyzerErrors = _errors.create()
 
   let _pending_requests: Map[String, MapIs[AnalyzerRequestNotify, Set[USize]]] =
     _pending_requests.create()
@@ -72,14 +65,7 @@ actor EohippusAnalyzer is Analyzer
     _src_item_queue.clear()
     _src_item_queue.compact()
 
-    _workspace_errors.clear()
-    _workspace_errors.compact()
-    _parse_errors.clear()
-    _parse_errors.compact()
-    _lint_errors.clear()
-    _lint_errors.compact()
-    _analyze_errors.clear()
-    _analyze_errors.compact()
+    _errors.clear()
 
     _analyze_dir(task_id, true, workspace_path, workspace_cache, _schedule(0))
 
@@ -313,71 +299,6 @@ actor EohippusAnalyzer is Analyzer
   be dispose() =>
     _disposing = true
 
-  fun ref _push_error(
-    errors: Map[String, Array[AnalyzerError]],
-    new_error: AnalyzerError)
-  =>
-    let arr =
-      match try errors(new_error.canonical_path.path)? end
-      | let arr': Array[AnalyzerError] =>
-        arr'
-      else
-        let arr' = Array[AnalyzerError]
-        errors(new_error.canonical_path.path) = arr'
-        arr'
-      end
-    arr.push(new_error)
-
-  fun ref _clear_errors(
-    canonical_path: FilePath,
-    errors: Map[String, Array[AnalyzerError]])
-  =>
-    try
-      errors.remove(canonical_path.path)?
-      errors.compact()
-    end
-
-  fun ref _clear_and_push(
-    canonical_path: FilePath,
-    errors: Map[String, Array[AnalyzerError]],
-    new_error: AnalyzerError)
-  =>
-    let arr =
-      match try errors(new_error.canonical_path.path)? end
-      | let arr': Array[AnalyzerError] =>
-        arr'.clear()
-        arr'
-      else
-        let arr' = Array[AnalyzerError]
-        errors(new_error.canonical_path.path) = arr'
-        arr'
-      end
-    arr.push(new_error)
-
-  fun _collect_errors(
-    errors: Map[String, Array[AnalyzerError]],
-    canonical_path: (FilePath | None) = None)
-    : Array[AnalyzerError] val
-  =>
-    let result: Array[AnalyzerError] trn = Array[AnalyzerError]
-    match canonical_path
-    | let key: FilePath =>
-      try
-        for err in errors(key.path)?.values() do
-          result.push(err)
-        end
-      end
-    else
-      for key in errors.keys() do
-        try
-          for err in errors(key)?.values() do
-            result.push(err)
-          end
-        end
-      end
-    end
-    consume result
-
   fun ref _enqueue_src_item(
     src_item: SrcItem,
     new_state: (SrcItemState | None) = None,
@@ -569,10 +490,10 @@ actor EohippusAnalyzer is Analyzer
     _notify.analyzed_workspace(
       this,
       package_item.task_id,
-      _collect_errors(_workspace_errors),
-      _collect_errors(_parse_errors),
-      _collect_errors(_lint_errors),
-      _collect_errors(_analyze_errors))
+      _errors.collect_area_errors(AnalyzerWorkspaceErrors),
+      _errors.collect_area_errors(AnalyzerParseErrors),
+      _errors.collect_area_errors(AnalyzerLintErrors),
+      _errors.collect_area_errors(AnalyzerAnalyzeErrors))
 
   fun ref _process_file_item(src_file: SrcFileItem) =>
     var needs_push = false
@@ -580,10 +501,10 @@ actor EohippusAnalyzer is Analyzer
     | AnalysisStart =>
       src_file.cache_prefix = _cache_prefix(src_file)
 
-      try _workspace_errors.remove(src_file.canonical_path.path)? end
-      try _parse_errors.remove(src_file.canonical_path.path)? end
-      try _lint_errors.remove(src_file.canonical_path.path)? end
-      try _analyze_errors.remove(src_file.canonical_path.path)? end
+      _errors.clear_errors(AnalyzerWorkspaceErrors, src_file.canonical_path)
+      _errors.clear_errors(AnalyzerParseErrors, src_file.canonical_path)
+      _errors.clear_errors(AnalyzerLintErrors, src_file.canonical_path)
+      _errors.clear_errors(AnalyzerAnalyzeErrors, src_file.canonical_path)
 
       if _is_due(src_file.schedule) then
         src_file.state = AnalysisParse
@@ -606,33 +527,12 @@ actor EohippusAnalyzer is Analyzer
     | AnalysisLint =>
       _lint(src_file)
     | AnalysisError =>
-      var errors: Array[AnalyzerError] trn = Array[AnalyzerError]
-      try
-        for err in _workspace_errors(src_file.canonical_path.path)?.values() do
-          errors.push(err)
-        end
-      end
-      try
-        for err in _parse_errors(src_file.canonical_path.path)?.values() do
-          errors.push(err)
-        end
-      end
-      try
-        for err in _lint_errors(src_file.canonical_path.path)?.values() do
-          errors.push(err)
-        end
-      end
-      try
-        for err in _analyze_errors(src_file.canonical_path.path)?.values() do
-          errors.push(err)
-        end
-      end
-      let errors': Array[AnalyzerError] val = consume errors
+      var all_errors = _errors.collect_path_errors(src_file.canonical_path)
       _notify.analyze_failed(
         this,
         src_file.task_id,
         src_file.canonical_path,
-        errors')
+        all_errors)
 
       // try to free up some memory
       if not src_file.is_open then
@@ -649,9 +549,12 @@ actor EohippusAnalyzer is Analyzer
         src_file.canonical_path,
         src_file.syntax_tree,
         None,
-        _collect_errors(_parse_errors, src_file.canonical_path),
-        _collect_errors(_lint_errors, src_file.canonical_path),
-        _collect_errors(_analyze_errors, src_file.canonical_path))
+        _errors.collect_area_errors(
+          AnalyzerParseErrors, src_file.canonical_path),
+        _errors.collect_area_errors(
+          AnalyzerLintErrors, src_file.canonical_path),
+        _errors.collect_area_errors(
+          AnalyzerAnalyzeErrors, src_file.canonical_path))
 
       // try to free up some memory
       if not src_file.is_open then
@@ -848,8 +751,9 @@ actor EohippusAnalyzer is Analyzer
       _parse(task_id, canonical_path, parse)
     else
       _log(Error) and _log.log("unable to read " + canonical_path.path)
-      _push_error(_workspace_errors, AnalyzerError(
-        canonical_path, AnalyzeError, "unable to read file"))
+      _errors.push_error(
+        AnalyzerWorkspaceErrors,
+        AnalyzerError(canonical_path, AnalyzeError, "unable to read file"))
       _enqueue_src_item(src_file, AnalysisError)
     end
 
@@ -906,9 +810,8 @@ actor EohippusAnalyzer is Analyzer
         // _log(Fine) and _log.log(
         //   "ErrorSection " + canonical_path + ": " + l.string() + ":" +
         //   c.string() + "-" + nl.string() + ":" + nc.string())
-
-        _push_error(
-          _parse_errors,
+        _errors.push_error(
+          AnalyzerParseErrors,
           AnalyzerError(
             canonical_path, AnalyzeError, es.data().message, l, c, nl, nc))
       end
@@ -934,7 +837,7 @@ actor EohippusAnalyzer is Analyzer
         return
       end
 
-      _clear_errors(canonical_path, _parse_errors)
+      _errors.clear_errors(AnalyzerParseErrors, canonical_path)
       (let syntax_tree, let lb, let errors) = ast.SyntaxTree.add_line_info(node)
       if src_file.is_open then
         _notify.parsed_file(this, task_id, canonical_path, syntax_tree, lb)
@@ -949,13 +852,13 @@ actor EohippusAnalyzer is Analyzer
           let si = n.src_info()
           match (si.line, si.column, si.next_line, si.next_column)
           | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-            _push_error(
-              _parse_errors,
+            _errors.push_error(
+              AnalyzerParseErrors,
               AnalyzerError(
                 canonical_path, AnalyzeError, message, l, c, nl, nc))
           else
-            _push_error(
-              _parse_errors,
+            _errors.push_error(
+              AnalyzerParseErrors,
               AnalyzerError(canonical_path, AnalyzeError, message))
           end
         end
@@ -1004,14 +907,16 @@ actor EohippusAnalyzer is Analyzer
       _log(Error) and _log.log(
         task_id.string() + ": parse failed for " + canonical_path.path)
 
-      _push_error(_parse_errors, AnalyzerError(
-        canonical_path,
-        AnalyzeError,
-        message,
-        line,
-        column,
-        next_line,
-        next_column))
+      _errors.push_error(
+        AnalyzerParseErrors,
+        AnalyzerError(
+          canonical_path,
+          AnalyzeError,
+          message,
+          line,
+          column,
+          next_line,
+          next_column))
 
       let error_section = ast.NodeWith[ast.ErrorSection](
         ast.SrcInfo(canonical_path.path), [], ast.ErrorSection(message))
@@ -1055,8 +960,10 @@ actor EohippusAnalyzer is Analyzer
       _context.file_auth, Path.split(syntax_tree_path.path)._1)
     if (not dir_path.exists()) and (not dir_path.mkdir()) then
       _log(Error) and _log.log("unable to create directory " + dir_path.path)
-      _push_error(_workspace_errors, AnalyzerError(
-        dir_path, AnalyzeError, "unable to create storage directory"))
+      _errors.push_error(
+        AnalyzerWorkspaceErrors,
+        AnalyzerError(
+          dir_path, AnalyzeError, "unable to create storage directory"))
       return
     end
 
@@ -1076,19 +983,24 @@ actor EohippusAnalyzer is Analyzer
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to write syntax tree file " +
           syntax_tree_path.path)
-        _push_error(_workspace_errors, AnalyzerError(
-          src_file.canonical_path,
-          AnalyzeError,
-          "unable to write syntax tree file" + syntax_tree_path.path))
+
+        _errors.push_error(
+          AnalyzerWorkspaceErrors,
+          AnalyzerError(
+            src_file.canonical_path,
+            AnalyzeError,
+            "unable to write syntax tree file" + syntax_tree_path.path))
       end
     else
       _log(Error) and _log.log(
         src_file.canonical_path.path + ": unable to create syntax tree file " +
         syntax_tree_path.path)
-      _push_error(_workspace_errors, AnalyzerError(
-        src_file.canonical_path,
-        AnalyzeError,
-        "unable to create syntax tree file " + syntax_tree_path.path))
+      _errors.push_error(
+        AnalyzerWorkspaceErrors,
+        AnalyzerError(
+          src_file.canonical_path,
+          AnalyzeError,
+          "unable to create syntax tree file " + syntax_tree_path.path))
     end
 
   fun ref _get_syntax_tree(src_file: SrcFileItem): (ast.Node | None) =>
@@ -1341,13 +1253,12 @@ actor EohippusAnalyzer is Analyzer
         let si = node.src_info()
         match (si.line, si.column, si.next_line, si.next_column)
         | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-          _push_error(
-            _analyze_errors,
-            AnalyzerError(
-              canonical_path, AnalyzeError, message, l, c, nl, nc))
+          _errors.push_error(
+            AnalyzerAnalyzeErrors,
+            AnalyzerError(canonical_path, AnalyzeError, message, l, c, nl, nc))
         else
-          _push_error(
-            _analyze_errors,
+          _errors.push_error(
+            AnalyzerAnalyzeErrors,
             AnalyzerError(canonical_path, AnalyzeError, message))
         end
       end
@@ -1379,8 +1290,10 @@ actor EohippusAnalyzer is Analyzer
       _log(Error) and _log.log(
         src_file.task_id.string() + "unable to create directory " +
         dir_path.path)
-      _push_error(_workspace_errors, AnalyzerError(
-        dir_path, AnalyzeError, "unable to create cache directory"))
+      _errors.push_error(
+        AnalyzerWorkspaceErrors,
+        AnalyzerError(
+          dir_path, AnalyzeError, "unable to create cache directory"))
     end
 
     match CreateFile(scope_path)
@@ -1399,19 +1312,23 @@ actor EohippusAnalyzer is Analyzer
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to write scope file " +
           scope_path.path)
-        _push_error(_workspace_errors, AnalyzerError(
-          src_file.canonical_path,
-          AnalyzeError,
-          "unable to write scope file" + scope_path.path))
+        _errors.push_error(
+          AnalyzerWorkspaceErrors,
+          AnalyzerError(
+            src_file.canonical_path,
+            AnalyzeError,
+            "unable to write scope file" + scope_path.path))
       end
     else
       _log(Error) and _log.log(
         src_file.task_id.string() + ": unable to create scope file " +
         scope_path.path)
-      _push_error(_workspace_errors, AnalyzerError(
-        src_file.canonical_path,
-        AnalyzeError,
-        "unable to create syntax tree file" + scope_path.path))
+      _errors.push_error(
+        AnalyzerWorkspaceErrors,
+        AnalyzerError(
+          src_file.canonical_path,
+          AnalyzeError,
+          "unable to create syntax tree file" + scope_path.path))
     end
 
   fun ref _lint(src_file: SrcFileItem) =>
@@ -1482,14 +1399,16 @@ actor EohippusAnalyzer is Analyzer
           let next = issue.next.head()?.src_info()
           match (start.line, start.column, next.line, next.column)
           | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-            _push_error(_lint_errors, AnalyzerError(
-              canonical_path,
-              AnalyzeWarning,
-              issue.rule.message(),
-              l,
-              c,
-              nl,
-              nc))
+            _errors.push_error(
+              AnalyzerLintErrors,
+              AnalyzerError(
+                canonical_path,
+                AnalyzeWarning,
+                issue.rule.message(),
+                l,
+                c,
+                nl,
+                nc))
           end
         end
       end
@@ -1497,8 +1416,10 @@ actor EohippusAnalyzer is Analyzer
         let si = node.src_info()
         match (si.line, si.column, si.next_line, si.next_column)
         | (let l: USize, let c: USize, let nl: USize, let nc: USize) =>
-          _push_error(_lint_errors, AnalyzerError(
-            canonical_path, AnalyzeError, message, l, c, nl, nc))
+          _errors.push_error(
+            AnalyzerLintErrors,
+            AnalyzerError(
+              canonical_path, AnalyzeError, message, l, c, nl, nc))
         end
       end
 
@@ -1529,8 +1450,10 @@ actor EohippusAnalyzer is Analyzer
         task_id.string() + ": lint failed for " + canonical_path.path + ": " +
           message)
 
-      _push_error(_lint_errors, AnalyzerError(
-        canonical_path, AnalyzeError, "lint failed: " + message))
+      _errors.push_error(
+        AnalyzerLintErrors,
+        AnalyzerError(
+          canonical_path, AnalyzeError, "lint failed: " + message))
       _enqueue_src_item(src_file, AnalysisError)
     else
       _log(Error) and _log.log(
