@@ -1,8 +1,11 @@
 use "pony_test"
 
 actor Main is TestList
+  let _env: Env
+
   new create(env: Env) =>
-    PonyTest(env, this)
+    _env = env
+    PonyTest(_env, this)
 
   fun tag tests(test: PonyTest) =>
     _TestAstParseNode(test)
@@ -20,3 +23,11 @@ actor Main is TestList
     _TestParserTypedef(test)
     _TestStringUtil(test)
     _TestQueue(test)
+
+    // This is a workaround for running test --only=analyzer
+    // If there's no tests in this method, things go wrong
+    test(_TestAnalyzerPlaceholder)
+    _analyzer_tests(test)
+
+  be _analyzer_tests(test: PonyTest) =>
+    _TestAnalyzer(test, _env)

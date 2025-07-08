@@ -1,0 +1,36 @@
+{
+  "name": "SrcFile",
+  "children": [
+    {
+      "name": "TypedefClass",
+      "children": [
+        {
+          "name": "Keyword",
+          "string": "actor"
+        },
+        {
+          "name": "Identifier",
+          "string": "Main"
+        },
+        {
+          "name": "TypedefMembers",
+          "children": [
+            {
+              "name": "TypedefMethod",
+              "children": [
+                {
+                  "name": "Keyword",
+                  "string": "new"
+                },
+                {
+                  "name": "Identifier",
+                  "string": "create"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
