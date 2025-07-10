@@ -17,12 +17,21 @@ param(
 
   [Parameter(HelpMessage="Architecture (native, x64).")]
   [string]
-  $Arch = 'x86-64'
+  $Arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
 )
 
 $ErrorActionPreference = "Stop"
 
 $rootDir = Split-Path $script:MyInvocation.MyCommand.Path
+
+if ($Arch -ieq 'x64')
+{
+  $Arch = 'x86-64'
+}
+elseif ($Arch -ieq 'arm64')
+{
+  $Arch = 'arm64'
+}
 
 if ($Config -ieq "Release")
 {
@@ -92,19 +101,19 @@ function Build
   param($targets)
 
   if ($targets -like 'test') {
-    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test`"")
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --output `"$buildDir`" `"$rootDir\eohippus\test`"")
   }
   if ($targets -like 'perf') {
-    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus\test\parser-perf`"")
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --output `"$buildDir`" `"$rootDir\eohippus\test\parser-perf`"")
   }
   if ($targets -like 'lsp') {
-    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus-lsp`"")
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --output `"$buildDir`" `"$rootDir\eohippus-lsp`"")
   }
   if ($targets -like 'fmt') {
-    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus-fmt`"")
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --output `"$buildDir`" `"$rootDir\eohippus-fmt`"")
   }
   if ($targets -like 'cli') {
-    Run("corral.exe run -- ponyc $configFlag $ponyArgs --cpu `"$Arch`" --output `"$buildDir`" `"$rootDir\eohippus-cli`"")
+    Run("corral.exe run -- ponyc $configFlag $ponyArgs --output `"$buildDir`" `"$rootDir\eohippus-cli`"")
   }
 }
 
