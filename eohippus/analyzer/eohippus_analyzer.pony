@@ -16,14 +16,10 @@ actor EohippusAnalyzer is Analyzer
   let _context: AnalyzerContext
   let _notify: AnalyzerNotify
   let _include_libs: Bool
-
   let _lint_configs: Map[String, linter.Config val] = _lint_configs.create()
 
-  let _src_items: Map[String, SrcItem] = _src_items.create()
-  let _src_item_queue: Array[SrcItem] = _src_item_queue.create()
-  var _process_queued: Bool = false
-
   var _analysis_task_id: USize = 0
+  let _src_items: SrcItemQueue = _src_items.create(this)
   let _errors: AnalyzerErrors = _errors.create()
 
   let _pending_requests: Map[String, MapIs[AnalyzerRequestNotify, Set[USize]]] =
@@ -61,10 +57,6 @@ actor EohippusAnalyzer is Analyzer
       task_id.string() + ": analyzing " + workspace_path.path)
 
     _src_items.clear()
-    _src_items.compact()
-    _src_item_queue.clear()
-    _src_item_queue.compact()
-
     _errors.clear()
 
     _analyze_dir(task_id, true, workspace_path, workspace_cache, _schedule(0))
@@ -123,7 +115,7 @@ actor EohippusAnalyzer is Analyzer
     for (i, entry) in entries.pairs() do
       try
         if entry(0)? == '.' then
-          to_remove.unshift(i)
+          to_remove.unshift(i) // in reverse order
         end
       end
     end
@@ -145,7 +137,7 @@ actor EohippusAnalyzer is Analyzer
 
     // enqueue package item
     let package_path = dir_path
-    if _src_items.contains(package_path.path) then
+    if _src_items.src_items.contains(package_path.path) then
       return
     end
 
@@ -161,7 +153,7 @@ actor EohippusAnalyzer is Analyzer
       if _is_pony_file(entry) then
         try
           let file_path = dir_path.join(entry)?
-          if _src_items.contains(file_path.path) then
+          if _src_items.src_items.contains(file_path.path) then
             continue
           end
 
@@ -169,8 +161,7 @@ actor EohippusAnalyzer is Analyzer
           src_file.task_id = task_id
           src_file.parent_package = package
           src_file.schedule = schedule
-          _src_items.update(file_path.path, src_file)
-          _enqueue_src_item(src_file)
+          _src_items.enqueue_src_item(src_file)
           package.dependencies.push(src_file)
 
           _log(Fine) and _log.log(
@@ -180,8 +171,7 @@ actor EohippusAnalyzer is Analyzer
       end
     end
 
-    _src_items.update(package_path.path, package)
-    _enqueue_src_item(package)
+    _src_items.enqueue_src_item(package)
 
   fun tag _is_pony_file(fname: String): Bool =>
     let ext_size = ".pony".size()
@@ -200,14 +190,14 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _log(Fine) and _log.log(
       task_id.string() + ": opening " + canonical_path.path)
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       src_file.task_id = task_id
       src_file.state = AnalysisStart
       src_file.schedule = _schedule(0)
       src_file.is_open = true
       src_file.parse = parse
-      _enqueue_src_item(src_file)
+      _src_items.enqueue_src_item(src_file)
     else
       let src_file = SrcFileItem(
         canonical_path, _context.get_cache(canonical_path))
@@ -216,8 +206,7 @@ actor EohippusAnalyzer is Analyzer
       src_file.is_open = true
       src_file.schedule = _schedule(0)
       src_file.parse = parse
-      _src_items.update(canonical_path.path, src_file)
-      _enqueue_src_item(src_file)
+      _src_items.enqueue_src_item(src_file)
     end
 
   be update_file(
@@ -228,29 +217,28 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _log(Fine) and _log.log(
       task_id.string() + ": updating " + canonical_path.path)
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
+      _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
       src_file.task_id = task_id
       src_file.schedule = _schedule(300)
       src_file.is_open = true
       src_file.parse = parse
-      _log(Fine) and _log.log(task_id.string() + ": found in-memory file")
-      _enqueue_src_item(src_file, AnalysisStart)
+      _src_items.enqueue_src_item(src_file, AnalysisStart)
     else
+      _log(Fine) and _log.log(
+        task_id.string() + ": in-memory file not found; creating")
       let src_file = SrcFileItem(
         canonical_path, _context.get_cache(canonical_path))
       src_file.task_id = task_id
       src_file.is_open = true
       src_file.schedule = _schedule(300)
       src_file.parse = parse
-      _src_items.update(canonical_path.path, src_file)
-      _enqueue_src_item(src_file, AnalysisStart)
-      _log(Fine) and _log.log(
-        task_id.string() + ": in-memory file not found; creating")
+      _src_items.enqueue_src_item(src_file, AnalysisStart)
     end
 
   be close_file(task_id: USize, canonical_path: FilePath) =>
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       src_file.is_open = false
     end
@@ -265,7 +253,7 @@ actor EohippusAnalyzer is Analyzer
     _log(Fine) and _log.log(
       task_id.string() + ": request " + canonical_path.path)
 
-    if not _src_items.contains(canonical_path.path) then
+    if not _src_items.src_items.contains(canonical_path.path) then
       let file_dir = Path.split(canonical_path.path)._1
       _analyze_dir(
         task_id,
@@ -299,41 +287,7 @@ actor EohippusAnalyzer is Analyzer
   be dispose() =>
     _disposing = true
 
-  fun ref _enqueue_src_item(
-    src_item: SrcItem,
-    new_state: (SrcItemState | None) = None,
-    auto_transition: Bool = false)
-  =>
-    match new_state
-    | let new_state': SrcItemState =>
-      src_item.set_state(new_state')
-    else
-      if auto_transition then
-        let new_state' =
-          match src_item.get_state()
-          | AnalysisStart => AnalysisParse
-          | AnalysisParse => AnalysisScope
-          | AnalysisScope => AnalysisLint
-          | AnalysisLint => AnalysisUpToDate
-          | AnalysisUpToDate => AnalysisUpToDate
-          | AnalysisError => AnalysisError
-          end
-        src_item.set_state(new_state')
-      end
-    end
-
-    _src_item_queue.push(src_item)
-    _process_src_item_queue()
-
-  fun ref _process_src_item_queue() =>
-    if not _process_queued then
-      _process_queued = true
-      _process_src_item_queue_aux()
-    end
-
-  be _process_src_item_queue_aux() =>
-    _process_queued = false
-
+  be _process_src_item_queue() =>
     if _disposing then return end
 
     // if (_iteration % 500) == 0 then
@@ -341,76 +295,18 @@ actor EohippusAnalyzer is Analyzer
     // end
     _iteration = _iteration + 1
 
-    try
-      match _src_item_queue.shift()?
-      | let file_item: SrcFileItem =>
-        _process_file_item(file_item)
-      | let package_item: SrcPackageItem =>
-        _process_package_item(package_item)
-      end
+    match _src_items.shift()
+    | let file_item: SrcFileItem =>
+      _process_file_item(file_item)
+    | let package_item: SrcPackageItem =>
+      _process_package_item(package_item)
     end
 
     _process_pending_requests()
 
-    if _src_item_queue.size() > 0 then
+    if _src_items.queue_size() > 0 then
       _process_src_item_queue()
     end
-
-  fun ref _log_src_item_queue() =>
-    _log(Fine) and _log.log(
-      "PACKAGE ITEMS: " + _get_item_stats(_src_items.values(), true))
-    _log(Fine) and _log.log(
-      "PACKAGE QUEUE: " + _get_item_stats(_src_item_queue.values(), true))
-    _log(Fine) and _log.log(
-      "FILE ITEMS:    " + _get_item_stats(_src_items.values(), false))
-    _log(Fine) and _log.log(
-      "FILE QUEUE:    " + _get_item_stats(_src_item_queue.values(), false))
-
-  fun _get_item_stats(iter: Iterator[SrcItem], is_pkg: Bool): String =>
-    var num_starting: USize = 0
-    var num_parsing: USize = 0
-    var num_scoping: USize = 0
-    var num_linting: USize = 0
-    var num_error: USize = 0
-    var num_up_to_date: USize = 0
-
-    for item in iter do
-      match item
-      | let pkg: SrcPackageItem =>
-        if not is_pkg then continue end
-      else
-        if is_pkg then continue end
-      end
-
-      match item.get_state()
-      | AnalysisStart =>
-        num_starting = num_starting + 1
-      | AnalysisParse =>
-        num_parsing = num_parsing + 1
-      | AnalysisScope =>
-        num_scoping = num_scoping + 1
-      | AnalysisLint =>
-        num_linting = num_linting + 1
-      | AnalysisError =>
-        num_error = num_error + 1
-      | AnalysisUpToDate =>
-        num_up_to_date = num_up_to_date + 1
-      end
-    end
-    let str: String trn = String
-    str.append("start ")
-    str.append(num_starting.string())
-    str.append(", parse ")
-    str.append(num_parsing.string())
-    str.append(", scope ")
-    str.append(num_scoping.string())
-    str.append(", lint ")
-    str.append(num_linting.string())
-    str.append(", error ")
-    str.append(num_error.string())
-    str.append(", done ")
-    str.append(num_up_to_date.string())
-    consume str
 
   fun ref _process_package_item(package_item: SrcPackageItem) =>
     // count things
@@ -474,16 +370,7 @@ actor EohippusAnalyzer is Analyzer
         end
       end
 
-      if new_state isnt package_item.state then
-        _log_src_item_queue()
-      end
-
-      // if (_iteration % 100) == 0 then
-      //   _log(Fine) and _log.log(
-      //     package_item.task_id.string() + ": workspace in progress")
-      // end
-
-      _enqueue_src_item(package_item, new_state)
+      _src_items.enqueue_src_item(package_item, new_state)
     end
 
   fun ref _notify_workspace(package_item: SrcPackageItem) =>
@@ -562,14 +449,14 @@ actor EohippusAnalyzer is Analyzer
       end
     end
     if needs_push then
-      _enqueue_src_item(src_file)
+      _src_items.enqueue_src_item(src_file)
     end
 
   fun ref _process_pending_requests() =>
     let paths_done = Array[String]
 
     for (canonical_path, notifys) in _pending_requests.pairs() do
-      match try _src_items(canonical_path)? end
+      match try _src_items.src_items(canonical_path)? end
       | let file_item: SrcFileItem =>
         match file_item.state
         | AnalysisUpToDate =>
@@ -736,7 +623,7 @@ actor EohippusAnalyzer is Analyzer
         return
       end
 
-      _enqueue_src_item(src_file, AnalysisScope)
+      _src_items.enqueue_src_item(src_file, AnalysisScope)
       return
     end
 
@@ -754,7 +641,7 @@ actor EohippusAnalyzer is Analyzer
       _errors.push_error(
         AnalyzerWorkspaceErrors,
         AnalyzerError(canonical_path, AnalyzeError, "unable to read file"))
-      _enqueue_src_item(src_file, AnalysisError)
+      _src_items.enqueue_src_item(src_file, AnalysisError)
     end
 
   fun ref _parse(
@@ -826,9 +713,9 @@ actor EohippusAnalyzer is Analyzer
     node: ast.NodeWith[ast.SrcFile])
   =>
     if _disposing then return end
-    _process_src_item_queue()
+    _process_src_item_queue() // this is a behavior call so deferred
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -862,7 +749,7 @@ actor EohippusAnalyzer is Analyzer
               AnalyzerError(canonical_path, AnalyzeError, message))
           end
         end
-        _enqueue_src_item(src_file, AnalysisError)
+        _src_items.enqueue_src_item(src_file, AnalysisError)
         return
       end
 
@@ -875,7 +762,7 @@ actor EohippusAnalyzer is Analyzer
         src_file.task_id.string() + ": " + src_file.canonical_path.path +
         " => Scoping")
 
-      _enqueue_src_item(src_file where auto_transition = true)
+      _src_items.enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": parsed untracked source file " +
@@ -894,7 +781,7 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _process_src_item_queue()
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -930,7 +817,7 @@ actor EohippusAnalyzer is Analyzer
         src_file.task_id.string() + ": " + src_file.canonical_path.path +
         " => Error")
 
-      _enqueue_src_item(src_file, AnalysisError)
+      _src_items.enqueue_src_item(src_file, AnalysisError)
     end
 
   fun ref _write_syntax_tree(
@@ -1062,7 +949,7 @@ actor EohippusAnalyzer is Analyzer
       match _get_scope(src_file)
       | let scope: Scope =>
         src_file.scope = scope
-        _enqueue_src_item(src_file, AnalysisLint)
+        _src_items.enqueue_src_item(src_file, AnalysisLint)
         return
       else
         _log(Error) and _log.log(
@@ -1084,7 +971,7 @@ actor EohippusAnalyzer is Analyzer
       _log(Error) and _log.log(
         src_file.task_id.string() + ": failed to get syntax tree for " +
         src_file.canonical_path.path)
-      _enqueue_src_item(src_file, AnalysisError)
+      _src_items.enqueue_src_item(src_file, AnalysisError)
     end
 
   fun ref _get_scope(src_file: SrcFileItem): (Scope | None) =>
@@ -1135,7 +1022,7 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _process_src_item_queue()
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -1159,75 +1046,11 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         task_id.string() + ": " + canonical_path.path + " => Linting")
 
-      _enqueue_src_item(src_file where auto_transition = true)
+      _src_items.enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": scoped unknown file " + canonical_path.path)
     end
-
-  // fun ref _process_imports(canonical_path: String, scope: Scope) =>
-  //   (let base_path, _) = Path.split(scope.name)
-
-  //   var i: USize = 0
-  //   while i < scope.imports.size() do
-  //     try
-  //       (let alias, let import_path) = scope.imports(i)?
-  //       match _try_analyze_import(base_path, import_path)
-  //       | let canonical_import_path: String =>
-  //         try scope.imports.update(i, (alias, canonical_import_path))? end
-  //         i = i + 1
-  //         continue
-  //       else
-  //         var found = false
-  //         for pp in _pony_path.values() do
-  //           match _try_analyze_import(pp.path, import_path)
-  //           | let canonical_import_path: String =>
-  //             try scope.imports.update(i, (alias, canonical_import_path))? end
-  //             found = true
-  //             break
-  //           end
-  //         end
-
-  //         if found then
-  //           i = i + 1
-  //           continue
-  //         else
-  //           match _pony_packages_path
-  //           | let ppp: FilePath =>
-  //             match _try_analyze_import(ppp.path, import_path)
-  //             | let canonical_import_path: String =>
-  //               try scope.imports.update(i, (alias, canonical_import_path))? end
-  //               i = i + 1
-  //               continue
-  //             end
-  //           end
-  //         end
-  //       end
-  //       _log(Error) and _log.log(
-  //         "unable to resolve package " + import_path + " for " + canonical_path)
-  //     end
-  //     i = i + 1
-  //   end
-
-  // fun ref _try_analyze_import(base_path: String, import_path: String)
-  //   : (String | None)
-  // =>
-  //   let combined_path = FilePath(_auth, Path.join(base_path, import_path))
-  //   if combined_path.exists() then
-  //     let canonical_path =
-  //       try
-  //         combined_path.canonical()?
-  //       else
-  //         combined_path
-  //       end
-  //     if not _src_items.contains(canonical_path.path) then
-  //       analyze(_get_next_task_id(), canonical_path.path)
-  //     else
-  //       _log(Fine) and _log.log(
-  //         "not analyzing existing import " + canonical_path.path)
-  //     end
-  //     return canonical_path.path
-  //   end
 
   be scope_failed(
     task_id: USize,
@@ -1237,7 +1060,7 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _process_src_item_queue()
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -1262,7 +1085,7 @@ actor EohippusAnalyzer is Analyzer
             AnalyzerError(canonical_path, AnalyzeError, message))
         end
       end
-      _enqueue_src_item(src_file, AnalysisError)
+      _src_items.enqueue_src_item(src_file, AnalysisError)
     else
       _log(Error) and _log.log(task_id.string() + ": failed to scope unknown " +
         canonical_path.path)
@@ -1333,6 +1156,7 @@ actor EohippusAnalyzer is Analyzer
 
   fun ref _lint(src_file: SrcFileItem) =>
     if _disposing then return end
+    _process_src_item_queue()
 
     _log(Fine) and _log.log(
       src_file.task_id.string() + ": linting " + src_file.canonical_path.path)
@@ -1345,7 +1169,7 @@ actor EohippusAnalyzer is Analyzer
         _log(Error) and _log.log(
           src_file.task_id.string() + ": unable to get syntax tree for " +
           src_file.canonical_path.path)
-        _enqueue_src_item(src_file, AnalysisError)
+        _src_items.enqueue_src_item(src_file, AnalysisError)
         return
       end
 
@@ -1379,7 +1203,7 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _process_src_item_queue()
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -1426,7 +1250,7 @@ actor EohippusAnalyzer is Analyzer
       _log(Fine) and _log.log(
         src_file.task_id.string() + ": " + src_file.canonical_path.path +
         " => UpToDate")
-      _enqueue_src_item(src_file where auto_transition = true)
+      _src_items.enqueue_src_item(src_file where auto_transition = true)
     else
       _log(Error) and _log.log(
         task_id.string() + ": linted unknown file " + canonical_path.path)
@@ -1436,7 +1260,7 @@ actor EohippusAnalyzer is Analyzer
     if _disposing then return end
     _process_src_item_queue()
 
-    match try _src_items(canonical_path.path)? end
+    match try _src_items.src_items(canonical_path.path)? end
     | let src_file: SrcFileItem =>
       if src_file.task_id != task_id then
         _log(Fine) and _log.log(
@@ -1454,7 +1278,7 @@ actor EohippusAnalyzer is Analyzer
         AnalyzerLintErrors,
         AnalyzerError(
           canonical_path, AnalyzeError, "lint failed: " + message))
-      _enqueue_src_item(src_file, AnalysisError)
+      _src_items.enqueue_src_item(src_file, AnalysisError)
     else
       _log(Error) and _log.log(
         task_id.string() + ": failed to lint unknown file " +

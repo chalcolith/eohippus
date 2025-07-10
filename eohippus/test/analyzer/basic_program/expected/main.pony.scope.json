@@ -1,0 +1,25 @@
+{
+  "kind": "FileScope",
+  "definitions": [
+    {
+      "identifier": "Main"
+    }
+  ],
+  "children": [
+    {
+      "kind": "ClassScope",
+      "name": "Main",
+      "definitions": [
+        {
+          "identifier": "create"
+        }
+      ],
+      "children": [
+        {
+          "kind": "MethodScope",
+          "name": "create"
+        }
+      ]
+    }
+  ]
+}
